@@ -117,7 +117,7 @@ function action(kind) {
     controller.keyboard.throttle = Math.sqrt(
       (flight.config.massKg * 9.81) / (4 * flight.config.motor.maxThrustN),
     );
-  if (kind === "view") flight.chase = !flight.chase;
+  if (kind === "view") flight.setView(!flight.chase);
   if (kind === "reset") {
     controller.clear();
     lap = newLap();
@@ -849,9 +849,7 @@ function bindUI() {
     cameraSettings.sound = $("#sound").checked;
     $("#angle-output").textContent = cameraSettings.angle + "°";
     $("#fov-output").textContent = cameraSettings.fov + "°";
-    flight.angle = cameraSettings.angle;
-    flight.camera.fov = cameraSettings.fov;
-    flight.camera.updateProjectionMatrix();
+    flight.setCameraSettings(cameraSettings.angle, cameraSettings.fov);
     flight.soundEnabled = cameraSettings.sound;
     write("camera", cameraSettings);
   }

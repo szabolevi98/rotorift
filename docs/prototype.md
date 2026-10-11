@@ -31,6 +31,7 @@ Az `npm test` a következőket ellenőrzi:
 - Mindhárom drón gravitációja, kiegyensúlyozott lebegése, motorválasza és földi ütközése.
 - Acro attitűdtartás, Angle/Horizon pitch és roll visszaszintezés; motorhatáron is kiegyensúlyozott semleges állapot.
 - Fizikai integráció összevetése 120 és 240 Hz-en.
+- Külső kamera közeli, mérethez igazított képkerete mindhárom drónnál; közös mozgás gyors helyváltoztatásnál, függőleges és fordított helyzetben is. Nézetváltáskor az FPV szög és látómező megőrzése.
 - Kapu iránya, nyílása, interpolált átlépési ideje, sorrendje és érvénytelen kör kezelése.
 - Valódi két WebSocket kliens közös szobája, készenlét, rajt, három szabályos kör, körmentés és futameredmény.
 - Ismételt csomag, hibás konfiguráció, megszakítás és hosszú állapotküldési szünet kezelése.
@@ -38,7 +39,8 @@ Az `npm test` a következőket ellenőrzi:
 - Fordításikulcsok egyezése mind az öt nyelven, HTML-lefedettség; statikus fájlok kiszolgálása.
 
 Valódi böngészőben ellenőrzött: mindhárom modell betöltése, billentyűzetes élesítés és
-felszállás, menü miatti leállítás, rate-ek másolása, nyelvváltás és metaadatok;
+felszállás, közeli külső kamerakövetés, reset és FPV nézetváltás, menü miatti leállítás,
+rate-ek másolása, nyelvváltás és metaadatok;
 építkezési online szoba, két pilóta közös rajtja és a másik drón megjelenítése.
 Hardveres rádióteszt még nem történt.
 

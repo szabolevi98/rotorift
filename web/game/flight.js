@@ -3,6 +3,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { DronePhysics, PHYSICS_DT } from "/shared/physics/drone.js";
 import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
+import { DroneCameraRig } from "./camera-rig.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -33,6 +34,7 @@ export class Flight {
     this.camera = new THREE.PerspectiveCamera(100, 1, 0.012, 350);
     this.camera.position.set(0, 10, 30);
     this.camera.lookAt(0, 0, 0);
+    this.cameraRig = new DroneCameraRig(this.camera);
     this.accumulator = 0;
     this.active = false;
     this.chase = false;
@@ -59,6 +61,7 @@ export class Flight {
     this.physics.rates = rates;
     this.physics.mode = mode;
     this.visual = await loadModel(config);
+    this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);
     this.props = [];
     this.visual.traverse((o) => {
@@ -68,13 +71,21 @@ export class Flight {
     this.previous = this.physics.pose;
     this.current = this.physics.pose;
     this.place(this.current, 1);
-    this.camera.position.set(...map.spawn);
     this.active = true;
   }
   reset(position = this.map.spawn) {
     this.physics.reset(position);
     this.accumulator = 0;
     this.previous = this.current = this.physics.pose;
+    this.place(this.current, 1);
+  }
+  setView(chase) {
+    this.chase = chase;
+    if (this.visual) this.visual.visible = chase;
+    this.cameraRig.setView(chase);
+  }
+  setCameraSettings(angle, fov) {
+    this.cameraRig.setSettings(angle, fov);
   }
   step(dt, input, update) {
     if (!this.active) return;
@@ -86,7 +97,7 @@ export class Flight {
       this.accumulator -= PHYSICS_DT;
       update(this.previous, this.current, PHYSICS_DT);
     }
-    this.place(this.current, this.accumulator / PHYSICS_DT, dt);
+    this.place(this.current, this.accumulator / PHYSICS_DT);
     for (const p of this.props)
       p.rotation.y +=
         dt *
@@ -109,7 +120,7 @@ export class Flight {
       );
     }
   }
-  place(pose, alpha, dt = 1 / 60) {
+  place(pose, alpha) {
     if (!this.visual) return;
     const a = this.previous ?? pose,
       pos = new THREE.Vector3(...a.p).lerp(new THREE.Vector3(...pose.p), alpha),
@@ -122,32 +133,7 @@ export class Flight {
       .add(new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q));
     this.visual.quaternion.copy(q);
     this.visual.visible = this.chase;
-    if (this.chase) {
-      const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(q);
-      direction.y = 0;
-      direction.normalize();
-      const distance = Math.max(1.3, this.config.motorDiagonalM * 9),
-        target = pos
-          .clone()
-          .addScaledVector(direction, -distance)
-          .add(new THREE.Vector3(0, distance * 0.5, 0));
-      this.camera.position.lerp(target, 1 - Math.exp(-dt * 8));
-      this.camera.lookAt(pos.clone().add(new THREE.Vector3(0, 0.15, 0)));
-    } else {
-      this.camera.position
-        .copy(pos)
-        .add(
-          new THREE.Vector3(...this.config.cameraOffsetM).applyQuaternion(q),
-        );
-      this.camera.quaternion
-        .copy(q)
-        .multiply(
-          new THREE.Quaternion().setFromAxisAngle(
-            new THREE.Vector3(1, 0, 0),
-            ((this.angle ?? 20) * Math.PI) / 180,
-          ),
-        );
-    }
+    this.cameraRig.update(pos, q);
   }
   async remote(player) {
     let remote = this.remotes.get(player.id);
