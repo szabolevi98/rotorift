@@ -70,6 +70,7 @@ Az `npm test` a következőket ellenőrzi:
 - Liget domborzata, pontos területillesztések és a terep ütközési magassága;
   szabad épületátjáró, járható sétány, átjárható kerítés és korlátos területbetöltés.
 - Két külön tómeder, épületek vízszintes alapjai, sűrűbb facsoportok, tóparti fák, fasor és nyitott freestyle rét;
+- Az utak tényleges ívéhez igazított, kifelé elhelyezett padok külön kavicsos pihenőöblökkel; a horgászházat és a kávézót megkerülő sétányok, külön bekötőutak és útról áthelyezett piknikpergola. A lámpák a kereszteződéseket és a központi épületet szabadon hagyják.
   híd alatti átjáró és nyitott kávézóterasz; ideiglenesen tiltott versenyszobák.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.

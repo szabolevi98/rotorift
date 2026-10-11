@@ -3,6 +3,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { buildParkLandmarks } from "./park-landmarks.js";
 import {
   PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
+  PARK_BENCHES, PARK_GARDEN, sampleParkPath, pathClearance,
   parkHeight, parkSurfaceHeight, parkClearance, chunkRandom, lakeOutline,
 } from "../../shared/world/park-layout.js";
 
@@ -122,14 +123,13 @@ function clipPolygon(polygon, distance) {
 }
 
 export function ribbon(points, width, lateral = 0, lift = 0.065) {
-  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, 0, z)));
-  const steps = Math.max(2, Math.ceil(curve.getLength() / 2));
+  const samples = sampleParkPath(points), steps = samples.length - 1;
   const edges = [], positions = [], uv = [], indices = [];
   for (let i = 0; i <= steps; i++) {
-    const p = curve.getPoint(i / steps), tangent = curve.getTangent(i / steps);
+    const p = samples[i];
     for (const side of [-1, 1]) {
       const offset = lateral + side * width / 2;
-      const x = p.x - tangent.z * offset, z = p.z + tangent.x * offset;
+      const x = p.x - p.tz * offset, z = p.z + p.tx * offset;
       edges.push([x, z]);
     }
   }
@@ -212,8 +212,8 @@ export function buildPark(scene, world, RAPIER, map) {
       world.createCollider(desc.setTranslation(...p).setRotation({ x: 0, y: Math.sin(angle / 2), z: 0, w: Math.cos(angle / 2) }).setFriction(0.85));
     }
   }
-  function bench(x, z, angle = 0) {
-    const y = parkSurfaceHeight(x, z), q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+  function bench(x, z, angle = 0, lift = 0) {
+    const y = parkSurfaceHeight(x, z) + lift, q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle);
     const add = (size, offset, mat, solid = true) => {
       const p = new THREE.Vector3(...offset).applyQuaternion(q).add(new THREE.Vector3(x, y, z));
       part(size, p.toArray(), mat, solid, angle);
@@ -277,20 +277,25 @@ export function buildPark(scene, world, RAPIER, map) {
     }
   }
   // West garden pergola, picnic tables, and seats along the main paths.
-  const pergolaY = parkSurfaceHeight(-52, -67);
-  for (const x of [-56, -48]) for (const z of [-75, -67, -59]) {
+  const { x: gardenX, z: gardenZ } = PARK_GARDEN;
+  const garden = new THREE.Mesh(geometry(ribbon([[gardenX, gardenZ - 11], [gardenX, gardenZ + 11]], 12)), palette.gravel);
+  garden.name = "garden-terrace"; garden.receiveShadow = true; root.add(garden);
+  const pergolaY = parkSurfaceHeight(gardenX, gardenZ);
+  for (const x of [gardenX - 4, gardenX + 4]) for (const z of [gardenZ - 8, gardenZ, gardenZ + 8]) {
     const ground = parkSurfaceHeight(x, z), top = pergolaY + 3.25;
     part([0.18, top - ground, 0.18], [x, (ground + top) / 2, z], palette.wood);
   }
-  for (const x of [-56, -48])
-    part([0.22, 0.22, 22], [x, pergolaY + 3.2, -67], palette.wood);
-  for (let z = -77; z < -57; z += 0.75)
-    part([10, 0.16, 0.13], [-52, pergolaY + 3.37, z], palette.wood);
-  for (const [x, z, angle] of [[-42, 65, 0], [42, -65, Math.PI], [-138, 25, 1.2], [138, -25, -1.2],
-    [-70, 108, 0.3], [70, -108, 3.4], [230, 125, 1.5], [-200, 195, -0.5], [9, 95, 1.57], [-9, -95, -1.57]])
-    bench(x, z, angle);
-  for (const [x, z] of [[-52, -64], [-44, -64], [75, 155], [84, 150]]) {
-    const y = parkSurfaceHeight(x, z);
+  for (const x of [gardenX - 4, gardenX + 4])
+    part([0.22, 0.22, 22], [x, pergolaY + 3.2, gardenZ], palette.wood);
+  for (let z = gardenZ - 10; z < gardenZ + 10; z += 0.75)
+    part([10, 0.16, 0.13], [gardenX, pergolaY + 3.37, z], palette.wood);
+  for (const { x, z, angle, tx, tz } of PARK_BENCHES) {
+    const bay = new THREE.Mesh(geometry(ribbon([[x - tx * 1.9, z - tz * 1.9], [x + tx * 1.9, z + tz * 1.9]], 2.8)), palette.gravel);
+    bay.name = "bench-bay"; bay.receiveShadow = true; root.add(bay);
+    bench(x, z, angle, 0.065);
+  }
+  for (const [x, z] of [[gardenX, gardenZ - 4], [gardenX, gardenZ + 4]]) {
+    const y = parkSurfaceHeight(x, z) + 0.065;
     part([2.1, 0.08, 1], [x, y + 0.76, z], palette.wood);
     for (const side of [-0.75, 0.75]) {
       part([0.1, 0.72, 0.75], [x + side, y + 0.36, z], palette.metal);
@@ -312,6 +317,7 @@ export function buildPark(scene, world, RAPIER, map) {
   }
   for (let z = -300; z <= 300; z += 35) for (const side of [-1, 1]) {
     const x = side * 5.5, y = parkSurfaceHeight(x, z);
+    if ((Math.abs(z) < 30) || pathClearance(x, z) < 1.5) continue;
     part([0.07, 3.4, 0.07], [x, y + 1.7, z], palette.metal);
     part([0.6, 0.12, 0.45], [x, y + 3.4, z], palette.metal, false);
     part([0.45, 0.025, 0.32], [x, y + 3.33, z], palette.flowers, false);

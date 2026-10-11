@@ -1,3 +1,5 @@
+import * as THREE from "three";
+
 export const PARK_CHUNK_SIZE = 128;
 export const PARK_GRID_STEPS = 64;
 const smooth = (a, b, x) => {
@@ -20,6 +22,7 @@ export const PARK_CLEARINGS = [
   { x: 5, z: 205, rx: 103, rz: 78 },
   { x: 170, z: -76, rx: 52, rz: 22 },
   { x: -210, z: 180, rx: 30, rz: 30 },
+  { x: -52, z: -88, rx: 12, rz: 15 },
 ];
 const groves = [
   [-280, -277, 40, 20], [-105, -275, 38, 16], [-15, -195, 34, 14],
@@ -100,18 +103,63 @@ const ring = Array.from({ length: 145 }, (_, i) => {
   const a = i / 144 * Math.PI * 2;
   return [Math.cos(a) * 148, Math.sin(a) * 115];
 });
+// The eastern lakeside promenade skirts the boathouse and its veranda.
+// Keep the dock on the lake side of this route, rather than across the path.
+const lakePromenade = lakeOutline(PARK_LAKES[0], 1.32).map(([x, z]) => {
+  const detour = 1 - smooth(15, 49, Math.abs(z + 130));
+  return [x > -140 ? x + (-51 - x) * detour : x, z];
+});
 export const PARK_PATHS = [
   { width: 7, points: [[0, -350], [0, 350]], paving: true },
   { width: 4.2, points: ring },
   { width: 4.2, points: [[0, -65], [-50, -65], [-95, -55], [-140, -38], [-215, -32], [-295, -60], [-345, -100]] },
-  { width: 4.2, points: [[0, -110], [45, -135], [110, -138], [130, -100], [146, -76], [194, -76], [235, -60], [295, -45], [345, -30]] },
-  { width: 3.4, points: lakeOutline(PARK_LAKES[0], 1.32) },
+  { width: 4.2, points: [[0, -110], [45, -128], [80, -135], [110, -135], [130, -105], [146, -76], [194, -76], [235, -60], [295, -45], [345, -30]] },
+  { width: 3.4, points: lakePromenade },
   { width: 3.2, points: lakeOutline(PARK_LAKES[1], 1.38) },
   { width: 3.5, points: [[0, 85], [65, 100], [120, 125], [170, 125], [240, 135], [275, 205], [295, 270], [330, 325]] },
-  { width: 3.2, points: [[-140, 30], [-190, 80], [-210, 135], [-210, 180], [-230, 245], [-270, 310]] },
+  { width: 3.2, points: [[-140, 30], [-190, 80], [-190, 135], [-190, 180], [-208, 213], [-230, 245], [-270, 310]] },
   { width: 3, points: [[-320, -285], [-210, -270], [-100, -250], [0, -235], [110, -255], [225, -295], [320, -300]] },
   { width: 3, points: [[-325, 310], [-220, 290], [-115, 280], [0, 290], [110, 280], [215, 310], [320, 325]] },
+  { width: 3, points: [[-51, -114], [-61, -114], [-74, -114], [-74, -121]] },
+  { width: 3, points: [[-190, 196], [-201, 197], [-210, 192]] },
+  { width: 2.6, points: [[-52, -65], [-52, -74], [-52, -77]] },
+  { width: 3, points: [[110, -135], [110, -142.5]] },
+  { width: 3, points: [[264, 175], [268, 181], [270, 190]] },
 ];
+
+// Rendering, furnishing and vegetation all use the same curved centerlines.
+export function sampleParkPath(points) {
+  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, 0, z)));
+  const steps = Math.max(2, Math.ceil(curve.getLength() / 2));
+  return Array.from({ length: steps + 1 }, (_, i) => {
+    const p = curve.getPoint(i / steps), t = curve.getTangent(i / steps);
+    return { x: p.x, z: p.z, tx: t.x, tz: t.z };
+  });
+}
+export const PARK_PATH_SAMPLES = PARK_PATHS.map((path) => sampleParkPath(path.points));
+export function pathClearance(x, z) {
+  return Math.min(...PARK_PATHS.map((path, index) => {
+    const points = PARK_PATH_SAMPLES[index];
+    let distance = Infinity;
+    for (let i = 1; i < points.length; i++)
+      distance = Math.min(distance, segmentDistance(x, z,
+        [points[i - 1].x, points[i - 1].z], [points[i].x, points[i].z]));
+    return distance - path.width / 2;
+  }));
+}
+export const PARK_GARDEN = { x: -52, z: -88, width: 12, depth: 22 };
+// Benches face their promenade; the whole seat sits in an adjacent gravel bay.
+export const PARK_BENCHES = [
+  [0, 0.12, -1], [0, 0.25, 1], [0, 0.65, -1], [0, 0.91, 1],
+  [1, 0.08, -1], [1, 0.31, -1], [1, 0.57, -1], [1, 0.81, -1],
+  [4, 0.3, -1], [4, 0.57, -1], [4, 0.76, -1],
+  [5, 0.22, -1], [5, 0.6, -1],
+].map(([index, t, side]) => {
+  const samples = PARK_PATH_SAMPLES[index], p = samples[Math.round(t * (samples.length - 1))];
+  const offset = side * (PARK_PATHS[index].width / 2 + 1.9);
+  return { x: p.x - p.tz * offset, z: p.z + p.tx * offset,
+    angle: Math.atan2(-p.tz, p.tx) + (side < 0 ? Math.PI : 0), tx: p.tx, tz: p.tz };
+}).filter(({ x, z }) => pathClearance(x, z) > 1.5);
 
 export function segmentDistance(x, z, a, b) {
   const dx = b[0] - a[0], dz = b[1] - a[1];
@@ -131,9 +179,9 @@ export function parkClearance(x, z, map, radius = 0) {
     if (Math.abs(x - b.x) < b.width / 2 + 12 + radius && Math.abs(z - b.z) < b.depth / 2 + 12 + radius) return false;
   for (const clearing of PARK_CLEARINGS)
     if (Math.hypot((x - clearing.x) / (clearing.rx + radius), (z - clearing.z) / (clearing.rz + radius)) < 1) return false;
-  for (const path of PARK_PATHS)
-    for (let i = 1; i < path.points.length; i++)
-      if (segmentDistance(x, z, path.points[i - 1], path.points[i]) < path.width / 2 + 3) return false;
+  if (pathClearance(x, z) < 3) return false;
+  for (const seat of PARK_BENCHES)
+    if (Math.hypot(x - seat.x, z - seat.z) < radius + 3.5) return false;
   for (let i = 0; i < map.gates.length; i++) {
     const a = map.gates[i].p, b = map.gates[(i + 1) % map.gates.length].p;
     if (segmentDistance(x, z, [a[0], a[2]], [b[0], b[2]]) < 5) return false;

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, parkClearance, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { DronePhysics } from "../shared/physics/drone.js";
@@ -51,6 +51,34 @@ test("path interiors follow terrain triangles without sinking into hills", () =>
         assert.ok(Math.abs(sample.y - parkSurfaceHeight(sample.x, sample.z) - 0.065) < 0.0001,
           "the full triangle must have the same clearance as its vertices");
       }
+    }
+    mesh.dispose();
+  }
+});
+
+test("benches and building terraces leave the actual curved promenades clear", () => {
+  assert.ok(PARK_BENCHES.length >= 10, "retain seating along the promenades");
+  for (const seat of PARK_BENCHES) {
+    const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), seat.angle);
+    for (const x of [-1.1, 0, 1.1]) for (const z of [-0.4, 0.4]) {
+      const p = new THREE.Vector3(x, 0, z).applyQuaternion(q);
+      assert.ok(pathClearance(seat.x + p.x, seat.z + p.z) > 0.5,
+        "the whole seat, not only its center, must be outside every path");
+    }
+  }
+  for (const path of PARK_PATHS) {
+    const mesh = ribbon(path.points, path.width), p = mesh.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i);
+      for (const b of PARK_BUILDINGS) {
+        const halfWidth = b.id === "boathouse" ? 10.5 : 15;
+        const halfDepth = b.id === "boathouse" ? 9 : 12.5;
+        assert.ok(Math.abs(x - b.x) >= halfWidth - 0.001 || Math.abs(z - b.z) >= halfDepth - 0.001,
+          `${b.id}: the walkway must skirt the building and meet its terrace at the edge`);
+      }
+      for (const side of [-1, 1]) for (const row of [-8, 0, 8])
+        assert.ok(Math.hypot(x - (PARK_GARDEN.x + side * 4), z - (PARK_GARDEN.z + row)) > 0.3,
+          "the garden path must not run through pergola columns");
     }
     mesh.dispose();
   }

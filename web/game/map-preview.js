@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { buildEnvironment } from "./environment.js";
-import { parkSurfaceHeight } from "../../shared/world/park-layout.js";
+import { parkSurfaceHeight, PARK_GARDEN } from "../../shared/world/park-layout.js";
 import { read } from "../storage.js";
 
 const translations = {
@@ -47,11 +47,11 @@ try {
   const views = {
     park: [[0, 520, 125], [0, 2, 0]],
     pavilion: [[43, 21, 55], [0, 3, 0]],
-    garden: [[-75, 21, -43], [-52, 3, -67]],
+    garden: [[PARK_GARDEN.x - 23, 21, PARK_GARDEN.z + 24], [PARK_GARDEN.x, 3, PARK_GARDEN.z]],
     lake: [[249, 43, 240], [190, 2, 175]],
     hill: [[-265, 58, 225], [-210, 12, 180]],
     fence: [[40, 21, 382], [0, parkSurfaceHeight(0, 350) + 1, 350]],
-    largeLake: [[-114, 55, -40], [-205, 3, -130]],
+    largeLake: [[15, 80, 0], [-155, 3, -130]],
     cafe: [[145, 11, -118], [110, 4, -155]],
     arcade: [[205, parkSurfaceHeight(170, -76) + 18, -43], [170, parkSurfaceHeight(170, -76) + 2, -76]],
   };

@@ -141,6 +141,7 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 - Központi parképület, alatta végigrepülhető észak–déli sétánnyal; normális úthálózat,
   különböző fák, bokrok, padok, pergola, tavak és dombos, változatos területek.
 - Tudatosan kialakított, sűrűbb facsoportok a belső parkban is, tóparti fák és fasor; az épületek megközelítése és a nagy freestyle rét nyitott marad.
+- A bútorok a sétányokhoz igazodnak: út mellett álló, azzal párhuzamos padok pihenőöblökkel, külön piknikterasz, bekötések az épületekhez. Az utak nem vágnak át az épületeken és a berendezésen; az íves utak teljes szélességét ellenőrizni kell.
   Északnyugaton nagyobb tó (kb. 172 × 120 m) animált szökőkúttal, csónakházzal és mólóval;
   délkeleten kisebb tó (kb. 88 × 62 m) átrepülhető gyalogoshíddal.
   Kávézó és fedett terasz, oszlopsoros sétány, nyitott dombtetői pavilon.
