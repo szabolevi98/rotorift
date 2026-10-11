@@ -30,7 +30,8 @@ kövezett és kavicsos utak, körsétány, padok, kerti pergola, piknikasztalok,
 és lámpák kapcsolódnak. Lombos fák, nyírfák, fenyők, bokrok, dombok és egy tó tagolják
 a környezetet. A terep és a látható utak külön ütközési felülettel rendelkeznek.
 
-A kerítés átjárható határjelzés. A terep és a növényzet a kerítésen túl is újabb
+A kerítés átjárható határjelzés. Kívül kizárólag a talaj folytatódik, növényzet,
+utak vagy egyéb objektumok nélkül. A terep a kerítésen túl is újabb
 128 méteres területekkel töltődik tovább: a drón körül egyszerre 49 terület marad
 betöltve. A közeli 9 terület terepe és fái aktívak a fizikában; a többi távoli látványelem.
 Az elhagyott területek geometriája és ütközési felülete felszabadul.

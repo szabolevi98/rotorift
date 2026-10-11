@@ -35,7 +35,7 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 - Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
   változatos növényzettel és parkberendezéssel. Betonudvar: félkész építkezés.
   Mindkettő saját kapus útvonallal; szabad repülésben a kapuk kikapcsolnak.
-- A Liget kerítésén túl folytatódik a terep. Kilépéskor 10 perces visszaszámlálás
+- A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 10 perces visszaszámlálás
   indul; visszatéréskor törlődik, lejáratkor a drón visszaáll a rajthelyre.
   Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
 - Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.

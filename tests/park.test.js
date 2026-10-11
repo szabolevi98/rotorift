@@ -41,6 +41,27 @@ test("terrain seams match exactly and physical ground follows the visible triang
 test("the pavilion passage is flyable and the streamed landscape has no fence wall or leaking chunks", async () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const park = buildPark(scene, world, RAPIER, map);
+  const assertObjectsInsideFence = () => {
+    const half = map.size / 2, matrix = new THREE.Matrix4();
+    for (const group of park.root.children.filter((o) => o.isGroup)) {
+      for (const mesh of group.children.filter((o) => o.isInstancedMesh)) {
+        mesh.geometry.computeBoundingBox();
+        for (let i = 0; i < mesh.count; i++) {
+          mesh.getMatrixAt(i, matrix);
+          const box = mesh.geometry.boundingBox.clone().applyMatrix4(matrix);
+          assert.ok(box.min.x >= -half && box.max.x <= half && box.min.z >= -half && box.max.z <= half,
+            "vegetation must stay completely inside the fence");
+        }
+      }
+    }
+  };
+  assertObjectsInsideFence();
+  for (const mesh of park.root.children.filter((o) => ["park-path", "park-curb"].includes(o.name))) {
+    const p = mesh.geometry.attributes.position;
+    for (let i = 0; i < p.count; i++)
+      assert.ok(Math.abs(p.getX(i)) <= map.size / 2 && Math.abs(p.getZ(i)) <= map.size / 2,
+        "paths and curbs must stop at the fence");
+  }
   world.step();
   const passage = world.castRay(new RAPIER.Ray({ x: 0, y: 2, z: 22 }, { x: 0, y: 0, z: -1 }), 44, true);
   assert.equal(passage, null);
@@ -72,6 +93,7 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
     park.update(p); world.step();
     assert.equal(park.chunkCount, 49);
     assert.equal(park.physicsChunkCount, 9);
+    assertObjectsInsideFence();
     const hit = world.castRay(new RAPIER.Ray({ x: p[0], y: 60, z: p[2] }, { x: 0, y: -1, z: 0 }), 70, true);
     assert.ok(hit, "terrain collision must continue outside the park");
   }

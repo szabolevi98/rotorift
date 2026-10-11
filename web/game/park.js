@@ -219,12 +219,14 @@ export function buildPark(scene, world, RAPIER, map) {
   // Curving promenades, gravel trails, and narrow stone edging.
   for (const path of PARK_PATHS) {
     const mesh = new THREE.Mesh(geometry(ribbon(path.points, path.width)), path.paving ? palette.paving : palette.gravel);
+    mesh.name = "park-path";
     mesh.receiveShadow = true; root.add(mesh);
     world.createCollider(RAPIER.ColliderDesc.trimesh(
       mesh.geometry.attributes.position.array, new Uint32Array(mesh.geometry.index.array),
     ).setFriction(0.9));
     if (path.width >= 4) for (const side of [-1, 1]) {
       const curb = new THREE.Mesh(geometry(ribbon(path.points, 0.16, side * (path.width / 2 + 0.08), 0.11)), palette.curb);
+      curb.name = "park-curb";
       curb.receiveShadow = true; root.add(curb);
     }
   }
@@ -311,7 +313,7 @@ export function buildPark(scene, world, RAPIER, map) {
     }
   }
   // Fence is deliberately permeable. It marks the play area without becoming
-  // an invisible wall; terrain and vegetation continue across it.
+  // an invisible wall; only the bare terrain continues across it.
   const half = map.size / 2;
   for (let side = 0; side < 4; side++) for (let s = -half; s < half; s += 4) {
     const horizontal = side < 2, fixed = side % 2 ? half : -half;
@@ -374,7 +376,7 @@ export function buildPark(scene, world, RAPIER, map) {
     const forest = (x0 < -130 || z0 < -150), treeCount = forest ? 56 : 24;
     for (let i = 0; i < treeCount * 2 && objects.trunk.length < treeCount; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
-      if (!parkClearance(x, z, map) || (Math.abs(x) > 80 && x > 70 && z > 30 && rng() < 0.65)) continue;
+      if (!parkClearance(x, z, map, 8) || (Math.abs(x) > 80 && x > 70 && z > 30 && rng() < 0.65)) continue;
       const kind = rng(), pine = kind > 0.77, birch = kind < 0.25;
       const height = (pine ? 10 : birch ? 8 : 7) + rng() * 6, aspect = birch ? 0.68 : 0.95 + rng() * 0.3;
       const y = parkSurfaceHeight(x, z), angle = rng() * Math.PI * 2;
@@ -391,14 +393,14 @@ export function buildPark(scene, world, RAPIER, map) {
     }
     for (let i = 0; i < 30; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
-      if (!parkClearance(x, z, map)) continue;
+      if (!parkClearance(x, z, map, 2.5)) continue;
       const h = 0.6 + rng() * 0.9;
       add("bush", x, parkSurfaceHeight(x, z) + h * 0.55, z, [h * 1.1, h * 0.65, h], rng() * 6,
         rng() > 0.6 ? 0xa9af74 : 0x78915b);
     }
     for (let i = 0; i < 550; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
-      if (!parkClearance(x, z, map)) continue;
+      if (!parkClearance(x, z, map, 0.25)) continue;
       const scale = 0.65 + rng();
       add("tuft", x, parkSurfaceHeight(x, z), z, [scale, scale, scale], rng() * 6,
         rng() < 0.04 ? 0xddcd94 : 0xadb77e);

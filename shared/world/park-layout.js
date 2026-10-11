@@ -39,10 +39,10 @@ const ring = Array.from({ length: 145 }, (_, i) => {
   return [Math.cos(a) * 148, Math.sin(a) * 115];
 });
 export const PARK_PATHS = [
-  { width: 7, points: [[0, -420], [0, 420]], paving: true },
+  { width: 7, points: [[0, -350], [0, 350]], paving: true },
   { width: 4.2, points: ring },
-  { width: 4.2, points: [[0, 65], [-45, 65], [-85, 50], [-115, 25], [-155, 8], [-215, -30], [-275, -70], [-420, -115]] },
-  { width: 4.2, points: [[0, -65], [45, -65], [90, -45], [145, -25], [205, -5], [265, 20], [420, 70]] },
+  { width: 4.2, points: [[0, 65], [-45, 65], [-85, 50], [-115, 25], [-155, 8], [-215, -30], [-275, -70], [-345, -115]] },
+  { width: 4.2, points: [[0, -65], [45, -65], [90, -45], [145, -25], [205, -5], [265, 20], [345, 70]] },
   { width: 3.2, points: [[-290, 300], [-230, 235], [-195, 185], [-170, 130], [-148, 50], [-135, -65], [-170, -160], [-230, -235], [-290, -330]] },
   { width: 3.2, points: [[280, -320], [230, -220], [210, -150], [205, -70], [225, 20], [235, 95], [235, 170], [220, 245], [260, 330]] },
   { width: 3, points: [[-320, -285], [-210, -270], [-100, -260], [0, -250], [100, -255], [200, -280], [320, -300]] },
@@ -55,7 +55,10 @@ export function segmentDistance(x, z, a, b) {
   return Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t);
 }
 
-export function parkClearance(x, z, map) {
+export function parkClearance(x, z, map, radius = 0) {
+  // Keep the entire object inside the fence, including its canopy or foliage.
+  const half = map.size / 2;
+  if (Math.abs(x) + radius >= half || Math.abs(z) + radius >= half) return false;
   if (Math.abs(x) < 29 && Math.abs(z) < 28) return false;
   if (Math.hypot(x - map.spawn[0], z - map.spawn[2]) < 7) return false;
   if (Math.hypot((x - 190) / 43, (z - 145) / 33) < 1) return false;

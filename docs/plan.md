@@ -142,6 +142,7 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
   különböző fák, bokrok, padok, pergola, tó és dombos, változatos területek.
 - A kerítés jól láthatóan jelölje a játszható terület szélét, de legyen átrepülhető.
   A terep a kerítésen túl is folytatódjon, a drón körül betöltődő új területekkel.
+  A kerítésen kívül kizárólag talaj legyen; növényzet, utak és más objektumok ne.
 - Kilépéskor 10 perces aktív játékidős visszaszámlálás indul. Visszatéréskor törlődik;
   szünet alatt megáll. Lejáratkor a drón disarmolva visszatér a rajthelyre.
   Ugyanez online is működjön, szerveroldali időméréssel.
