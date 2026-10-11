@@ -16,7 +16,13 @@ export const PARK_LAKES = [
 export const PARK_BUILDINGS = [
   { id: "boathouse", x: -74, z: -130, width: 16, depth: 12, baseY: 2.75 },
   { id: "cafe", x: 110, z: -155, width: 22, depth: 14, baseY: 2 },
+  { id: "community-clubhouse", x: -58, z: 180, width: 38, depth: 28, baseY: 3 },
 ];
+export const PARK_SPORT = {
+  clubhouse: PARK_BUILDINGS[2],
+  court: { x: -58, z: 238, width: 26, depth: 40, baseY: 3 },
+  parking: { x: 58, z: 238, width: 54, depth: 46, baseY: 2.2 },
+};
 export const PARK_CLEARINGS = [
   { x: 0, z: 0, rx: 55, rz: 48 },
   { x: 5, z: 205, rx: 103, rz: 78 },
@@ -36,7 +42,7 @@ const groves = [
   [-280, 245, 32, 13], [135, 295, 30, 13], [-40, 315, 22, 7],
 ];
 // Denser groves, lakeside trees and a regular avenue; clearances below preserve
-// the southern freestyle meadow, paths, water and building approaches.
+// the community lawns, paths, water and building approaches.
 export const PARK_TREE_POSITIONS = groves.flatMap(([x, z, radius, count], grove) =>
   Array.from({ length: count }, (_, i) => {
     const a = i * 2.39996323 + grove, r = radius * Math.sqrt((i + 0.5) / count);
@@ -84,6 +90,10 @@ export function parkHeight(x, z) {
     const blend = smooth(6, 18, edge);
     height = b.baseY + (height - b.baseY) * blend;
   }
+  for (const area of [PARK_SPORT.court, PARK_SPORT.parking]) {
+    const edge = Math.max(Math.abs(x - area.x) - area.width / 2, Math.abs(z - area.z) - area.depth / 2);
+    height = area.baseY + (height - area.baseY) * smooth(3, 14, edge);
+  }
   return height;
 }
 
@@ -125,6 +135,11 @@ export const PARK_PATHS = [
   { width: 2.6, points: [[-52, -65], [-52, -74], [-52, -77]] },
   { width: 3, points: [[110, -135], [110, -142.5]] },
   { width: 3, points: [[264, 175], [268, 181], [270, 190]] },
+  // Community area branches leave the main promenade uninterrupted.
+  { width: 3.4, points: [[0, 202], [-25, 202], [-58, 202], [-58, 194]] },
+  { width: 3, points: [[-28, 202], [-28, 223], [-28, 238], [-45, 238]] },
+  { width: 3, points: [[-28, 238], [-28, 263], [-40, 279], [-58, 283]] },
+  { width: 7, points: [[0, 238], [16, 238], [31, 238]] },
 ];
 
 // Rendering, furnishing and vegetation all use the same curved centerlines.
@@ -177,6 +192,8 @@ export function parkClearance(x, z, map, radius = 0) {
     if (lakeDistance(lake, x, z) < 1.23 + radius / Math.min(lake.rx, lake.rz)) return false;
   for (const b of PARK_BUILDINGS)
     if (Math.abs(x - b.x) < b.width / 2 + 12 + radius && Math.abs(z - b.z) < b.depth / 2 + 12 + radius) return false;
+  for (const area of [PARK_SPORT.court, PARK_SPORT.parking])
+    if (Math.abs(x - area.x) < area.width / 2 + 3 + radius && Math.abs(z - area.z) < area.depth / 2 + 3 + radius) return false;
   for (const clearing of PARK_CLEARINGS)
     if (Math.hypot((x - clearing.x) / (clearing.rx + radius), (z - clearing.z) / (clearing.rz + radius)) < 1) return false;
   if (pathClearance(x, z) < 3) return false;

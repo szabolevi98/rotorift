@@ -14,8 +14,11 @@ const translations = {
   es: ["Vista del parque", "Pabellón y pasaje", "Pérgola del jardín", "Lago pequeño y puente", "Pabellón en la colina", "Valla y paisaje", "Lago grande y fuente", "Café y terraza", "Paseo cubierto", "Ratón: girar · Rueda: zoom · Botón derecho: desplazar", "Volar ↗", "Cargando Liget…", "No se puede cargar el parque. Recarga la página."],
 };
 const language = read("language", "hu"), labels = translations[language] ?? translations.en;
+const communityLabels = { hu: "Sportliget és parkoló", en: "Sports garden and parking", de: "Sportgarten und Parkplatz", fr: "Espace sportif et parking", es: "Zona deportiva y aparcamiento" };
 document.documentElement.lang = translations[language] ? language : "en";
-document.querySelectorAll("[data-view]").forEach((button, i) => { button.textContent = labels[i]; });
+document.querySelectorAll("[data-view]").forEach((button, i) => {
+  button.textContent = button.dataset.view === "community" ? (communityLabels[language] ?? communityLabels.en) : labels[i];
+});
 document.querySelector("#hint").textContent = labels[9];
 document.querySelector("#fly").textContent = labels[10];
 document.querySelector("#status").textContent = labels[11];
@@ -55,6 +58,7 @@ try {
     largeLake: [[15, 80, 0], [-155, 3, -130]],
     cafe: [[145, 11, -118], [110, 4, -155]],
     arcade: [[205, parkSurfaceHeight(170, -76) + 18, -43], [170, parkSurfaceHeight(170, -76) + 2, -76]],
+    community: [[-115, 78, 315], [0, 3, 216]],
   };
   function setView(name) {
     const [position, target] = views[name];

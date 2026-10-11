@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_SPORT, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { makeParkDistantTerrain, PARK_VIEW_DISTANCE, PARK_TERRAIN_RINGS } from "../web/game/park-terrain.js";
@@ -109,8 +109,8 @@ test("benches and building terraces leave the actual curved promenades clear", (
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), z = p.getZ(i);
       for (const b of PARK_BUILDINGS) {
-        const halfWidth = b.id === "boathouse" ? 10.5 : 15;
-        const halfDepth = b.id === "boathouse" ? 9 : 12.5;
+        const halfWidth = b.id === "boathouse" ? 10.5 : b.id === "cafe" ? 15 : b.width / 2;
+        const halfDepth = b.id === "boathouse" ? 9 : b.id === "cafe" ? 12.5 : b.depth / 2;
         assert.ok(Math.abs(x - b.x) >= halfWidth - 0.001 || Math.abs(z - b.z) >= halfDepth - 0.001,
           `${b.id}: the walkway must skirt the building and meet its terrace at the edge`);
       }
@@ -169,6 +169,24 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
         "paths and curbs must stop at the fence");
   }
   world.step();
+  const club = PARK_SPORT.clubhouse;
+  const clubhousePassage = world.castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z + 16 },
+    { x: 0, y: 0, z: -1 }), 32, true);
+  assert.equal(clubhousePassage, null, "the new clubhouse has an open central flight passage");
+  const clubRoof = world.castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z },
+    { x: 0, y: 1, z: 0 }), 5, true);
+  assert.ok(clubRoof && clubRoof.timeOfImpact > 2);
+  const carpark = PARK_SPORT.parking;
+  const driveway = world.castRay(new RAPIER.Ray({ x: 4, y: carpark.baseY + 1, z: carpark.z },
+    { x: 1, y: 0, z: 0 }), 78, true);
+  assert.equal(driveway, null, "driveway and parking aisle remain clear of cars and carport posts");
+  const carportRun = world.castRay(new RAPIER.Ray({ x: carpark.x - 26, y: carpark.baseY + 2.1, z: carpark.z - 16 },
+    { x: 1, y: 0, z: 0 }), 52, true);
+  assert.equal(carportRun, null, "the space above parked cars and below the canopy is flyable");
+  const court = PARK_SPORT.court;
+  const courtFloor = world.castRay(new RAPIER.Ray({ x: court.x + 4, y: court.baseY + 2, z: court.z },
+    { x: 0, y: -1, z: 0 }), 4, true);
+  assert.ok(courtFloor && Math.abs(courtFloor.timeOfImpact - 1.863) < 0.001, "court surface has matching collision");
   const bridgeGap = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 160 }, { x: 0, y: 0, z: 1 }), 30, true);
   assert.equal(bridgeGap, null, "the bridge must have a flyable passage below its deck");
   const bridgeDeck = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 175 }, { x: 0, y: 1, z: 0 }), 3, true);

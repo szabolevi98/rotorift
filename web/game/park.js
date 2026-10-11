@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { buildParkLandmarks } from "./park-landmarks.js";
+import { buildParkCommunity } from "./park-community.js";
 import { appendTerrainVertex, makeParkDistantTerrain } from "./park-terrain.js";
 import {
   PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
@@ -375,6 +376,7 @@ export function buildPark(scene, world, RAPIER, map) {
     }
   }
   const landmarks = buildParkLandmarks({ root, world, RAPIER, part, palette, geometry, material, materials, textures });
+  buildParkCommunity({ root, world, RAPIER, part, palette, geometry, material, materials, textures });
   // Fence is deliberately permeable. It marks the play area without becoming
   // an invisible wall; only the bare terrain continues across it.
   const half = map.size / 2;

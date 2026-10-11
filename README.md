@@ -35,6 +35,8 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 - Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
   sűrűbb facsoportokkal, tóparti fákkal és fasorral, nyílt freestyle térrel, két tóval és animált szökőkúttal.
   Csónakház, móló, híd, kávézó, fedett sétány és dombtetői pavilon ad repülhető részleteket.
+  A déli Sportligetben átjárható klubház és terasz, kosárpálya, valamint két sor fedett
+  parkoló és öt autó található; a fő sétányt szabadon hagyó saját bekötésekkel.
   A Liget időmérője és checkpointjai az elrendezés véglegesítéséig kikapcsolva.
   Betonudvar: félkész építkezés, saját kapus útvonallal.
 - A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 10 perces visszaszámlálás

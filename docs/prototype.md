@@ -28,12 +28,17 @@ A park 700 × 700 méteres. A két épületszárnyat az emelet köti össze, ala
 széles, 4,2 méter magas, mindkét végén nyitott sétány vezet át. A központi sétányhoz
 kövezett és kavicsos utak, körsétány, padok, kerti pergola, piknikasztalok, ültetőládák
 és lámpák kapcsolódnak. A fák tudatosan kijelölt ligetekben állnak, a központi tér
-és a déli freestyle rét nyitott. Északnyugaton kb. 172 × 120 méteres, szabálytalan partú
+és a déli közösségi rész körüli gyep nyitott. Északnyugaton kb. 172 × 120 méteres, szabálytalan partú
 nagy tó található animált szökőkúttal, csónakházzal és mólóval. A délkeleti kisebb tó
 kb. 88 × 62 méteres, felette gyalogoshíd vezet át, a híd alatt is lehet repülni.
 Kávézó nyitott, fedett terasszal, oszlopsoros árnyékolt sétány és dombtetői pavilon
 ad további repülhető részeket. Az épületek alapjaihoz a talaj igazodik.
 A terep, a látható utak, a hidak és az építmények külön ütközési felülettel rendelkeznek.
+Az eredetileg üres déli részen Sportliget áll: nyugatra két oldalsó kiszolgáló szárnyas,
+8 m széles középső átjárós klubház, fedett terasz és kosárpálya; keletre 54 × 46 m-es
+parkoló, két sor nyitott autóbeállóval és öt autóval. Külön sétányok kötik össze a
+részeket, a fő sétány szabad marad. A felületek alatt a domborzat vízszintesre igazodik.
+A pályanézet külön Sportliget nézetet tartalmaz mind az öt nyelven.
 A talaj mélységkezelése távolról is stabil, az utak teljes felülete követi a terepháromszögeket.
 
 A kerítés átjárható határjelzés. Kívül kizárólag a talaj folytatódik, növényzet,
