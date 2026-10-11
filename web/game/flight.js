@@ -6,6 +6,7 @@ import { loadModel } from "./models.js";
 import { DroneCameraRig } from "./camera-rig.js";
 import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
+import { ParkShadows } from "./park-shadows.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -50,10 +51,12 @@ export class Flight {
   }
   async load(map, config, rates, mode) {
     this.active = false;
+    this.parkShadows?.dispose();
+    this.parkShadows = null;
     this.environment?.dispose();
     this.world?.free();
-    if (this.visual) this.scene.remove(this.visual);
-    for (const o of this.remotes.values()) this.scene.remove(o.model);
+    this.removeModel(this.visual);
+    for (const o of this.remotes.values()) this.removeModel(o.model);
     this.remotes.clear();
     this.remoteVersion++;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
@@ -67,6 +70,7 @@ export class Flight {
     this.scene.fog = map.kind === "park"
       ? new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY)
       : new THREE.Fog(0xc9dedc, 60, 190);
+    this.sun.visible = map.kind !== "park";
     if (map.kind !== "park") {
       this.sun.position.set(-35, 60, 25);
       this.sun.target.position.set(0, 0, 0);
@@ -77,7 +81,7 @@ export class Flight {
     this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn);
     this.physics.rates = rates;
     this.physics.mode = mode;
-    this.visual = await loadModel(config);
+    this.visual = await loadModel(config, { isolateMaterials: true });
     this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);
     this.props = [];
@@ -88,6 +92,7 @@ export class Flight {
     this.previous = this.physics.pose;
     this.current = this.physics.pose;
     this.place(this.current, 1);
+    if (map.kind === "park") this.parkShadows = new ParkShadows(this.scene, this.camera);
     this.active = true;
   }
   reset(position = this.map.spawn) {
@@ -161,9 +166,11 @@ export class Flight {
       const version = this.remoteVersion;
       remote = { model: null, target: player };
       this.remotes.set(player.id, remote);
-      const model = await loadModel(this.config);
-      if (version !== this.remoteVersion || !this.remotes.has(player.id))
+      const model = await loadModel(this.config, { isolateMaterials: true });
+      if (version !== this.remoteVersion || !this.remotes.has(player.id)) {
+        this.removeModel(model);
         return;
+      }
       remote.model = model;
       this.scene.add(model);
     }
@@ -173,21 +180,24 @@ export class Flight {
     const ids = new Set(players.filter((p) => p.id !== ownId).map((p) => p.id));
     for (const [id, r] of this.remotes)
       if (!ids.has(id)) {
-        if (r.model) this.scene.remove(r.model);
+        this.removeModel(r.model);
         this.remotes.delete(id);
       }
     for (const p of players)
       if (p.id !== ownId && p.p && p.q) this.remote(p).catch(() => {});
   }
+  removeModel(model) {
+    if (!model) return;
+    this.scene.remove(model);
+    this.parkShadows?.releaseModel(model);
+    const materials = new Set();
+    model.traverse((object) => {
+      if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) materials.add(material);
+    });
+    // These are instance-owned materials; the cached geometries stay reusable.
+    for (const material of materials) material.dispose();
+  }
   render(dt) {
-    if (this.current && this.map.kind === "park") {
-      const p = this.current.p;
-      this.sun.position.set(p[0] - 35, p[1] + 75, p[2] + 25);
-      this.sun.target.position.set(...p);
-      this.sun.target.updateMatrixWorld();
-      Object.assign(this.sun.shadow.camera, { left: -35, right: 35, top: 35, bottom: -35, far: 180 });
-      this.sun.shadow.camera.updateProjectionMatrix();
-    }
     const w = innerWidth,
       h = innerHeight;
     if (
@@ -214,6 +224,7 @@ export class Flight {
       r.model.position.lerp(p, 1 - Math.exp(-dt * 18));
       r.model.quaternion.slerp(q, 1 - Math.exp(-dt * 18));
     }
+    this.parkShadows?.update();
     this.renderer.render(this.scene, this.camera);
   }
   startSound() {

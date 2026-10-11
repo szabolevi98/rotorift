@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 const cache = new Map(),
   loader = new GLTFLoader();
-export async function loadModel(config) {
+export async function loadModel(config, { isolateMaterials = false } = {}) {
   if (!cache.has(config.id))
     cache.set(
       config.id,
@@ -109,5 +109,18 @@ export async function loadModel(config) {
         return root;
       }),
     );
-  return (await cache.get(config.id)).clone();
+  const model = (await cache.get(config.id)).clone();
+  if (isolateMaterials) {
+    // Flight lighting hooks must not change the cached menu/showcase materials.
+    const copies = new Map();
+    const copy = (material) => {
+      if (!copies.has(material)) copies.set(material, material.clone());
+      return copies.get(material);
+    };
+    model.traverse((object) => {
+      if (object.isMesh) object.material = Array.isArray(object.material)
+        ? object.material.map(copy) : copy(object.material);
+    });
+  }
+  return model;
 }

@@ -51,6 +51,14 @@ világkoordinátás textúrát használja; a részletességi szintek élei egyez
 A közeli 9 terület terepe és fái aktívak a fizikában; a távoli talajnak nincsenek
 objektumai és ütközési felületei. Az elhagyott részletes területek felszabadulnak.
 
+A Liget napárnyékai négy, egyenként 2048 × 2048 felbontású távolsági tartományt
+használnak (60 / 200 / 600 / 1600 m). Az árnyéktérképek a kamera látóterét követik,
+magasból is lefedik a parkot, a tartományok között és a távoli határnál átmenettel.
+A látószög vagy képarány változásakor újraszámolódnak; a fényirány állandó.
+Ugyanez az árnyékolás működik a pályanézetben. A betöltött növények és online drónok
+is megkapják; pályaváltáskor az árnyéktérképek és az anyagokhoz rendelt módosítások
+felszabadulnak. A külön modell-előnézet saját anyagai megmaradnak.
+
 Kilépés után a HUD 10 percről számol vissza, aktív játékidő szerint. Visszatéréskor
 törlődik, menü alatt megáll; lejáratkor disarmolt visszaállítás következik.
 Online a szerver méri az időt, és elég nagy mozgástartományt enged a külső repüléshez.
@@ -81,6 +89,8 @@ Az `npm test` a következőket ellenőrzi:
   híd alatti átjáró és nyitott kávézóterasz; ideiglenesen tiltott versenyszobák.
 - Az utak tényleges ívéhez igazított, kifelé elhelyezett padok külön kavicsos pihenőöblökkel; a horgászházat és a kávézót megkerülő sétányok, külön bekötőutak és útról áthelyezett piknikpergola. A lámpák a kereszteződéseket és a központi épületet szabadon hagyják.
 - Távoli talaj fedése 100, 500 és 2000 m magasságból, illeszkedő részletességi szintek és korlátos geometria.
+- Árnyékok talaj- és lombkorona-lefedése 100–1000 m magasságból; 52–140° látószög
+  és fekvő/álló képarány; új anyagok árnyékolása és erőforrások felszabadítása.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
 

@@ -5,6 +5,7 @@ import { buildEnvironment } from "./environment.js";
 import { parkSurfaceHeight, PARK_GARDEN } from "../../shared/world/park-layout.js";
 import { read } from "../storage.js";
 import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
+import { ParkShadows } from "./park-shadows.js";
 
 const translations = {
   hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Kis tó és híd", "Dombtetői pavilon", "Kerítés és külső táj", "Nagy tó és szökőkút", "Kávézó és terasz", "Fedett sétány", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
@@ -37,14 +38,11 @@ try {
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd4df);
   scene.fog = new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY);
   scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));
-  const sun = new THREE.DirectionalLight(0xfff0d5, 3); sun.position.set(-90, 150, 80);
-  sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-  Object.assign(sun.shadow.camera, { left: -100, right: 100, top: 100, bottom: -100, near: 1, far: 400 });
-  sun.shadow.bias = -0.0003; scene.add(sun);
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const environment = buildEnvironment(scene, world, RAPIER, map);
   environment.highlight(0, false);
   const camera = new THREE.PerspectiveCamera(52, 1, 0.1, PARK_VIEW_DISTANCE);
+  const shadows = new ParkShadows(scene, camera);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   controls.minDistance = 3; controls.maxDistance = 900;
@@ -64,8 +62,6 @@ try {
     const [position, target] = views[name];
     camera.position.set(...position); controls.target.set(...target); controls.update();
     environment.update(target);
-    sun.target.position.set(...target); sun.target.updateMatrixWorld();
-    sun.position.set(target[0] - 90, target[1] + 150, target[2] + 80);
   }
   for (const button of document.querySelectorAll("[data-view]"))
     button.onclick = () => setView(button.dataset.view);
@@ -77,6 +73,7 @@ try {
       renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
     }
     controls.update(); environment.update(controls.target.toArray());
+    shadows.update();
     renderer.render(scene, camera); requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
