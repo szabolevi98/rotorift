@@ -39,9 +39,12 @@ A talaj mélységkezelése távolról is stabil, az utak teljes felülete követ
 A kerítés átjárható határjelzés. Kívül kizárólag a talaj folytatódik, növényzet,
 utak vagy egyéb objektumok nélkül. A terep a kerítésen túl is újabb
 128 méteres területekkel töltődik tovább: a drón körül egyszerre 49 terület marad
-betöltve. A közeli 9 terület terepe és fái aktívak a fizikában; a többi távoli látványelem.
-Az elhagyott területek geometriája és ütközési felülete felszabadul.
-A távoli háttér a horizont felé ködbe olvad, nincs látható pályavégi szakadék.
+betöltve. Ettől külön, hat egyszerűsödő terepgyűrű biztosítja a távoli talajt,
+kb. 28,7 km sugarú területen. Ugyanazt a magasságfüggvényt, anyagot, színezést és
+világkoordinátás textúrát használja; a részletességi szintek élei egyeznek,
+átfedő síkok és rések nélkül. A látótávolság 12 km, a horizont fokozatosan ködbe olvad.
+A közeli 9 terület terepe és fái aktívak a fizikában; a távoli talajnak nincsenek
+objektumai és ütközési felületei. Az elhagyott részletes területek felszabadulnak.
 
 Kilépés után a HUD 10 percről számol vissza, aktív játékidő szerint. Visszatéréskor
 törlődik, menü alatt megáll; lejáratkor disarmolt visszaállítás következik.
@@ -70,8 +73,9 @@ Az `npm test` a következőket ellenőrzi:
 - Liget domborzata, pontos területillesztések és a terep ütközési magassága;
   szabad épületátjáró, járható sétány, átjárható kerítés és korlátos területbetöltés.
 - Két külön tómeder, épületek vízszintes alapjai, sűrűbb facsoportok, tóparti fák, fasor és nyitott freestyle rét;
-- Az utak tényleges ívéhez igazított, kifelé elhelyezett padok külön kavicsos pihenőöblökkel; a horgászházat és a kávézót megkerülő sétányok, külön bekötőutak és útról áthelyezett piknikpergola. A lámpák a kereszteződéseket és a központi épületet szabadon hagyják.
   híd alatti átjáró és nyitott kávézóterasz; ideiglenesen tiltott versenyszobák.
+- Az utak tényleges ívéhez igazított, kifelé elhelyezett padok külön kavicsos pihenőöblökkel; a horgászházat és a kávézót megkerülő sétányok, külön bekötőutak és útról áthelyezett piknikpergola. A lámpák a kereszteződéseket és a központi épületet szabadon hagyják.
+- Távoli talaj fedése 100, 500 és 2000 m magasságból, illeszkedő részletességi szintek és korlátos geometria.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
 

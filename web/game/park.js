@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { buildParkLandmarks } from "./park-landmarks.js";
+import { appendTerrainVertex, makeParkDistantTerrain } from "./park-terrain.js";
 import {
   PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
   PARK_BENCHES, PARK_GARDEN, sampleParkPath, pathClearance,
-  parkHeight, parkSurfaceHeight, parkClearance, chunkRandom, lakeOutline,
+  parkSurfaceHeight, parkClearance, chunkRandom, lakeOutline,
 } from "../../shared/world/park-layout.js";
 
 function groundTexture(kind) {
@@ -63,16 +64,10 @@ function treeTexture(bark = false) {
 export function makeParkTerrain(cx, cz) {
   const count = PARK_GRID_STEPS + 1, step = PARK_CHUNK_SIZE / PARK_GRID_STEPS;
   const positions = [], normals = [], colors = [], uv = [], indices = [];
+  const buffers = { positions, normals, colors, uv };
   for (let z = 0; z < count; z++) for (let x = 0; x < count; x++) {
     const wx = cx * PARK_CHUNK_SIZE + x * step, wz = cz * PARK_CHUNK_SIZE + z * step;
-    const h = parkHeight(wx, wz);
-    positions.push(wx, h, wz);
-    const normal = new THREE.Vector3(parkHeight(wx - 0.5, wz) - parkHeight(wx + 0.5, wz), 1,
-      parkHeight(wx, wz - 0.5) - parkHeight(wx, wz + 0.5)).normalize();
-    normals.push(...normal.toArray());
-    const tone = 0.92 + Math.sin(wx * 0.07 + wz * 0.03) * 0.05 + Math.cos(wz * 0.05) * 0.035;
-    colors.push(tone * 0.28, tone * 0.4, tone * 0.18);
-    uv.push(wx / 4, wz / 4);
+    appendTerrainVertex(buffers, wx, wz);
     if (x < count - 1 && z < count - 1) {
       const a = z * count + x, b = a + 1, c = a + count, d = c + 1;
       indices.push(a, c, b, b, c, d);
@@ -425,11 +420,11 @@ export function buildPark(scene, world, RAPIER, map) {
   }
   tuftGeometry.setAttribute("position", new THREE.Float32BufferAttribute(tuftVertices, 3)); tuftGeometry.computeVertexNormals();
   palette.tuft.side = THREE.DoubleSide;
-  const horizon = new THREE.Mesh(geometry(new THREE.PlaneGeometry(60000, 60000)), material(0x8f9b73));
-  // Draw distant fill first, without writing depth beneath actual ground.
-  horizon.renderOrder = -100;
-  horizon.material.depthWrite = false;
-  horizon.rotation.x = -Math.PI / 2; horizon.position.y = -5; root.add(horizon);
+  // Bare terrain extends far beyond the detailed chunks, without objects or
+  // distant physics. Its inner boundary is stitched to the 7 × 7 near chunks.
+  const distantTerrain = new THREE.Mesh(new THREE.BufferGeometry(), palette.grass);
+  distantTerrain.name = "park-distant-terrain";
+  distantTerrain.receiveShadow = true; root.add(distantTerrain);
   let centerKey = "", center = null;
   function createChunk(cx, cz) {
     const group = new THREE.Group(), colliderHandles = [], colliderDescs = [], rng = chunkRandom(cx, cz);
@@ -516,10 +511,11 @@ export function buildPark(scene, world, RAPIER, map) {
     const cx = keepX ? center.cx : Math.floor(position[0] / PARK_CHUNK_SIZE);
     const cz = keepZ ? center.cz : Math.floor(position[2] / PARK_CHUNK_SIZE);
     const key = `${cx}:${cz}`;
-    horizon.position.x = position[0]; horizon.position.z = position[2];
     if (centerKey === key) return;
     centerKey = key;
     center = { cx, cz };
+    distantTerrain.geometry.dispose();
+    distantTerrain.geometry = makeParkDistantTerrain(cx, cz);
     const wanted = new Set();
     for (let x = cx - 3; x <= cx + 3; x++) for (let z = cz - 3; z <= cz + 3; z++) {
       const id = `${x}:${z}`; wanted.add(id);
@@ -542,6 +538,7 @@ export function buildPark(scene, world, RAPIER, map) {
     dispose() {
       for (const chunk of chunks.values()) removeChunk(chunk);
       chunks.clear();
+      distantTerrain.geometry.dispose();
       root.traverse((o) => { if (o.isInstancedMesh) o.dispose(); });
       for (const g of geometries) g.dispose();
       for (const m of materials) m.dispose();

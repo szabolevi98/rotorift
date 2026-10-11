@@ -39,6 +39,8 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
   Betonudvar: félkész építkezés, saját kapus útvonallal.
 - A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 10 perces visszaszámlálás
   indul; visszatéréskor törlődik, lejáratkor a drón visszaáll a rajthelyre.
+  Külön, fokozatosan egyszerűsödő távoli domborzat tölti ki a horizontot; a közeli
+  objektumok és ütközések ettől függetlenül töltődnek be. A látótávolság 12 km.
   Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
 - Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.
 - Helyi szabad repülés és időmérő, elkülönített helyi rekorddal.

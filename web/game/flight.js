@@ -5,6 +5,7 @@ import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
 import { DroneCameraRig } from "./camera-rig.js";
 import { MapBoundary } from "/shared/world/boundary.js";
+import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -60,11 +61,11 @@ export class Flight {
     this.config = config;
     this.map = map;
     this.boundary = new MapBoundary(map);
-    this.camera.far = map.kind === "park" ? 2200 : 350;
+    this.camera.far = map.kind === "park" ? PARK_VIEW_DISTANCE : 350;
     this.camera.updateProjectionMatrix();
     this.scene.background.setHex(map.kind === "park" ? 0xbcd4df : 0xc9dedc);
     this.scene.fog = map.kind === "park"
-      ? new THREE.FogExp2(0xbcd4df, 0.0026)
+      ? new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY)
       : new THREE.Fog(0xc9dedc, 60, 190);
     if (map.kind !== "park") {
       this.sun.position.set(-35, 60, 25);

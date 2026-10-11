@@ -6,6 +6,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
+import { makeParkDistantTerrain, PARK_VIEW_DISTANCE, PARK_TERRAIN_RINGS } from "../web/game/park-terrain.js";
 import { DronePhysics } from "../shared/physics/drone.js";
 const map = JSON.parse(await readFile(new URL("../data/maps/liget.json", import.meta.url)));
 await RAPIER.init();
@@ -36,6 +37,43 @@ test("terrain seams match exactly and physical ground follows the visible triang
     assert.ok(Math.abs(40 - hit.timeOfImpact - parkSurfaceHeight(x, z)) < 0.0001);
   }
   a.dispose(); b.dispose(); world.free();
+});
+
+test("distant terrain is stitched, covers high-altitude views and has bounded geometry", () => {
+  const geometry = makeParkDistantTerrain(0, 0), p = geometry.attributes.position;
+  assert.ok(geometry.index.count / 3 < 45000, "distant ground must remain cheaper than detailed terrain");
+  const inner = 448, center = 64, edges = new Map();
+  const vertexKey = (i) => `${p.getX(i)},${p.getZ(i)}`;
+  for (let i = 0; i < geometry.index.count; i += 3) for (let j = 0; j < 3; j++) {
+    const a = vertexKey(geometry.index.getX(i + j)), b = vertexKey(geometry.index.getX(i + (j + 1) % 3));
+    const key = [a, b].sort().join("|"); edges.set(key, (edges.get(key) ?? 0) + 1);
+  }
+  for (const [key, count] of edges) {
+    if (count === 2) continue;
+    const [a, b] = key.split("|").map((s) => s.split(",").map(Number));
+    const outer = PARK_TERRAIN_RINGS.at(-1).outer;
+    const boundary = [inner, outer].some((radius) => [0, 1].some((axis) =>
+      a[axis] === b[axis] && Math.abs(a[axis] - center) === radius));
+    assert.ok(count === 1 && boundary, "LOD rings must have no cracks or unmatched internal edges");
+  }
+  for (const axis of [0, 1]) for (const side of [-1, 1]) {
+    const points = new Set();
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i), values = [x, z];
+      if (values[axis] === center + side * inner && Math.abs(values[1 - axis] - center) <= inner) {
+        points.add(values[1 - axis]);
+        assert.equal(p.getY(i), Math.fround(parkHeight(x, z)), "inner seam matches detailed terrain heights");
+      }
+    }
+    assert.equal(points.size, inner * 2 / (PARK_CHUNK_SIZE / PARK_GRID_STEPS) + 1);
+  }
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial()); mesh.updateMatrixWorld(true);
+  for (const altitude of [100, 500, 2000]) for (const [x, z] of [[520, 20], [900, 300], [-1700, 230], [5000, -2400], [10000, 2000]]) {
+    const ray = new THREE.Raycaster(new THREE.Vector3(x, altitude, z), new THREE.Vector3(0, -1, 0));
+    assert.ok(ray.intersectObject(mesh).length, `ground must exist beyond streamed chunks at ${altitude} m altitude`);
+  }
+  assert.ok(PARK_TERRAIN_RINGS.at(-1).outer > PARK_VIEW_DISTANCE);
+  geometry.dispose(); mesh.material.dispose();
 });
 
 test("path interiors follow terrain triangles without sinking into hills", () => {

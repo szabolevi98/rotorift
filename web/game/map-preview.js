@@ -4,6 +4,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { buildEnvironment } from "./environment.js";
 import { parkSurfaceHeight, PARK_GARDEN } from "../../shared/world/park-layout.js";
 import { read } from "../storage.js";
+import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
 
 const translations = {
   hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Kis tó és híd", "Dombtetői pavilon", "Kerítés és külső táj", "Nagy tó és szökőkút", "Kávézó és terasz", "Fedett sétány", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
@@ -31,7 +32,7 @@ try {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd4df);
-  scene.fog = new THREE.FogExp2(0xbcd4df, 0.0011);
+  scene.fog = new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY);
   scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));
   const sun = new THREE.DirectionalLight(0xfff0d5, 3); sun.position.set(-90, 150, 80);
   sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
@@ -40,7 +41,7 @@ try {
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const environment = buildEnvironment(scene, world, RAPIER, map);
   environment.highlight(0, false);
-  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 2500);
+  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, PARK_VIEW_DISTANCE);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   controls.minDistance = 3; controls.maxDistance = 900;
