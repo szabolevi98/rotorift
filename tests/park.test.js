@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, PARK_CHUNK_SIZE, PARK_GRID_STEPS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
-import { makeParkTerrain, buildPark } from "../web/game/park.js";
+import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { DronePhysics } from "../shared/physics/drone.js";
 const map = JSON.parse(await readFile(new URL("../data/maps/liget.json", import.meta.url)));
 await RAPIER.init();
@@ -38,6 +38,24 @@ test("terrain seams match exactly and physical ground follows the visible triang
   a.dispose(); b.dispose(); world.free();
 });
 
+test("path interiors follow terrain triangles without sinking into hills", () => {
+  for (const path of PARK_PATHS) {
+    const mesh = ribbon(path.points, path.width), p = mesh.attributes.position;
+    for (let i = 0; i < mesh.index.count; i += 3) {
+      for (const weights of [[1 / 3, 1 / 3, 1 / 3], [0.1, 0.7, 0.2]]) {
+        const sample = new THREE.Vector3();
+        for (let j = 0; j < 3; j++) {
+          const index = mesh.index.getX(i + j);
+          sample.addScaledVector(new THREE.Vector3(p.getX(index), p.getY(index), p.getZ(index)), weights[j]);
+        }
+        assert.ok(Math.abs(sample.y - parkSurfaceHeight(sample.x, sample.z) - 0.065) < 0.0001,
+          "the full triangle must have the same clearance as its vertices");
+      }
+    }
+    mesh.dispose();
+  }
+});
+
 test("the pavilion passage is flyable and the streamed landscape has no fence wall or leaking chunks", async () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const park = buildPark(scene, world, RAPIER, map);
@@ -56,6 +74,13 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
     }
   };
   assertObjectsInsideFence();
+  park.root.updateMatrixWorld(true);
+  for (const x of [-25, 25]) for (const z of [-25, 25]) {
+    const ray = new THREE.Raycaster(new THREE.Vector3(x + 1.5, 2, z + 3), new THREE.Vector3(0, -1, 0));
+    const hits = ray.intersectObjects(park.root.children, true);
+    assert.ok(Math.abs(hits[0].point.y - 0.5) < 0.00001,
+      "planter soil must be exposed below the concrete rim, without an overlapping concrete top");
+  }
   for (const mesh of park.root.children.filter((o) => ["park-path", "park-curb"].includes(o.name))) {
     const p = mesh.geometry.attributes.position;
     for (let i = 0; i < p.count; i++)

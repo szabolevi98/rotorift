@@ -8,7 +8,7 @@ import { MapBoundary } from "/shared/world/boundary.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;

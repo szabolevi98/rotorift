@@ -106,21 +106,64 @@ function crownGeometry(pine = false) {
   return merged;
 }
 
-function ribbon(points, width, lateral = 0, lift = 0.065) {
+function clipPolygon(polygon, distance) {
+  const result = [];
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i], b = polygon[(i + 1) % polygon.length];
+    const da = distance(a), db = distance(b);
+    if (da >= 0) result.push(a);
+    if ((da >= 0) !== (db >= 0)) {
+      const t = da / (da - db);
+      result.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+    }
+  }
+  return result;
+}
+
+export function ribbon(points, width, lateral = 0, lift = 0.065) {
   const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, 0, z)));
   const steps = Math.max(2, Math.ceil(curve.getLength() / 2));
-  const positions = [], uv = [], indices = [];
+  const edges = [], positions = [], uv = [], indices = [];
   for (let i = 0; i <= steps; i++) {
     const p = curve.getPoint(i / steps), tangent = curve.getTangent(i / steps);
     for (const side of [-1, 1]) {
       const offset = lateral + side * width / 2;
       const x = p.x - tangent.z * offset, z = p.z + tangent.x * offset;
-      positions.push(x, parkSurfaceHeight(x, z) + lift, z);
-      uv.push(x / 2, z / 2);
+      edges.push([x, z]);
     }
-    if (i < steps) {
-      const a = i * 2;
-      indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  // Split the path at every ground-triangle edge. Interpolating only its two
+  // outer edges makes a wide path slice through hills between those edges.
+  const cell = PARK_CHUNK_SIZE / PARK_GRID_STEPS;
+  const emit = (polygon) => {
+    for (let i = 1; i < polygon.length - 1; i++) {
+      const tri = [polygon[0], polygon[i], polygon[i + 1]];
+      const [a, b, c] = tri;
+      if (Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) < 1e-8) continue;
+      for (const [x, z] of tri) {
+        indices.push(positions.length / 3);
+        positions.push(x, parkSurfaceHeight(x, z) + lift, z);
+        uv.push(x / 2, z / 2);
+      }
+    }
+  };
+  for (let i = 0; i < steps; i++) {
+    const a = i * 2;
+    for (const tri of [[edges[a], edges[a + 1], edges[a + 2]], [edges[a + 1], edges[a + 3], edges[a + 2]]]) {
+      const minX = Math.floor(Math.min(...tri.map((p) => p[0])) / cell);
+      const maxX = Math.floor(Math.max(...tri.map((p) => p[0])) / cell);
+      const minZ = Math.floor(Math.min(...tri.map((p) => p[1])) / cell);
+      const maxZ = Math.floor(Math.max(...tri.map((p) => p[1])) / cell);
+      for (let ix = minX; ix <= maxX; ix++) for (let iz = minZ; iz <= maxZ; iz++) {
+        const x = ix * cell, z = iz * cell;
+        let polygon = clipPolygon(tri, (p) => p[0] - x);
+        polygon = clipPolygon(polygon, (p) => x + cell - p[0]);
+        polygon = clipPolygon(polygon, (p) => p[1] - z);
+        polygon = clipPolygon(polygon, (p) => z + cell - p[1]);
+        const diagonal = x + z + cell;
+        emit(clipPolygon(polygon, (p) => diagonal - p[0] - p[1]));
+        emit(clipPolygon(polygon, (p) => p[0] + p[1] - diagonal));
+      }
     }
   }
   const g = new THREE.BufferGeometry();
@@ -217,15 +260,17 @@ export function buildPark(scene, world, RAPIER, map) {
     part([3, 0.18, 0.33], [21, (i + 1) * 0.18, 14 - i * 0.33], palette.concrete);
   bench(-10, 19, Math.PI); bench(10, 19, Math.PI);
   // Curving promenades, gravel trails, and narrow stone edging.
-  for (const path of PARK_PATHS) {
-    const mesh = new THREE.Mesh(geometry(ribbon(path.points, path.width)), path.paving ? palette.paving : palette.gravel);
+  for (const [i, path] of PARK_PATHS.entries()) {
+    // Separate crossing surfaces physically; paving stays above gravel.
+    const lift = path.paving ? 0.065 : 0.025 + i * 0.004;
+    const mesh = new THREE.Mesh(geometry(ribbon(path.points, path.width, 0, lift)), path.paving ? palette.paving : palette.gravel);
     mesh.name = "park-path";
     mesh.receiveShadow = true; root.add(mesh);
     world.createCollider(RAPIER.ColliderDesc.trimesh(
       mesh.geometry.attributes.position.array, new Uint32Array(mesh.geometry.index.array),
     ).setFriction(0.9));
     if (path.width >= 4) for (const side of [-1, 1]) {
-      const curb = new THREE.Mesh(geometry(ribbon(path.points, 0.16, side * (path.width / 2 + 0.08), 0.11)), palette.curb);
+      const curb = new THREE.Mesh(geometry(ribbon(path.points, 0.16, side * (path.width / 2 + 0.08), 0.11 + i * 0.004)), palette.curb);
       curb.name = "park-curb";
       curb.receiveShadow = true; root.add(curb);
     }
@@ -253,8 +298,14 @@ export function buildPark(scene, world, RAPIER, map) {
   }
   // Low planters and regularly spaced promenade lights give scale close up.
   for (const x of [-25, 25]) for (const z of [-25, 25]) {
-    part([4.6, 0.55, 8], [x, parkSurfaceHeight(x, z) + 0.275, z], palette.concrete);
-    part([4.1, 0.1, 7.5], [x, parkSurfaceHeight(x, z) + 0.5, z], palette.dark, false);
+    const y = parkSurfaceHeight(x, z);
+    part([4.6, 0.12, 8], [x, y + 0.06, z], palette.concrete);
+    for (const side of [-1, 1]) {
+      part([0.18, 0.55, 8], [x + side * 2.21, y + 0.275, z], palette.concrete);
+      part([4.24, 0.55, 0.18], [x, y + 0.275, z + side * 3.91], palette.concrete);
+    }
+    // Soil fills the open container, five cm below its rim.
+    part([4.24, 0.38, 7.64], [x, y + 0.31, z], palette.dark, false);
     for (let i = 0; i < 7; i++)
       part([0.9, 0.58, 0.82], [x + Math.sin(i) * 0.28, parkSurfaceHeight(x, z) + 1.05, z - 3 + i], palette.bush, false, i, "bush");
   }
@@ -269,19 +320,24 @@ export function buildPark(scene, world, RAPIER, map) {
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { time: { value: 0 } }]),
     vertexShader: `
       varying vec3 waterPosition;
+      #include <common>
+      #include <logdepthbuf_pars_vertex>
       #include <fog_pars_vertex>
       void main() {
         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
         waterPosition = worldPosition.xyz;
         vec4 mvPosition = viewMatrix * worldPosition;
         gl_Position = projectionMatrix * mvPosition;
+        #include <logdepthbuf_vertex>
         #include <fog_vertex>
       }`,
     fragmentShader: `
       uniform float time;
       varying vec3 waterPosition;
+      #include <logdepthbuf_pars_fragment>
       #include <fog_pars_fragment>
       void main() {
+        #include <logdepthbuf_fragment>
         float a = waterPosition.x * 2.1 + waterPosition.z * 0.8 + time * 0.7;
         float b = waterPosition.z * 3.3 - waterPosition.x * 0.5 - time * 0.5;
         vec3 normal = normalize(vec3(cos(a) * 0.018, 1.0, sin(b) * 0.011));
@@ -358,6 +414,9 @@ export function buildPark(scene, world, RAPIER, map) {
   tuftGeometry.setAttribute("position", new THREE.Float32BufferAttribute(tuftVertices, 3)); tuftGeometry.computeVertexNormals();
   palette.tuft.side = THREE.DoubleSide;
   const horizon = new THREE.Mesh(geometry(new THREE.PlaneGeometry(60000, 60000)), material(0x8f9b73));
+  // Draw distant fill first, without writing depth beneath actual ground.
+  horizon.renderOrder = -100;
+  horizon.material.depthWrite = false;
   horizon.rotation.x = -Math.PI / 2; horizon.position.y = -5; root.add(horizon);
   let centerKey = "", center = null;
   function createChunk(cx, cz) {

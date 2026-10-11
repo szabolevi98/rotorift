@@ -26,7 +26,7 @@ try {
   await RAPIER.init();
   const { maps } = await (await fetch("/api/catalog")).json();
   const map = maps.find((m) => m.id === "liget");
-  const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("#scene"), antialias: true });
+  const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("#scene"), antialias: true, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
