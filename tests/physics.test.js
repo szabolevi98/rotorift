@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { loadCatalog } from "../server/catalog.js";
 import { DronePhysics, PHYSICS_DT } from "../shared/physics/drone.js";
+import { hoverThrottle, throttleToThrust, motorThrustLimit } from "../shared/physics/propulsion.js";
+import { rotate, inverse } from "../shared/physics/math.js";
+import { actualRate } from "../shared/physics/rates.js";
 await RAPIER.init();
 const { drones } = await loadCatalog();
 const neutral = { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
@@ -11,6 +14,56 @@ function fixture(config) {
   return { world, drone: new DronePhysics(RAPIER, world, config, [0, 10, 0]) };
 }
 for (const config of drones) {
+  test(config.id + ": 27–30% hover curve preserves full motor power and 30% lifts from the ground", () => {
+    const hover = hoverThrottle(config);
+    assert.ok(hover >= 0.27 && hover <= 0.30, `${config.id}: ${hover}`);
+    assert.equal(throttleToThrust(0, config), 0);
+    assert.equal(throttleToThrust(1, config), motorThrustLimit(config));
+    const lowerVoltage = structuredClone(config);
+    lowerVoltage.battery.nominalVoltage *= 0.9;
+    assert.ok(hoverThrottle(lowerVoltage) > hover);
+    for (const throttle of [0.26, 0.30]) {
+      const { world, drone } = fixture(config);
+      try {
+        world.createCollider(RAPIER.ColliderDesc.cuboid(100, 0.5, 100).setTranslation(0, -0.5, 0));
+        drone.reset([0, 0.04, 0]);
+        for (let i = 0; i < 120; i++) drone.step(neutral);
+        drone.armed = true;
+        for (let i = 0; i < 480; i++) drone.step({ ...neutral, throttle });
+        if (throttle === 0.26) assert.ok(drone.pose.p[1] < 0.1, "below hover stays grounded");
+        else assert.ok(drone.pose.p[1] > 0.8, "30% must take off");
+      } finally { world.free(); }
+    }
+  });
+  test(config.id + ": full Acro roll and pitch follow configured rates, flip in under 0.7 s and brake on release", () => {
+    for (const [axis, index] of [["roll", 2], ["pitch", 0]]) {
+      const { world, drone } = fixture(config);
+      try {
+        drone.armed = true;
+        const input = { ...neutral, throttle: hoverThrottle(config) };
+        for (let i = 0; i < 120; i++) drone.step(input);
+        const target = actualRate(1, drone.rates[axis]);
+        let angle = 0, flipAt = null, peak = 0, rate;
+        const bodyRate = () => -rotate(drone.pose.w, inverse(drone.pose.q))[index] * 180 / Math.PI;
+        for (let i = 0; i < 240; i++) {
+          drone.step({ ...input, [axis]: 1 });
+          rate = bodyRate(); angle += rate * PHYSICS_DT; peak = Math.max(peak, rate);
+          if (angle >= 360 && flipAt === null) flipAt = (i + 1) * PHYSICS_DT;
+          if (i === 35) assert.ok(rate >= target * 0.9, `${axis}: slow response ${rate}`);
+        }
+        assert.ok(flipAt !== null && flipAt < 0.7, `${axis}: flip ${flipAt}`);
+        assert.ok(rate > target * 0.98 && rate <= target * 1.02, `${axis}: rate ${rate}`);
+        assert.ok(peak < target * 1.12, `${axis}: overshoot ${peak}`);
+        let rebound = 0;
+        for (let i = 0; i < 60; i++) {
+          drone.step(input); rate = bodyRate();
+          rebound += Math.max(0, -rate) * PHYSICS_DT;
+        }
+        assert.ok(Math.abs(rate) < 10, `${axis}: still spinning after release ${rate}`);
+        assert.ok(rebound < 5, `${axis}: reverse bounce ${rebound}`);
+      } finally { world.free(); }
+    }
+  });
   test(config.id + ": gravity, hover balance and motor response", () => {
     const { world, drone } = fixture(config);
     try {
@@ -20,9 +73,7 @@ for (const config of drones) {
       drone.armed = true;
       const input = {
         ...neutral,
-        throttle: Math.sqrt(
-          (config.massKg * 9.81) / (4 * config.motor.maxThrustN),
-        ),
+        throttle: hoverThrottle(config),
       };
       drone.step(input);
       assert.ok(
@@ -55,9 +106,7 @@ for (const config of drones) {
           drone.body.setRotation(q, true);
           const input = {
             ...neutral,
-            throttle: Math.sqrt(
-              (config.massKg * 9.81) / (4 * config.motor.maxThrustN),
-            ),
+            throttle: hoverThrottle(config),
           };
           for (let i = 0; i < 480; i++) drone.step(input);
           if (mode === "acro")
@@ -96,6 +145,32 @@ for (const config of drones) {
     }
   });
 }
+
+test("full-power cruise converges to category speeds through drag, without a velocity clamp", () => {
+  const bands = { "rift-65": [70, 85], "rift-c3": [110, 130], "rift-x5": [190, 205] };
+  for (const config of drones) {
+    const { world, drone } = fixture(config);
+    try {
+      drone.reset([0, 1000, 0]); drone.armed = true;
+      const pitch = 80 * Math.PI / 180;
+      drone.body.setRotation({ x: Math.sin(pitch / 2), y: 0, z: 0, w: Math.cos(pitch / 2) }, true);
+      let speedAt15;
+      for (let i = 0; i < 240 * 30; i++) {
+        drone.step({ ...neutral, throttle: 1 });
+        if (i === 240 * 15 - 1) speedAt15 = Math.hypot(...drone.pose.v) * 3.6;
+      }
+      const speed = Math.hypot(...drone.pose.v) * 3.6, [min, max] = bands[config.id];
+      assert.ok(speed >= min && speed <= max, `${config.id}: ${speed} km/h`);
+      assert.ok(Math.abs(speed - speedAt15) < 1, "speed must settle rather than grow indefinitely");
+      // Excess speed must dissipate progressively, preserving crash impulses.
+      drone.body.setLinvel({ x: config.maxSpeedMps * 1.5, y: 0, z: 0 }, true);
+      drone.armed = false; drone.step(neutral);
+      assert.ok(drone.pose.v[0] > config.maxSpeedMps, "must not snap velocity to a hard limit");
+      for (let i = 0; i < 240; i++) drone.step(neutral);
+      assert.ok(drone.pose.v[0] < config.maxSpeedMps);
+    } finally { world.free(); }
+  }
+});
 test("the three configurations give different thrust-to-mass response", () => {
   const speeds = {};
   for (const c of drones) {

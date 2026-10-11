@@ -1,20 +1,21 @@
 {
   "id": "rift-c3",
   "name": "Rift C3",
-  "version": 1,
+  "version": 2,
   "category": "cinewhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.31,
   "motorDiagonalM": 0.128,
   "propDiameterM": 0.076,
-  "maxSpeedMps": 40,
+  "maxSpeedMps": 35,
   "inertiaKgM2": [0.00042, 0.0007, 0.00042],
   "centerOfMassM": [0, 0.003, 0.003],
   "bodyHalfExtentsM": [0.025, 0.025, 0.052],
   "visualOffsetM": [0, -0.023, 0],
   "cameraOffsetM": [0, 0.014, -0.045],
   "motor": {
-    "maxThrustN": 2.6,
+    "maxThrustN": 3.8,
+    "thrustExponent": 1.25,
     "riseSeconds": 0.035,
     "fallSeconds": 0.045,
     "yawTorquePerNewtonM": 0.008
@@ -27,10 +28,12 @@
   ],
   "battery": { "cells": 4, "nominalVoltage": 15.2, "capacityMah": 720 },
   "linearDrag": 0.014,
-  "quadraticDrag": 0.003,
+  "quadraticDrag": 0.012,
   "angularDrag": 0.00006,
   "controller": {
     "rateGain": [38, 26, 38],
+    "rateDamping": [0.8, 0.6, 0.8],
+    "derivativeFilterSeconds": 0.012,
     "levelGain": 6,
     "angleLimitDeg": 45
   },

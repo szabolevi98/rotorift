@@ -71,7 +71,7 @@ export class Controller {
     this.range = null;
     window.addEventListener("keydown", (e) => {
       if (e.target.closest("input,select,textarea,button")) return;
-      if (Object.values(this.keys).includes(e.code) || e.code === "ShiftLeft") {
+      if (Object.values(this.keys).includes(e.code) || ["ShiftLeft", "ShiftRight"].includes(e.code)) {
         e.preventDefault();
         this.pressed.add(e.code);
         if (!e.repeat) {
@@ -143,8 +143,8 @@ export class Controller {
     ]) {
       const target =
         (Number(has(positive)) - Number(has(negative))) *
-        (p.has("ShiftLeft") ? 0.65 : 0.28);
-      k[axis] += (target - k[axis]) * (1 - Math.exp(-dt * 9));
+        (p.has("ShiftLeft") || p.has("ShiftRight") ? 0.35 : 1);
+      k[axis] += (target - k[axis]) * (1 - Math.exp(-dt * 30));
     }
     if (this.source === "keyboard" || !this.pad) return { ...k };
     return radioInput(this.raw, this.profile);

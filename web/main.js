@@ -5,6 +5,7 @@ import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
+import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
 import { canRace, isTimedSession } from "/shared/race/map-modes.js";
 const $ = (s) => document.querySelector(s),
@@ -116,9 +117,7 @@ function action(kind) {
     flight.startSound();
   }
   if (kind === "hover" && !controller.usingRadio)
-    controller.keyboard.throttle = Math.sqrt(
-      (flight.config.massKg * 9.81) / (4 * flight.config.motor.maxThrustN),
-    );
+    controller.keyboard.throttle = hoverThrottle(flight.config);
   if (kind === "view") flight.setView(!flight.chase);
   if (kind === "reset") {
     controller.clear();

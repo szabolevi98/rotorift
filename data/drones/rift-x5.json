@@ -1,13 +1,13 @@
 {
   "id": "rift-x5",
   "name": "Rift X5",
-  "version": 1,
+  "version": 2,
   "category": "freestyle",
   "tuningStatus": "initial-estimate",
   "massKg": 0.68,
   "motorDiagonalM": 0.23,
   "propDiameterM": 0.127,
-  "maxSpeedMps": 80,
+  "maxSpeedMps": 55.56,
   "inertiaKgM2": [0.0018, 0.0027, 0.0018],
   "centerOfMassM": [0, 0.008, 0.008],
   "bodyHalfExtentsM": [0.027, 0.034, 0.078],
@@ -15,6 +15,7 @@
   "cameraOffsetM": [0, 0.012, -0.057],
   "motor": {
     "maxThrustN": 11.5,
+    "thrustExponent": 1.5,
     "riseSeconds": 0.025,
     "fallSeconds": 0.035,
     "yawTorquePerNewtonM": 0.015
@@ -27,10 +28,12 @@
   ],
   "battery": { "cells": 6, "nominalVoltage": 22.8, "capacityMah": 1300 },
   "linearDrag": 0.014,
-  "quadraticDrag": 0.0035,
+  "quadraticDrag": 0.0135,
   "angularDrag": 0.0001,
   "controller": {
     "rateGain": [48, 30, 48],
+    "rateDamping": [0.8, 0.6, 0.8],
+    "derivativeFilterSeconds": 0.012,
     "levelGain": 7,
     "angleLimitDeg": 50
   },

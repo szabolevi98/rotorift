@@ -1,20 +1,21 @@
 {
   "id": "rift-65",
   "name": "Rift 65",
-  "version": 1,
+  "version": 2,
   "category": "tinywhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.026,
   "motorDiagonalM": 0.065,
   "propDiameterM": 0.031,
-  "maxSpeedMps": 25,
+  "maxSpeedMps": 22,
   "inertiaKgM2": [0.0000038, 0.000006, 0.0000038],
   "centerOfMassM": [0, -0.002, 0],
   "bodyHalfExtentsM": [0.011, 0.012, 0.026],
   "visualOffsetM": [0, -0.012, 0],
   "cameraOffsetM": [0, 0.009, -0.007],
   "motor": {
-    "maxThrustN": 0.19,
+    "maxThrustN": 0.31,
+    "thrustExponent": 1.25,
     "riseSeconds": 0.018,
     "fallSeconds": 0.025,
     "yawTorquePerNewtonM": 0.003
@@ -27,10 +28,12 @@
   ],
   "battery": { "cells": 1, "nominalVoltage": 3.8, "capacityMah": 300 },
   "linearDrag": 0.001,
-  "quadraticDrag": 0.0012,
+  "quadraticDrag": 0.0025,
   "angularDrag": 0.0000008,
   "controller": {
     "rateGain": [45, 30, 45],
+    "rateDamping": [0.7, 0.5, 0.7],
+    "derivativeFilterSeconds": 0.01,
     "levelGain": 7,
     "angleLimitDeg": 45
   },

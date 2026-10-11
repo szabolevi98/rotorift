@@ -22,6 +22,11 @@
 | Nyelvek        | EN/HU/DE/FR/ES, mentett választás, dinamikus felület és meta description                                    |
 | Arculat        | Rotorift ikon, favicon, saját narancssárga arculat; külön megmaradó showcase                                |
 
+A drónkonfigurációk 2. verziója a lebegési gázt 28% körülire, az X5 teljes gázas
+utazósebességét kb. 200 km/h-ra hangolja. A billentyűzet teljes Acro botkitérést
+ad, Shift mellett finom irányítással. Szűrt forgáscsillapítás mérsékli a túlpörgést.
+A mérések és a szerkeszthető paraméterek a [fizikai hangolási jegyzetben](physics-tuning.md) szerepelnek.
+
 ## Liget átdolgozása
 
 A park 700 × 700 méteres. A két épületszárnyat az emelet köti össze, alatta 8 méter
@@ -75,6 +80,9 @@ Az `npm test` a következőket ellenőrzi:
 - Actual Rates teljes kitérése, középső meredeksége, expo-ja és előjele.
 - Rádiócsatornák kiosztása, kalibrált tartománya, fordítása, holtjátéka és hiányzó csatorna kezelése.
 - Mindhárom drón gravitációja, kiegyensúlyozott lebegése, motorválasza és földi ütközése.
+- Elrugaszkodás 30% gáznál, 27–30%-os lebegés, teljes kitérésű roll/pitch 0,7 s
+  alatti körbefordulása, rate-követés és elengedés utáni fékezés;
+  kategóriánkénti utazósebesség beállása, kemény sebességlevágás nélkül.
 - Acro attitűdtartás, Angle/Horizon pitch és roll visszaszintezés; motorhatáron is kiegyensúlyozott semleges állapot.
 - Fizikai integráció összevetése 120 és 240 Hz-en.
 - Külső kamera közeli, mérethez igazított képkerete mindhárom drónnál; közös mozgás gyors helyváltoztatásnál, függőleges és fordított helyzetben is. Nézetváltáskor az FPV szög és látómező megőrzése.

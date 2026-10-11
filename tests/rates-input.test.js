@@ -82,6 +82,24 @@ test("radio connection and loss emit one change action; forced keyboard remains 
   assert.equal(c.poll(0.01).throttle, 0);
   assert.equal(actions.length, 2);
 });
+test("keyboard reaches full stick promptly; either Shift gives fine control and release recenters", (t) => {
+  inputEnvironment(t);
+  for (const hz of [60, 240]) {
+    const c = new Controller(() => {});
+    c.pressed.add("ArrowRight");
+    for (let i = 0; i < hz * 0.1; i++) c.poll(1 / hz);
+    assert.ok(c.keyboard.roll > 0.95, "normal keys must reach full Acro rates");
+    for (const shift of ["ShiftLeft", "ShiftRight"]) {
+      c.pressed.add(shift);
+      for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
+      assert.ok(Math.abs(c.keyboard.roll - 0.35) < 0.002);
+      c.pressed.delete(shift);
+    }
+    c.pressed.clear();
+    for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
+    assert.ok(Math.abs(c.keyboard.roll) < 0.003, "release must promptly center the stick");
+  }
+});
 test("Actual Rates endpoint, centre slope, expo and sign", () => {
   for (const expo of [0, 0.35, 1]) {
     const r = { center: 70, max: 670, expo };

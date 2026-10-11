@@ -268,6 +268,8 @@ Az automatikus érzékelést és a kiosztást valódi hardveren is ellenőrizni 
 - Külön gombok a roll, pitch, yaw és throttle kezelésére, módosítható kiosztással.
 - Fokozatos virtuális botkitérés és külön gázkezelés, hogy ne csak hirtelen,
   teljes kitérésű parancsokkal lehessen repülni.
+- A tengelygombok rövid felfutással teljes kitérést adnak; Shift lenyomva
+  35%-os finom kitérés használható. Az Acro roll/flip a személyes rate-eket kövesse.
 - A rádió és a billentyűzet egyszerre elérhető, de a repülési tengelyeket
   egy kijelölt bemeneti forrás vezérli; a nyugalmi rádiójel nem írhatja felül
   a billentyűzetes irányítást.

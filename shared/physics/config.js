@@ -21,9 +21,9 @@ export function validateDrone(c) {
       throw Error("Invalid " + k);
   if (
     !c.motor ||
-    !["maxThrustN", "riseSeconds", "fallSeconds", "yawTorquePerNewtonM"].every(
+    !["maxThrustN", "thrustExponent", "riseSeconds", "fallSeconds", "yawTorquePerNewtonM"].every(
       (k) => positive(c.motor[k]),
-    )
+    ) || c.motor.thrustExponent < 0.5 || c.motor.thrustExponent > 3
   )
     throw Error("Invalid motor");
   if (
@@ -39,9 +39,14 @@ export function validateDrone(c) {
   )
     throw Error("Invalid motor geometry");
   if (
+    !c.controller ||
     !Array.isArray(c.controller.rateGain) ||
     c.controller.rateGain.length !== 3 ||
     !c.controller.rateGain.every(positive) ||
+    !Array.isArray(c.controller.rateDamping) ||
+    c.controller.rateDamping.length !== 3 ||
+    !c.controller.rateDamping.every((v) => Number.isFinite(v) && v >= 0) ||
+    !positive(c.controller.derivativeFilterSeconds) ||
     !positive(c.controller.angleLimitDeg) ||
     !positive(c.controller.levelGain)
   )

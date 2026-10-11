@@ -1,5 +1,6 @@
 import { actualRate, defaultRates } from "./rates.js";
 import { rotate, inverse, array, vector, clamp, length } from "./math.js";
+import { motorThrustLimit, throttleToThrust } from "./propulsion.js";
 export const PHYSICS_DT = 1 / 240;
 function mixThrust(mixer, demand, max) {
   const idle = max * 0.012;
@@ -64,6 +65,8 @@ export class DronePhysics {
     this.mode = "acro";
     this.armed = false;
     this.motorThrust = [0, 0, 0, 0];
+    this.previousBodyRates = [0, 0, 0];
+    this.angularAcceleration = [0, 0, 0];
     this.mixer = invertMixer([
       config.motors.map(() => 1),
       config.motors.map((m) => -(m.positionM[2] - config.centerOfMassM[2])),
@@ -104,6 +107,8 @@ export class DronePhysics {
   reset(position) {
     this.armed = false;
     this.motorThrust.fill(0);
+    this.previousBodyRates.fill(0);
+    this.angularAcceleration.fill(0);
     this.body.setTranslation(vector(position), true);
     this.body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
     this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -144,13 +149,16 @@ export class DronePhysics {
         i === 1 ? v : v * (1 - blend) + level[i] * blend,
       );
     }
-    const torques = desired.map(
-      (v, i) => c.inertiaKgM2[i] * c.controller.rateGain[i] * (v - w[i]),
-    );
-    const voltageFactor =
-      (c.battery.nominalVoltage / (c.battery.cells * 3.8)) ** 2;
-    const max = c.motor.maxThrustN * voltageFactor,
-      base = max * clamp(input.throttle, 0, 1) ** 2;
+    const derivativeBlend = 1 - Math.exp(-dt / c.controller.derivativeFilterSeconds);
+    const torques = desired.map((v, i) => {
+      this.angularAcceleration[i] += ((w[i] - this.previousBodyRates[i]) / dt - this.angularAcceleration[i]) * derivativeBlend;
+      this.previousBodyRates[i] = w[i];
+      // Damping measured rate changes avoids the motor-lag overshoot of a
+      // proportional-only controller. Stick changes still command full rates.
+      return c.inertiaKgM2[i] * (c.controller.rateGain[i] * (v - w[i]) - c.controller.rateDamping[i] * this.angularAcceleration[i]);
+    });
+    const max = motorThrustLimit(c),
+      base = throttleToThrust(input.throttle, c);
     const demand = [4 * base, torques[0], torques[2], torques[1]],
       idle = max * 0.012;
     // Preserve attitude authority when collective throttle reaches a motor limit.
