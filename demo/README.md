@@ -123,8 +123,10 @@ A Rift 65 saját procedurális geometria, vizuális bemutató, nem gyártói CAD
   a karbonlemez csavarozott felfekvő felületeken ül rajtuk.
 - 2,5 mm-es, lyuggatott karbon felső váz, alsó elektronikatálca,
   felfekvő oszlopok, átmenő csavarok és megerősített első támaszok.
-  Az egyforma, köríves motorfüleken mind a négy csavar és alátét teljesen
-  a karbon fölött ül; a csavarok a lemez furatain át a motor talpáig érnek.
+  Elöl és hátul hagyományos, egyenes élű, 14 mm széles karbonkarok futnak
+  a letört sarkú motortalpakig, elkeskenyedő nyak nélkül. Mind a négy csavar
+  és alátét teljesen a karbon fölött ül; a csavarok a lemez furatain át
+  a motor talpáig érnek.
 - Csillapított AIO panel, forrasztott motorkábelek, rögzített digitális VTX,
   hűtőbordák, porvédett adatcsatlakozók és hátsó vevő-/táppanel.
 - Döntött digitális FPV kamera, narancssárga, ablakos védőkerettel;

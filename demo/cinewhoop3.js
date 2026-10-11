@@ -102,13 +102,21 @@ function createRiftC3() {
 
   const frame=assembly('C3_02_Carbon_chassis',[0,9,0]);
   // Nyitott orrvilla: a kamera helyén nincs keresztben futó karbonlemez.
-  // A motorvégek azonos, köríves karbonfülek: mind a négy csavarfej teljesen a lemez fölött ül.
-  const motorPadArc=(z,start,end)=>Array.from({length:33},(_,i)=>{
-    const a=(start+(end-start)*i/32)*Math.PI/180;return [mx+Math.cos(a)*9.6,z+Math.sin(a)*9.6];
-  });
-  const half=[[0,-34],[17,-34],[17,-66],[21,-66],[23,-57],[23,-40],
-    ...motorPadArc(-mz,-160,160),[23,-20],[23,18],[35,31],
-    ...motorPadArc(mz,-150,150),[21,39],[17,66],[0,66]];
+  // Hagyományos, egyenes élű, 14 mm széles karok és letört sarkú motortalpak.
+  // A nyak nem szűkül el a motor előtt; a teljes furatkiosztás a karbonon marad.
+  const armRootX=23,armRootZ=30,armWidth=14;
+  const armSlope=(mz-armRootZ)/(mx-armRootX);
+  const armEdgeOffset=armWidth*.5*Math.hypot(mx-armRootX,mz-armRootZ)/(mx-armRootX);
+  const rootOuter=armRootZ+armEdgeOffset,rootInner=armRootZ-armEdgeOffset;
+  const padLeft=mx-9,padRight=mx+9,padFront=mz-9,padBack=mz+9;
+  const padEntry=armRootZ+(padLeft-armRootX)*armSlope+armEdgeOffset;
+  const padExitX=armRootX+(padFront-armRootZ+armEdgeOffset)/armSlope;
+  const motorOutline=[[padLeft,padEntry],[padLeft,padBack-3],[padLeft+3,padBack],
+    [padRight-3,padBack],[padRight,padBack-3],[padRight,padFront+3],
+    [padRight-3,padFront],[padExitX,padFront]];
+  const half=[[0,-34],[17,-34],[17,-66],[21,-66],[23,-57],[armRootX,-rootOuter],
+    ...motorOutline.map(([x,z])=>[x,-z]),[armRootX,-rootInner],[armRootX,rootInner],
+    ...motorOutline.slice().reverse(),[armRootX,rootOuter],[17,66],[0,66]];
   const outline=half.concat(half.slice(1,-1).reverse().map(([x,z])=>[-x,z])).map(([x,z])=>[x,-z]);
   const topShape=contour(outline);
   for(const sx of [-1,1])for(const sz of [-1,1])for(const dx of [-4.5,4.5])for(const dz of [-4.5,4.5])topShape.holes.push(circle(sx*mx+dx,-(sz*mz+dz),.95));
