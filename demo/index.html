@@ -60218,6 +60218,10 @@ function createRiftC3() {
   for(const sx of [-1,1])for(const sz of [-1,1])for(const dx of [-4.5,4.5])for(const dz of [-4.5,4.5])topShape.holes.push(circle(sx*mx+dx,-(sz*mz+dz),.95));
   for(const x of [-19,19])for(const z of [-18,18])topShape.holes.push(circle(x,-z,1.1));
   for(const x of [-19,19])for(const z of [-40,-58])topShape.holes.push(circle(x,-z,1.05));
+  for(const x of [-12,12])topShape.holes.push(circle(x,-59,.9));
+  for(const x of [-6,6])topShape.holes.push(circle(x,-58,.85));
+  for(const x of [-7.5,7.5])topShape.holes.push(circle(x,-63,.85));
+  for(const x of [-12,12])topShape.holes.push(circle(x,-63,2.1));
   for(const side of [-1,1]){
     topShape.holes.push(contour([[side*4,22],[side*15,23],[side*15,30],[side*5,29]]));
     topShape.holes.push(contour([[side*4,-34],[side*15,-36],[side*12,-56],[side*4,-54]]));
@@ -60277,12 +60281,12 @@ function createRiftC3() {
   for(const x of [-6,6]){
     cyl(electronics,1.3,1.3,4.1,materials.black,'Rear_board_to_upper_frame_post',x,24.7,58,16);
     cyl(electronics,.65,.65,8,materials.silver,'Rear_board_mounting_shaft',x,26,58,12);
-    screw(frame,x,29.7,58,'Rear_board_upper_mount_screw',1.1);
   }
   box(electronics,4,.9,4,materials.silver,'ELRS_RF_chip',0,23.35,53);
   cyl(electronics,2.6,2.6,2.4,materials.black,'Rear_buzzer',-4.4,24.1,57);
   box(electronics,1.4,.8,1.4,materials.led,'Receiver_status_LED',4.5,23.4,55);
-  wire(electronics,[[0,23,49],[4,22,43],[8,21,32],[11,21,6]],.6,materials.rubber,'Rear_board_signal_harness');
+  box(electronics,3,1.4,2,materials.white,'FC_receiver_signal_socket',-8,21.2,-4);
+  wire(electronics,[[0,23.55,49],[0,25.85,50],[0,25.85,56],[-9,25.85,57],[-17.7,24.5,57],[-17.7,21.2,52],[-17.7,21.2,29],[-17.7,21.2,11],[-17.7,21.2,0],[-8,21.7,-3]],.45,materials.rubber,'Rear_board_signal_harness',60);
 
   for(const sx of [-1,1])for(const sz of [-1,1]){
     const motor=assembly(`C3_04_Inverted_1404_motor_${sx}_${sz}`,[sx*13,-12,sz*13]);motor.position.set(sx*mx,0,sz*mz);assemblies.at(-1).base.copy(motor.position);
@@ -60333,25 +60337,43 @@ function createRiftC3() {
   rounded(front,17,2.8,11,1.4,materials.orange,'Naked_camera_hinge_mount_platform',0,50.9,-46);
 
   const rear=assembly('C3_07_Dual_video_antennas_and_T_receiver',[0,5,22]);
-  rounded(rear,31,4,14,2,materials.rubber,'Rear_dual_antenna_bracket',0,31.3,61);
-  for(const x of [-12,12])screw(rear,x,33.9,59,'Antenna_mount_bolt');
+  // Két külön felső videóantenna-fészek; középen szabadon marad az XT30 helye.
   for(const side of [-1,1]){
-    const start=[side*10,33,64],originalEnd=[side*24,86,80];
-    const antennaAxis=new THREE.Vector3(...originalEnd).sub(new THREE.Vector3(...start));
-    // Teljes hossz a tartótól a fej tetejéig: 25%-kal rövidebb, azonos radomával.
-    const stemLength=(antennaAxis.length()+12.05)*.75-12.05;
-    const end=new THREE.Vector3(...start).add(antennaAxis.normalize().multiplyScalar(stemLength)).toArray();
-    rod(rear,start,[side*12,42,66.7],2.6,materials.rubber,'Video_antenna_root_boot');
-    rod(rear,[side*11.7,40.5,66.3],end,1.3,materials.black,'Slanted_video_antenna_stem');
+    const seat=roundedShape(8,10,1.8);seat.holes.push(circle(0,0,2.7));seat.holes.push(circle(0,4,.85));
+    extrusion(rear,seat,4,materials.orange,'Independent_video_socket_foot',side*12,31.25,63,true);
+    washer(rear,1.9,.75,.35,materials.black,'Video_socket_bolt_washer',side*12,33.425,59);
+    screw(rear,side*12,33.9,59,'Video_socket_mount_bolt');
+    cyl(rear,.7,.7,7,materials.silver,'Video_socket_through_bolt',side*12,30.4,59,12);
+    const start=[side*12,32.5,63],axis=new THREE.Vector3(side*.22,.94,.27).normalize();
+    const along=d=>new THREE.Vector3(...start).addScaledVector(axis,d).toArray(),end=along(38);
+    const clamp=washer(rear,3.8,2.7,6,materials.orange,'Video_antenna_angle_socket',...along(3));
+    clamp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
+    rod(rear,start,along(9),2.6,materials.rubber,'Video_antenna_root_boot');
+    rod(rear,along(8),end,1.3,materials.black,'Slanted_video_antenna_stem');
     const head=new THREE.Group();head.name=`C3_Omni_head_${side}`;head.position.set(...end);head.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...end).sub(new THREE.Vector3(...start)).normalize());rear.add(head);
     cyl(head,4.6,4.8,12,materials.black,'Modern_cylindrical_omni_radome',0,5.5,0,24);cyl(head,4.35,4.6,.7,materials.rubber,'Flat_radome_top',0,11.7,0,24);
     washer(head,4.85,4.5,.5,materials.orange,'Omni_radome_small_brand_ring',0,.1,0);
     for(let i=0;i<6;i++){const a=i*Math.PI/3;rod(head,[Math.cos(a)*4.65,3,Math.sin(a)*4.65],[Math.cos(a)*4.65,9,Math.sin(a)*4.65],.14,materials.edge,'Radome_molded_fluting');}
-    wire(rear,[[side*10,33,64],[side*10,27,61],[side*10,24.5,43]],.55,materials.rubber,'Dual_video_antenna_coax');
+    washer(electronics,1.2,.45,.7,materials.gold,'VTX_antenna_UFL_socket',side*8,26.1,43);
+    wire(rear,[[side*8,26.5,43],[side*8,26.5,47],[side*12,23.2,49.5],[side*12,23.2,58],[side*12,23.2,63],[side*12,28,63],[side*12,31,63],start],
+      .55,materials.rubber,'Dual_video_antenna_coax',42);
   }
-  rod(rear,[-20,34,66],[20,34,66],.75,materials.black,'ELRS_T_dipole_crossbar');
-  rod(rear,[0,28,60],[0,34,66],.8,materials.rubber,'ELRS_T_center_stem');
-  wire(rear,[[0,28,60],[3,25,58],[1,23.5,54]],.38,materials.rubber,'ELRS_T_receiver_coax');
+  // Az ELRS külön alsó bölcsőt kap, a videóantennák és a tápcsatlakozó alatt/mögött.
+  for(const side of [-1,1]){
+    const foot=roundedShape(5.5,8,1.2);foot.holes.push(circle(0,0,.85));
+    extrusion(rear,foot,2.5,materials.orange,'ELRS_lower_mount_foot',side*7.5,25.5,63,true);
+    cyl(rear,.7,.7,6.5,materials.silver,'ELRS_mount_through_bolt',side*7.5,26.5,63,12);
+    screw(frame,side*7.5,29.7,63,'ELRS_lower_mount_top_screw',1.1);
+    const web=contour([[-60,26.75],[-66,26.75],[-77.5,22],[-77.5,18.5],[-72,18.5],[-61,23.5]]);
+    extrusion(rear,web,2.4,materials.orange,'ELRS_rear_lower_support_web',side*7.5,0,0).rotation.y=Math.PI/2;
+    const collar=washer(rear,2.3,1.1,4.5,materials.orange,'ELRS_full_wrap_dipole_clamp',side*7,21,75.5);collar.rotation.z=Math.PI/2;
+    const liner=washer(rear,1.1,.8,4.5,materials.rubber,'ELRS_dipole_rubber_liner',side*7,21,75.5);liner.rotation.z=Math.PI/2;
+  }
+  rounded(rear,23,2.6,7,1,materials.orange,'ELRS_lower_cradle_crossbridge',0,18.4,75.5);
+  rounded(rear,4,2.6,3.5,.6,materials.rubber,'ELRS_T_center_junction',0,21,75.5);
+  rod(rear,[-24,21,75.5],[24,21,75.5],.75,materials.black,'ELRS_T_dipole_crossbar');
+  for(const side of [-1,1])rod(rear,[side*22.5,21,75.5],[side*24.5,21,75.5],1.1,materials.rubber,'ELRS_T_sealed_tip');
+  wire(rear,[[1,23.5,54],[0,23.5,61],[0,21.5,67],[0,21,73.8]],.38,materials.rubber,'ELRS_T_receiver_coax');
 
   const battery=assembly('C3_08_4S_battery_and_straps',[0,48,0]);batteryParts.push(battery);
   // Burkolatok végpontosan illeszkednek: nincsenek coplanar átfedések.
@@ -60368,22 +60390,44 @@ function createRiftC3() {
   }
   for(const [x,r] of [[5,1.22],[9,1.22]]){const s=new THREE.Shape();s.absarc(0,0,1.9,0,Math.PI*2,false);s.holes.push(circle(0,0,r));extrusion(battery,s,3,materials.rubber,'4S_power_exit_grommet',x,42,35.6);}
   sleeve(battery,7,2.8,3,.8,5.4,1.4,.5,materials.rubber,'4S_balance_exit_boot',-7,40,37);
-  function xt30(p,z,female){const g=new THREE.Group();g.name=female?'XT30_battery_socket':'XT30_ESC_plug';g.position.set(12,29,z);p.add(g);const s=contour([[-4.5,-2.7],[4.5,-2.7],[4.5,1.1],[3.2,2.7],[-3.2,2.7],[-4.5,1.1]]);for(const x of [-2.4,2.4])s.holes.push(circle(x,0,1.25));extrusion(g,s,7,materials.connector,'XT30_keyed_connector_body',0,0,3.5);for(const x of [-2.4,2.4]){if(female){const s=new THREE.Shape();s.absarc(0,0,1.16,0,Math.PI*2,false);s.holes.push(circle(0,0,.78));extrusion(g,s,5,materials.gold,'XT30_recessed_female_contact',x,0,2.7);}else{const m=cyl(g,.75,.75,8,materials.gold,'XT30_gold_male_contact',x,0,6);m.rotation.x=Math.PI/2;}const boot=cyl(g,1.55,1.75,3,materials.rubber,'XT30_wire_boot',x,0,female?8.5:-1.5);boot.rotation.x=Math.PI/2;}return g;}
-  xt30(electronics,45,false);xt30(battery,52,true);
-  wire(electronics,[[8,20.6,3],[12,22,22],[17,25,37],[14.4,29,42]],1.1,materials.red,'AIO_positive_XT30_pigtail');
-  wire(electronics,[[4,20.6,3],[9,22,23],[12,25,37],[9.6,29,42]],1.1,materials.rubber,'AIO_negative_XT30_pigtail');
-  wire(battery,[[9,42,35.6],[9,42,38.65],[9,42,40],[16,40,46],[17,35,56],[14.4,29,62]],1.2,materials.red,'4S_positive_battery_lead');
-  wire(battery,[[5,42,35.6],[5,42,38.65],[5,42,40],[12,40,46],[13,35,56],[9.6,29,62]],1.2,materials.rubber,'4S_negative_battery_lead');
-  const balance=new THREE.Group();balance.name='Five_pin_4S_balance_plug';balance.position.set(20,35,58);balance.rotation.x=Math.PI/2;battery.add(balance);
+  function xt30(p,z,female){
+    const g=new THREE.Group();g.name=female?'XT30_battery_socket':'XT30_ESC_plug';g.position.set(0,39,z);p.add(g);
+    const s=contour([[-4.5,-2.7],[4.5,-2.7],[4.5,1.1],[3.2,2.7],[-3.2,2.7],[-4.5,1.1]]);
+    for(const x of [-2.4,2.4])s.holes.push(circle(x,0,1.25));extrusion(g,s,7,materials.connector,'XT30_keyed_connector_body',0,0,3.5);
+    for(const x of [-2.4,2.4]){
+      if(female){const s=new THREE.Shape();s.absarc(0,0,1.16,0,Math.PI*2,false);s.holes.push(circle(0,0,.78));extrusion(g,s,5,materials.gold,'XT30_recessed_female_contact',x,0,2.7);}
+      else{const m=cyl(g,.75,.75,8,materials.gold,'XT30_gold_male_contact',x,0,6);m.rotation.x=Math.PI/2;}
+      const boot=washer(g,1.75,1.24,3,materials.rubber,'XT30_hollow_wire_boot',x,0,female?8.5:-1.5);boot.rotation.x=Math.PI/2;
+    }return g;
+  }
+  xt30(electronics,54,false);xt30(battery,61,true);
+  sleeve(rear,16,10,4,2,10.5,6.6,1.2,materials.orange,'XT30_fitted_retaining_collar',0,39,58);
+  for(const x of [-6,6]){
+    rounded(rear,4,5,8,.7,materials.orange,'XT30_frame_mount_pedestal',x,31.75,58);
+    cyl(rear,.65,.65,9,materials.silver,'XT30_pedestal_through_bolt',x,30.5,58,12);
+    screw(rear,x,34.75,58,'XT30_frame_mount_screw',1.05);
+  }
+  // A tápkábelek a VTX két oldalán futnak, majd a felső lemez valódi kábelnyílásán lépnek ki.
+  for(const x of [4,8]){
+    box(electronics,2.8,.15,3,materials.gold,'AIO_battery_solder_pad',x,20.6,3);
+    const solder=mesh(electronics,new THREE.SphereGeometry(1.4,16,10),materials.silver,'AIO_battery_solder_joint',x,21.15,3);solder.scale.y=.5;
+  }
+  wire(electronics,[[8,21.7,3],[16.5,22,9],[16.5,23.8,32],[16.5,24.5,47.5],[10,25.4,50],[2.4,25.4,50],[2.4,27,50],[2.4,32,50],[2.4,39,50],[2.4,39,53.5]],1.1,materials.red,'AIO_positive_XT30_pigtail',60);
+  wire(electronics,[[4,21.7,3],[-10,22,7],[-16.5,23.8,11],[-16.5,24.5,32],[-16.5,24.5,47.5],[-10,25.4,50],[-2.4,25.4,50],[-2.4,27,50],[-2.4,32,50],[-2.4,39,50],[-2.4,39,53.5]],1.1,materials.rubber,'AIO_negative_XT30_pigtail',60);
+  wire(battery,[[9,42,35.6],[9,42,38.8],[9,44,41],[2.4,46,48],[2.4,46,68],[2.4,39,76],[2.4,39,73],[2.4,39,69.5]],1.2,materials.red,'4S_positive_battery_lead',60);
+  wire(battery,[[5,42,35.6],[5,42,38.8],[1,44,41],[-2.4,46,48],[-2.4,46,68],[-2.4,39,76],[-2.4,39,73],[-2.4,39,69.5]],1.2,materials.rubber,'4S_negative_battery_lead',60);
+  const balance=new THREE.Group();balance.name='Five_pin_4S_balance_plug';balance.position.set(-9,47,43);balance.rotation.x=Math.PI/2;battery.add(balance);
+  sleeve(battery,9.6,7,1.2,1.5,7.5,5.3,.7,materials.orange,'Balance_plug_rear_strap_clip',-9,47,43);
+  rod(battery,[-16.5,46.5,26],[-16.5,46.5,42.5],.8,materials.rubber,'Balance_clip_to_battery_strap_rail');
+  rod(battery,[-16.5,46.5,42.5],[-13.8,46.5,43],.8,materials.rubber,'Balance_clip_side_link');
   sleeve(balance,7.2,3.2,5,.6,5.9,2.1,.3,materials.white,'JST_XH_five_pin_housing');box(balance,6.6,.5,4.5,materials.white,'JST_pin_separating_web');
   for(let i=0;i<5;i++){
     const pin=cyl(balance,.22,.22,3.4,materials.silver,'4S_balance_pin',-2.4+i*1.2,.45,0,10);pin.rotation.x=Math.PI/2;
     wire(battery,[[-9.4+i*1.2,40,35.6],[-9.4+i*1.2,40,38.55],[-9.4+i*1.2,40,39.5],
-      [2+i*.6,43,45],[17.6+i*1.2,41,61.5],[17.6+i*1.2,31.8,58]],.28,
+      [-11.4+i*1.2,40,47],[-11.4+i*1.2,42,49],[-11.4+i*1.2,43.8,46],[-11.4+i*1.2,43.8,43]],.28,
       i===0?materials.rubber:(i===4?materials.red:materials.white),'4S_balance_cell_wire',40);
     const collar=cyl(balance,.42,.42,1.4,materials.white,'4S_balance_wire_entry',-2.4+i*1.2,0,3.2,12);collar.rotation.x=Math.PI/2;
   }
-  wire(battery,[[13,35,56],[12.6,35,58],[14,35,60],[20,35,61],[24,35,58],[21,35,55],[17,35,54],[13,35,56]],.42,materials.band,'Balance_plug_elastic_retaining_loop',42);
 
   const action=assembly('C3_09_Naked_action_camera_and_mount',[0,42,-22]);actionParts.push(action);
   for(const side of [-1,1]){

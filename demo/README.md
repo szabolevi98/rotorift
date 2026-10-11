@@ -132,6 +132,13 @@ A Rift 65 saját procedurális geometria, vizuális bemutató, nem gyártói CAD
   furatán és a gumiperselyen megy át, a felső tartóhíd a lencsevédő fölött fut.
 - Felül 4S 720 mAh akku két pánttal, saját címkékkel és kábelkivezetésekkel;
   páros XT30 csatlakozó és rögzített, ötpólusú balanszdugó.
+  Az XT30 a hátsó lemez közepén, csavarozott TPU bölcsőben ül; a tápkábelek
+  a VTX két oldalán haladnak, majd a felső lemez kábelnyílásán lépnek ki.
+  Az akkuvezetékek külön visszahajló íven érkeznek a dugó hátoldalába;
+  a balanszdugót az akkúpánthoz kapcsolt oldalsó tartó rögzíti.
+  A két videóantenna külön, furatolt felső talpat kapott, saját koaxátvezetéssel.
+  Az ELRS T-antenna ezek alatt és mögött, két teljes körbefogó bilinccsel,
+  gumibetéttel és a karbonlemez aljára csavarozott alsó tartóval kapcsolódik.
 - Dönthető, naked GoPro jellegű akciókamera, könnyített 9 mm-es házzal,
   nyitott narancssárga tartóval, látható hátsó elektronikával és hűtőbordákkal.
   A tartó keresztmerevítőn és csavaros döntőcsuklón ül, a tápkábel a kamera
