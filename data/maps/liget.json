@@ -1,23 +1,13 @@
 {
   "id": "liget",
-  "version": 2,
+  "version": 3,
   "name": "Liget",
   "kind": "park",
   "size": 700,
   "boundary": { "returnAfterSeconds": 600 },
+  "racingEnabled": false,
   "spawn": [0, 0.15, 60],
   "routeId": "garden-loop",
-  "routeVersion": 2,
-  "gates": [
-    { "p": [0, 2.5, 38], "n": [0, 0, -1], "width": 5, "height": 4 },
-    { "p": [0, 2.5, -36], "n": [0, 0, -1], "width": 5, "height": 4 },
-    { "p": [-65, 7, -90], "n": [-0.70710678, 0, -0.70710678], "width": 6, "height": 4 },
-    { "p": [-145, 10, -40], "n": [-0.70710678, 0, 0.70710678], "width": 6, "height": 4 },
-    { "p": [-130, 8, 75], "n": [0, 0, 1], "width": 6, "height": 4 },
-    { "p": [-40, 5, 112], "n": [1, 0, 0], "width": 6, "height": 4 },
-    { "p": [75, 7, 95], "n": [1, 0, 0], "width": 6, "height": 4 },
-    { "p": [148, 10, 0], "n": [0, 0, -1], "width": 6, "height": 4 },
-    { "p": [60, 6, -95], "n": [-1, 0, 0], "width": 6, "height": 4 },
-    { "p": [0, 2.5, 48], "n": [0, 0, 1], "width": 5, "height": 4 }
-  ]
+  "routeVersion": 3,
+  "gates": []
 }

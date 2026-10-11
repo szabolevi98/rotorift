@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import { loadCatalog } from "../server/catalog.js";
 import { validateDrone, validateMap } from "../shared/physics/config.js";
-test("catalog contains three valid, independently configured models and two routes", async () => {
+import { canRace } from "../shared/race/map-modes.js";
+test("catalog contains three valid drone models and two maps with explicit race availability", async () => {
   const { drones, maps } = await loadCatalog();
   assert.equal(drones.length, 3);
   assert.equal(maps.length, 2);
@@ -15,6 +16,11 @@ test("catalog contains three valid, independently configured models and two rout
     );
   }
   for (const m of maps) assert.equal(validateMap(m), m);
+  const park = maps.find((m) => m.id === "liget");
+  assert.equal(canRace(park), false);
+  assert.deepEqual(park.gates, []);
+  assert.equal(canRace(maps.find((m) => m.id === "betonudvar")), true);
+  assert.throws(() => validateMap({ ...park, racingEnabled: true }));
   const bad = structuredClone(maps[0]);
   bad.gates[0].n = [0, 0, 2];
   assert.throws(() => validateMap(bad));

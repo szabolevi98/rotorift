@@ -1,4 +1,6 @@
 {
+  "hud.paused": "Flug pausiert, die Drohne ist entschärft.",
+  "error.raceUnavailable": "Zeitrennen und Checkpoints sind auf dieser Karte pausiert, bis das Layout fertig ist. Freier Flug ist verfügbar.",
   "nav.fly": "Fliegen",
   "nav.settings": "Einstellungen",
   "nav.records": "Bestzeiten",

@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { buildParkLandmarks } from "./park-landmarks.js";
 import {
-  PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS,
-  parkHeight, parkSurfaceHeight, parkClearance, chunkRandom,
+  PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
+  parkHeight, parkSurfaceHeight, parkClearance, chunkRandom, lakeOutline,
 } from "../../shared/world/park-layout.js";
 
 function groundTexture(kind) {
@@ -353,21 +354,26 @@ export function buildPark(scene, world, RAPIER, map) {
       }`,
   });
   materials.add(waterMaterial);
-  const lake = new THREE.Mesh(geometry(new THREE.CircleGeometry(1, 80)), waterMaterial);
-  lake.rotation.x = -Math.PI / 2; lake.scale.set(32, 22, 1); lake.position.set(190, 0.12, 145); root.add(lake);
-  const shorelineRng = chunkRandom(190, 145);
-  for (let i = 0; i < 76; i++) {
-    const angle = i / 76 * Math.PI * 2;
-    const x = 190 + Math.cos(angle) * 34.5, z = 145 + Math.sin(angle) * 24.5;
-    const y = parkSurfaceHeight(x, z);
-    if (y < 0.08) continue;
-    if (i % 3 === 0)
-      part([0.45, 0.2, 0.4], [x, y + 0.15, z], palette.stone, false, angle, "bush");
-    else for (let blade = 0; blade < 4; blade++) {
-      const height = 0.5 + shorelineRng() * 0.65;
-      part([0.022, height, 0.022], [x + (blade - 1.5) * 0.12, y + height / 2, z], palette.bush, false);
+  for (const lake of PARK_LAKES) {
+    const outline = lakeOutline(lake, 1.08), positions = [lake.x, lake.waterY, lake.z], indices = [];
+    for (const [x, z] of outline) positions.push(x, lake.waterY, z);
+    for (let i = 1; i < outline.length; i++) indices.push(0, i + 1, i);
+    const waterGeometry = geometry(new THREE.BufferGeometry());
+    waterGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    waterGeometry.setIndex(indices); waterGeometry.computeVertexNormals();
+    const water = new THREE.Mesh(waterGeometry, waterMaterial); water.name = lake.id; root.add(water);
+    const shorelineRng = chunkRandom(lake.x, lake.z), shore = lakeOutline(lake, 1.11, 100);
+    for (let i = 0; i < shore.length - 1; i++) {
+      const [x, z] = shore[i], y = parkSurfaceHeight(x, z);
+      if (i % 4 === 0)
+        part([0.5, 0.2, 0.4], [x, y + 0.15, z], palette.stone, false, i, "bush");
+      else if (shorelineRng() < 0.5) for (let blade = 0; blade < 4; blade++) {
+        const height = 0.45 + shorelineRng() * 0.65;
+        part([0.022, height, 0.022], [x + (blade - 1.5) * 0.12, y + height / 2, z], palette.bush, false);
+      }
     }
   }
+  const landmarks = buildParkLandmarks({ root, world, RAPIER, part, palette, geometry, material, materials, textures });
   // Fence is deliberately permeable. It marks the play area without becoming
   // an invisible wall; only the bare terrain continues across it.
   const half = map.size / 2;
@@ -432,10 +438,9 @@ export function buildPark(scene, world, RAPIER, map) {
       objects[kind].push({ matrix: dummy.matrix.clone(), color });
     };
     const x0 = cx * PARK_CHUNK_SIZE, z0 = cz * PARK_CHUNK_SIZE;
-    const forest = (x0 < -130 || z0 < -150), treeCount = forest ? 56 : 24;
-    for (let i = 0; i < treeCount * 2 && objects.trunk.length < treeCount; i++) {
-      const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
-      if (!parkClearance(x, z, map, 8) || (Math.abs(x) > 80 && x > 70 && z > 30 && rng() < 0.65)) continue;
+    for (const [x, z] of PARK_TREE_POSITIONS) {
+      if (x < x0 || x >= x0 + PARK_CHUNK_SIZE || z < z0 || z >= z0 + PARK_CHUNK_SIZE) continue;
+      if (!parkClearance(x, z, map, 8)) continue;
       const kind = rng(), pine = kind > 0.77, birch = kind < 0.25;
       const height = (pine ? 10 : birch ? 8 : 7) + rng() * 6, aspect = birch ? 0.68 : 0.95 + rng() * 0.3;
       const y = parkSurfaceHeight(x, z), angle = rng() * Math.PI * 2;
@@ -450,14 +455,14 @@ export function buildPark(scene, world, RAPIER, map) {
         : RAPIER.ColliderDesc.ball(height * aspect * 0.22).setTranslation(x, y + height * 0.75, z);
       colliderDescs.push(canopy);
     }
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 8; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
       if (!parkClearance(x, z, map, 2.5)) continue;
       const h = 0.6 + rng() * 0.9;
       add("bush", x, parkSurfaceHeight(x, z) + h * 0.55, z, [h * 1.1, h * 0.65, h], rng() * 6,
         rng() > 0.6 ? 0xa9af74 : 0x78915b);
     }
-    for (let i = 0; i < 550; i++) {
+    for (let i = 0; i < 180; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
       if (!parkClearance(x, z, map, 0.25)) continue;
       const scale = 0.65 + rng();
@@ -478,7 +483,7 @@ export function buildPark(scene, world, RAPIER, map) {
       if (kind === "tuft") grass = mesh;
     }
     root.add(group);
-    return { group, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz };
+    return { group, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz, treeCount: objects.trunk.length };
   }
   function deactivatePhysics(chunk) {
     for (const handle of chunk.colliderHandles) {
@@ -495,6 +500,7 @@ export function buildPark(scene, world, RAPIER, map) {
   }
   function update(position) {
     waterMaterial.uniforms.time.value = performance.now() / 1000;
+    landmarks.update(waterMaterial.uniforms.time.value);
     // A resting drone can jitter across a grid edge by fractions of a mm.
     // Keep a buffer so that noise never unloads/rebuilds an entire chunk row.
     const keepX = center && position[0] >= center.cx * PARK_CHUNK_SIZE - 16
@@ -525,6 +531,7 @@ export function buildPark(scene, world, RAPIER, map) {
   return {
     root, update,
     get chunkCount() { return chunks.size; },
+    get treeCount() { return [...chunks.values()].reduce((total, chunk) => total + chunk.treeCount, 0); },
     get physicsChunkCount() { return [...chunks.values()].filter((chunk) => chunk.colliderHandles.length > 0).length; },
     dispose() {
       for (const chunk of chunks.values()) removeChunk(chunk);

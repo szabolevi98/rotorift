@@ -3,6 +3,7 @@ import { randomUUID, randomBytes } from "node:crypto";
 import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
+import { canRace } from "../../shared/race/map-modes.js";
 const MODES = ["acro", "angle", "horizon"];
 export function attachRooms(server, catalog, db) {
   const rooms = new Map(),
@@ -166,6 +167,10 @@ export function attachRooms(server, catalog, db) {
             !["free", "race", "hotlap"].includes(m.kind)
           )
             return;
+          if (m.kind !== "free" && !canRace(map)) {
+            send(p, "error", { code: "raceUnavailable" });
+            return;
+          }
           leave(p);
           const code = randomBytes(3).toString("hex").toUpperCase();
           const r = {

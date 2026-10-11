@@ -14,7 +14,7 @@
 | Repülési módok | Acro, Angle, Horizon; saját FPV kamera és követőnézet                                                       |
 | Bemenet        | Gamepad API rádiókiosztás, tengelyfordítás, holtjáték és kalibráció; menthető billentyűzetes kiosztás       |
 | Rate-ek        | Tengelyenként Actual Rates, 70/670/0 alapérték; mentés drónonként és másolás egyre/mindenre                 |
-| Pályák         | Liget park és Betonudvar építkezés, saját 3D kapukkal és útvonalakkal                                       |
+| Pályák         | Liget park szabad repülésre, Betonudvar építkezés 3D kapukkal és útvonallal                                 |
 | Helyi játék    | Szabad repülés, kapus időmérő, elkülönített helyi rekord                                                    |
 | Multiplayer    | Szobakód, nyilvános lista, lobby, készenlét, szerveres rajt, 20 Hz-es állapotok és távoli modellek          |
 | Verseny        | Háromkörös online verseny, kapusorrend és irányellenőrzés, élő scoreboard, teljes futamidő szerinti befutás |
@@ -27,8 +27,14 @@
 A park 700 × 700 méteres. A két épületszárnyat az emelet köti össze, alatta 8 méter
 széles, 4,2 méter magas, mindkét végén nyitott sétány vezet át. A központi sétányhoz
 kövezett és kavicsos utak, körsétány, padok, kerti pergola, piknikasztalok, ültetőládák
-és lámpák kapcsolódnak. Lombos fák, nyírfák, fenyők, bokrok, dombok és egy tó tagolják
-a környezetet. A terep és a látható utak külön ütközési felülettel rendelkeznek.
+és lámpák kapcsolódnak. A fák tudatosan kijelölt ligetekben állnak, a központi tér
+és a déli freestyle rét nyitott. Északnyugaton kb. 172 × 120 méteres, szabálytalan partú
+nagy tó található animált szökőkúttal, csónakházzal és mólóval. A délkeleti kisebb tó
+kb. 88 × 62 méteres, felette gyalogoshíd vezet át, a híd alatt is lehet repülni.
+Kávézó nyitott, fedett terasszal, oszlopsoros árnyékolt sétány és dombtetői pavilon
+ad további repülhető részeket. Az épületek alapjaihoz a talaj igazodik.
+A terep, a látható utak, a hidak és az építmények külön ütközési felülettel rendelkeznek.
+A talaj mélységkezelése távolról is stabil, az utak teljes felülete követi a terepháromszögeket.
 
 A kerítés átjárható határjelzés. Kívül kizárólag a talaj folytatódik, növényzet,
 utak vagy egyéb objektumok nélkül. A terep a kerítésen túl is újabb
@@ -40,8 +46,9 @@ A távoli háttér a horizont felé ködbe olvad, nincs látható pályavégi sz
 Kilépés után a HUD 10 percről számol vissza, aktív játékidő szerint. Visszatéréskor
 törlődik, menü alatt megáll; lejáratkor disarmolt visszaállítás következik.
 Online a szerver méri az időt, és elég nagy mozgástartományt enged a külső repüléshez.
-A Liget pálya- és útvonalverziója 2, így a korábbi időmérős rekordok elkülönülnek.
-Szabad repülésben a kapuk láthatósága és ütközése kikapcsol; időmérőben megjelennek.
+A Liget pálya- és útvonalverziója 3. Az időmérő ideiglenesen kikapcsolva, a kapulista üres.
+A menü tiltja az időmérős módokat, a szerver elutasítja a Liget verseny- és hotlap szobáit.
+Helyi és online szabad repülés elérhető; a végleges checkpointokat később tervezzük meg.
 
 Külön körbeforgatható pályanézet: `/map-preview.html`, a játékban választott nyelvvel.
 
@@ -62,6 +69,8 @@ Az `npm test` a következőket ellenőrzi:
 - Fordításikulcsok egyezése mind az öt nyelven, HTML-lefedettség; statikus fájlok kiszolgálása.
 - Liget domborzata, pontos területillesztések és a terep ütközési magassága;
   szabad épületátjáró, járható sétány, átjárható kerítés és korlátos területbetöltés.
+- Két külön tómeder, épületek vízszintes alapjai, ritkább facsoportok és nyitott freestyle rét;
+  híd alatti átjáró és nyitott kávézóterasz; ideiglenesen tiltott versenyszobák.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
 

@@ -85,9 +85,11 @@ export function validateMap(m) {
     !Number.isInteger(m.routeVersion) ||
     m.routeVersion < 1 ||
     !Array.isArray(m.gates) ||
-    m.gates.length < 2
+    (m.racingEnabled !== false && m.gates.length < 2)
   )
     throw Error("Invalid route");
+  if (m.racingEnabled !== undefined && typeof m.racingEnabled !== "boolean")
+    throw Error("Invalid map racing policy");
   if (m.boundary && (!Number.isFinite(m.boundary.returnAfterSeconds) || m.boundary.returnAfterSeconds <= 0))
     throw Error("Invalid map boundary policy");
   for (const g of m.gates)

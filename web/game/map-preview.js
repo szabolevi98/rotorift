@@ -6,18 +6,18 @@ import { parkSurfaceHeight } from "../../shared/world/park-layout.js";
 import { read } from "../storage.js";
 
 const translations = {
-  hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Tó és keleti liget", "Dombos erdő", "Kerítés és külső táj", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
-  en: ["Park overview", "Pavilion and passage", "Garden pergola", "Lake and east grove", "Wooded hills", "Fence and landscape", "Mouse: rotate · Scroll: zoom · Right button: pan", "Fly ↗", "Loading Liget…", "Cannot load the park view. Reload the page."],
-  de: ["Parkübersicht", "Pavillon und Durchgang", "Gartenpergola", "See und östlicher Hain", "Bewaldete Hügel", "Zaun und Landschaft", "Maus: drehen · Rad: zoomen · Rechte Taste: verschieben", "Fliegen ↗", "Liget wird geladen…", "Die Parkansicht konnte nicht geladen werden. Lade die Seite neu."],
-  fr: ["Vue du parc", "Pavillon et passage", "Pergola du jardin", "Lac et bosquet est", "Collines boisées", "Clôture et paysage", "Souris : tourner · Molette : zoomer · Bouton droit : déplacer", "Voler ↗", "Chargement de Liget…", "Impossible de charger le parc. Recharge la page."],
-  es: ["Vista del parque", "Pabellón y pasaje", "Pérgola del jardín", "Lago y arboleda este", "Colinas arboladas", "Valla y paisaje", "Ratón: girar · Rueda: zoom · Botón derecho: desplazar", "Volar ↗", "Cargando Liget…", "No se puede cargar el parque. Recarga la página."],
+  hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Kis tó és híd", "Dombtetői pavilon", "Kerítés és külső táj", "Nagy tó és szökőkút", "Kávézó és terasz", "Fedett sétány", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
+  en: ["Park overview", "Pavilion and passage", "Garden pergola", "Small lake and bridge", "Hilltop pavilion", "Fence and landscape", "Grand lake and fountain", "Cafe and terrace", "Shade arcade", "Mouse: rotate · Scroll: zoom · Right button: pan", "Fly ↗", "Loading Liget…", "Cannot load the park view. Reload the page."],
+  de: ["Parkübersicht", "Pavillon und Durchgang", "Gartenpergola", "Kleiner See und Brücke", "Hügelpavillon", "Zaun und Landschaft", "Großer See und Fontäne", "Café und Terrasse", "Überdachter Weg", "Maus: drehen · Rad: zoomen · Rechte Taste: verschieben", "Fliegen ↗", "Liget wird geladen…", "Die Parkansicht konnte nicht geladen werden. Lade die Seite neu."],
+  fr: ["Vue du parc", "Pavillon et passage", "Pergola du jardin", "Petit lac et pont", "Pavillon sur la colline", "Clôture et paysage", "Grand lac et fontaine", "Café et terrasse", "Allée couverte", "Souris : tourner · Molette : zoomer · Bouton droit : déplacer", "Voler ↗", "Chargement de Liget…", "Impossible de charger le parc. Recharge la page."],
+  es: ["Vista del parque", "Pabellón y pasaje", "Pérgola del jardín", "Lago pequeño y puente", "Pabellón en la colina", "Valla y paisaje", "Lago grande y fuente", "Café y terraza", "Paseo cubierto", "Ratón: girar · Rueda: zoom · Botón derecho: desplazar", "Volar ↗", "Cargando Liget…", "No se puede cargar el parque. Recarga la página."],
 };
 const language = read("language", "hu"), labels = translations[language] ?? translations.en;
 document.documentElement.lang = translations[language] ? language : "en";
 document.querySelectorAll("[data-view]").forEach((button, i) => { button.textContent = labels[i]; });
-document.querySelector("#hint").textContent = labels[6];
-document.querySelector("#fly").textContent = labels[7];
-document.querySelector("#status").textContent = labels[8];
+document.querySelector("#hint").textContent = labels[9];
+document.querySelector("#fly").textContent = labels[10];
+document.querySelector("#status").textContent = labels[11];
 document.querySelector("#scene").setAttribute("aria-label", `Liget · ${labels[0]}`);
 document.querySelector("nav").setAttribute("aria-label", labels[0]);
 document.title = `Liget · Rotorift · ${labels[0]}`;
@@ -31,7 +31,7 @@ try {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbcd4df);
-  scene.fog = new THREE.FogExp2(0xbcd4df, 0.0018);
+  scene.fog = new THREE.FogExp2(0xbcd4df, 0.0011);
   scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));
   const sun = new THREE.DirectionalLight(0xfff0d5, 3); sun.position.set(-90, 150, 80);
   sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
@@ -45,12 +45,15 @@ try {
   controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   controls.minDistance = 3; controls.maxDistance = 900;
   const views = {
-    park: [[185, 110, 205], [0, 2, 0]],
+    park: [[0, 520, 125], [0, 2, 0]],
     pavilion: [[43, 21, 55], [0, 3, 0]],
     garden: [[-75, 21, -43], [-52, 3, -67]],
-    lake: [[245, 55, 207], [190, 3, 145]],
+    lake: [[249, 43, 240], [190, 2, 175]],
     hill: [[-265, 58, 225], [-210, 12, 180]],
     fence: [[40, 21, 382], [0, parkSurfaceHeight(0, 350) + 1, 350]],
+    largeLake: [[-114, 55, -40], [-205, 3, -130]],
+    cafe: [[145, 11, -118], [110, 4, -155]],
+    arcade: [[205, parkSurfaceHeight(170, -76) + 18, -43], [170, parkSurfaceHeight(170, -76) + 2, -76]],
   };
   function setView(name) {
     const [position, target] = views[name];
@@ -74,5 +77,5 @@ try {
   requestAnimationFrame(frame);
 } catch (error) {
   console.error(error);
-  document.querySelector("#status").textContent = labels[9];
+  document.querySelector("#status").textContent = labels[12];
 }

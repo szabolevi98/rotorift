@@ -220,6 +220,19 @@ test("online park boundary permits outside flight and returns an expired pilot t
   assert.deepEqual(reset.pose.p, [0, 1, -0.5]);
 });
 
+test("unfinished maps reject race and hotlap rooms while allowing online free flight", async (t) => {
+  const { client } = await fixture(t, { racingEnabled: false, gates: [] });
+  const p = await client("Free-flight pilot");
+  for (const kind of ["race", "hotlap"]) {
+    p.send("create", { mapId: "test-route", droneId: "rift-x5", mode: "angle", kind });
+    const error = await p.next((m) => m.type === "error");
+    assert.equal(error.code, "raceUnavailable");
+  }
+  p.send("create", { mapId: "test-route", droneId: "rift-x5", mode: "angle", kind: "free" });
+  const room = await p.next((m) => m.type === "room");
+  assert.equal(room.room.kind, "free");
+});
+
 test("static routes serve bundled runtime and do not expose workspace configuration", async (t) => {
   const server = http.createServer(async (req, res) => {
     if (!(await serveStatic(req, res, new URL(req.url, "http://localhost"))))

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, parkClearance, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { DronePhysics } from "../shared/physics/drone.js";
@@ -56,9 +56,24 @@ test("path interiors follow terrain triangles without sinking into hills", () =>
   }
 });
 
+test("two lakes, open flight space and grounded small buildings have a deliberate layout", () => {
+  assert.equal(PARK_LAKES.length, 2);
+  assert.ok(PARK_LAKES[0].rx * PARK_LAKES[0].rz > PARK_LAKES[1].rx * PARK_LAKES[1].rz * 3);
+  for (const lake of PARK_LAKES) {
+    assert.ok(parkSurfaceHeight(lake.x, lake.z) < lake.waterY - 1);
+    assert.equal(parkClearance(lake.x, lake.z, map, 8), false);
+  }
+  assert.equal(parkClearance(0, 220, map, 8), false, "keep the southern meadow open for freestyle");
+  for (const b of PARK_BUILDINGS) for (const x of [-b.width / 2, b.width / 2])
+    for (const z of [-b.depth / 2, b.depth / 2])
+      assert.ok(Math.abs(parkSurfaceHeight(b.x + x, b.z + z) - b.baseY) < 0.00001,
+        "building foundations must touch a flat piece of terrain");
+});
+
 test("the pavilion passage is flyable and the streamed landscape has no fence wall or leaking chunks", async () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const park = buildPark(scene, world, RAPIER, map);
+  assert.ok(park.treeCount >= 60 && park.treeCount < 180, `tree count ${park.treeCount}: keep groves with clear open areas`);
   const assertObjectsInsideFence = () => {
     const half = map.size / 2, matrix = new THREE.Matrix4();
     for (const group of park.root.children.filter((o) => o.isGroup)) {
@@ -88,6 +103,12 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
         "paths and curbs must stop at the fence");
   }
   world.step();
+  const bridgeGap = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 160 }, { x: 0, y: 0, z: 1 }), 30, true);
+  assert.equal(bridgeGap, null, "the bridge must have a flyable passage below its deck");
+  const bridgeDeck = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 175 }, { x: 0, y: 1, z: 0 }), 3, true);
+  assert.ok(bridgeDeck && Math.abs(bridgeDeck.timeOfImpact - 1.08) < 0.001);
+  const cafeBay = world.castRay(new RAPIER.Ray({ x: 116, y: 4, z: -139 }, { x: 0, y: 0, z: -1 }), 20, true);
+  assert.equal(cafeBay, null, "the cafe terrace and side bay must be open");
   const passage = world.castRay(new RAPIER.Ray({ x: 0, y: 2, z: 22 }, { x: 0, y: 0, z: -1 }), 44, true);
   assert.equal(passage, null);
   const roof = world.castRay(new RAPIER.Ray({ x: 0, y: 2, z: 0 }, { x: 0, y: 1, z: 0 }), 7, true);

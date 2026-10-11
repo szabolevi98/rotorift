@@ -6,6 +6,7 @@ import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
+import { canRace, isTimedSession } from "/shared/race/map-modes.js";
 const $ = (s) => document.querySelector(s),
   node = (tag, cls = "", text = "") => {
     const e = document.createElement(tag);
@@ -80,7 +81,7 @@ function pause() {
   visible("#hud", false);
   visible("#resume", true);
   panel("fly");
-  notice(t("hud.interrupted"));
+  notice(t(isTimedSession(session) && canRace(flight.map) ? "hud.interrupted" : "hud.paused"));
 }
 function resume() {
   if (!playing) return;
@@ -157,7 +158,17 @@ async function selectDrone(id) {
 function selectMap(id) {
   map = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
   write("selected-map", map.id);
+  updateSessionOptions();
   refreshCatalogText();
+}
+function updateSessionOptions() {
+  const enabled = canRace(map);
+  for (const option of $("#session").options)
+    option.disabled = !enabled && isTimedSession(option.value);
+  if (!enabled && isTimedSession($("#session").value))
+    $("#session").value = $("#session").value.startsWith("online") ? "online-free" : "free";
+  visible("#online-controls", $("#session").value.startsWith("online"));
+  visible("#map-mode-note", !enabled);
 }
 function refreshCatalogText() {
   for (const d of catalog.drones) {
@@ -558,6 +569,10 @@ async function launch() {
     return;
   }
   session = $("#session").value;
+  if (isTimedSession(session) && !canRace(map)) {
+    notice(t("error.raceUnavailable"));
+    return;
+  }
   if (session.startsWith("online")) {
     if (!network.ready) {
       notice(t("error.connectFirst"));
@@ -596,6 +611,10 @@ async function showRecords() {
     mode = $("#records-mode").value,
     root = $("#records-body");
   root.replaceChildren();
+  if (!canRace(m)) {
+    root.append(node("p", "muted", t("error.raceUnavailable")));
+    return;
+  }
   root.append(
     node("h2", "", t("records.local")),
     node("p", "muted", time(read("records", {})[recordKey(m, c, mode)])),
@@ -676,7 +695,7 @@ function hud() {
   });
   const race = $("#race-hud");
   race.replaceChildren();
-  const timed = session !== "free" && session !== "online-free";
+  const timed = canRace(flight.map) && isTimedSession(session);
   if (timed) {
     race.append(
       node(
@@ -756,7 +775,7 @@ function frame(now) {
     flight.step(dt, input, (previous, current, step) => {
       const previousTime = simTime;
       simTime += step * 1000;
-      if (!room && session === "time") {
+      if (!room && session === "time" && canRace(flight.map)) {
         for (const e of advanceLap(
           lap,
           previous.p,

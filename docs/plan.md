@@ -139,7 +139,12 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 - Saját név; ideiglenes munkanév: **Liget**.
 - A játszható terület 700 × 700 méter: az eredeti 140 méteres oldalhossz ötszöröse.
 - Központi parképület, alatta végigrepülhető észak–déli sétánnyal; normális úthálózat,
-  különböző fák, bokrok, padok, pergola, tó és dombos, változatos területek.
+  különböző fák, bokrok, padok, pergola, tavak és dombos, változatos területek.
+- Tudatosan kialakított facsoportok, kevés elszórt fa, nagy nyitott freestyle rét.
+  Északnyugaton nagyobb tó (kb. 172 × 120 m) animált szökőkúttal, csónakházzal és mólóval;
+  délkeleten kisebb tó (kb. 88 × 62 m) átrepülhető gyalogoshíddal.
+  Kávézó és fedett terasz, oszlopsoros sétány, nyitott dombtetői pavilon.
+  A sétányok kössék össze ezeket a helyeket; a látható részekhez tényleges ütközések tartozzanak.
 - A kerítés jól láthatóan jelölje a játszható terület szélét, de legyen átrepülhető.
   A terep a kerítésen túl is folytatódjon, a drón körül betöltődő új területekkel.
   A kerítésen kívül kizárólag talaj legyen; növényzet, utak és más objektumok ne.
@@ -148,6 +153,8 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
   Ugyanez online is működjön, szerveroldali időméréssel.
 - Nyitott füves részek, fák, lombkoronák és változatos repülhető átjárók.
 - Szabad gyakorlás, freestyle lehetőségek és kapus időmérő útvonalak.
+  A Ligeten az időmérő és az összes checkpoint ideiglenesen kikapcsolva (`racingEnabled: false`, üres kapulista).
+  Az új checkpointokat csak a végleges pálya alapján tervezzük meg; addig helyi és online szabad repülés marad.
 - A három drón méretkülönbségeihez igazodó gyakorlóhelyek és útvonalak.
 
 ### Félkész építkezés

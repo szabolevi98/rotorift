@@ -21,6 +21,7 @@ export const newLap = () => ({
   invalid: false,
 });
 export function advanceLap(lap, previous, current, startTime, endTime, gates) {
+  if (gates.length < 2) return [];
   // A packet may contain several consecutive crossings; use each crossing's substep time.
   let events = [],
     cursor = 0;

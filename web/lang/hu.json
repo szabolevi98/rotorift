@@ -1,4 +1,6 @@
 {
+  "hud.paused": "Repülés szüneteltetve, a drón kikapcsolt.",
+  "error.raceUnavailable": "Az időmérő és a checkpointok ezen a pályán szünetelnek, amíg elkészül a végleges elrendezés. Szabad repülés elérhető.",
   "nav.fly": "Repülés",
   "nav.settings": "Beállítások",
   "nav.records": "Rekordok",

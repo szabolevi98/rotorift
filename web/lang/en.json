@@ -1,4 +1,6 @@
 {
+  "hud.paused": "Flight paused and the drone disarmed.",
+  "error.raceUnavailable": "Time trials and checkpoints are paused on this map until its layout is finished. Free flight is available.",
   "nav.fly": "Fly",
   "nav.settings": "Settings",
   "nav.records": "Records",
