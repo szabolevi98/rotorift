@@ -124,5 +124,7 @@
   "key.menu": "Menu / resume",
   "key.view": "FPV / chase camera",
   "key.mode": "Cycle flight mode",
-  "key.hover": "Keyboard hover throttle"
+  "key.hover": "Keyboard hover throttle",
+  "hud.boundary": "Outside the park · Return to launch in {time} · Fly back inside the fence",
+  "hud.boundaryReset": "10 minutes outside the park have elapsed. The drone returned to launch."
 }

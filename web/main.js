@@ -85,6 +85,7 @@ function pause() {
 function resume() {
   if (!playing) return;
   paused = false;
+  lastFrame = performance.now();
   flight.active = !room || room.phase === "flying";
   document.activeElement?.blur();
   visible("#menu", false);
@@ -489,6 +490,7 @@ function receive(m) {
   if (m.type === "reset") {
     flight.reset(m.pose.p);
     controller.clear();
+    if (m.reason === "boundary") notice(t("hud.boundaryReset"));
   }
   if (m.type === "lap")
     notice(
@@ -638,10 +640,21 @@ function hud() {
     controller.usingRadio ? "settings.controller" : "input.keyboard",
   );
   $("#speed").textContent = Math.round(Math.hypot(...p.v) * 3.6);
-  $("#altitude").textContent = Math.max(0, p.p[1]).toFixed(1);
+  $("#altitude").textContent = Math.max(0,
+    p.p[1] - flight.environment.heightAt(p.p[0], p.p[2]),
+  ).toFixed(1);
   $("#throttle").textContent = Math.round(input.throttle * 100);
   $("#hud-session").textContent =
     t("map." + flight.map.id) + " / " + flight.config.name;
+  const boundary = room ? own?.boundary : flight.boundary;
+  const outside = !!boundary?.outside;
+  visible("#boundary-hud", outside);
+  if (outside) {
+    const seconds = Math.ceil(boundary.remainingSeconds);
+    $("#boundary-hud").textContent = t("hud.boundary", {
+      time: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
+    });
+  }
   $("#key-hint").textContent = t("hud.keys", {
     arm: keyName(controller.keys.arm),
     up: keyName(controller.keys.throttleUp),
@@ -728,7 +741,8 @@ function hud() {
   }
 }
 function frame(now) {
-  const dt = Math.max(0, Math.min((now - lastFrame) / 1000, 0.25));
+  const elapsed = Math.max(0, (now - lastFrame) / 1000);
+  const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
   input = controller.poll(dt);
   if (
@@ -757,6 +771,10 @@ function frame(now) {
           }
       }
     });
+    if (!room && flight.boundary.update(flight.physics.pose.p, elapsed)) {
+      action("reset");
+      notice(t("hud.boundaryReset"));
+    }
   }
   if (playing && room?.phase === "flying" && now - sendAt >= 50) {
     network.state(

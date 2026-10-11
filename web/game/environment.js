@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import { buildPark } from "./park.js";
+import { parkSurfaceHeight } from "/shared/world/park-layout.js";
 export function buildEnvironment(scene, world, RAPIER, map) {
   const root = new THREE.Group();
   scene.add(root);
@@ -27,107 +29,11 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     }
     return m;
   };
-  box(
-    [map.size, 1, map.size],
-    [0, -0.5, 0],
-    map.kind === "park" ? 0x819663 : 0xb6af9b,
-  );
+  let park;
   if (map.kind === "park") {
-    box([4, 0.015, 115], [-18, 0.015, 0], 0xc8ba9b, false);
-    box([90, 0.018, 3], [0, 0.018, 45], 0xc8ba9b, false);
-    let seed = 817;
-    const random = () => {
-      seed = (seed * 1664525 + 1013904223) >>> 0;
-      return seed / 4294967296;
-    };
-    const canopyGeometry = new THREE.IcosahedronGeometry(1, 1),
-      trunkGeometry = new THREE.CylinderGeometry(0.3, 0.45, 1, 8);
-    const treeLeaves = new THREE.InstancedMesh(
-        canopyGeometry,
-        material(0x53734c),
-        180,
-      ),
-      treeTrunks = new THREE.InstancedMesh(
-        trunkGeometry,
-        material(0x776452),
-        60,
-      );
-    treeLeaves.castShadow = treeTrunks.castShadow = true;
-    root.add(treeLeaves, treeTrunks);
-    const dummy = new THREE.Object3D();
-    let tree = 0;
-    for (let attempts = 0; attempts < 300 && tree < 60; attempts++) {
-      const x = (random() - 0.5) * (map.size - 12),
-        z = (random() - 0.5) * (map.size - 12);
-      let clear = Math.hypot(x - map.spawn[0], z - map.spawn[2]) > 6;
-      for (let i = 0; i < map.gates.length; i++) {
-        const a = map.gates[i].p,
-          b = map.gates[(i + 1) % map.gates.length].p,
-          dx = b[0] - a[0],
-          dz = b[2] - a[2],
-          t = THREE.MathUtils.clamp(
-            ((x - a[0]) * dx + (z - a[2]) * dz) / (dx * dx + dz * dz),
-            0,
-            1,
-          );
-        if (Math.hypot(x - a[0] - dx * t, z - a[2] - dz * t) < 7) clear = false;
-      }
-      if (!clear || Math.abs(x + 18) < 4 || Math.abs(z - 45) < 4) continue;
-      const height = 4.5 + random() * 4;
-      dummy.position.set(x, height * 0.42, z);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(1, height * 0.84, 1);
-      dummy.updateMatrix();
-      treeTrunks.setMatrixAt(tree, dummy.matrix);
-      world.createCollider(
-        RAPIER.ColliderDesc.cylinder(height * 0.42, 0.4).setTranslation(
-          x,
-          height * 0.42,
-          z,
-        ),
-      );
-      for (let j = 0; j < 3; j++) {
-        dummy.position.set(
-          x + (random() - 0.5) * 2,
-          height * 0.65 + j * 0.7,
-          z + (random() - 0.5) * 2,
-        );
-        dummy.scale.set(2.5 + random(), 2.1 + random(), 2.5 + random());
-        dummy.rotation.set(random(), random() * Math.PI, random());
-        dummy.updateMatrix();
-        treeLeaves.setMatrixAt(tree * 3 + j, dummy.matrix);
-      }
-      tree++;
-    }
-    treeLeaves.count = tree * 3;
-    treeTrunks.count = tree;
-    for (const z of [-35, -10, 15, 38]) {
-      box([2.3, 0.15, 0.6], [-22, 0.55, z], 0x9c8261);
-      for (const x of [-22.85, -21.15])
-        box([0.12, 0.5, 0.5], [x, 0.25, z], 0x3c4743);
-      box([2.3, 0.65, 0.12], [-22, 0.94, z + 0.28], 0x9c8261);
-    }
-    const grass = new THREE.InstancedMesh(
-      new THREE.PlaneGeometry(0.08, 0.3),
-      new THREE.MeshStandardMaterial({
-        color: 0x809956,
-        side: THREE.DoubleSide,
-      }),
-      2200,
-    );
-    root.add(grass);
-    for (let i = 0; i < 2200; i++) {
-      dummy.position.set(
-        (random() - 0.5) * map.size,
-        0.16,
-        (random() - 0.5) * map.size,
-      );
-      dummy.scale.setScalar(0.5 + random());
-      dummy.rotation.set(0, random() * Math.PI, 0);
-      dummy.updateMatrix();
-      grass.setMatrixAt(i, dummy.matrix);
-    }
+    park = buildPark(scene, world, RAPIER, map);
   } else {
+    box([map.size, 1, map.size], [0, -0.5, 0], 0xb6af9b);
     for (const y of [5, 10]) {
       box([11, 0.35, 44], [-8.5, y, -12], 0x969991);
       box([19, 0.35, 44], [12.5, y, -12], 0x969991);
@@ -156,16 +62,20 @@ export function buildEnvironment(scene, world, RAPIER, map) {
       box([1.6, 0.15, 0.15], [-8, 0.35, z], 0x424940);
     }
   }
+  if (map.kind !== "park") {
   for (const x of [-map.size / 2, map.size / 2])
     box([0.2, 1.1, map.size], [x, 0.55, 0], 0x696f63);
   for (const z of [-map.size / 2, map.size / 2])
     box([map.size, 1.1, 0.2], [0, 0.55, z], 0x696f63);
-  const gateMeshes = [];
+  }
+  const gateMeshes = [], gateGroups = [], gateColliders = [];
+  let gatesEnabled = true;
   map.gates.forEach((gate, i) => {
     const group = new THREE.Group();
     group.position.set(...gate.p);
     group.rotation.y = Math.atan2(gate.n[0], gate.n[2]);
     root.add(group);
+    gateGroups.push(group);
     const gateMat = new THREE.MeshStandardMaterial({
       color: i === 0 ? 0xff6648 : 0xf5f0da,
       emissive: 0xff6648,
@@ -193,11 +103,11 @@ export function buildEnvironment(scene, world, RAPIER, map) {
       group.updateMatrixWorld(true);
       const wp = m.getWorldPosition(new THREE.Vector3()),
         q = m.getWorldQuaternion(new THREE.Quaternion());
-      world.createCollider(
+      gateColliders.push(world.createCollider(
         RAPIER.ColliderDesc.cuboid(...size.map((v) => v / 2))
           .setTranslation(wp.x, wp.y, wp.z)
           .setRotation(q),
-      );
+      ));
     }
     const c = document.createElement("canvas");
     c.width = 128;
@@ -220,21 +130,30 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     gateMeshes.push(gateMat);
   });
   const pad = new THREE.Mesh(
-    new THREE.CylinderGeometry(1.25, 1.25, 0.018, 48),
+    new THREE.CylinderGeometry(0.65, 0.65, 0.002, 48),
     material(0x232f2d),
   );
-  pad.position.set(map.spawn[0], 0.025, map.spawn[2]);
+  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : 0) + 0.0018, map.spawn[2]);
   root.add(pad);
   return {
     root,
-    highlight: (next, enabled) =>
+    update: (position) => park?.update(position),
+    heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : 0,
+    highlight: (next, enabled) => {
+      if (gatesEnabled !== enabled) {
+        gatesEnabled = enabled;
+        for (const group of gateGroups) group.visible = enabled;
+        for (const collider of gateColliders) collider.setEnabled(enabled);
+      }
       gateMeshes.forEach((m, i) => {
         m.color.setHex(
           enabled && i === next ? 0xff6648 : i === 0 ? 0xeda889 : 0xf5f0da,
         );
         m.emissiveIntensity = enabled && i === next ? 0.45 : 0;
-      }),
+      });
+    },
     dispose: () => {
+      park?.dispose();
       root.traverse((o) => {
         if (o.isMesh) {
           o.geometry.dispose();

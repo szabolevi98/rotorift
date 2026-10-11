@@ -2,6 +2,7 @@ import { WebSocketServer } from "ws";
 import { randomUUID, randomBytes } from "node:crypto";
 import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
+import { MapBoundary } from "../../shared/world/boundary.js";
 const MODES = ["acro", "angle", "horizon"];
 export function attachRooms(server, catalog, db) {
   const rooms = new Map(),
@@ -29,6 +30,7 @@ export function attachRooms(server, catalog, db) {
       lap: p.lap,
       finished: p.finished,
       finishMs: p.finishMs,
+      boundary: p.boundary ? { outside: p.boundary.outside, remainingSeconds: p.boundary.remainingSeconds } : null,
     })),
   });
   const broadcast = (r) => {
@@ -49,6 +51,9 @@ export function attachRooms(server, catalog, db) {
     broadcast(r);
   };
   const reset = (p, r) => {
+    p.boundary = new MapBoundary(r.map);
+    p.boundaryAt = null;
+    p.boundaryPaused = false;
     p.lap = newLap();
     p.finished = false;
     p.finishMs = null;
@@ -255,7 +260,7 @@ export function attachRooms(server, catalog, db) {
         const qlen = Math.hypot(m.q.x, m.q.y, m.q.z, m.q.w);
         if (
           Math.abs(qlen - 1) > 0.05 ||
-          length(m.p) > 500 ||
+          length(m.p) > Math.max(500, (r.map.size ?? 0) + (r.map.boundary?.returnAfterSeconds ?? 0) * r.drone.maxSpeedMps * 1.5) ||
           length(m.v) > r.drone.maxSpeedMps * 1.5
         ) {
           p.lap.invalid = true;
@@ -273,6 +278,16 @@ export function attachRooms(server, catalog, db) {
           return;
         }
         if (m.interrupted) p.lap.invalid = true;
+        const boundaryDt = p.boundaryAt === null ? 0 : Math.max(0, (now - p.boundaryAt) / 1000);
+        p.boundaryAt = now;
+        const activeBoundaryDt = m.interrupted || p.boundaryPaused ? 0 : boundaryDt;
+        p.boundaryPaused = !!m.interrupted;
+        if (p.boundary?.update(m.p, activeBoundaryDt)) {
+          reset(p, r);
+          send(p, "reset", { pose: p.pose, reason: "boundary" });
+          broadcast(r);
+          return;
+        }
         let events = [];
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);

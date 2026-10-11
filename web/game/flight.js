@@ -4,6 +4,7 @@ import { DronePhysics, PHYSICS_DT } from "/shared/physics/drone.js";
 import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
 import { DroneCameraRig } from "./camera-rig.js";
+import { MapBoundary } from "/shared/world/boundary.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -31,6 +32,7 @@ export class Flight {
     });
     sun.shadow.bias = -0.0003;
     this.scene.add(sun);
+    this.sun = sun;
     this.camera = new THREE.PerspectiveCamera(100, 1, 0.012, 350);
     this.camera.position.set(0, 10, 30);
     this.camera.lookAt(0, 0, 0);
@@ -57,6 +59,20 @@ export class Flight {
     this.environment = buildEnvironment(this.scene, this.world, RAPIER, map);
     this.config = config;
     this.map = map;
+    this.boundary = new MapBoundary(map);
+    this.camera.far = map.kind === "park" ? 2200 : 350;
+    this.camera.updateProjectionMatrix();
+    this.scene.background.setHex(map.kind === "park" ? 0xbcd4df : 0xc9dedc);
+    this.scene.fog = map.kind === "park"
+      ? new THREE.FogExp2(0xbcd4df, 0.0026)
+      : new THREE.Fog(0xc9dedc, 60, 190);
+    if (map.kind !== "park") {
+      this.sun.position.set(-35, 60, 25);
+      this.sun.target.position.set(0, 0, 0);
+      this.sun.target.updateMatrixWorld();
+      Object.assign(this.sun.shadow.camera, { left: -75, right: 75, top: 75, bottom: -75, far: 150 });
+      this.sun.shadow.camera.updateProjectionMatrix();
+    }
     this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn);
     this.physics.rates = rates;
     this.physics.mode = mode;
@@ -75,6 +91,8 @@ export class Flight {
   }
   reset(position = this.map.spawn) {
     this.physics.reset(position);
+    this.boundary.reset();
+    this.environment.update(position);
     this.accumulator = 0;
     this.previous = this.current = this.physics.pose;
     this.place(this.current, 1);
@@ -89,6 +107,7 @@ export class Flight {
   }
   step(dt, input, update) {
     if (!this.active) return;
+    this.environment.update(this.physics.pose.p);
     this.accumulator += Math.min(dt, 0.1);
     while (this.accumulator >= PHYSICS_DT) {
       this.previous = this.physics.pose;
@@ -160,6 +179,14 @@ export class Flight {
       if (p.id !== ownId && p.p && p.q) this.remote(p).catch(() => {});
   }
   render(dt) {
+    if (this.current && this.map.kind === "park") {
+      const p = this.current.p;
+      this.sun.position.set(p[0] - 35, p[1] + 75, p[2] + 25);
+      this.sun.target.position.set(...p);
+      this.sun.target.updateMatrixWorld();
+      Object.assign(this.sun.shadow.camera, { left: -35, right: 35, top: 35, bottom: -35, far: 180 });
+      this.sun.shadow.camera.updateProjectionMatrix();
+    }
     const w = innerWidth,
       h = innerHeight;
     if (

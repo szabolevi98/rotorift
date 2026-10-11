@@ -22,6 +22,28 @@
 | Nyelvek        | EN/HU/DE/FR/ES, mentett választás, dinamikus felület és meta description                                    |
 | Arculat        | Rotorift ikon, favicon, saját narancssárga arculat; külön megmaradó showcase                                |
 
+## Liget átdolgozása
+
+A park 700 × 700 méteres. A két épületszárnyat az emelet köti össze, alatta 8 méter
+széles, 4,2 méter magas, mindkét végén nyitott sétány vezet át. A központi sétányhoz
+kövezett és kavicsos utak, körsétány, padok, kerti pergola, piknikasztalok, ültetőládák
+és lámpák kapcsolódnak. Lombos fák, nyírfák, fenyők, bokrok, dombok és egy tó tagolják
+a környezetet. A terep és a látható utak külön ütközési felülettel rendelkeznek.
+
+A kerítés átjárható határjelzés. A terep és a növényzet a kerítésen túl is újabb
+128 méteres területekkel töltődik tovább: a drón körül egyszerre 49 terület marad
+betöltve. A közeli 9 terület terepe és fái aktívak a fizikában; a többi távoli látványelem.
+Az elhagyott területek geometriája és ütközési felülete felszabadul.
+A távoli háttér a horizont felé ködbe olvad, nincs látható pályavégi szakadék.
+
+Kilépés után a HUD 10 percről számol vissza, aktív játékidő szerint. Visszatéréskor
+törlődik, menü alatt megáll; lejáratkor disarmolt visszaállítás következik.
+Online a szerver méri az időt, és elég nagy mozgástartományt enged a külső repüléshez.
+A Liget pálya- és útvonalverziója 2, így a korábbi időmérős rekordok elkülönülnek.
+Szabad repülésben a kapuk láthatósága és ütközése kikapcsol; időmérőben megjelennek.
+
+Külön körbeforgatható pályanézet: `/map-preview.html`, a játékban választott nyelvvel.
+
 ## Ellenőrzések
 
 Az `npm test` a következőket ellenőrzi:
@@ -37,6 +59,10 @@ Az `npm test` a következőket ellenőrzi:
 - Ismételt csomag, hibás konfiguráció, megszakítás és hosszú állapotküldési szünet kezelése.
 - MariaDB profil és kategóriarekord megőrzése új adatbáziskapcsolaton át, futameredmény idempotens mentése; külön tesztadatbázison.
 - Fordításikulcsok egyezése mind az öt nyelven, HTML-lefedettség; statikus fájlok kiszolgálása.
+- Liget domborzata, pontos területillesztések és a terep ütközési magassága;
+  szabad épületátjáró, járható sétány, átjárható kerítés és korlátos területbetöltés.
+- A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
+  valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
 
 Valódi böngészőben ellenőrzött: mindhárom modell betöltése, billentyűzetes élesítés és
 felszállás, közeli külső kamerakövetés, reset és FPV nézetváltás, menü miatti leállítás,

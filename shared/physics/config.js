@@ -88,6 +88,8 @@ export function validateMap(m) {
     m.gates.length < 2
   )
     throw Error("Invalid route");
+  if (m.boundary && (!Number.isFinite(m.boundary.returnAfterSeconds) || m.boundary.returnAfterSeconds <= 0))
+    throw Error("Invalid map boundary policy");
   for (const g of m.gates)
     if (
       !vec(g.p) ||

@@ -8,7 +8,7 @@ import { attachRooms } from "../server/net/rooms.js";
 import { loadCatalog } from "../server/catalog.js";
 import { serveStatic } from "../server/static.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-async function fixture(t) {
+async function fixture(t, mapOverrides = {}) {
   const catalog = await loadCatalog();
   catalog.maps = [
     {
@@ -19,6 +19,7 @@ async function fixture(t) {
         { p: [0, 1, 0], n: [0, 0, 1], width: 2, height: 2 },
         { p: [0, 1, 2], n: [0, 0, -1], width: 2, height: 2 },
       ],
+      ...mapOverrides,
     },
   ];
   const db = {
@@ -194,6 +195,31 @@ test("online validation rejects replay and config changes, invalidates interrupt
   assert.deepEqual(reset.pose.p, [0, 1, -0.5]);
   assert.equal(db.laps.length, 0);
 });
+test("online park boundary permits outside flight and returns an expired pilot to launch", async (t) => {
+  const { client } = await fixture(t, { size: 40, boundary: { returnAfterSeconds: 0.25 } });
+  const p = await client("Exploring pilot");
+  p.send("create", { mapId: "test-route", droneId: "rift-x5", mode: "angle", kind: "free" });
+  await p.next((m) => m.type === "room");
+  p.send("ready", { ready: true });
+  await p.next((m) => m.type === "room" && m.room.players[0].ready);
+  p.send("start");
+  await p.next((m) => m.type === "room" && m.room.phase === "flying");
+  await p.state([25, 8, 0]);
+  const outside = await p.next((m) => m.type === "room" && m.room.players[0].boundary?.outside);
+  assert.equal(outside.room.players[0].p[0], 25);
+  await p.state([25, 8, 0], { interrupted: true });
+  await delay(350);
+  await p.state([25, 8, 0], { interrupted: true });
+  const paused = await p.next((m) => m.type === "room" && m.room.players[0].boundary?.outside && m.room.players[0].boundary.remainingSeconds > 0);
+  assert.equal(paused.room.players[0].p[0], 25);
+  await p.state([25, 8, 0]);
+  await delay(300);
+  await p.state([25, 8, 0]);
+  const reset = await p.next((m) => m.type === "reset");
+  assert.equal(reset.reason, "boundary");
+  assert.deepEqual(reset.pose.p, [0, 1, -0.5]);
+});
+
 test("static routes serve bundled runtime and do not expose workspace configuration", async (t) => {
   const server = http.createServer(async (req, res) => {
     if (!(await serveStatic(req, res, new URL(req.url, "http://localhost"))))

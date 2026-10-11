@@ -124,5 +124,7 @@
   "key.menu": "Menú / continuar",
   "key.view": "FPV / cámara de seguimiento",
   "key.mode": "Cambiar modo de vuelo",
-  "key.hover": "Gases de sustentación con teclado"
+  "key.hover": "Gases de sustentación con teclado",
+  "hud.boundary": "Fuera del parque · Regreso al inicio en {time} · Vuelve al interior de la valla",
+  "hud.boundaryReset": "Han transcurrido 10 minutos fuera del parque. El dron ha vuelto al inicio."
 }

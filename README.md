@@ -32,7 +32,12 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 ## Repülés
 
 - Rift 65: 65 mm, 1S tinywhoop; Rift C3: 3″, 4S cinewhoop; Rift X5: 5″, 6S freestyle.
-- Liget: füves park; Betonudvar: félkész építkezés. Mindkettő saját kapus útvonallal.
+- Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
+  változatos növényzettel és parkberendezéssel. Betonudvar: félkész építkezés.
+  Mindkettő saját kapus útvonallal; szabad repülésben a kapuk kikapcsolnak.
+- A Liget kerítésén túl folytatódik a terep. Kilépéskor 10 perces visszaszámlálás
+  indul; visszatéréskor törlődik, lejáratkor a drón visszaáll a rajthelyre.
+  Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
 - Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.
 - Helyi szabad repülés és időmérő, elkülönített helyi rekorddal.
 - Online szabad repülés, háromkörös verseny és szerver által követett egyéni időmérő.
@@ -89,8 +94,9 @@ A jelenlegi akkumulátormodell állandó névleges feszültséget használ;
 kapacitásfogyás, feszültségesés, propwash, aerodinamikai talajhatás és
 alkatrészsérülés későbbi munka. A kapacitás most leíró adat.
 A collider a középtestet és a motor/propeller környékét közelíti;
-nem követi a modell minden apró alkatrészét. A parkban a fatörzsek ütköznek,
-a lombozat egyelőre látványelem. A környezetek első pályaprototípusok.
+nem követi a modell minden apró alkatrészét. A parkban a fatörzsek és a fő
+lombkoronák egyszerűsített ütközési felületet kapnak; az apró levelek és fűszálak
+látványelemek. A környezetek további látványbeli finomításra nyitott prototípusok.
 
 Konfiguráció változtatása után indítsd újra a Node szervert és frissítsd az oldalt.
 A konfiguráció hash-e változik, a korábbi online idő más kategóriában marad.

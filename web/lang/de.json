@@ -124,5 +124,7 @@
   "key.menu": "Menü / fortsetzen",
   "key.view": "FPV / Verfolgerkamera",
   "key.mode": "Flugmodus wechseln",
-  "key.hover": "Schwebegas für Tastatur"
+  "key.hover": "Schwebegas für Tastatur",
+  "hud.boundary": "Außerhalb des Parks · Rückkehr zum Start in {time} · Fliege zurück hinter den Zaun",
+  "hud.boundaryReset": "10 Minuten außerhalb des Parks sind abgelaufen. Die Drohne ist zum Start zurückgekehrt."
 }

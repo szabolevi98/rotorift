@@ -137,6 +137,14 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 ### Füves, fás park
 
 - Saját név; ideiglenes munkanév: **Liget**.
+- A játszható terület 700 × 700 méter: az eredeti 140 méteres oldalhossz ötszöröse.
+- Központi parképület, alatta végigrepülhető észak–déli sétánnyal; normális úthálózat,
+  különböző fák, bokrok, padok, pergola, tó és dombos, változatos területek.
+- A kerítés jól láthatóan jelölje a játszható terület szélét, de legyen átrepülhető.
+  A terep a kerítésen túl is folytatódjon, a drón körül betöltődő új területekkel.
+- Kilépéskor 10 perces aktív játékidős visszaszámlálás indul. Visszatéréskor törlődik;
+  szünet alatt megáll. Lejáratkor a drón disarmolva visszatér a rajthelyre.
+  Ugyanez online is működjön, szerveroldali időméréssel.
 - Nyitott füves részek, fák, lombkoronák és változatos repülhető átjárók.
 - Szabad gyakorlás, freestyle lehetőségek és kapus időmérő útvonalak.
 - A három drón méretkülönbségeihez igazodó gyakorlóhelyek és útvonalak.
