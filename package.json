@@ -1,0 +1,24 @@
+{
+  "name": "rotorift",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "FPV drone simulator with Three.js, Rapier and Node.js multiplayer",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test",
+    "showcase:build": "node demo/build.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.14.0",
+    "three": "0.169.0",
+    "ws": "8.18.0",
+    "mysql2": "3.11.0",
+    "dotenv": "16.4.5"
+  }
+}

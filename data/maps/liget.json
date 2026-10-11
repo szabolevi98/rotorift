@@ -1,0 +1,23 @@
+{
+  "id": "liget",
+  "version": 1,
+  "name": "Liget",
+  "kind": "park",
+  "size": 140,
+  "spawn": [0, 0.15, 32],
+  "routeId": "garden-loop",
+  "routeVersion": 1,
+  "gates": [
+    { "p": [0, 2.5, 20], "n": [0, 0, -1], "width": 5, "height": 4 },
+    { "p": [0, 3, -12], "n": [0, 0, -1], "width": 5, "height": 4 },
+    { "p": [20, 4, -30], "n": [1, 0, 0], "width": 5, "height": 4 },
+    { "p": [42, 3, -10], "n": [0, 0, 1], "width": 5, "height": 4 },
+    {
+      "p": [32, 3, 24],
+      "n": [-0.70710678, 0, 0.70710678],
+      "width": 5,
+      "height": 4
+    },
+    { "p": [6, 2.5, 35], "n": [-1, 0, 0], "width": 5, "height": 4 }
+  ]
+}

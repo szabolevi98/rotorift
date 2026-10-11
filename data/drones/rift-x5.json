@@ -1,0 +1,40 @@
+{
+  "id": "rift-x5",
+  "name": "Rift X5",
+  "version": 1,
+  "category": "freestyle",
+  "tuningStatus": "initial-estimate",
+  "massKg": 0.68,
+  "motorDiagonalM": 0.23,
+  "propDiameterM": 0.127,
+  "maxSpeedMps": 80,
+  "inertiaKgM2": [0.0018, 0.0027, 0.0018],
+  "centerOfMassM": [0, 0.008, 0.008],
+  "bodyHalfExtentsM": [0.027, 0.034, 0.078],
+  "visualOffsetM": [0, -0.035, 0],
+  "cameraOffsetM": [0, 0.012, -0.057],
+  "motor": {
+    "maxThrustN": 11.5,
+    "riseSeconds": 0.025,
+    "fallSeconds": 0.035,
+    "yawTorquePerNewtonM": 0.015
+  },
+  "motors": [
+    { "positionM": [-0.086, -0.02, -0.076], "direction": 1 },
+    { "positionM": [0.086, -0.02, -0.076], "direction": -1 },
+    { "positionM": [-0.086, -0.02, 0.076], "direction": -1 },
+    { "positionM": [0.086, -0.02, 0.076], "direction": 1 }
+  ],
+  "battery": { "cells": 6, "nominalVoltage": 22.8, "capacityMah": 1300 },
+  "linearDrag": 0.014,
+  "quadraticDrag": 0.0035,
+  "angularDrag": 0.0001,
+  "controller": {
+    "rateGain": [48, 30, 48],
+    "levelGain": 7,
+    "angleLimitDeg": 50
+  },
+  "friction": 0.7,
+  "restitution": 0.12,
+  "model": "/assets/models/rotorift-rift-x5.glb"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "betonudvar",
+  "version": 1,
+  "name": "Betonudvar",
+  "kind": "construction",
+  "size": 120,
+  "spawn": [0, 0.15, 30],
+  "routeId": "steel-loop",
+  "routeVersion": 1,
+  "gates": [
+    { "p": [0, 2.5, 18], "n": [0, 0, -1], "width": 4, "height": 3.5 },
+    { "p": [0, 2.5, -4], "n": [0, 0, -1], "width": 4, "height": 3.5 },
+    { "p": [0, 7, -22], "n": [0, 0, -1], "width": 4, "height": 3.5 },
+    { "p": [17, 7, -26], "n": [1, 0, 0], "width": 4, "height": 3.5 },
+    { "p": [27, 3, -8], "n": [0, 0, 1], "width": 4, "height": 3.5 },
+    {
+      "p": [9, 3, 23],
+      "n": [-0.70710678, 0, 0.70710678],
+      "width": 4,
+      "height": 3.5
+    }
+  ]
+}

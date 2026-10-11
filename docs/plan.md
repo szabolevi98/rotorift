@@ -10,6 +10,12 @@ a racing projekt Node.js megoldása alapján. A három showcase-modell
 megkezdését, valamint a commitot és push-t. Az alábbiak a teljes tervezett kiadás
 követelményei; a megvalósítás és ellenőrzés állapota külön követendő.
 
+Megvalósítási frissítés: elkészült a 0.1-es játszható repülési prototípus,
+a két pályával, három fizikai konfigurációval, öt nyelvvel és multiplayer alappal.
+Részletes állapot és ellenőrzések: [prototype.md](prototype.md).
+A teljes első kiadás elfogadási feltételei még nem mind teljesülnek;
+különösen a hardveres rádióteszt, fizikai hangolás és szobába visszatérés hátravan.
+
 ## 1. Cél és első kiadás
 
 A Rotorift böngészőben futó FPV drónszimulátor lesz, saját arculattal,
@@ -87,6 +93,11 @@ Megnézett helyi referenciák: `racing/README.md` architektúrafejezete,
 `server/game/raceController.js`, `server/db/` és `shared/protocol.js`.
 
 Tervezett projektfelépítés a meglévő dokumentáció és showcase mellett:
+
+Az első prototípusban a REST végpontok a `server/index.js`-ben,
+a szobák és online versenyszabályok a `server/net/rooms.js`-ben,
+a menük a `web/main.js`-ben működnek. Az alábbi külön `api/`, `game/`, `ui/`
+és protokollmappák a további bővítéskor történő szétbontás céljai.
 
 ```text
 docs/                  követelmények, terv és technikai jegyzetek

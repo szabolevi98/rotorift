@@ -4,3 +4,4 @@ node_modules/
 .runtime/
 _site/
 test-results/
+.idea/

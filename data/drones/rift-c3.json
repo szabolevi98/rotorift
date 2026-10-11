@@ -1,0 +1,40 @@
+{
+  "id": "rift-c3",
+  "name": "Rift C3",
+  "version": 1,
+  "category": "cinewhoop",
+  "tuningStatus": "initial-estimate",
+  "massKg": 0.31,
+  "motorDiagonalM": 0.128,
+  "propDiameterM": 0.076,
+  "maxSpeedMps": 40,
+  "inertiaKgM2": [0.00042, 0.0007, 0.00042],
+  "centerOfMassM": [0, 0.003, 0.003],
+  "bodyHalfExtentsM": [0.025, 0.025, 0.052],
+  "visualOffsetM": [0, -0.023, 0],
+  "cameraOffsetM": [0, 0.014, -0.045],
+  "motor": {
+    "maxThrustN": 2.6,
+    "riseSeconds": 0.035,
+    "fallSeconds": 0.045,
+    "yawTorquePerNewtonM": 0.008
+  },
+  "motors": [
+    { "positionM": [-0.04525, -0.015, -0.04525], "direction": 1 },
+    { "positionM": [0.04525, -0.015, -0.04525], "direction": -1 },
+    { "positionM": [-0.04525, -0.015, 0.04525], "direction": -1 },
+    { "positionM": [0.04525, -0.015, 0.04525], "direction": 1 }
+  ],
+  "battery": { "cells": 4, "nominalVoltage": 15.2, "capacityMah": 720 },
+  "linearDrag": 0.014,
+  "quadraticDrag": 0.003,
+  "angularDrag": 0.00006,
+  "controller": {
+    "rateGain": [38, 26, 38],
+    "levelGain": 6,
+    "angleLimitDeg": 45
+  },
+  "friction": 0.7,
+  "restitution": 0.06,
+  "model": "/assets/models/rotorift-rift-c3.glb"
+}
