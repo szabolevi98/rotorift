@@ -73,7 +73,7 @@ test("two lakes, open flight space and grounded small buildings have a deliberat
 test("the pavilion passage is flyable and the streamed landscape has no fence wall or leaking chunks", async () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const park = buildPark(scene, world, RAPIER, map);
-  assert.ok(park.treeCount >= 60 && park.treeCount < 180, `tree count ${park.treeCount}: keep groves with clear open areas`);
+  assert.ok(park.treeCount >= 280 && park.treeCount < 450, `tree count ${park.treeCount}: fill the park while preserving open flight space`);
   const assertObjectsInsideFence = () => {
     const half = map.size / 2, matrix = new THREE.Matrix4();
     for (const group of park.root.children.filter((o) => o.isGroup)) {

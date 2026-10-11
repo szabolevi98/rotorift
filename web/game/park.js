@@ -455,7 +455,7 @@ export function buildPark(scene, world, RAPIER, map) {
         : RAPIER.ColliderDesc.ball(height * aspect * 0.22).setTranslation(x, y + height * 0.75, z);
       colliderDescs.push(canopy);
     }
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 16; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
       if (!parkClearance(x, z, map, 2.5)) continue;
       const h = 0.6 + rng() * 0.9;

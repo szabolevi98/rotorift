@@ -69,7 +69,7 @@ Az `npm test` a következőket ellenőrzi:
 - Fordításikulcsok egyezése mind az öt nyelven, HTML-lefedettség; statikus fájlok kiszolgálása.
 - Liget domborzata, pontos területillesztések és a terep ütközési magassága;
   szabad épületátjáró, járható sétány, átjárható kerítés és korlátos területbetöltés.
-- Két külön tómeder, épületek vízszintes alapjai, ritkább facsoportok és nyitott freestyle rét;
+- Két külön tómeder, épületek vízszintes alapjai, sűrűbb facsoportok, tóparti fák, fasor és nyitott freestyle rét;
   híd alatti átjáró és nyitott kávézóterasz; ideiglenesen tiltott versenyszobák.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.

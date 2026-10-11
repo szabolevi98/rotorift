@@ -22,18 +22,27 @@ export const PARK_CLEARINGS = [
   { x: -210, z: 180, rx: 30, rz: 30 },
 ];
 const groves = [
-  [-280, -277, 35, 12], [-105, -275, 35, 10], [-15, -195, 32, 10],
-  [235, -258, 37, 14], [292, -120, 32, 12], [297, 30, 35, 14],
-  [288, 270, 31, 10], [-285, 140, 40, 14], [-98, 155, 30, 8],
-  [-130, 285, 30, 10], [-260, 25, 31, 12], [48, -90, 19, 6],
+  [-280, -277, 40, 20], [-105, -275, 38, 16], [-15, -195, 34, 14],
+  [235, -258, 42, 22], [292, -120, 35, 18], [297, 30, 38, 20],
+  [288, 270, 35, 16], [-285, 140, 43, 22], [-98, 155, 34, 12],
+  [-130, 285, 34, 16], [-260, 25, 35, 18], [48, -90, 23, 8],
+  // Interior groves connect the outer trees to the promenades and landmarks.
+  [80, -280, 40, 19], [165, -210, 31, 13], [238, -165, 36, 17],
+  [-90, 30, 32, 13], [75, 35, 32, 15], [85, -45, 25, 9],
+  [225, 45, 35, 15], [155, 70, 28, 11], [-180, 85, 30, 13],
+  [-280, 245, 32, 13], [135, 295, 30, 13], [-40, 315, 22, 7],
 ];
-// Deliberate groves and a few avenue trees instead of uniformly filling the park.
+// Denser groves, lakeside trees and a regular avenue; clearances below preserve
+// the southern freestyle meadow, paths, water and building approaches.
 export const PARK_TREE_POSITIONS = groves.flatMap(([x, z, radius, count], grove) =>
   Array.from({ length: count }, (_, i) => {
     const a = i * 2.39996323 + grove, r = radius * Math.sqrt((i + 0.5) / count);
     return [x + Math.cos(a) * r, z + Math.sin(a) * r];
   }),
-).concat([-290, -235, -75, 75, 135, 295].flatMap((z) => [[-18, z], [18, z]]));
+).concat(
+  Array.from({ length: 19 }, (_, i) => -315 + i * 35).flatMap((z) => [[-20, z], [20, z]]),
+  PARK_LAKES.flatMap((lake, i) => lakeOutline(lake, 1.65, i === 0 ? 28 : 18).slice(0, -1)),
+);
 
 export function lakeRadius(lake, angle) {
   return 1 + Math.sin(angle * 3 + lake.phase) * 0.07 + Math.cos(angle * 5 - lake.phase) * 0.04;

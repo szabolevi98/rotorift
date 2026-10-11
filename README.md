@@ -33,7 +33,7 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 
 - Rift 65: 65 mm, 1S tinywhoop; Rift C3: 3″, 4S cinewhoop; Rift X5: 5″, 6S freestyle.
 - Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
-  ritkább facsoportokkal, nyílt freestyle térrel, két tóval és animált szökőkúttal.
+  sűrűbb facsoportokkal, tóparti fákkal és fasorral, nyílt freestyle térrel, két tóval és animált szökőkúttal.
   Csónakház, móló, híd, kávézó, fedett sétány és dombtetői pavilon ad repülhető részleteket.
   A Liget időmérője és checkpointjai az elrendezés véglegesítéséig kikapcsolva.
   Betonudvar: félkész építkezés, saját kapus útvonallal.

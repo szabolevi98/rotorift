@@ -140,7 +140,7 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 - A játszható terület 700 × 700 méter: az eredeti 140 méteres oldalhossz ötszöröse.
 - Központi parképület, alatta végigrepülhető észak–déli sétánnyal; normális úthálózat,
   különböző fák, bokrok, padok, pergola, tavak és dombos, változatos területek.
-- Tudatosan kialakított facsoportok, kevés elszórt fa, nagy nyitott freestyle rét.
+- Tudatosan kialakított, sűrűbb facsoportok a belső parkban is, tóparti fák és fasor; az épületek megközelítése és a nagy freestyle rét nyitott marad.
   Északnyugaton nagyobb tó (kb. 172 × 120 m) animált szökőkúttal, csónakházzal és mólóval;
   délkeleten kisebb tó (kb. 88 × 62 m) átrepülhető gyalogoshíddal.
   Kávézó és fedett terasz, oszlopsoros sétány, nyitott dombtetői pavilon.
