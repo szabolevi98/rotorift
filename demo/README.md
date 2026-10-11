@@ -123,6 +123,8 @@ A Rift 65 saját procedurális geometria, vizuális bemutató, nem gyártói CAD
   a karbonlemez csavarozott felfekvő felületeken ül rajtuk.
 - 2,5 mm-es, lyuggatott karbon felső váz, alsó elektronikatálca,
   felfekvő oszlopok, átmenő csavarok és megerősített első támaszok.
+  Az egyforma, köríves motorfüleken mind a négy csavar és alátét teljesen
+  a karbon fölött ül; a csavarok a lemez furatain át a motor talpáig érnek.
 - Csillapított AIO panel, forrasztott motorkábelek, rögzített digitális VTX,
   hűtőbordák, porvédett adatcsatlakozók és hátsó vevő-/táppanel.
 - Döntött digitális FPV kamera, narancssárga, ablakos védőkerettel;
@@ -135,7 +137,8 @@ A Rift 65 saját procedurális geometria, vizuális bemutató, nem gyártói CAD
   Az XT30 a hátsó lemez közepén, csavarozott TPU bölcsőben ül; a tápkábelek
   a VTX két oldalán haladnak, majd a felső lemez kábelnyílásán lépnek ki.
   Az akkuvezetékek külön visszahajló íven érkeznek a dugó hátoldalába;
-  a balanszdugót az akkúpánthoz kapcsolt oldalsó tartó rögzíti.
+  a balanszdugó közvetlenül a két fő tápkábelen ül, vékony gumialátéttel
+  és a dugót meg a két kábelt együtt körbefogó, zárt gumipánttal.
   A két videóantenna külön, furatolt felső talpat kapott, saját koaxátvezetéssel.
   Az ELRS T-antenna ezek alatt és mögött, két teljes körbefogó bilinccsel,
   gumibetéttel és a karbonlemez aljára csavarozott alsó tartóval kapcsolódik.
