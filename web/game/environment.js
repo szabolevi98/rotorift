@@ -82,7 +82,7 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     new THREE.CylinderGeometry(0.65, 0.65, 0.002, 48),
     material(0x232f2d),
   );
-  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : 0.08) + 0.0018, map.spawn[2]);
+  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : construction.heightAt(map.spawn[0], map.spawn[2])) + 0.003, map.spawn[2]);
   root.add(pad);
   return {
     root,

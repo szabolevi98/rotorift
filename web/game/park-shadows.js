@@ -7,7 +7,7 @@ const SPLITS = [60, 200, 600, PARK_SHADOW_DISTANCE];
 // Separate near/far maps retain ground-level detail without losing the park
 // shadows when the camera climbs. CSM snaps each map to texels as it follows.
 export class ParkShadows {
-  constructor(scene, camera) {
+  constructor(scene, camera, weather = {}) {
     this.scene = scene;
     this.camera = camera;
     this.projection = new THREE.Matrix4();
@@ -21,7 +21,7 @@ export class ParkShadows {
       camera, parent: scene, cascades: SPLITS.length,
       maxFar: PARK_SHADOW_DISTANCE, mode: "custom", shadowMapSize: 2048,
       shadowBias: -0.00002, lightDirection: new THREE.Vector3(35, -75, -25).normalize(),
-      lightIntensity: 3, lightNear: 0.5, lightFar: 5000, lightMargin: 200,
+      lightIntensity: weather.sunIntensity ?? 3, lightNear: 0.5, lightFar: 5000, lightMargin: 200,
       customSplitsCallback: (_count, _near, _far, target) => {
         // Scale the intervals together if another view uses a shorter far plane.
         for (const distance of SPLITS) target.push(distance / PARK_SHADOW_DISTANCE);
@@ -31,7 +31,8 @@ export class ParkShadows {
     this.csm.updateFrustums();
     this.updateDepthBounds();
     this.csm.lights.forEach((light, i) => {
-      light.color.setHex(0xfff0d5);
+      light.color.setHex(weather.sunColor ?? 0xfff0d5);
+      light.shadow.radius = weather.shadowRadius ?? 1;
       light.shadow.normalBias = [0.015, 0.04, 0.1, 0.2][i];
       light.shadow.autoUpdate = false;
     });

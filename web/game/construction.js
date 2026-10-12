@@ -1,17 +1,19 @@
 import { createConstructionParts } from "./construction-parts.js";
 import { buildConcreteFrames, buildTowerCranes } from "./construction-buildings.js";
 import { buildConstructionVehicles } from "./construction-vehicles.js";
-import { constructionHeight } from "../../shared/world/construction-layout.js";
+import { constructionHeight, constructionSurfaceHeight } from "../../shared/world/construction-layout.js";
+import { buildConstructionHangar } from "./construction-hangar.js";
+import { buildConstructionWorkYards } from "./construction-work-yards.js";
 
 import { buildConstructionTerrain, buildEarthworkDetails } from "./construction-terrain.js";
 
 export const CONSTRUCTION_VIEW_DISTANCE = 12000;
-export const CONSTRUCTION_FOG_DENSITY = 0.00085;
+export const CONSTRUCTION_FOG_DENSITY = 0.00055;
 
 export function buildConstruction(scene, world, RAPIER, map) {
   const parts = createConstructionParts(scene, world, RAPIER);
   let modelDepth = 0;
-  const grounded = position => [position[0], position[1] + (modelDepth ? 0 : constructionHeight(position[0], position[2])), position[2]];
+  const grounded = position => [position[0], position[1] + (modelDepth ? 0 : constructionSurfaceHeight(position[0], position[2])), position[2]];
   const box = (size, position, ...args) => parts.box(size, grounded(position), ...args);
   const cylinder = (diameter, length, position, ...args) => parts.cylinder(diameter, length, grounded(position), ...args);
   const { beam, part } = parts;
@@ -22,6 +24,8 @@ export function buildConstruction(scene, world, RAPIER, map) {
   buildConstructionTerrain(parts);
   buildEarthworkDetails(parts);
   buildConcreteFrames(parts); buildTowerCranes(parts); buildConstructionVehicles(parts);
+  buildConstructionHangar(parts);
+  buildConstructionWorkYards(parts);
 
   function container(name, position, color = "blue", angle = 0) {
     model(name, position, angle, () => {
@@ -121,6 +125,6 @@ export function buildConstruction(scene, world, RAPIER, map) {
   for (const x of [-17, 17]) box([0.35, 6, 0.35], [x, 3, 278], "steel");
   box([34, 0.35, 0.4], [0, 6.1, 278], "ochre");
   const result = parts.finish();
-  result.heightAt = constructionHeight;
+  result.heightAt = constructionSurfaceHeight;
   return result;
 }

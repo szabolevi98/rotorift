@@ -1,10 +1,15 @@
 import * as THREE from "three";
-import { constructionHeight, CONSTRUCTION_ROADS, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_SPOIL } from "../../shared/world/construction-layout.js";
+import { constructionHeight, CONSTRUCTION_ROADS, CONSTRUCTION_YARDS, CONSTRUCTION_ROAD_HEIGHT, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_SPOIL } from "../../shared/world/construction-layout.js";
+import { buildConstructionLandscape } from "./construction-landscape.js";
+
+export function constructionSoilColor(x, z, exposed = false, deposit = false) {
+  const grain = Math.sin(x * 0.16 + Math.cos(z * 0.13)) * Math.sin(z * 0.19);
+  return new THREE.Color(0x82705c).lerp(new THREE.Color(0xd1b28a), (exposed ? 0.69 : deposit ? 0.58 : 0.32) + grain * 0.13);
+}
 
 export function buildConstructionTerrain(parts) {
   // One continuous height field: deposits, cuts and ramps share the same
   // triangulation for rendering and collision, with no overlapping surfaces.
-  const earth = new THREE.Color(), light = new THREE.Color(0xd1b28a), dark = new THREE.Color(0x82705c);
   const heights = new Map();
   const height = (x, z) => {
     const key = `${x}:${z}`;
@@ -24,29 +29,23 @@ export function buildConstructionTerrain(parts) {
       normal.setXYZ(i, n.x, n.y, n.z);
       const exposed = CONSTRUCTION_EARTHWORKS.some(p => Math.abs(px - p.x) < p.width / 2 && Math.abs(pz - p.z) < p.depth / 2);
       const deposit = CONSTRUCTION_SPOIL.some(p => Math.hypot((px - p.x) / p.rx, (pz - p.z) / p.rz) < 1);
-      const grain = Math.sin(px * 0.16 + Math.cos(pz * 0.13)) * Math.sin(pz * 0.19);
-      earth.copy(dark).lerp(light, (exposed ? 0.69 : deposit ? 0.58 : 0.32) + grain * 0.13);
+      const earth = constructionSoilColor(px, pz, exposed, deposit);
       colors.push(earth.r, earth.g, earth.b);
     }
     geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
     const mesh = parts.ground(geometry, "earthTerrain", true, true);
     mesh.name = `earthworks-${x}-${z}`; mesh.castShadow = true;
   }
-  const shape = new THREE.Shape(); const extent = 18000;
-  shape.moveTo(-extent, -extent); shape.lineTo(extent, -extent); shape.lineTo(extent, extent); shape.lineTo(-extent, extent); shape.closePath();
-  const hole = new THREE.Path(); hole.moveTo(-300, -300); hole.lineTo(-300, 300); hole.lineTo(300, 300); hole.lineTo(300, -300); hole.closePath(); shape.holes.push(hole);
-  const outside = new THREE.ShapeGeometry(shape); outside.rotateX(-Math.PI / 2);
-  parts.ground(outside, "earth").name = "bare-continuous-outside-ground";
+  buildConstructionLandscape(parts, constructionSoilColor);
 
-  // Conforming road ribbons are offset decals over the physical height field.
+  // Conforming roads supply collision at their visible surface too.
   // They subdivide at the same two-metre grid, avoiding long floating slabs.
-  for (const p of [...CONSTRUCTION_ROADS,
-    { x: 172, z: 175, width: 110, depth: 110 }, { x: -168, z: 239, width: 84, depth: 66 }]) {
+  for (const p of [...CONSTRUCTION_ROADS, ...CONSTRUCTION_YARDS]) {
     const geometry = new THREE.PlaneGeometry(p.width, p.depth, Math.ceil(p.width / 2), Math.ceil(p.depth / 2));
     geometry.rotateX(-Math.PI / 2); geometry.translate(p.x, 0, p.z);
     const pos = geometry.attributes.position;
-    for (let i = 0; i < pos.count; i++) pos.setY(i, constructionHeight(pos.getX(i), pos.getZ(i)) + 0.085);
-    geometry.computeVertexNormals(); parts.ground(geometry, "gravel", false).name = "graded-working-road";
+    for (let i = 0; i < pos.count; i++) pos.setY(i, constructionHeight(pos.getX(i), pos.getZ(i)) + CONSTRUCTION_ROAD_HEIGHT);
+    geometry.computeVertexNormals(); parts.ground(geometry, "gravel", true, true).name = "graded-working-road";
   }
 }
 

@@ -15,6 +15,8 @@ export const CONSTRUCTION_CRANES = [
   { id: "crane-c", x: -123, z: 127, height: 48, boom: 62, angle: 2.35, color: "ochre" },
 ];
 export const CONSTRUCTION_PIT = { x: -178, z: 100, width: 48, depth: 40, floor: -4.5, slope: 5 };
+export const CONSTRUCTION_HANGAR = { x: -136, z: -20, width: 56, depth: 50 };
+export const CONSTRUCTION_ROAD_HEIGHT = 0.085;
 export const CONSTRUCTION_VEHICLES = [
   { id: "haul-truck", type: "truck", x: 14, z: 184, angle: 0 },
   { id: "low-loader", type: "truck", x: 185, z: -30, angle: Math.PI / 2, flatbed: true },
@@ -34,6 +36,13 @@ export const CONSTRUCTION_ROADS = [
   { x: -246, z: 30, width: 13, depth: 462 },
   { x: 0, z: -276, width: 510, depth: 13 },
   { x: -178, z: 43, width: 148, depth: 12 },
+  { x: -136, z: 24, width: 20, depth: 40 },
+];
+export const CONSTRUCTION_YARDS = [
+  { x: 172, z: 175, width: 110, depth: 110, elevation: 1.2 },
+  { x: -168, z: 239, width: 84, depth: 66, elevation: 0 },
+  { x: 65, z: 246, width: 64, depth: 42, elevation: 0 },
+  { x: 66, z: 109, width: 52, depth: 30, elevation: 2 },
 ];
 export const CONSTRUCTION_EARTHWORKS = [
   { ...CONSTRUCTION_PIT, id: "west-foundations", elevation: 0 },
@@ -64,14 +73,14 @@ const pads = [
   ...CONSTRUCTION_CRANES.map(c => ({ ...c, width: 16, depth: 16 })),
   ...CONSTRUCTION_VEHICLES.map(v => ({ ...v, width: 8, depth: 12 })),
   { x: 135, z: -185, width: 78, depth: 52 },
-  { x: 172, z: 175, width: 110, depth: 110, elevation: 1.2 },
-  { x: -168, z: 239, width: 84, depth: 66, elevation: 0 },
+  ...CONSTRUCTION_YARDS,
   { x: 165, z: 244, width: 43, depth: 30, elevation: 0 },
   { x: -178, z: 100, width: 72, depth: 64, elevation: 0 },
   { x: 239, z: 103, width: 49, depth: 28 },
+  { x: -136, z: -62, width: 36, depth: 12 },
   ...[[-17,-200],[-205,-195],[83,85],[-128,22],[-231,-25]].map(([x,z]) => ({x,z,width:18,depth:24})),
 ];
-const structuralPads = CONSTRUCTION_BUILDINGS.map(b => ({ ...b, width: b.width + 12, depth: b.depth + 12 }));
+const structuralPads = [...CONSTRUCTION_BUILDINGS, CONSTRUCTION_HANGAR].map(b => ({ ...b, width: b.width + 12, depth: b.depth + 12 }));
 function terrainHeight(x, z) {
   let height = rawHeight(x, z);
   for (const p of pads) {
@@ -110,7 +119,7 @@ function terrainHeight(x, z) {
   return height * (1 - smooth((Math.max(Math.abs(x), Math.abs(z)) - 280) / 20));
 }
 export function constructionHeight(x, z) {
-  if (Math.max(Math.abs(x), Math.abs(z)) >= 300) return 0;
+  if (Math.max(Math.abs(x), Math.abs(z)) >= 300) return constructionLandscapeHeight(x, z);
   // Match the two triangles of each two-metre terrain cell exactly. Roads,
   // spawn heights and supports consequently agree with the collision mesh.
   const gx = Math.floor(x / 2) * 2, gz = Math.floor(z / 2) * 2;
@@ -120,6 +129,15 @@ export function constructionHeight(x, z) {
     + terrainHeight(gx + 2, gz) * tx + terrainHeight(gx, gz + 2) * tz;
   return terrainHeight(gx + 2, gz + 2) * (tx + tz - 1)
     + terrainHeight(gx + 2, gz) * (1 - tz) + terrainHeight(gx, gz + 2) * (1 - tx);
+}
+export function constructionLandscapeHeight(x, z) {
+  const radius = Math.max(Math.abs(x), Math.abs(z));
+  const blend = smooth((radius - 300) / 120) * (1 - smooth((radius - 24000) / 4000));
+  return blend * (1.8 * Math.sin(x * 0.003) * Math.cos(z * 0.004) + 1.2 * Math.sin((x + z) * 0.0018));
+}
+export function constructionSurfaceHeight(x, z) {
+  const road = [...CONSTRUCTION_ROADS, ...CONSTRUCTION_YARDS].some(p => distanceToPad(x, z, p) === 0);
+  return constructionHeight(x, z) + (road ? CONSTRUCTION_ROAD_HEIGHT : 0);
 }
 export function floorOpening(building) {
   return [building.x - building.width / 2 + building.width / building.nx * 1.5,

@@ -4,10 +4,12 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { buildEnvironment } from "./environment.js";
 import { parkSurfaceHeight, PARK_GARDEN } from "../../shared/world/park-layout.js";
 import { read } from "../storage.js";
-import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
+import { PARK_VIEW_DISTANCE } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
-import { CONSTRUCTION_VIEW_DISTANCE, CONSTRUCTION_FOG_DENSITY } from "./construction.js";
-import { configureDroneRenderer, addDroneReflections } from "../../shared/visual/drone-rendering.js";
+import { CONSTRUCTION_VIEW_DISTANCE } from "./construction.js";
+import { configureDroneRenderer } from "../../shared/visual/drone-rendering.js";
+
+import { createMapAtmosphere } from "./map-atmosphere.js";
 
 const construction = new URLSearchParams(location.search).get("map") === "betonudvar";
 const constructionCopy = {
@@ -18,7 +20,14 @@ const constructionCopy = {
   es: ["Vista de la obra", "Estructuras de hormigón", "Grúas torre", "Maquinaria de obra", "Cimientos y excavación", "Materiales y tuberías", "Estructura de la nave", "Oficinas y entrada", "Cargando Betonudvar…", "No se puede cargar la obra. Recarga la página."],
 };
 
+const hangarLabels = { hu: "Hangár és rakodóudvar", en: "Hangar and loading yard", de: "Hangar und Ladehof", fr: "Hangar et aire de chargement", es: "Hangar y patio de carga" };
 const earthworkLabels = { hu: "Földmunkák és rámpák", en: "Earthworks and ramps", de: "Erdarbeiten und Rampen", fr: "Terrassement et rampes", es: "Movimiento de tierras y rampas" };
+
+const constructionExtraCopy = {
+  hangar: hangarLabels, earthworks: earthworkLabels,
+  plant: { hu: "Betonkeverő telep", en: "Concrete batching plant", de: "Betonmischanlage", fr: "Centrale à béton", es: "Planta de hormigón" },
+  landscape: { hu: "Kerítés és külső táj", en: "Fence and landscape", de: "Zaun und Landschaft", fr: "Clôture et paysage", es: "Valla y paisaje" },
+};
 
 const translations = {
   hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Kis tó és híd", "Dombtetői pavilon", "Kerítés és külső táj", "Nagy tó és szökőkút", "Kávézó és terasz", "Fedett sétány", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
@@ -31,17 +40,17 @@ const language = read("language", "hu"), labels = translations[language] ?? tran
 const siteLabels = constructionCopy[language] ?? constructionCopy.en;
 const mapName = construction ? "Betonudvar" : "Liget", overview = construction ? siteLabels[0] : labels[0];
 if (construction) {
-  const names = ["site", "frames", "cranes", "machines", "pit", "storage", "warehouse", "offices", "earthworks"];
+  const names = ["site", "frames", "cranes", "machines", "pit", "storage", "warehouse", "offices", "earthworks", "hangar", "plant", "landscape"];
   document.querySelector("nav").replaceChildren(...names.map((name, i) => {
     const button = document.createElement("button"); button.dataset.view = name;
-    button.textContent = name === "earthworks" ? (earthworkLabels[language] ?? earthworkLabels.en) : siteLabels[i];
+    button.textContent = constructionExtraCopy[name]?.[language] ?? constructionExtraCopy[name]?.en ?? siteLabels[i];
     return button;
   }));
 }
 const communityLabels = { hu: "Sportliget és parkoló", en: "Sports garden and parking", de: "Sportgarten und Parkplatz", fr: "Espace sportif et parking", es: "Zona deportiva y aparcamiento" };
 document.documentElement.lang = translations[language] ? language : "en";
 document.querySelectorAll("[data-view]").forEach((button, i) => {
-  button.textContent = construction ? button.dataset.view === "earthworks" ? (earthworkLabels[language] ?? earthworkLabels.en) : siteLabels[i] : button.dataset.view === "community" ? (communityLabels[language] ?? communityLabels.en) : labels[i];
+  button.textContent = construction ? (constructionExtraCopy[button.dataset.view]?.[language] ?? constructionExtraCopy[button.dataset.view]?.en ?? siteLabels[i]) : button.dataset.view === "community" ? (communityLabels[language] ?? communityLabels.en) : labels[i];
 });
 document.querySelector("#hint").textContent = labels[9];
 document.querySelector("#fly").textContent = labels[10];
@@ -59,15 +68,13 @@ try {
   const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector("#scene"), antialias: true, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   configureDroneRenderer(THREE, renderer);
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(construction ? 0xc9dedc : 0xbcd4df);
-  addDroneReflections(THREE, renderer, scene);
-  scene.fog = new THREE.FogExp2(scene.background, construction ? CONSTRUCTION_FOG_DENSITY : PARK_FOG_DENSITY);
-  scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));
+  const scene = new THREE.Scene();
+  const atmosphere = createMapAtmosphere(renderer, scene, map.kind);
   const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const environment = buildEnvironment(scene, world, RAPIER, map);
   environment.highlight(0, false);
   const camera = new THREE.PerspectiveCamera(52, 1, 0.1, construction ? CONSTRUCTION_VIEW_DISTANCE : PARK_VIEW_DISTANCE);
-  const shadows = new ParkShadows(scene, camera);
+  const shadows = new ParkShadows(scene, camera, atmosphere.profile);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.49;
   controls.minDistance = 3; controls.maxDistance = 1200;
@@ -81,6 +88,9 @@ try {
     warehouse: [[85, 26, -141], [135, 7, -185]],
     offices: [[-78, 24, 299], [-170, 3, 244]],
     earthworks: [[282, 28, -146], [231, 5, -225]],
+    hangar: [[-101, 17, 29], [-136, 7, -20]],
+    plant: [[112, 23, 280], [65, 7, 246]],
+    landscape: [[60, 85, 408], [10, 12, 292]],
   } : {
     park: [[0, 520, 125], [0, 2, 0]],
     pavilion: [[43, 21, 55], [0, 3, 0]],

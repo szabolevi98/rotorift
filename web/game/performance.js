@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { buildEnvironment } from './environment.js';
 import { ParkShadows } from './park-shadows.js';
-import { configureDroneRenderer, addDroneReflections } from '../../shared/visual/drone-rendering.js';
+import { configureDroneRenderer } from '../../shared/visual/drone-rendering.js';
+import { createMapAtmosphere } from "./map-atmosphere.js";
 const report=document.querySelector('#report'), results=[];
 const params=new URLSearchParams(location.search), variant=params.get('variant')??'current', original=params.has('original');
 const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#scene'),antialias:true,logarithmicDepthBuffer:variant!=='depth'});
@@ -17,13 +18,12 @@ const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 try {
 for(const id of ['betonudvar','liget']) {
  const map=maps.find(m=>m.id===id),world=new RAPIER.World({x:0,y:-9.81,z:0}),scene=new THREE.Scene();
- scene.background=new THREE.Color(0xbcd4df);scene.fog=new THREE.FogExp2(0xbcd4df,.00085);
- scene.add(new THREE.HemisphereLight(0xfaf8e5,0x768367,2.4));const reflection=addDroneReflections(THREE,renderer,scene);
+ const atmosphere=createMapAtmosphere(renderer,scene,map.kind);
  const environment=buildEnvironment(scene,world,RAPIER,map);environment.highlight(0,false);
  const camera=new THREE.PerspectiveCamera(100,innerWidth/(innerHeight*.7),.012,12000);
- const shadows=variant==='none'?null:new ParkShadows(scene,camera);
+ const shadows=variant==='none'?null:new ParkShadows(scene,camera,atmosphere.profile);
  if(original&&shadows)for(const light of shadows.csm.lights)light.shadow.autoUpdate=true;
- if(!shadows){const sun=new THREE.DirectionalLight(0xfff0d5,3);sun.position.set(-35,75,25);scene.add(sun);}
+ if(!shadows){const sun=new THREE.DirectionalLight(atmosphere.profile.sunColor,atmosphere.profile.sunIntensity);sun.position.set(-35,75,25);scene.add(sun);}
  const poses=id==='liget'?[
   ['outside',[0,2,60],[0,3,0]],['passage',[0,2,0],[0,2,-25]],['glass-room',[12,6,0],[12,6,-15]]
  ]:[['entry',[0,2,255],[0,4,-35]],['bay',[-68,2,-30],[-68,2,-60]],['upper-bay',[-60,24,-30],[-60,24,-60]]];
@@ -46,7 +46,7 @@ for(const id of ['betonudvar','liget']) {
   const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
   results.push({map:id,pose:name,renderAndGpuMs:+mean(costs).toFixed(2),calls:Math.round(mean(calls)),triangles:Math.round(mean(triangles))});output(`${id}/${name} complete`);
  }
- shadows?.dispose();environment.dispose();world.free();reflection.dispose();
+ shadows?.dispose();environment.dispose();world.free();atmosphere.dispose();
 }
 output('complete');
 }catch(error){output('error: '+error.message);console.error(error);}

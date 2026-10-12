@@ -160,9 +160,15 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
   Az új checkpointokat csak a végleges pálya alapján tervezzük meg; addig helyi és online szabad repülés marad.
 - A három drón méretkülönbségeihez igazodó gyakorlóhelyek és útvonalak.
 
+A Liget napos skyboxot, meleg napfényt és néhány felhőt kap; a pályaelőnézet
+és a repülés azonos égképet és világítást használ.
+
 ### Félkész építkezés
 
 - Saját név; ideiglenes munkanév: **Betonudvar**.
+- Borús skybox, szórt világítás és az éghez illő köd/tükröződések.
+- Átrepülhető, részben burkolt hangár, silós betonkeverő telep, előregyártott
+  elemek szerelőudvara és zsaluzat-előkészítő zóna.
 - Befejezetlen épületváz, pillérek, födémek, nyílások és szintváltások.
 - 600 × 600 m-es építési terület, több eltérő magasságú betonvázzal és nyitott acélvázas csarnokkal.
 - Tényleges, dimbes-dombos terep közel 17 m szintkülönbséggel; szintre rendezett

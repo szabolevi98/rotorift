@@ -1,4 +1,4 @@
-import { CONSTRUCTION_VEHICLES, constructionHeight } from "../../shared/world/construction-layout.js";
+import { CONSTRUCTION_VEHICLES, constructionSurfaceHeight } from "../../shared/world/construction-layout.js";
 
 export function buildConstructionVehicles(parts) {
   const { box, cylinder, beam, part, model } = parts;
@@ -116,7 +116,7 @@ export function buildConstructionVehicles(parts) {
     for (const z of [-0.65, 3.85]) box([3.4, 1.3, 0.2], [0, 2.85, z], "ochre");
     part("cone", [2.7, 1, 3.7], [0, 2.8, 1.6], "earth", false);
   }
-  for (const vehicle of CONSTRUCTION_VEHICLES) model(vehicle.id, [vehicle.x, constructionHeight(vehicle.x, vehicle.z), vehicle.z], vehicle.angle, () => {
+  for (const vehicle of CONSTRUCTION_VEHICLES) model(vehicle.id, [vehicle.x, constructionSurfaceHeight(vehicle.x, vehicle.z), vehicle.z], vehicle.angle, () => {
     if (vehicle.type === "excavator") excavator();
     else if (vehicle.type === "bulldozer") bulldozer();
     else if (vehicle.type === "loader") loader();

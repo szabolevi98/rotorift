@@ -106,14 +106,14 @@ alaptestekkel és vasalással; a megjelenített és fizikai talaj megegyezik.
 
 Az ideiglenes kerítés térbeli jelzés, átjárható; kívül csak a talaj folytatódik.
 A látótávolság 12 km, fokozatos köddel; a napárnyékok ugyanúgy négy tartományban
-követik a kamerát, mint a Ligeten. A 9054 ismétlődő elem 299 térbeli/anyag/geometria
-szerinti instancelt csoportra oszlik; 4587 statikus ütköző közül csak a közeli
+követik a kamerát, mint a Ligeten. A 9577 ismétlődő elem 313 térbeli/anyag/geometria
+szerinti instancelt csoportra oszlik; 4864 statikus ütköző közül csak a közeli
 részek vesznek részt a repülés fizikájában.
 
 Pálya- és útvonalverzió: 2. A régi kapuk eltávolítva, az időmérő ideiglenesen
 tiltva helyben és online. A kerítés elhagyásakor 10 perces visszatérési idő jár.
 3D nézet a játék pályaválasztója alatt, vagy
-`/map-preview.html?map=betonudvar`, kilenc nézettel és öt nyelven.
+`/map-preview.html?map=betonudvar`, tizenkét nézettel és öt nyelven.
 
 A talaj most tényleges, kétméteres háromszögrácsú domborzat: közel 17 m
 szintkülönbség, négy alapozási gödör, három délről levezető géprámpa és nyolc
@@ -123,7 +123,25 @@ beton alapgerendák, zsaluzat és dúcolás; keleten közműcső-szerelési ter�
 Az utak követik a terepet, a talaj színe elkülöníti a kitermelt és tömörített földet.
 A terep 36 × 100 m-es látható részre oszlik, egyező szélekkel és normálokkal;
 a fizikai aktivitás a drónt követi. A kerítésen túl csak folyamatos, csupasz talaj van.
-A látható talaj, a magasságlekérdezés és az ütközés ugyanazokat a háromszögeket használja.
+A közeli talaj, a magasságlekérdezés és az ütközés ugyanazokat a háromszögeket használja.
+
+További munkazónák: 56 × 50 m-es, részben burkolt hangár két nagy kapuval,
+oldalnyílással, beépítetlen tetőmezőkkel és belső galériával; betonkeverő telep
+két magas silóval, adagolóval, szállítószalaggal és adalékanyag-bunkerekkel;
+előregyártott portálok szerelőudvara és zsaluzat-előkészítő terület.
+A munkautak fizikai ütközést kaptak a látható, 8,5 cm-rel magasabb felszínen,
+így a spawnon/reset után a drónok nem süllyednek az út alá.
+
+A kerítésen kívüli föld azonos anyaggal és illeszkedő szélekkel folytatódik:
+hét, fokozatosan durvuló terepgyűrű 38,4 km-ig, majd csupasz, sík távoli talaj.
+Nincsenek külső objektumok. A talaj repülés közben végig látható, az ütközők
+aktivitása követi a drónt.
+
+Mindkét pálya saját skyboxot és hozzá illő fényeket, tükröződést, ködöt kapott.
+Liget: kék, napos ég néhány felhővel, meleg napfény. Betonudvar: borús, szürke
+felhőzet, gyengébb közvetlen fény és erősebb szórt világítás. A 1024 × 512-es
+szférikus égképek időjárásonként egyszer készülnek el, külső letöltés nélkül;
+az előnézet ugyanazt az égképet és fényprofilt használja, mint a repülés.
 
 ## Ellenőrzések
 

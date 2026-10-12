@@ -85,6 +85,17 @@ Ezek helyi mérések, nem teljes képkockaidők; a kamera magassága most az új
 lejtését, az alaptestek talajhoz illeszkedését, a vízszintes épületpadokat,
 a kerítésen túli csupasz talajt és a korlátos fizikai aktivitást.
 
+A hangár, a betonkeverő telep, a szerelőudvar, a külső terepgyűrűk és a skyboxok
+hozzáadása után 67/67 teszt sikeres. A bejáratnál 0,50 ms, a két betonváz-nézetben
+1,32 / 1,45 ms volt a négy fizikai lépés helyi átlagköltsége. A mozgó kamerás
+grafikus próba a Betonudvaron 4,77 / 2,71 / 2,54 ms, a Ligeten 2,91 / 2,80 / 2,52 ms
+volt (azonos 1280 × 504-es mérési felület, GTX 1080). A bővebb geometria látható
+marad; a távoli talaj is kapott részletességi szinteket, a fizikai aktivitás helyi.
+A felhőzet szférikus textúrája időjárásonként egyszer készül el, a tükröződési
+kép mapváltáskor frissül. Nincs képkockánkénti felhőzaj-számítás vagy PMREM-render.
+Az ég színéhez illő fényintenzitások megváltoztak, ezért ez a grafikus mérés
+az új látvány költségét mutatja, nem azonos látvány melletti gyorsulást.
+
 A közös teljesítményjavításkor 63/63, a domborzat átdolgozása után 64/64 teszt sikeres.
 A teljesítményjavítás ellenőrzései: hosszú ütközők és teleportos újraaktiválás,
 60 m/s-os CCD-falütközés helyi aktivitással, azonos fizikai/kontaktus/CCD-pálya
