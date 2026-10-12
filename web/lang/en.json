@@ -75,7 +75,7 @@
   "records.empty": "No completed laps in this category yet.",
   "records.unavailable": "Online records are unavailable. Local time trials still work.",
   "footer.flight": "FIND YOUR LINE",
-  "footer.build": "FLIGHT PROTOTYPE / 0.1",
+  "footer.build": "Copyright © 2026 szabolevi98",
   "loading": "Opening the flight deck…",
   "meta.description": "Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation.",
   "aria.environment": "3D FPV flight environment",

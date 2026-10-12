@@ -75,7 +75,7 @@
   "records.empty": "Aún no hay vueltas completas en esta categoría.",
   "records.unavailable": "Récords en línea no disponibles. La contrarreloj local sigue funcionando.",
   "footer.flight": "ENCUENTRA TU TRAZADA",
-  "footer.build": "PROTOTIPO DE VUELO / 0.1",
+  "footer.build": "Copyright © 2026 szabolevi98",
   "loading": "Abriendo la zona de vuelo…",
   "meta.description": "Simulador FPV ligero en el navegador. Vuela en PC o móvil con un mando compatible. Escenarios low-poly, drones detallados. Sin instalación.",
   "aria.environment": "Entorno de vuelo FPV 3D",
