@@ -137,5 +137,9 @@
   "color.yellow": "Gelb",
   "color.teal": "Türkis",
   "color.violet": "Violett",
-  "error.invalidColor": "Diese Drohnenfarbe ist nicht verfügbar."
+  "error.invalidColor": "Diese Drohnenfarbe ist nicht verfügbar.",
+  "color.blue": "Blau",
+  "color.lime": "Grün",
+  "color.pink": "Rosa",
+  "color.white": "Weiß"
 }

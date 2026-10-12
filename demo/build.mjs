@@ -22,6 +22,7 @@ const script = [
   addon('vendor/TextureUtils.js', 'DemoTextureUtils', 'return { decompress };'),
   addon('vendor/GLTFExporter.js', 'GLTFExporter'),
   read('../shared/visual/drone-rendering.js').replace(/^export /gm, ''),
+  read('../shared/visual/drone-colors.js').replace(/^export /gm, ''),
   read('drone.js'),
   read('whoop65.js'),
   read('cinewhoop3.js'),

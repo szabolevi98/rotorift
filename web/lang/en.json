@@ -137,5 +137,9 @@
   "color.yellow": "Yellow",
   "color.teal": "Teal",
   "color.violet": "Violet",
-  "error.invalidColor": "This drone color is unavailable."
+  "error.invalidColor": "This drone color is unavailable.",
+  "color.blue": "Blue",
+  "color.lime": "Green",
+  "color.pink": "Pink",
+  "color.white": "White"
 }

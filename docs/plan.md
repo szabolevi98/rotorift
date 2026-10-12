@@ -369,7 +369,9 @@ Pálya-, drón- és repülésimód-választás után kötetlen gyakorlás, szün
 
 ### Multiplayer: közös szabad repülés és kapus verseny
 
-- Választható, mentett pilótaszín a showroom palettájával (narancs, sárga, türkiz, lila).
+- Legfeljebb 8 játékos egy multiplayer szobában.
+- Nyolc választható, mentett pilótaszín a showroom palettájával: narancs, sárga,
+  türkiz, lila, kék, zöld, rózsaszín és fehér.
   Az előnézet és a repülés TPU-/whoopváz-színe kövesse a választást.
 - A multiplayerben a többi drón a saját színű, fokozatosan elhalványuló nyomvonalát
   húzza; a lobby és scoreboard ugyanilyen jelölőket mutat. A szín szerveresen
@@ -393,7 +395,7 @@ Pálya-, drón- és repülésimód-választás után kötetlen gyakorlás, szün
   A szerver mondja meg, folytatható-e a futam; a kliens nem pótolhat utólag kapukat.
 - A verseny érvényességi és helyezési szabályait a szerver kezeli;
   a kliens által beküldött kész köridő önmagában nem válhat rekorddá.
-- A játékoslimitet, a drón–drón ütközések szabályát és a kapcsolatvesztés
+- A drón–drón ütközések szabályát és a kapcsolatvesztés
   türelmi idejét a hálózati prototípusnál kell véglegesíteni.
 
 ### Scoreboard és tartós ranglista

@@ -162,7 +162,13 @@
     state.explode=Number(e.target.value)/100;drone.setExplode(state.explode);
     document.getElementById('explode-value').textContent=`${e.target.value}%`;
   });
-  const colors={yellow:'#ffd000',coral:'#ff6648',teal:'#3e938c',violet:'#8573a8'};
+  const colors=DRONE_COLORS;
+  const colorNames={coral:'Narancssárga',yellow:'Sárga',teal:'Türkiz',violet:'Lila',blue:'Kék',lime:'Zöld',pink:'Rózsaszín',white:'Fehér'};
+  for(const [id,hex] of Object.entries(colors)){
+    const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=id;
+    button.style.background=hex;button.setAttribute('aria-label',colorNames[id]);button.setAttribute('aria-pressed',String(id==='coral'));
+    document.getElementById('color-picker').append(button);
+  }
   document.querySelectorAll('[data-color]').forEach(button=>button.addEventListener('click',()=>{
     drone.setColor(colors[button.dataset.color]);document.querySelectorAll('[data-color]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   }));

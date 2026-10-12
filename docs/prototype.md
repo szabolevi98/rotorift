@@ -43,14 +43,16 @@ a GLB-k geometriája és beágyazott textúrái változatlanok.
 
 ## Drónszínek és multiplayer nyomvonalak
 
-A repülés menüjében a showroom négy színe választható: narancs, sárga, türkiz,
-lila. A közös választás böngészőben megmarad, az előnézet azonnal követi.
+A repülés menüjében és a showroomban nyolc szín választható: narancs, sárga,
+türkiz, lila, kék, zöld, rózsaszín és fehér. Mindkettő a közös palettát használja.
+A játék színválasztása böngészőben megmarad, az előnézet azonnal követi.
 Az X5 és C3 TPU-/védőelemei, valamint a 65 mm-es whoop váza színeződik;
 a kábelek, csatlakozók, optika és PCB anyagai változatlanok. A színanyagokat
 szemantikus GLB-mesh-nevek alapján jelöljük összevonás előtt, és minden előnézet,
 saját drón és távoli pilóta külön anyagpéldányt kap; a geometria továbbra is közös.
 
-A Node szerver csak a paletta négy színazonosítóját fogadja el. A hello/appearance
+A multiplayer szobák legfeljebb nyolc pilótát fogadnak; kilépéskor a hely felszabadul.
+A Node szerver csak a paletta nyolc színazonosítóját fogadja el. A hello/appearance
 üzenetek és a szobapillanatkép továbbítják a színt. Csatlakozás, újracsatlakozás,
 futamindítás és reset megtartja; a lobby és scoreboard színes jelölőket mutat.
 A kozmetikai választás nem része a fizikai konfiguráció hashének vagy a rekordkategóriának.
@@ -64,8 +66,10 @@ megálláskor a meglévő csík fokozatosan tűnik el. Kilépéskor, kapcsolatbo
 
 Ellenőrzött: mindhárom elfogadott GLB színanyagai és izolációja, nyomvonal-korlátok,
 elhalványulás és reset/teleport, valódi WebSocket-színváltás, csatlakozás közbeni
-választás és újracsatlakozás; böngészőben mentett szín és két további kliens élő nyomvonala.
-A teljes ellenőrzés 71/71 tesztje sikeres.
+választás és újracsatlakozás; nyolc különböző színű pilóta csatlakozása, a kilencedik
+elutasítása és a kilépéssel felszabaduló hely újbóli elfoglalása; böngészőben mentett
+szín és két további kliens élő nyomvonala.
+A teljes ellenőrzés 72/72 tesztje sikeres.
 
 ## Liget átdolgozása
 

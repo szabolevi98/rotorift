@@ -1,5 +1,6 @@
 export const DRONE_COLORS = Object.freeze({
   coral: "#ff6648", yellow: "#ffd000", teal: "#3e938c", violet: "#8573a8",
+  blue: "#3986ff", lime: "#75cf35", pink: "#ed5aa6", white: "#e7edf3",
 });
 export const validDroneColor = value => typeof value === "string" && Object.hasOwn(DRONE_COLORS, value);
 export const normalizeDroneColor = value => validDroneColor(value) ? value : "coral";

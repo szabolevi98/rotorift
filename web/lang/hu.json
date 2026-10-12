@@ -137,5 +137,9 @@
   "color.yellow": "Sárga",
   "color.teal": "Türkiz",
   "color.violet": "Lila",
-  "error.invalidColor": "Ez a drónszín nem választható."
+  "error.invalidColor": "Ez a drónszín nem választható.",
+  "color.blue": "Kék",
+  "color.lime": "Zöld",
+  "color.pink": "Rózsaszín",
+  "color.white": "Fehér"
 }

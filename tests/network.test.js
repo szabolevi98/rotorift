@@ -7,6 +7,7 @@ import WebSocket from "ws";
 import { attachRooms } from "../server/net/rooms.js";
 import { loadCatalog } from "../server/catalog.js";
 import { serveStatic } from "../server/static.js";
+import { DRONE_COLORS } from "../shared/visual/drone-colors.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fixture(t, mapOverrides = {}) {
   const catalog = await loadCatalog();
@@ -93,6 +94,31 @@ async function fixture(t, mapOverrides = {}) {
   }
   return { client, catalog, db };
 }
+test("multiplayer admits eight pilot colors, rejects a ninth pilot and frees a slot on leave", async t => {
+  const { client } = await fixture(t);
+  const colors = Object.keys(DRONE_COLORS);
+  assert.equal(colors.length, 8);
+  const pilots = [];
+  for (const color of colors) pilots.push(await client(`${color} pilot`, color));
+  const host = pilots[0];
+  host.send("create", { mapId: "test-route", droneId: "rift-x5", mode: "acro", kind: "free" });
+  const { room } = await host.next(m => m.type === "room");
+  for (const [index, pilot] of pilots.slice(1).entries()) {
+    pilot.send("join", { code: room.code });
+    await pilot.next(m => m.type === "room" && m.room.players.length === index + 2);
+  }
+  const full = await host.next(m => m.type === "room" && m.room.players.length === 8);
+  assert.deepEqual(full.room.players.map(p => p.color), colors);
+  const ninth = await client("Ninth pilot", "blue");
+  ninth.send("join", { code: room.code });
+  assert.equal((await ninth.next(m => m.type === "error")).code, "roomFull");
+  pilots[7].send("leave");
+  await host.next(m => m.type === "room" && m.room.players.length === 7);
+  ninth.send("join", { code: room.code });
+  const refilled = await ninth.next(m => m.type === "room" && m.room.players.length === 8);
+  assert.ok(refilled.room.players.some(p => p.id === ninth.id && p.color === "blue"));
+});
+
 test("multiplayer replicates validated pilot colors and reset epochs without changing aircraft physics", async t => {
   const {client,catalog}=await fixture(t),a=await client("Teal pilot","teal"),b=await client("Violet pilot","violet");
   const hash=catalog.drones.find(d=>d.id==="rift-x5").configHash;
