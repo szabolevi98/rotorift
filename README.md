@@ -2,6 +2,8 @@
 
 Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfizikával,
 Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
+Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
+VPS-telepítés és frissítés: [DEPLOY.md](DEPLOY.md).
 Az első **játszható prototípus** elkészült; a fizikai konfigurációk még kezdeti
 becslések, valódi rádiós és repülési hangolás szükséges.
 
