@@ -6,6 +6,7 @@ import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { bindFullscreen } from "./fullscreen.js";
+import { RadioGuide } from "./input/radio-guide.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -22,7 +23,7 @@ const $ = (s) => document.querySelector(s),
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
-let fullscreen;
+let fullscreen, radioGuide;
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
   [$("#stick-right-dot"), $("#stick-right-stem")],
@@ -445,6 +446,8 @@ function renderInputUI() {
   $("#deadzone").value = controller.profile.deadzone;
   for (const [axis, a] of Object.entries(controller.profile.axes)) {
     const row = node("div", "axis-row");
+    row.dataset.radioAxisRow = axis;
+    row.addEventListener("focusin", () => radioGuide?.setAxis(axis));
     row.append(node("span", "", t("axis." + axis)));
     const select = node("select");
     select.setAttribute("aria-label", t("axis." + axis));
@@ -981,6 +984,10 @@ function frame(now) {
     hud();
   }
   preview.render();
+  if (!$("#settings-panel").classList.contains("hidden")) {
+    radioGuide ??= new RadioGuide($("#radio-guide"), t);
+    radioGuide.render(controller, now);
+  }
   if (playing && !paused) flight.render(dt);
   requestAnimationFrame(frame);
 }
@@ -1063,6 +1070,7 @@ function bindUI() {
     controller.save();
   };
   $("#calibrate-center").onclick = () => {
+    radioGuide?.setAxis("centres");
     $("#calibration-status").textContent = t(
       controller.calibrateCenter() ? "settings.saved" : "input.noRadio",
     );
@@ -1074,7 +1082,10 @@ function bindUI() {
   };
   window.addEventListener(
     "calibrationdone",
-    () => ($("#calibration-status").textContent = t("settings.saved")),
+    () => {
+      radioGuide?.setAxis("centres");
+      $("#calibration-status").textContent = t("settings.saved");
+    },
   );
   function camera() {
     cameraSettings.angle = Number($("#camera-angle").value);

@@ -504,6 +504,24 @@ footer {
   display: flex;
   align-items: center;
 }
+.axis-row.guide-active { outline: 1px solid #ff664844; border-radius: 4px; background: #ff66480b; }
+.radio-guide { border-top: 1px solid var(--line); padding-top: 16px; margin: 18px 0; }
+.radio-guide-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.radio-guide-heading h3 { font-size: 13px; margin: 0; font-weight: 600; }
+.radio-guide-heading > span { color: var(--muted); font-size: 10px; letter-spacing: .07em; border: 1px solid var(--line); border-radius: 4px; padding: 5px 7px; }
+.radio-guide-visual { margin: 12px 0; background: radial-gradient(ellipse at center, #45576728, transparent 70%); }
+#radio-guide-scene { width: 100%; height: 240px; display: block; }
+.radio-guide-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: 10px; color: var(--muted); line-height: 1.5; padding: 0 0 12px; }
+.radio-guide-legend span:before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--orange); border-radius: 50%; margin-right: 6px; }
+.radio-guide-legend .radio-guide-live:before { background: #73d9d0; }
+.radio-guide[data-connected="false"] .radio-guide-live:before { background: #666e78; }
+.radio-guide-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
+.radio-guide-tabs button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: transparent; font-size: 11px; min-height: 34px; }
+.radio-guide-tabs button[aria-pressed="true"] { color: var(--orange); border-color: #ff664880; background: #ff66480c; }
+.radio-guide-instruction { display: flex; align-items: center; gap: 10px; min-height: 60px; }
+.radio-guide-instruction p { font-size: 12px; line-height: 1.55; color: #ccd2da; margin: 12px 0; flex: 1; }
+.radio-guide-instruction strong { color: var(--orange); font-size: 17px; white-space: nowrap; }
+@media (max-width: 900px), (max-height: 500px) { .radio-guide-visual { display: none; } }
 .button-row {
   display: flex;
   gap: 9px;

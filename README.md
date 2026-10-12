@@ -15,6 +15,9 @@ jelzés mutatja a letöltés százalékát és a 3D modell előkészítését.
 Mobilon a repülés indításakor és folytatásakor automatikusan teljes képernyőre
 vált a játék, a menübe visszatérve kilép belőle. A kézi kapcsoló továbbra is
 elérhető. A működéshez a böngésző teljesképernyő-támogatása szükséges.
+A rádióbeállítások Mode 2 animált 3D útmutatóval mutatják a botközepeket,
+a tengelyek mozgását és a végpontkalibrálást. USB rádiónál az élő botállás is
+látszik. Kis kijelzőn a 3D ábra elrejtődik, a szöveges útmutató megmarad.
 
 ```powershell
 npm ci

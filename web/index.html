@@ -155,6 +155,21 @@
                   ></option></select
               ></label>
               <p id="radio-name" class="muted"></p>
+              <div id="radio-guide" class="radio-guide">
+                <div class="radio-guide-heading"><h3 id="radio-guide-title" data-i18n="radioGuide.title"></h3><span>Mode 2</span></div>
+                <div class="radio-guide-visual">
+                  <canvas id="radio-guide-scene" role="img" aria-label="3D radio stick movement guide"></canvas>
+                  <div class="radio-guide-legend"><span class="radio-guide-demo" data-i18n="radioGuide.demo"></span><span class="radio-guide-live" data-radio-live></span></div>
+                </div>
+                <div class="radio-guide-tabs" role="group" aria-labelledby="radio-guide-title">
+                  <button type="button" data-radio-guide-axis="centres" aria-pressed="true" data-i18n="radioGuide.centresTab"></button>
+                  <button type="button" data-radio-guide-axis="throttle" aria-pressed="false" data-i18n="axis.throttle"></button>
+                  <button type="button" data-radio-guide-axis="yaw" aria-pressed="false" data-i18n="axis.yaw"></button>
+                  <button type="button" data-radio-guide-axis="pitch" aria-pressed="false" data-i18n="axis.pitch"></button>
+                  <button type="button" data-radio-guide-axis="roll" aria-pressed="false" data-i18n="axis.roll"></button>
+                </div>
+                <div class="radio-guide-instruction" role="status"><p data-radio-instruction></p><strong data-radio-timer></strong></div>
+              </div>
               <div id="axis-settings"></div>
               <div class="button-row">
                 <button

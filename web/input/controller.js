@@ -172,7 +172,8 @@ export class Controller {
   }
   calibrateRange() {
     if (!this.pad) return false;
-    this.range = { end: performance.now() + 6000, min: [], max: [] };
+    const start = performance.now();
+    this.range = { start, end: start + 6000, min: [], max: [] };
     return true;
   }
 }
