@@ -1,6 +1,38 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { LoadingScreen } from "../web/loading.js";
+import { readFile } from "node:fs/promises";
+import { runInNewContext } from "node:vm";
+
+test("the first loading paint is localized before any module or translation download", async () => {
+  const html = await readFile(new URL("../web/index.html", import.meta.url), "utf8");
+  const script = html.match(/<script id="boot-language">([\s\S]*?)<\/script>/)[1];
+  assert.ok(html.indexOf('id="boot-language"') < html.indexOf('src="/main.js"'));
+  assert.match(html, /id="loading-title" data-i18n="loading"><\/strong>/);
+  const boot = (saved, browserLanguage, blocked = false) => {
+    const title = {}, select = {}, document = {
+      documentElement: {},
+      querySelector: selector => selector === "#loading-title" ? title : select,
+    };
+    runInNewContext(script, {
+      document, navigator: { language: browserLanguage },
+      localStorage: { getItem() { if (blocked) throw Error("Storage unavailable"); return saved; } },
+      fetch() { throw Error("First paint must not wait for a network request"); },
+    });
+    return { language: document.documentElement.lang, loading: title.textContent, title: document.title, selected: select.value };
+  };
+  for (const language of ["en", "hu", "de", "fr", "es"]) {
+    const dictionary = JSON.parse(await readFile(new URL(`../web/lang/${language}.json`, import.meta.url), "utf8"));
+    assert.deepEqual(boot(JSON.stringify(language), "en-US"), {
+      language, loading: dictionary.loading, title: dictionary["meta.title"], selected: language,
+    });
+    assert.equal(boot(null, language + "-XX").language, language);
+  }
+  assert.equal(boot(null, "hu-HU", true).language, "hu");
+  assert.equal(boot("bad JSON", "hu-HU").language, "hu");
+  assert.equal(boot(null, "it-IT").language, "en");
+  assert.equal(boot('"unsupported"', "hu-HU").language, "en");
+});
 
 test("overlapping loads keep the screen blocking until all finish, with real progress and retry recovery", () => {
   const previousDocument = globalThis.document, previousWindow = globalThis.window;

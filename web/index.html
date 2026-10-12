@@ -416,7 +416,7 @@
     <div id="boot" role="status">
       <div class="loading-card">
         <img src="/assets/icon.svg" alt="" />
-        <strong id="loading-title" data-i18n="loading">Opening the flight deck…</strong>
+        <strong id="loading-title" data-i18n="loading"></strong>
         <span id="loading-detail"></span>
         <div class="loading-meter"><progress id="loading-progress" max="1" aria-labelledby="loading-title"></progress><span id="loading-percent"></span></div>
       </div>
@@ -428,6 +428,25 @@
       <button type="button" class="fullscreen-toggle fullscreen-with-label hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg><span data-fullscreen-label>Full screen</span></button>
       <span id="fullscreen-error" class="hidden" role="status"></span>
     </div>
+    <!-- Localize the first paint without waiting for modules or language requests. -->
+    <script id="boot-language">
+      (() => {
+        const text = {
+          en: ["Opening the flight deck…", "Rotorift · Lightweight Browser FPV Simulator"],
+          hu: ["Repülőtér megnyitása…", "Rotorift · Könnyű, böngészős FPV-szimulátor"],
+          de: ["Flugdeck wird geöffnet…", "Rotorift · Leichtgewichtiger FPV-Simulator im Browser"],
+          fr: ["Ouverture du terrain de vol…", "Rotorift · Simulateur FPV léger dans le navigateur"],
+          es: ["Abriendo la zona de vuelo…", "Rotorift · Simulador FPV ligero en el navegador"],
+        };
+        let language = (navigator.language || "en").slice(0, 2);
+        try { language = JSON.parse(localStorage.getItem("rotorift.language")) ?? language; } catch { /* Browser language works when storage is unavailable. */ }
+        if (!Object.hasOwn(text, language)) language = "en";
+        document.documentElement.lang = language;
+        document.querySelector("#loading-title").textContent = text[language][0];
+        document.title = text[language][1];
+        document.querySelector("#language").value = language;
+      })();
+    </script>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
