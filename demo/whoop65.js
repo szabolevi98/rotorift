@@ -19,8 +19,7 @@ function createRift65() {
     cell: new THREE.MeshStandardMaterial({color:'#bec4c3',metalness:.55,roughness:.45}),
     glass: new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens),
   };
-  materials.frame.onBeforeCompile = shader => { shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight *= 0.7;\n#include <opaque_fragment>'); };
-  materials.frame.customProgramCacheKey=()=> 'rotorift-saturated-pp-v1';
+  configureDronePolymer(materials.frame);
   function mesh(parent,g,mat,name,x=0,y=0,z=0) {const m=new THREE.Mesh(g,mat);m.name=name;m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
   function box(p,w,h,d,mat,name,x=0,y=0,z=0){return mesh(p,new THREE.BoxGeometry(w,h,d),mat,name,x,y,z);}
   function cyl(p,rt,rb,h,mat,name,x=0,y=0,z=0,n=32){return mesh(p,new THREE.CylinderGeometry(rt,rb,h,n),mat,name,x,y,z);}

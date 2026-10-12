@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
+import { configureDronePolymer } from "../../shared/visual/drone-rendering.js";
 const cache = new Map(),
   loader = new GLTFLoader();
 export async function loadModel(config, { isolateMaterials = false } = {}) {
@@ -10,6 +11,10 @@ export async function loadModel(config, { isolateMaterials = false } = {}) {
       config.id,
       loader.loadAsync(config.model).then(({ scene }) => {
         tagDroneColorMaterials(scene);
+        scene.traverse(object => {
+          for (const material of Array.isArray(object.material) ? object.material : [object.material])
+            if (material?.userData.droneColorRole === "base") configureDronePolymer(material);
+        });
         scene.updateMatrixWorld(true);
         const batches = new Map(),
           root = new THREE.Group(),
@@ -119,7 +124,11 @@ export function isolateModelMaterials(model) {
     // Flight lighting hooks must not change the cached menu/showcase materials.
     const copies = new Map();
     const copy = (material) => {
-      if (!copies.has(material)) copies.set(material, material.clone());
+      if (!copies.has(material)) {
+        const clone = material.clone();
+        if (clone.userData.droneColorRole === "base") configureDronePolymer(clone);
+        copies.set(material, clone);
+      }
       return copies.get(material);
     };
     model.traverse((object) => {

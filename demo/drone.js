@@ -40,12 +40,7 @@ function createRiftX5() {
   materials.black = new THREE.MeshStandardMaterial({ color: '#202729', metalness: .7, roughness: .32 });
   materials.rubber = new THREE.MeshStandardMaterial({ color: '#171c1b', roughness: .93 });
   materials.tpu = new THREE.MeshPhysicalMaterial({ color: '#ff6648', roughness: .65, metalness: 0, specularIntensity: .12, toneMapped: false });
-  // A világos stúdióban a filmes tone mapping kifehérítette a TPU színét.
-  // Megtartjuk az árnyalást, de külön kompenzáljuk a fényerőt a színes műanyagon.
-  materials.tpu.onBeforeCompile = shader => {
-    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', 'outgoingLight *= 0.7;\n#include <opaque_fragment>');
-  };
-  materials.tpu.customProgramCacheKey = () => 'rotorift-saturated-tpu-v1';
+  configureDronePolymer(materials.tpu);
   materials.tpuDetail = new THREE.MeshStandardMaterial({ color: '#9e3d2b', roughness: .65, metalness: 0 });
   materials.silver = new THREE.MeshStandardMaterial({ color: '#a4adb0', metalness: .94, roughness: .25 });
   materials.copper = new THREE.MeshStandardMaterial({ color: '#b96c35', metalness: .78, roughness: .3 });

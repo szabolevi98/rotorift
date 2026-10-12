@@ -4,6 +4,20 @@ export const DRONE_SURFACES = {
   lens: { name: "Rotorift_optical_glass", color: "#25465e", metalness: 0.55, roughness: 0.08, clearcoat: 1 },
 };
 
+export function configureDronePolymer(material, brightness = 0.7) {
+  // GLTF cannot carry toneMapped or shader callbacks. Reapply the showroom's
+  // polymer finish after loading and cloning, before installing map shadows.
+  material.toneMapped = false;
+  material.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <opaque_fragment>",
+      `outgoingLight *= ${brightness.toFixed(1)};\n#include <opaque_fragment>`,
+    );
+  };
+  material.customProgramCacheKey = () => `rotorift-polymer-${brightness}`;
+  material.needsUpdate = true;
+}
+
 export function configureDroneRenderer(THREE, renderer) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;

@@ -50,6 +50,9 @@ Az X5 és C3 TPU-/védőelemei, valamint a 65 mm-es whoop váza színeződik;
 a kábelek, csatlakozók, optika és PCB anyagai változatlanok. A színanyagokat
 szemantikus GLB-mesh-nevek alapján jelöljük összevonás előtt, és minden előnézet,
 saját drón és távoli pilóta külön anyagpéldányt kap; a geometria továbbra is közös.
+A GLB nem tárolja a showroom TPU-anyagainak tone mapping kivételét és shaderét.
+Betöltés és anyagklónozás után ezeket a közös `configureDronePolymer()` állítja
+vissza, így a játékban is megmarad a telített szín, fényekkel és árnyékokkal.
 
 A multiplayer szobák legfeljebb nyolc pilótát fogadnak; kilépéskor a hely felszabadul.
 A Node szerver csak a paletta nyolc színazonosítóját fogadja el. A hello/appearance

@@ -10,8 +10,7 @@ function createRiftC3() {
   materials.carbon=new THREE.MeshStandardMaterial({color:'#aeb6b5',map:carbon,metalness:.35,roughness:.43});
   materials.edge=new THREE.MeshStandardMaterial({color:'#273236',metalness:.25,roughness:.65});
   materials.orange=new THREE.MeshPhysicalMaterial({color:'#ff6648',roughness:.56,metalness:0,specularIntensity:.16,toneMapped:false});
-  materials.orange.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <opaque_fragment>','outgoingLight *= 0.7;\n#include <opaque_fragment>');};
-  materials.orange.customProgramCacheKey=()=> 'rotorift-c3-saturated-polymer-v1';
+  configureDronePolymer(materials.orange);
   materials.orangeDetail=new THREE.MeshStandardMaterial({color:'#9e3d2b',roughness:.62});
   materials.black=new THREE.MeshStandardMaterial({color:'#192125',metalness:.55,roughness:.36});
   materials.rubber=new THREE.MeshStandardMaterial({color:'#171d1f',roughness:.91});

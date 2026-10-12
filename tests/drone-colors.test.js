@@ -28,6 +28,13 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
         const m=[...seen].find(candidate=>candidate.userData.droneColorRole===source.userData.droneColorRole&&
           (source.userData.droneColorRole||candidate.color.equals(source.color)));
         assert.ok(m);
+        if (source.userData.droneColorRole === "base") {
+          assert.equal(m.toneMapped, false, "GLB clones retain the showroom polymer finish");
+          const shader = {fragmentShader: "#include <opaque_fragment>"};
+          m.onBeforeCompile(shader);
+          assert.match(shader.fragmentShader, /outgoingLight \*= 0\.7;/);
+          assert.equal(m.customProgramCacheKey(), "rotorift-polymer-0.7");
+        } else assert.equal(m.toneMapped, source.toneMapped, "other surfaces keep their original tone mapping");
         if(source.userData.droneColorRole) {
           const expected=new THREE.Color(DRONE_COLORS[color]);if(source.userData.droneColorRole==="detail")expected.multiplyScalar(.55);
           assert.ok(m.color.equals(expected),id+" TPU follows the chosen color");
