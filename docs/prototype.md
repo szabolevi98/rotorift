@@ -22,7 +22,7 @@
 | Nyelvek        | EN/HU/DE/FR/ES, mentett választás, dinamikus felület és meta description                                    |
 | Arculat        | Rotorift ikon, favicon, saját narancssárga arculat; külön megmaradó showcase                                |
 
-A drónkonfigurációk 2. verziója a lebegési gázt 28% körülire, az X5 teljes gázas
+A drónkonfigurációk 3. verziója megtartja a 2. verzió 28% körüli lebegési gázát és az X5 teljes gázas
 utazósebességét kb. 200 km/h-ra hangolja. A billentyűzet teljes Acro botkitérést
 ad, Shift mellett finom irányítással. Szűrt forgáscsillapítás mérsékli a túlpörgést.
 A mérések és a szerkeszthető paraméterek a [fizikai hangolási jegyzetben](physics-tuning.md) szerepelnek.
@@ -40,6 +40,59 @@ A játék, menü-előnézet és offline demó közös ACES/sRGB színkezelést, 
 A kamerák és akciókamerák kékes optikai üveget kaptak, a három drón PCB-je egységes
 zöld. A modellek anyagbeállításai a `shared/visual/drone-rendering.js` fájlban közösek;
 a GLB-k geometriája és beágyazott textúrái változatlanok.
+
+## Repülési mód és választható szimuláció
+
+A HUD bal alsó módgombja és a hozzárendelhető M gyorsgomb Acro → Angle → Horizon
+sorrendben vált, offline és online is. Online a szerver jóváhagyja a pilóta saját
+módját; a többi pilóta módja nem változik. Mért kör közbeni váltás érvényteleníti
+az adott kört, a következő tiszta kör az új mód kategóriájába kerül.
+
+A repülés menüjének „Szimulációs opciók” részében külön választható:
+
+- Akkumulátor: a konfigurált mAh kapacitás, becsült motoráram és belső ellenállás
+  alapján fogy, terhelés alatt csökken a feszültség és az elérhető motorteljesítmény.
+  LOW BATTERY figyelmeztetés 20% alatt vagy tartósan alacsony cellafeszültségnél;
+  LAND NOW 6% alatt vagy tartós kritikus feszültségnél. Utóbbinál az alkalmazott
+  gáz ténylegesen korlátozott; teljes lemerüléskor már nem tartható a lebegés.
+  A kritikus figyelmeztetés nem tűnik el a terhelés megszűnésével.
+- Propellersérülés: az armolt drón propeller-ütközőinek Rapier-kontaktusából és
+  ütközési erősségéből keletkezik, motoronként csökkenti a hatásfokot és vibrációt
+  okoz. A védett whoopokra kisebb sérülési szorzó vonatkozik. A HUD jelzi a sérülést.
+- Propwash: működő rotorokkal, a saját légörvénybe történő süllyedéskor jelentkező
+  egyenetlen tolóerő. Oldalirányú kitéréskor, a légörvényből kilépve lecseng.
+- Ghost mód: csak multiplayerben látható. Bekapcsolva nincs drón–drón ütközés;
+  kikapcsolva a többi pilótának simított kinematikus Rapier-ütközőteste van.
+  Reset/teleport nem söpör végig a pályán ütközőként; kilépéskor a test felszabadul.
+  A környezettel való ütközés ghost módban is megmarad.
+- Szél: szélcsend, enyhe (2 m/s), közepes (5 m/s) és erős (9 m/s) alapszél,
+  fokozatos széllökésekkel. A földhöz képesti sebesség helyett a levegőhöz képesti
+  sebességből számoljuk a légellenállást. Online a széllökések közös szobaórát használnak.
+
+Alapállapot: a három fizikai extra kikapcsolva, szélcsend és bekapcsolt ghost mód.
+A helyi választás mentett; helyi szünet alatt állítható. Reset feltölti az akkumulátort
+és helyreállítja a propellereket. A három JSON drónkonfiguráció `simulation` blokkja
+tartalmazza a kategóriánkénti becsült hangolást.
+
+Online a szoba létrehozója választja ki a szabályokat, a lobbyban kizárólag a
+házigazda módosíthatja őket. Változtatás törli mindenki készenlétét. A belépők
+ugyanazokat a beállításokat kapják; indítás után a szabályok rögzítettek.
+Host kilépésekor az új házigazda örökli a lobby jogosultságát.
+Az állapotüzenetek eltérő szabálykulccsal nem fogadhatók el.
+
+A fizika továbbra is kliensoldali, a szerver a közös szabályokat, módváltásokat,
+állapotok és körök érvényességét ellenőrzi. A pilóták közötti ütközés helyi,
+simított távoli testekre adott reakció; késleltetéses finomhangolás még szükséges.
+Az opciók és a szél külön, ötkarakteres szabálykulcsú ranglistakategóriát adnak. A MariaDB migráció
+megőrzi a korábbi köröket az alap `00010` kategóriában; a verziózott drónkonfiguráció
+és a repülési mód továbbra is elkülönül.
+
+Ellenőrzött: fogyás és feszültségesés, LOW BATTERY/LAND NOW és tényleges tolóerőkorlát,
+valódi propellerkontaktus, propwash lecsengése, a négy szélerősség tényleges sodródása,
+ghost/ütközés és testfelszabadítás, host jogosultság és átadása, indítás utáni zárolás,
+szabályegyezés és személyes online módváltás, MariaDB kategóriák elkülönítése.
+Böngészőben: kapcsolók, offline és online módgomb, akkufogyás, szél-HUD és rögzített szabályok.
+A teljes tesztcsomag 83/83 tesztje sikeres.
 
 ## Drónszínek és multiplayer nyomvonalak
 
@@ -72,7 +125,7 @@ elhalványulás és reset/teleport, valódi WebSocket-színváltás, csatlakozá
 választás és újracsatlakozás; nyolc különböző színű pilóta csatlakozása, a kilencedik
 elutasítása és a kilépéssel felszabaduló hely újbóli elfoglalása; böngészőben mentett
 szín és két további kliens élő nyomvonala.
-A teljes ellenőrzés 72/72 tesztje sikeres.
+A szín- és nyomvonal-ellenőrzések a teljes tesztcsomag részei.
 
 ## Liget átdolgozása
 
@@ -222,7 +275,7 @@ Hardveres rádióteszt még nem történt.
 ## Következő lépések
 
 - TX15, Pocket és az elérhető DJI vezérlő felismerése, kiosztása és kalibrációja valódi hardveren.
-- A három konfiguráció repülési hangolása; akkumulátor feszültségesése és fogyása, propwash és aerodinamikai részletek.
+- A három konfiguráció és az új akkumulátor-, sérülés-, propwash- és szélmodellek hangolása valódi repülési adatok alapján.
 - Pályák látványának és kapus útvonalainak finomítása, pontosabb ütközési geometria és teljesítményprofilozás.
 - Szobába visszatérés kapcsolatvesztés után, futam újraindítása, dedikált eredményképernyő és meccs-életciklus finomítása.
 - Mozgásellenőrzés szigorítása, késleltetéses/terheléses tesztek és szükség esetén szerveres visszaszimulálás.

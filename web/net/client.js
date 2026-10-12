@@ -1,5 +1,6 @@
 import { read, write } from "../storage.js";
 import { normalizeDroneColor } from "../../shared/visual/drone-colors.js";
+import { simulationKey } from "../../shared/simulation/options.js";
 export class Network {
   constructor(receive) {
     this.receive = receive;
@@ -70,7 +71,7 @@ export class Network {
   get now() {
     return Date.now() + this.offset;
   }
-  state(pose, config, mode, interrupted) {
+  state(pose, config, mode, interrupted, simulation) {
     this.send("state", {
       ...pose,
       seq: this.seq++,
@@ -78,6 +79,7 @@ export class Network {
       configHash: config.configHash,
       mode,
       interrupted,
+      simulationKey: simulationKey(simulation),
     });
   }
 }

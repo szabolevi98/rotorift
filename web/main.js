@@ -9,6 +9,7 @@ import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
 import { canRace, isTimedSession } from "/shared/race/map-modes.js";
 import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
+import { DEFAULT_SIMULATION, FLIGHT_MODES, WIND_LEVELS, normalizeSimulation, simulationKey } from "/shared/simulation/options.js";
 const $ = (s) => document.querySelector(s),
   node = (tag, cls = "", text = "") => {
     const e = document.createElement(tag);
@@ -71,6 +72,48 @@ let playing = false,
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
 let droneColor = normalizeDroneColor(read("drone-color", "coral"));
+let simulation = normalizeSimulation(read("simulation", DEFAULT_SIMULATION));
+function createSimulationControls() {
+  for (const id of ["flight-simulation", "lobby-simulation"]) {
+    const root = $("#" + id);
+    for (const key of ["battery", "propDamage", "propwash", "ghost", "wind"]) {
+      const label = node("label", "simulation-row"), caption = node("span");
+      caption.dataset.simLabel = key;
+      const input = node(key === "wind" ? "select" : "input");
+      input.dataset.simOption = key;
+      input.id = `${id}-${key}`;
+      if (key === "wind") for (const value of WIND_LEVELS) { const option = node("option"); option.value = value; input.append(option); }
+      else input.type = "checkbox";
+      input.onchange = () => {
+        const next = { ...(room?.simulation ?? simulation), [key]: key === "wind" ? input.value : input.checked };
+        if (room) network.send("rules", { simulation: next });
+        else {
+          simulation = normalizeSimulation(next); write("simulation", simulation);
+          if (playing) { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; }
+        }
+        refreshSimulationControls();
+      };
+      label.append(caption, input); root.append(label);
+    }
+    root.append(node("p", "prototype-note simulation-note"));
+  }
+  refreshSimulationControls();
+}
+function refreshSimulationControls() {
+  const options = normalizeSimulation(room?.simulation ?? simulation), online = !!room || $("#session").value.startsWith("online");
+  for (const input of document.querySelectorAll("[data-sim-option]")) {
+    const key = input.dataset.simOption;
+    input.disabled = !!room && (room.host !== network.id || room.phase !== "lobby");
+    input.parentElement.classList.toggle("hidden", key === "ghost" && !online);
+    input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
+    if (key === "wind") {
+      input.value = options.wind;
+      for (const option of input.options) option.textContent = t("wind." + option.value);
+    } else input.checked = options[key];
+  }
+  for (const note of document.querySelectorAll(".simulation-note"))
+    note.textContent = t(room ? (room.phase === "lobby" ? "simulation.hostHint" : "simulation.lockedHint") : "simulation.hint");
+}
 function refreshColors() {
   for (const button of document.querySelectorAll("[data-drone-color]")) {
     button.setAttribute("aria-pressed", String(button.dataset.droneColor === droneColor));
@@ -161,20 +204,20 @@ function action(kind) {
     if (room) network.send("reset");
     else flight.reset();
   }
-  if (kind === "mode" && !room) {
-    const modes = ["acro", "angle", "horizon"];
-    $("#flight-mode").value =
-      modes[(modes.indexOf(flight.physics.mode) + 1) % 3];
-    flight.physics.mode = $("#flight-mode").value;
-    lap = newLap();
+  if (kind === "mode") {
+    const next = FLIGHT_MODES[(FLIGHT_MODES.indexOf(flight.physics.mode) + 1) % FLIGHT_MODES.length];
+    if (room) { if (room.phase === "flying") network.send("mode", {mode: next}); }
+    else { $("#flight-mode").value = next; flight.physics.mode = next; lap.invalid = true; lap.bestMs = lap.lastMs = null; }
   }
 }
 function recordKey(
   m = flight.map,
   c = flight.config,
   mode = flight.physics.mode,
+  options = flight.physics?.effects.options ?? simulation,
 ) {
-  return [m.id, m.routeId, m.routeVersion, c.id, c.configHash, mode].join(":");
+  const key = [m.id, m.routeId, m.routeVersion, c.id, c.configHash, mode].join(":");
+  return simulationKey(options) === simulationKey(DEFAULT_SIMULATION) ? key : key + ":" + simulationKey(options);
 }
 function saveLocal(ms) {
   const records = read("records", {}),
@@ -204,6 +247,7 @@ function updateSessionOptions() {
     $("#session").value = $("#session").value.startsWith("online") ? "online-free" : "free";
   visible("#online-controls", $("#session").value.startsWith("online"));
   visible("#map-mode-note", !enabled);
+  refreshSimulationControls();
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/map-preview.html?map=" + encodeURIComponent(map.id);
@@ -471,6 +515,7 @@ function renderLobby() {
   $("#ready").disabled = room.phase !== "lobby";
   $("#start-room").disabled =
     room.phase !== "lobby" || room.host !== network.id;
+  refreshSimulationControls();
 }
 async function loadRoom(r) {
   const key = r.code + ":" + r.startsAt;
@@ -482,7 +527,8 @@ async function loadRoom(r) {
   session = "online-" + r.kind;
   $("#flight-mode").value = r.mode;
   try {
-    await flight.load(roomMap, roomConfig, rates(roomConfig.id), r.mode, room.players.find(p=>p.id===network.id)?.color ?? droneColor);
+    const own = r.players.find(p=>p.id===network.id);
+    await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation);
     if (!room || room.code !== r.code) {
       flight.active = false;
       return;
@@ -521,6 +567,7 @@ function receive(m) {
   if (m.type === "left") {
     flight.updateRemotes([], network.id);
     room = null;
+    refreshSimulationControls();
     loadingRoom = null;
     loadedRoom = null;
     playing = false;
@@ -554,6 +601,7 @@ function receive(m) {
       pause();
       notice(t("online.disconnected"));
       room = null;
+      refreshSimulationControls();
       playing = false;
       visible("#resume", false);
       visible("#leave-flight", false);
@@ -564,8 +612,12 @@ function receive(m) {
   if (m.type === "room") {
     const previousPhase = room?.phase;
     room = m.room;
-    if (flight.physics && loadedRoom === room.code + ":" + room.startsAt)
+    if (flight.physics && loadedRoom === room.code + ":" + room.startsAt) {
+      if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
+      const own = room.players.find(p => p.id === network.id);
+      if (own?.mode) { flight.physics.mode = own.mode; $("#flight-mode").value = own.mode; }
       flight.updateRemotes(room.players, network.id);
+    }
     visible("#leave-flight", true);
     renderLobby();
     if (room.phase === "lobby") {
@@ -625,13 +677,14 @@ async function launch() {
       mode: $("#flight-mode").value,
       kind: session.replace("online-", ""),
       public: $("#public-room").checked,
+      simulation,
     });
     return;
   }
   $("#launch").disabled = true;
   visible("#boot", true);
   try {
-    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor);
+    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor, simulation);
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -658,13 +711,14 @@ async function showRecords() {
   }
   root.append(
     node("h2", "", t("records.local")),
-    node("p", "muted", time(read("records", {})[recordKey(m, c, mode)])),
+    node("p", "muted", time(read("records", {})[recordKey(m, c, mode, simulation)])),
+    node("p", "muted", t("simulation.recordsHint")),
   );
   root.append(node("h2", "", t("records.online")));
   try {
     const res = await fetch(
       "/api/leaderboard?" +
-        new URLSearchParams({ map: m.id, drone: c.id, mode }),
+        new URLSearchParams({ map: m.id, drone: c.id, mode, simulation: simulationKey(simulation) }),
     );
     if (!res.ok) throw Error("Leaderboard unavailable");
     const data = await res.json();
@@ -695,7 +749,10 @@ function hud() {
     flight.physics.armed ? "hud.armed" : "hud.disarmed",
   );
   $("#arm-state").classList.toggle("armed", flight.physics.armed);
-  $("#hud-mode").textContent = flight.physics.mode.toUpperCase();
+  $("#hud-mode").textContent = flight.physics.mode.toUpperCase() + " ↻";
+  $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flight.physics.mode.toUpperCase());
+  $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);
+  $("#hud-mode").disabled = !!room && (room.phase !== "flying" || own?.finished);
   $("#hud-input").textContent = t(
     controller.usingRadio ? "settings.controller" : "input.keyboard",
   );
@@ -703,7 +760,17 @@ function hud() {
   $("#altitude").textContent = Math.max(0,
     p.p[1] - flight.environment.heightAt(p.p[0], p.p[2]),
   ).toFixed(1);
-  $("#throttle").textContent = Math.round(input.throttle * 100);
+  $("#throttle").textContent = Math.round(Math.min(input.throttle, flight.physics.effects.throttleLimit) * 100);
+  const effects = flight.physics.effects, state = effects.telemetry;
+  visible("#battery-hud", effects.options.battery);
+  $("#battery-hud").textContent = `${t("simulation.battery")} · ${state.voltage.toFixed(1)} V · ${Math.round(state.charge * 100)}%` +
+    (state.batteryState !== "normal" ? " · " + t("hud.battery." + state.batteryState) : "");
+  $("#battery-hud").classList.toggle("low", state.batteryState === "low");
+  $("#battery-hud").classList.toggle("critical", state.batteryState === "critical");
+  visible("#damage-hud", effects.options.propDamage && Math.max(...state.damage) > 0);
+  $("#damage-hud").textContent = t("hud.propDamage", {damage: Math.round(Math.max(...state.damage) * 100)});
+  visible("#wind-hud", effects.options.wind !== "calm");
+  $("#wind-hud").textContent = t("simulation.wind") + " · " + t("wind." + effects.options.wind);
   $("#hud-session").textContent =
     t("map." + flight.map.id) + " / " + flight.config.name;
   const boundary = room ? own?.boundary : flight.boundary;
@@ -732,6 +799,7 @@ function hud() {
     hover: keyName(controller.keys.hover),
     reset: keyName(controller.keys.reset),
     view: keyName(controller.keys.view),
+    mode: keyName(controller.keys.mode),
     menu: keyName(controller.keys.menu),
   });
   const race = $("#race-hud");
@@ -814,6 +882,7 @@ function frame(now) {
       (room.phase === "flying" &&
         !room.players.find((p) => p.id === network.id)?.finished))
   ) {
+    flight.physics.effects.windTime = room ? Math.max(0, (network.now - room.startsAt) / 1000) : simTime / 1000;
     flight.step(dt, input, (previous, current, step) => {
       const previousTime = simTime;
       simTime += step * 1000;
@@ -843,6 +912,7 @@ function frame(now) {
       flight.config,
       flight.physics.mode,
       paused,
+      flight.physics.effects.options,
     );
     sendAt = now;
   }
@@ -866,8 +936,10 @@ function bindUI() {
   $("#launch").onclick = launch;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;
-  $("#session").onchange = () =>
-    visible("#online-controls", $("#session").value.startsWith("online"));
+  $("#hud-mode").onclick = () => { action("mode"); document.activeElement?.blur(); };
+  $("#session").onchange = () => {
+    visible("#online-controls", $("#session").value.startsWith("online")); refreshSimulationControls();
+  };
   $("#nickname").value = read("nickname", "Pilot");
   $("#nickname").onchange = () => {
     write("nickname", $("#nickname").value);
@@ -943,6 +1015,7 @@ function bindUI() {
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
     refreshColors();
+    refreshSimulationControls();
     refreshCatalogText();
     renderRates();
     renderKeys();
@@ -958,6 +1031,7 @@ function bindUI() {
   });
   renderRates();
   renderKeys();
+  createSimulationControls();
 }
 try {
   await initLanguage();

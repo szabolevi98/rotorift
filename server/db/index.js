@@ -1,5 +1,6 @@
 import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
+import { normalizeSimulation, simulationKey } from "../../shared/simulation/options.js";
 export class Database {
   constructor() {
     this.pool = null;
@@ -40,6 +41,9 @@ export class Database {
       await this.pool.query(
         "CREATE TABLE IF NOT EXISTS results (id CHAR(36) PRIMARY KEY, map_id VARCHAR(32) NOT NULL, payload LONGTEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
       );
+      const [simulationColumn] = await this.pool.query("SHOW COLUMNS FROM laps LIKE 'simulation_key'");
+      if (!simulationColumn.length)
+        await this.pool.query("ALTER TABLE laps ADD COLUMN simulation_key CHAR(5) NOT NULL DEFAULT '00010'");
       this.available = true;
     } catch {
       this.available = false;
@@ -72,11 +76,11 @@ export class Database {
       );
     return id;
   }
-  async saveLap(player, map, drone, mode, ms) {
+  async saveLap(player, map, drone, mode, ms, simulation) {
     if (!this.available) return false;
     try {
       await this.pool.execute(
-        "INSERT INTO laps(id,player_id,map_id,route_version,drone_id,config_hash,flight_mode,duration_ms) VALUES(?,?,?,?,?,?,?,?)",
+        "INSERT INTO laps(id,player_id,map_id,route_version,drone_id,config_hash,flight_mode,duration_ms,simulation_key) VALUES(?,?,?,?,?,?,?,?,?)",
         [
           randomUUID(),
           player,
@@ -86,6 +90,7 @@ export class Database {
           drone.configHash,
           mode,
           ms,
+          simulationKey(simulation),
         ],
       );
       return true;
@@ -104,6 +109,8 @@ export class Database {
           JSON.stringify(
             [...room.players.values()].map((p) => ({
               name: p.name,
+              mode: p.mode ?? room.mode,
+              simulation: normalizeSimulation(room.simulation),
               completed: p.lap.completed,
               bestMs: p.lap.bestMs,
               finished: p.finished,
@@ -117,12 +124,12 @@ export class Database {
       return false;
     }
   }
-  async leaderboard(map, drone, mode) {
+  async leaderboard(map, drone, mode, simulation) {
     if (!this.available) return { available: false, entries: [] };
     try {
       const [rows] = await this.pool.execute(
-        "SELECT p.nick AS name, MIN(l.duration_ms) AS ms, MAX(l.created_at) AS date FROM laps l JOIN players p ON p.id=l.player_id WHERE l.map_id=? AND l.route_version=? AND l.drone_id=? AND l.config_hash=? AND l.flight_mode=? GROUP BY l.player_id,p.nick ORDER BY ms ASC LIMIT 30",
-        [map.id, map.routeVersion, drone.id, drone.configHash, mode],
+        "SELECT p.nick AS name, MIN(l.duration_ms) AS ms, MAX(l.created_at) AS date FROM laps l JOIN players p ON p.id=l.player_id WHERE l.map_id=? AND l.route_version=? AND l.drone_id=? AND l.config_hash=? AND l.flight_mode=? AND l.simulation_key=? GROUP BY l.player_id,p.nick ORDER BY ms ASC LIMIT 30",
+        [map.id, map.routeVersion, drone.id, drone.configHash, mode, simulationKey(simulation)],
       );
       return { available: true, entries: rows };
     } catch {

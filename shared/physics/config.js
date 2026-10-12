@@ -60,6 +60,10 @@ export function validateDrone(c) {
     throw Error("Invalid battery");
   for (const k of ["linearDrag", "quadraticDrag", "angularDrag"])
     if (!Number.isFinite(c[k]) || c[k] < 0) throw Error("Invalid drag");
+  if (!c.simulation?.battery || !["idleCurrentA", "maxCurrentA", "resistanceOhm"].every(k => positive(c.simulation.battery[k])) ||
+      !positive(c.simulation.propDamageThresholdMps) || !positive(c.simulation.propDamageScale) ||
+      !positive(c.simulation.propwashStrength) || c.simulation.propwashStrength > 0.5)
+    throw Error("Invalid simulation tuning");
   if (
     !Number.isFinite(c.restitution) ||
     c.restitution < 0 ||

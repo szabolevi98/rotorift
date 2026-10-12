@@ -8,6 +8,7 @@ import { attachRooms } from "../server/net/rooms.js";
 import { loadCatalog } from "../server/catalog.js";
 import { serveStatic } from "../server/static.js";
 import { DRONE_COLORS } from "../shared/visual/drone-colors.js";
+import { DEFAULT_SIMULATION, simulationKey } from "../shared/simulation/options.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fixture(t, mapOverrides = {}) {
   const catalog = await loadCatalog();
@@ -117,6 +118,52 @@ test("multiplayer admits eight pilot colors, rejects a ninth pilot and frees a s
   ninth.send("join", { code: room.code });
   const refilled = await ninth.next(m => m.type === "room" && m.room.players.length === 8);
   assert.ok(refilled.room.players.some(p => p.id === ninth.id && p.color === "blue"));
+});
+
+test("only the host changes common simulation rules, clears readiness and transfers ownership on leave", async t => {
+  const {client}=await fixture(t),a=await client("Host"),b=await client("Guest");
+  a.send("create",{mapId:"test-route",droneId:"rift-x5",mode:"angle",kind:"free"});
+  const created=await a.next(m=>m.type==="room");
+  assert.deepEqual(created.room.simulation,DEFAULT_SIMULATION);
+  b.send("join",{code:created.room.code});await b.next(m=>m.type==="room"&&m.room.players.length===2);
+  a.send("ready",{ready:true});b.send("ready",{ready:true});await a.next(m=>m.type==="room"&&m.room.players.every(p=>p.ready));
+  b.send("rules",{simulation:{battery:true,wind:"strong"}});
+  assert.equal((await b.next(m=>m.type==="error")).code,"hostOnly");
+  a.send("rules",{simulation:{wind:"tornado"}});
+  assert.equal((await a.next(m=>m.type==="error")).code,"invalidSimulation");
+  const options={battery:true,propDamage:true,propwash:true,ghost:false,wind:"medium"};
+  a.send("rules",{simulation:options});
+  const changed=await b.next(m=>m.type==="room"&&m.room.simulation.wind==="medium");
+  assert.deepEqual(changed.room.simulation,options);assert.ok(changed.room.players.every(p=>!p.ready));
+  const c=await client("Late guest");c.send("join",{code:created.room.code});
+  assert.deepEqual((await c.next(m=>m.type==="room")).room.simulation,options);
+  a.send("leave");await b.next(m=>m.type==="room"&&m.room.host===b.id);
+  b.send("rules",{simulation:{wind:"light"}});
+  const transferred=await c.next(m=>m.type==="room"&&m.room.simulation.wind==="light");
+  assert.equal(transferred.room.host,b.id);
+});
+
+test("in-game modes are personal, room rules lock at start and mismatched private settings cannot submit poses", async t => {
+  const {client}=await fixture(t),a=await client("Host"),b=await client("Guest");
+  const options={battery:true,ghost:false,wind:"strong"};
+  a.send("create",{mapId:"test-route",droneId:"rift-x5",mode:"angle",kind:"free",simulation:options});
+  const created=await a.next(m=>m.type==="room");b.send("join",{code:created.room.code});
+  await b.next(m=>m.type==="room"&&m.room.players.length===2);
+  a.send("ready",{ready:true});b.send("ready",{ready:true});await a.next(m=>m.type==="room"&&m.room.players.every(p=>p.ready));
+  a.send("start");await a.next(m=>m.type==="room"&&m.room.phase==="flying");
+  a.send("rules",{simulation:{wind:"calm"}});assert.equal((await a.next(m=>m.type==="error")).code,"rulesLocked");
+  b.send("mode",{mode:"horizon"});
+  const changed=await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.mode==="horizon");
+  assert.equal(changed.room.players.find(p=>p.id===a.id).mode,"angle");
+  assert.ok(changed.room.players.find(p=>p.id===b.id).lap.invalid);
+  await b.state([0.7,1,-0.5],{mode:"horizon",simulationKey:simulationKey(options)});
+  await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.p[0]===0.7);
+  const rejectedAt = Date.now();
+  await b.state([0.8,1,-0.5],{mode:"horizon",simulationKey:simulationKey(DEFAULT_SIMULATION)});
+  const ignored=await a.next(m=>m.type==="room"&&m.now>=rejectedAt+35&&m.room.players.find(p=>p.id===b.id)?.lap.invalid);
+  assert.equal(ignored.room.players.find(p=>p.id===b.id).p[0],0.7);
+  b.send("reset");const reset=await b.next(m=>m.type==="reset");assert.ok(reset.pose);
+  assert.equal((await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.resetId>changed.room.players.find(p=>p.id===b.id).resetId)).room.players.find(p=>p.id===b.id).mode,"horizon");
 });
 
 test("multiplayer replicates validated pilot colors and reset epochs without changing aircraft physics", async t => {

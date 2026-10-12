@@ -1,6 +1,7 @@
 import { actualRate, defaultRates } from "./rates.js";
 import { rotate, inverse, array, vector, clamp, length } from "./math.js";
 import { motorThrustLimit, throttleToThrust } from "./propulsion.js";
+import { FlightEffects } from "./flight-effects.js";
 export const PHYSICS_DT = 1 / 240;
 function mixThrust(mixer, demand, max) {
   const idle = max * 0.012;
@@ -58,7 +59,7 @@ function invertMixer(rows) {
   return a.map((r) => r.slice(4));
 }
 export class DronePhysics {
-  constructor(RAPIER, world, config, spawn, { updateSceneQueries = true } = {}) {
+  constructor(RAPIER, world, config, spawn, { updateSceneQueries = true, simulation } = {}) {
     this.world = world;
     this.config = config;
     this.updateSceneQueries = updateSceneQueries;
@@ -68,6 +69,7 @@ export class DronePhysics {
     this.motorThrust = [0, 0, 0, 0];
     this.previousBodyRates = [0, 0, 0];
     this.angularAcceleration = [0, 0, 0];
+    this.effects = new FlightEffects(config, simulation);
     this.mixer = invertMixer([
       config.motors.map(() => 1),
       config.motors.map((m) => -(m.positionM[2] - config.centerOfMassM[2])),
@@ -96,13 +98,12 @@ export class DronePhysics {
         this.body,
       );
     collider(RAPIER.ColliderDesc.cuboid(...config.bodyHalfExtentsM));
-    for (const m of config.motors)
-      collider(
+    this.propColliders = config.motors.map(m => collider(
         RAPIER.ColliderDesc.cylinder(
           0.004,
           config.propDiameterM * 0.48,
         ).setTranslation(...m.positionM),
-      );
+      ));
     this.reset(spawn);
   }
   reset(position) {
@@ -110,6 +111,7 @@ export class DronePhysics {
     this.motorThrust.fill(0);
     this.previousBodyRates.fill(0);
     this.angularAcceleration.fill(0);
+    this.effects.reset();
     this.body.setTranslation(vector(position), true);
     this.body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
     this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -122,6 +124,7 @@ export class DronePhysics {
       c = this.config,
       q = b.rotation(),
       w = rotate(array(b.angvel()), inverse(q));
+    this.effects.update(dt, this.armed, this.motorThrust, array(b.linvel()), q);
     b.resetForces(true);
     b.resetTorques(true);
     let desired = [
@@ -158,8 +161,8 @@ export class DronePhysics {
       // proportional-only controller. Stick changes still command full rates.
       return c.inertiaKgM2[i] * (c.controller.rateGain[i] * (v - w[i]) - c.controller.rateDamping[i] * this.angularAcceleration[i]);
     });
-    const max = motorThrustLimit(c),
-      base = throttleToThrust(input.throttle, c);
+    const max = motorThrustLimit(c) * this.effects.powerFactor,
+      base = throttleToThrust(Math.min(input.throttle, this.effects.throttleLimit), c) * this.effects.powerFactor;
     const demand = [4 * base, torques[0], torques[2], torques[1]],
       idle = max * 0.012;
     // Preserve attitude authority when collective throttle reaches a motor limit.
@@ -174,7 +177,8 @@ export class DronePhysics {
           : c.motor.fallSeconds;
       this.motorThrust[i] +=
         (target - this.motorThrust[i]) * (1 - Math.exp(-dt / tau));
-      const f = rotate([0, this.motorThrust[i], 0], q),
+      const thrust = this.motorThrust[i] * this.effects.motorEfficiency(i);
+      const f = rotate([0, thrust, 0], q),
         rp = rotate(r, q),
         p = b.translation();
       b.addForceAtPoint(
@@ -187,7 +191,7 @@ export class DronePhysics {
           rotate(
             [
               0,
-              this.motorThrust[i] * m.direction * c.motor.yawTorquePerNewtonM,
+              thrust * m.direction * c.motor.yawTorquePerNewtonM,
               0,
             ],
             q,
@@ -196,9 +200,10 @@ export class DronePhysics {
         true,
       );
     }
-    const velocity = array(b.linvel()),
-      drag = c.linearDrag + c.quadraticDrag * length(velocity);
-    b.addForce(vector(velocity.map((v) => -v * drag)), true);
+    const velocity = array(b.linvel()), wind = this.effects.wind(array(b.translation())),
+      airVelocity = velocity.map((v, i) => v - wind[i]),
+      drag = c.linearDrag + c.quadraticDrag * length(airVelocity);
+    b.addForce(vector(airVelocity.map((v) => -v * drag)), true);
     b.addTorque(
       vector(
         rotate(
@@ -219,6 +224,24 @@ export class DronePhysics {
       world.physicsPipeline.step(world.gravity, world.integrationParameters,
         world.islands, world.broadPhase, world.narrowPhase, world.bodies,
         world.colliders, world.impulseJoints, world.multibodyJoints, world.ccdSolver);
+    }
+    if (this.armed && this.effects.options.propDamage) {
+      for (const [index, prop] of this.propColliders.entries()) {
+        this.world.contactPairsWith(prop, other => {
+          if (other.parent()?.handle === b.handle) return;
+          this.world.contactPair(prop, other, manifold => {
+            const n = manifold.normal(), normal = [n.x, n.y, n.z];
+            const otherVelocity = other.parent()?.linvel() ?? { x: 0, y: 0, z: 0 };
+            const angular = rotate(w, q), offset = rotate(c.motors[index].positionM, q);
+            const rotational = [angular[1] * offset[2] - angular[2] * offset[1], angular[2] * offset[0] - angular[0] * offset[2], angular[0] * offset[1] - angular[1] * offset[0]];
+            const relative = velocity.map((v, i) => v + rotational[i] - [otherVelocity.x, otherVelocity.y, otherVelocity.z][i]);
+            let impulse = 0;
+            for (let i = 0; i < manifold.numContacts(); i++) impulse += manifold.contactImpulse(i);
+            if (impulse > c.massKg * 0.01)
+              this.effects.impact(index, Math.max(Math.abs(relative.reduce((sum, v, i) => sum + v * normal[i], 0)), impulse / c.massKg));
+          });
+        });
+      }
     }
   }
   get pose() {

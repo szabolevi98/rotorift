@@ -53,6 +53,11 @@ test("MariaDB persists profiles and category records across reconnects without d
   assert.equal(records.entries.length, 1);
   assert.equal(records.entries[0].ms, 11345);
   assert.equal(records.entries[0].name, "Renamed persistence pilot");
+  const windy = {battery:true,propDamage:true,ghost:false,wind:"strong"};
+  assert.equal(await reopened.saveLap(token,map,drone,"acro",9000,windy),true);
+  assert.equal((await reopened.leaderboard(map,drone,"acro")).entries[0].ms,11345,"wind/effect laps do not replace the normal category");
+  assert.equal((await reopened.leaderboard(map,drone,"acro",windy)).entries[0].ms,9000);
+  assert.equal((await reopened.leaderboard(map,drone,"acro",{...windy,wind:"light"})).entries.length,0);
   assert.equal(
     (await reopened.leaderboard(map, drone, "angle")).entries.length,
     0,

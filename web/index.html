@@ -106,6 +106,10 @@
                 ></label>
               </div>
               <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
+              <details class="simulation-controls">
+                <summary data-i18n="simulation.title"></summary>
+                <div id="flight-simulation"></div>
+              </details>
               <label class="name-row"
                 ><span data-i18n="fly.name"></span
                 ><input
@@ -326,6 +330,10 @@
             <p id="lobby-description"></p>
           </div>
           <div id="lobby-players" class="card"></div>
+          <details class="simulation-controls" open>
+            <summary data-i18n="simulation.title"></summary>
+            <div id="lobby-simulation"></div>
+          </details>
           <div class="button-row">
             <button
               id="ready"
@@ -365,6 +373,11 @@
       <div class="crosshair">+</div>
       <div id="race-hud"></div>
       <div id="scoreboard"></div>
+      <div id="simulation-hud" aria-live="polite">
+        <div id="battery-hud" class="hidden"></div>
+        <div id="damage-hud" class="hidden"></div>
+        <div id="wind-hud" class="hidden"></div>
+      </div>
       <div id="stick-hud" role="group" aria-labelledby="stick-title">
         <span id="stick-title" class="visually-hidden" data-i18n="hud.sticks"></span>
         <div class="stick-display">
@@ -394,7 +407,7 @@
       </div>
       <div class="hud-bottom">
         <div>
-          <span id="arm-state"></span><b id="hud-mode">ACRO</b
+          <span id="arm-state"></span><button id="hud-mode" type="button">ACRO ↻</button
           ><span id="hud-input"></span>
         </div>
         <div class="telemetry">

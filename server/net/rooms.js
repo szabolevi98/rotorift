@@ -5,7 +5,8 @@ import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
 import { canRace } from "../../shared/race/map-modes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
-const MODES = ["acro", "angle", "horizon"];
+import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
+const MODES = FLIGHT_MODES;
 export function attachRooms(server, catalog, db) {
   const rooms = new Map(),
     clients = new Set();
@@ -20,6 +21,8 @@ export function attachRooms(server, catalog, db) {
     mapId: r.map.id,
     droneId: r.drone.id,
     mode: r.mode,
+    simulation: r.simulation,
+    simulationKey: simulationKey(r.simulation),
     startsAt: r.startsAt,
     laps: r.laps,
     host: r.host,
@@ -27,6 +30,7 @@ export function attachRooms(server, catalog, db) {
       id: p.id,
       name: p.name,
       color: p.color,
+      mode: p.mode,
       resetId: p.resetId,
       ready: p.ready,
       p: p.pose?.p,
@@ -167,6 +171,7 @@ export function attachRooms(server, catalog, db) {
           return;
         }
         if (m.type === "create") {
+          if (m.simulation !== undefined && !validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
           if (rooms.size >= 100) {
             send(p, "error", { code: "roomFull" });
             return;
@@ -192,6 +197,7 @@ export function attachRooms(server, catalog, db) {
             map,
             drone,
             mode: m.mode,
+            simulation: normalizeSimulation(m.simulation),
             laps: 3,
             public: m.public !== false && m.kind !== "hotlap",
             phase: "lobby",
@@ -201,6 +207,7 @@ export function attachRooms(server, catalog, db) {
           };
           rooms.set(code, r);
           r.players.set(p.id, p);
+          p.mode = r.mode;
           p.room = r;
           p.ready = m.kind === "hotlap";
           reset(p, r);
@@ -226,6 +233,7 @@ export function attachRooms(server, catalog, db) {
           }
           leave(p);
           r.players.set(p.id, p);
+          p.mode = r.mode;
           p.room = r;
           p.ready = false;
           reset(p, r);
@@ -234,6 +242,18 @@ export function attachRooms(server, catalog, db) {
         }
         const r = p.room;
         if (!r) return;
+        if (m.type === "rules") {
+          if (r.host !== p.id) { send(p, "error", { code: "hostOnly" }); return; }
+          if (r.phase !== "lobby") { send(p, "error", { code: "rulesLocked" }); return; }
+          if (!validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
+          r.simulation = normalizeSimulation(m.simulation);
+          for (const player of r.players.values()) player.ready = false;
+          broadcast(r); return;
+        }
+        if (m.type === "mode" && FLIGHT_MODES.includes(m.mode) && r.phase === "flying" && !p.finished) {
+          if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; p.lap.bestMs = p.lap.lastMs = null; }
+          broadcast(r); return;
+        }
         if (m.type === "ready" && r.phase === "lobby") {
           p.ready = !!m.ready;
           broadcast(r);
@@ -291,7 +311,8 @@ export function attachRooms(server, catalog, db) {
         const validTravel =
           dt !== null && dt <= 2 && travel <= r.drone.maxSpeedMps * dt + 1.0;
         if (dt !== null && !validTravel) p.lap.invalid = true;
-        if (m.configHash !== r.drone.configHash || m.mode !== r.mode) {
+        if (m.configHash !== r.drone.configHash || m.mode !== p.mode ||
+            (m.simulationKey ?? simulationKey(DEFAULT_SIMULATION)) !== simulationKey(r.simulation)) {
           p.lap.invalid = true;
           return;
         }
@@ -319,7 +340,7 @@ export function attachRooms(server, catalog, db) {
               p.finishMs = e.at - r.startsAt;
             }
             const saved = e.valid
-              ? await db.saveLap(p.token, r.map, r.drone, r.mode, e.ms)
+              ? await db.saveLap(p.token, r.map, r.drone, p.mode, e.ms, r.simulation)
               : false;
             send(p, "lap", { ...e, saved });
           }

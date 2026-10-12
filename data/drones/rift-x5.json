@@ -1,7 +1,7 @@
 {
   "id": "rift-x5",
   "name": "Rift X5",
-  "version": 2,
+  "version": 3,
   "category": "freestyle",
   "tuningStatus": "initial-estimate",
   "massKg": 0.68,
@@ -39,5 +39,11 @@
   },
   "friction": 0.7,
   "restitution": 0.12,
+  "simulation": {
+    "battery": {"idleCurrentA":0.7,"maxCurrentA":95,"resistanceOhm":0.024},
+    "propDamageThresholdMps": 3,
+    "propDamageScale": 1,
+    "propwashStrength": 0.22
+  },
   "model": "/assets/models/rotorift-rift-x5.glb"
 }

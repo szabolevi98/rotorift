@@ -309,9 +309,29 @@ Az automatikus érzékelést és a kiosztást valódi hardveren is ellenőrizni 
 
 Mindhárom mód elérhető legyen mindhárom első kiadásos drónhoz.
 A kezdő alapmód Acro; a mód menüből és hozzárendelt vezérlőgombbal váltható.
+Repülés közben a HUD módgombja és az M gyorsgomb Acro → Angle → Horizon között
+léptet, online is pilótánként külön. Mért kör közbeni váltás érvényteleníti az adott kört.
 A rate-görbe szögsebesség-parancsot határoz meg: Angle és Horizon módban
 az önszintező szabályozással való kapcsolatát külön kell megvalósítani.
 Angle módban a roll/pitch kitérés szögparancs, nem közvetlen Acro rate-parancs.
+
+### Választható szimulációs opciók
+
+- Külön kapcsolható akkumulátor-szimuláció, propellersérülés és propwash.
+- Akkumulátor: konfigurált kapacitás és terhelés szerinti merülés, feszültségesés,
+  LOW BATTERY, majd LAND NOW figyelmeztetés valódi gáz-/teljesítménykorláttal.
+- Propellersérülés tényleges rotor-kontaktus alapján, motoronkénti hatásfokvesztéssel;
+  propwash a saját légörvénybe történő süllyedéskor, oldalirányban elhagyva lecseng.
+- Szélcsend, enyhe, közepes és erős szél, folyamatos széllökésekkel; a fizikában
+  a levegőhöz képesti mozgás számít. Online közös időalap.
+- Multiplayerben választható ghost mód; kikapcsolva a drónok ütköznek egymással,
+  bekapcsolva a többi drónon át lehet repülni, a környezeti ütközés megmarad.
+- Online közös szobaszabályok: kizárólag a házigazda állítja őket a lobbyban,
+  változtatás után új készenlét szükséges, indítás után rögzítettek minden pilótára.
+- Alapérték: az akkumulátor-, sérülés- és propwash-modellek kikapcsolva, szélcsend,
+  ghost mód bekapcsolva. Helyi beállítások mentése; reset feltölt és javít.
+- Drónonkénti becsült hangolás a fizikai JSON `simulation` blokkjában, jelenleg 3. verzió.
+- A szél és minden kapcsoló külön rekordkategóriát alkot a drónverzió és mód mellett.
 
 ## 7. Drónonkénti rate settings
 
@@ -395,8 +415,8 @@ Pálya-, drón- és repülésimód-választás után kötetlen gyakorlás, szün
   A szerver mondja meg, folytatható-e a futam; a kliens nem pótolhat utólag kapukat.
 - A verseny érvényességi és helyezési szabályait a szerver kezeli;
   a kliens által beküldött kész köridő önmagában nem válhat rekorddá.
-- A drón–drón ütközések szabályát és a kapcsolatvesztés
-  türelmi idejét a hálózati prototípusnál kell véglegesíteni.
+- A drón–drón ütközés kapcsolható ghost móddal; a késleltetéses reakciót és a
+  kapcsolatvesztés türelmi idejét a hálózati prototípusnál kell finomhangolni.
 
 ### Scoreboard és tartós ranglista
 
@@ -529,7 +549,7 @@ Ezek a követelményterv elkészítését nem akadályozzák:
 - A drónok pontos fizikai adatai és hangolása.
 - Végleges billentyűkiosztás, kapus útvonalak és teljesítménycél.
 - A DJI vezérlő pontos változata és tényleges számítógépes elérhetősége.
-- Szobánkénti játékoslimit, hálózati frissítési ütemek és a drón–drón ütközések szabálya.
+- A 8 fős limit melletti hálózati terhelés, frissítési ütemek és drón–drón ütközés késleltetéses finomítása.
 - Profilkezelés részletei, kapcsolatvesztés türelmi ideje, szerverhost és publikálási mód.
 - Ranglista-validáció végleges szigorúsága; szükség esetén szerveres visszaellenőrzés.
 - Későbbi drónkategóriák és AI ellenfelek; a multiplayer már az első kiadás része.

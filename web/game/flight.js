@@ -12,6 +12,8 @@ import { ParkShadows } from "./park-shadows.js";
 import { configureDroneRenderer } from "/shared/visual/drone-rendering.js";
 import { createMapAtmosphere } from "./map-atmosphere.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "./construction.js";
+import { RemoteCollisions } from "./remote-collisions.js";
+import { normalizeSimulation } from "../../shared/simulation/options.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -50,12 +52,13 @@ export class Flight {
   async init() {
     await RAPIER.init();
   }
-  async load(map, config, rates, mode, color = this.color ?? "coral") {
+  async load(map, config, rates, mode, color = this.color ?? "coral", simulation) {
     this.active = false;
     this.parkShadows?.dispose();
     this.parkShadows = null;
     this.environment?.dispose();
     this.atmosphere?.dispose();
+    this.remoteCollisions?.dispose();
     this.world?.free();
     this.removeModel(this.visual);
     for (const o of this.remotes.values()) { this.removeModel(o.model); o.trail.dispose(); }
@@ -70,7 +73,9 @@ export class Flight {
     this.camera.updateProjectionMatrix();
     this.atmosphere = createMapAtmosphere(this.renderer, this.scene, map.kind);
     this.sun.visible = false;
-    this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn, { updateSceneQueries: false });
+    this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn, { updateSceneQueries: false, simulation });
+    this.remoteCollisions = new RemoteCollisions(RAPIER, this.world, config);
+    this.remotePlayers = [];
     this.physics.rates = rates;
     this.physics.mode = mode;
     this.visual = await loadModel(config, { isolateMaterials: true });
@@ -89,6 +94,10 @@ export class Flight {
     this.active = true;
   }
   setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.visual, this.color); }
+  setSimulation(options) {
+    this.physics?.effects.setOptions(normalizeSimulation(options));
+    this.remoteCollisions?.update(this.remotePlayers ?? [], this.ownId, this.physics.effects.options.ghost);
+  }
   reset(position = this.map.spawn) {
     this.physics.reset(position);
     this.boundary.reset();
@@ -111,6 +120,7 @@ export class Flight {
     this.accumulator += Math.min(dt, 0.1);
     while (this.accumulator >= PHYSICS_DT) {
       this.previous = this.physics.pose;
+      this.remoteCollisions.step(PHYSICS_DT);
       this.physics.step(input);
       this.current = this.physics.pose;
       this.accumulator -= PHYSICS_DT;
@@ -175,6 +185,8 @@ export class Flight {
     }
   }
   updateRemotes(players, ownId) {
+    this.remotePlayers = players; this.ownId = ownId;
+    this.remoteCollisions?.update(players, ownId, this.physics.effects.options.ghost);
     const ids = new Set(players.filter((p) => p.id !== ownId).map((p) => p.id));
     for (const [id, r] of this.remotes)
       if (!ids.has(id)) {

@@ -5,6 +5,7 @@ import { loadCatalog } from "./catalog.js";
 import { Database } from "./db/index.js";
 import { serveStatic } from "./static.js";
 import { attachRooms } from "./net/rooms.js";
+import { DEFAULT_SIMULATION, WIND_LEVELS } from "../shared/simulation/options.js";
 export async function createServer() {
   const catalog = await loadCatalog(),
     db = new Database();
@@ -40,7 +41,11 @@ export async function createServer() {
           mode = url.searchParams.get("mode");
         if (!map || !drone || !["acro", "angle", "horizon"].includes(mode))
           return json(res, { error: "Invalid category" }, 400);
-        return json(res, await db.leaderboard(map, drone, mode));
+        const key = url.searchParams.get("simulation") ?? "00010";
+        if (!/^[01]{4}[0-3]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
+        const simulation = { ...DEFAULT_SIMULATION, wind: WIND_LEVELS[Number(key[4])] };
+        ["battery", "propDamage", "propwash", "ghost"].forEach((name, i) => simulation[name] = key[i] === "1");
+        return json(res, await db.leaderboard(map, drone, mode, simulation));
       }
       if (await serveStatic(req, res, url)) return;
       json(res, { error: "Not found" }, 404);

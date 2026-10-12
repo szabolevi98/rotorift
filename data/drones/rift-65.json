@@ -1,7 +1,7 @@
 {
   "id": "rift-65",
   "name": "Rift 65",
-  "version": 2,
+  "version": 3,
   "category": "tinywhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.026,
@@ -39,5 +39,11 @@
   },
   "friction": 0.6,
   "restitution": 0.08,
+  "simulation": {
+    "battery": {"idleCurrentA":0.08,"maxCurrentA":14,"resistanceOhm":0.035},
+    "propDamageThresholdMps": 2.5,
+    "propDamageScale": 0.25,
+    "propwashStrength": 0.16
+  },
   "model": "/assets/models/rotorift-rift-65.glb"
 }

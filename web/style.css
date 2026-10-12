@@ -227,6 +227,19 @@ h2 {
 .drone-color-swatch i, .pilot-color { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--pilot-color); box-shadow: inset 0 0 0 1px #00000016; }
 .drone-color-swatch i { width: 18px; height: 18px; }
 .drone-color-control p { font-size: 10px; line-height: 1.6; color: var(--muted); margin: 9px 0 0; }
+.simulation-controls { margin: 20px 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; }
+.simulation-controls summary { cursor: pointer; font-size: 12px; font-weight: 600; }
+.simulation-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: 12px 0 0; font-size: 12px; }
+.simulation-row > span { margin: 0; }
+.simulation-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--orange); }
+.simulation-row select { width: 150px; padding: 6px 8px; }
+.simulation-row:has(:disabled) { opacity: 0.65; }
+#hud-mode { pointer-events: auto; border: 1px solid #fff6; background: #0003; color: white; border-radius: 4px; padding: 6px 9px; font: inherit; font-weight: 700; }
+#hud-mode:disabled { opacity: 0.5; }
+#simulation-hud { position: absolute; left: 32px; top: 86px; display: grid; gap: 8px; }
+#simulation-hud > div { padding: 7px 10px; border-radius: 4px; background: #0004; }
+#battery-hud.low { color: #ffdb77; }
+#battery-hud.critical, #damage-hud { color: #ff9c8b; }
 .pilot-name { display: inline-flex; align-items: center; gap: 9px; }
 .map-card {
   border-radius: 8px;
