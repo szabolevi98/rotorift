@@ -18,6 +18,8 @@ const constructionCopy = {
   es: ["Vista de la obra", "Estructuras de hormigón", "Grúas torre", "Maquinaria de obra", "Cimientos y excavación", "Materiales y tuberías", "Estructura de la nave", "Oficinas y entrada", "Cargando Betonudvar…", "No se puede cargar la obra. Recarga la página."],
 };
 
+const earthworkLabels = { hu: "Földmunkák és rámpák", en: "Earthworks and ramps", de: "Erdarbeiten und Rampen", fr: "Terrassement et rampes", es: "Movimiento de tierras y rampas" };
+
 const translations = {
   hu: ["Park áttekintése", "Épület és átjáró", "Kerti pergola", "Kis tó és híd", "Dombtetői pavilon", "Kerítés és külső táj", "Nagy tó és szökőkút", "Kávézó és terasz", "Fedett sétány", "Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás", "Repülés ↗", "A Liget betöltése…", "A pályanézet nem tölthető be. Frissítsd az oldalt."],
   en: ["Park overview", "Pavilion and passage", "Garden pergola", "Small lake and bridge", "Hilltop pavilion", "Fence and landscape", "Grand lake and fountain", "Cafe and terrace", "Shade arcade", "Mouse: rotate · Scroll: zoom · Right button: pan", "Fly ↗", "Loading Liget…", "Cannot load the park view. Reload the page."],
@@ -29,15 +31,17 @@ const language = read("language", "hu"), labels = translations[language] ?? tran
 const siteLabels = constructionCopy[language] ?? constructionCopy.en;
 const mapName = construction ? "Betonudvar" : "Liget", overview = construction ? siteLabels[0] : labels[0];
 if (construction) {
-  const names = ["site", "frames", "cranes", "machines", "pit", "storage", "warehouse", "offices"];
+  const names = ["site", "frames", "cranes", "machines", "pit", "storage", "warehouse", "offices", "earthworks"];
   document.querySelector("nav").replaceChildren(...names.map((name, i) => {
-    const button = document.createElement("button"); button.dataset.view = name; button.textContent = siteLabels[i]; return button;
+    const button = document.createElement("button"); button.dataset.view = name;
+    button.textContent = name === "earthworks" ? (earthworkLabels[language] ?? earthworkLabels.en) : siteLabels[i];
+    return button;
   }));
 }
 const communityLabels = { hu: "Sportliget és parkoló", en: "Sports garden and parking", de: "Sportgarten und Parkplatz", fr: "Espace sportif et parking", es: "Zona deportiva y aparcamiento" };
 document.documentElement.lang = translations[language] ? language : "en";
 document.querySelectorAll("[data-view]").forEach((button, i) => {
-  button.textContent = construction ? siteLabels[i] : button.dataset.view === "community" ? (communityLabels[language] ?? communityLabels.en) : labels[i];
+  button.textContent = construction ? button.dataset.view === "earthworks" ? (earthworkLabels[language] ?? earthworkLabels.en) : siteLabels[i] : button.dataset.view === "community" ? (communityLabels[language] ?? communityLabels.en) : labels[i];
 });
 document.querySelector("#hint").textContent = labels[9];
 document.querySelector("#fly").textContent = labels[10];
@@ -76,6 +80,7 @@ try {
     storage: [[132, 14, 219], [170, 2, 187]],
     warehouse: [[85, 26, -141], [135, 7, -185]],
     offices: [[-78, 24, 299], [-170, 3, 244]],
+    earthworks: [[282, 28, -146], [231, 5, -225]],
   } : {
     park: [[0, 520, 125], [0, 2, 0]],
     pavilion: [[43, 21, 55], [0, 3, 0]],

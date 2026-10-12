@@ -71,7 +71,22 @@ Az intenzív mérést ne futtassuk a játék közben ugyanazon a GPU-n.
 
 ## Ellenőrzések
 
-63/63 teszt sikeres. Új ellenőrzések: hosszú ütközők és teleportos újraaktiválás,
+### A Betonudvar domborzati átdolgozása után
+
+A kétméteres tereprács 36 látható területből áll; a hozzájuk tartozó ütközők
+szintén a 40 m-es fizikai környezet alapján kapcsolódnak be. Az új gödrök,
+rámpák és földdepók után a 240 Hz-es fizika négy lépése a bejáratnál 0,18 ms,
+az alsó betonvázban 1,10 ms, a felső betonvázban 1,29 ms volt.
+A 1280 × 504-es, mozgó kamerás grafikus próba rendre 3,90 / 2,30 / 3,01 ms.
+Ezek helyi mérések, nem teljes képkockaidők; a kamera magassága most az új
+építési terasz magasságával korrigált. A korábbi táblázat a sík terep változatát méri.
+
+Új tereptesztek ellenőrzik a rácspontok közötti ütközési magasságot, a rámpák
+lejtését, az alaptestek talajhoz illeszkedését, a vízszintes épületpadokat,
+a kerítésen túli csupasz talajt és a korlátos fizikai aktivitást.
+
+A közös teljesítményjavításkor 63/63, a domborzat átdolgozása után 64/64 teszt sikeres.
+A teljesítményjavítás ellenőrzései: hosszú ütközők és teleportos újraaktiválás,
 60 m/s-os CCD-falütközés helyi aktivitással, azonos fizikai/kontaktus/CCD-pálya
 lekérdezési index frissítésével és anélkül; statikus árnyékcache és helyes
 érvénytelenítés mozgásnál, vetítésváltozásnál, új árnyékvetőnél és mozgó drónnál.

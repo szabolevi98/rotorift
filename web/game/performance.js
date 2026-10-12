@@ -28,6 +28,9 @@ for(const id of ['betonudvar','liget']) {
   ['outside',[0,2,60],[0,3,0]],['passage',[0,2,0],[0,2,-25]],['glass-room',[12,6,0],[12,6,-15]]
  ]:[['entry',[0,2,255],[0,4,-35]],['bay',[-68,2,-30],[-68,2,-60]],['upper-bay',[-60,24,-30],[-60,24,-60]]];
  for(const [name,position,target]of poses){
+  if(map.kind==='construction') {
+   const base=environment.heightAt(position[0],position[2]);position[1]+=base;target[1]+=base;
+  }
   camera.position.set(...position);camera.lookAt(...target);environment.update(position);
   const costs=[],calls=[],triangles=[];
   output(`${id}/${name} warming up`);

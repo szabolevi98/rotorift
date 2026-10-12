@@ -106,14 +106,24 @@ alaptestekkel és vasalással; a megjelenített és fizikai talaj megegyezik.
 
 Az ideiglenes kerítés térbeli jelzés, átjárható; kívül csak a talaj folytatódik.
 A látótávolság 12 km, fokozatos köddel; a napárnyékok ugyanúgy négy tartományban
-követik a kamerát, mint a Ligeten. A 8163 ismétlődő elem 292 térbeli/anyag/geometria
-szerinti instancelt csoportra oszlik; 3917 statikus ütköző szolgálja a repülést.
-Ez az első részletes változat, az eszközönkénti teljesítményhangolás még hátravan.
+követik a kamerát, mint a Ligeten. A 9054 ismétlődő elem 299 térbeli/anyag/geometria
+szerinti instancelt csoportra oszlik; 4587 statikus ütköző közül csak a közeli
+részek vesznek részt a repülés fizikájában.
 
 Pálya- és útvonalverzió: 2. A régi kapuk eltávolítva, az időmérő ideiglenesen
 tiltva helyben és online. A kerítés elhagyásakor 10 perces visszatérési idő jár.
 3D nézet a játék pályaválasztója alatt, vagy
-`/map-preview.html?map=betonudvar`, nyolc közeli nézettel és öt nyelven.
+`/map-preview.html?map=betonudvar`, kilenc nézettel és öt nyelven.
+
+A talaj most tényleges, kétméteres háromszögrácsú domborzat: közel 17 m
+szintkülönbség, négy alapozási gödör, három délről levezető géprámpa és nyolc
+szabálytalan, hosszúkás földdepó. A magasabb építési teraszok között rézsűk
+és szintre rendezett épület-, daru- és géppadok vannak. A gödrökben alaptestek,
+beton alapgerendák, zsaluzat és dúcolás; keleten közműcső-szerelési terület.
+Az utak követik a terepet, a talaj színe elkülöníti a kitermelt és tömörített földet.
+A terep 36 × 100 m-es látható részre oszlik, egyező szélekkel és normálokkal;
+a fizikai aktivitás a drónt követi. A kerítésen túl csak folyamatos, csupasz talaj van.
+A látható talaj, a magasságlekérdezés és az ütközés ugyanazokat a háromszögeket használja.
 
 ## Ellenőrzések
 

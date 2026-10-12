@@ -1,64 +1,26 @@
-import * as THREE from "three";
 import { createConstructionParts } from "./construction-parts.js";
 import { buildConcreteFrames, buildTowerCranes } from "./construction-buildings.js";
 import { buildConstructionVehicles } from "./construction-vehicles.js";
-import { CONSTRUCTION_PIT, constructionHeight } from "../../shared/world/construction-layout.js";
+import { constructionHeight } from "../../shared/world/construction-layout.js";
+
+import { buildConstructionTerrain, buildEarthworkDetails } from "./construction-terrain.js";
 
 export const CONSTRUCTION_VIEW_DISTANCE = 12000;
 export const CONSTRUCTION_FOG_DENSITY = 0.00085;
 
-function makeGround(parts) {
-  const p = CONSTRUCTION_PIT, extent = 18000;
-  const shape = new THREE.Shape(); shape.moveTo(-extent, -extent); shape.lineTo(extent, -extent);
-  shape.lineTo(extent, extent); shape.lineTo(-extent, extent); shape.closePath();
-  const hole = new THREE.Path();
-  hole.moveTo(p.x - p.width / 2, -p.z - p.depth / 2);
-  hole.lineTo(p.x - p.width / 2, -p.z + p.depth / 2);
-  hole.lineTo(p.x + p.width / 2, -p.z + p.depth / 2);
-  hole.lineTo(p.x + p.width / 2, -p.z - p.depth / 2); hole.closePath(); shape.holes.push(hole);
-  const terrain = new THREE.ShapeGeometry(shape); terrain.rotateX(-Math.PI / 2);
-  const uv = terrain.attributes.uv, position = terrain.attributes.position;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, position.getX(i) / 4, position.getZ(i) / 4);
-  parts.ground(terrain, "earth");
-  const points = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-  for (let i = 0; i < 4; i++) {
-    const a = points[i], b = points[(i + 1) % 4];
-    const vertices = [
-      [p.x + a[0] * p.width / 2, 0, p.z + a[1] * p.depth / 2],
-      [p.x + b[0] * p.width / 2, 0, p.z + b[1] * p.depth / 2],
-      [p.x + b[0] * (p.width / 2 - p.slope), p.floor, p.z + b[1] * (p.depth / 2 - p.slope)],
-      [p.x + a[0] * (p.width / 2 - p.slope), p.floor, p.z + a[1] * (p.depth / 2 - p.slope)],
-    ];
-    const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices.flat(), 3));
-    geometry.setIndex([0, 2, 1, 0, 3, 2]); geometry.computeVertexNormals();
-    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(vertices.flatMap(v => [v[0] / 4, v[2] / 4]), 2));
-    parts.ground(geometry, "earth");
-  }
-  const floor = new THREE.PlaneGeometry(p.width - 2 * p.slope, p.depth - 2 * p.slope);
-  floor.rotateX(-Math.PI / 2); floor.translate(p.x, p.floor, p.z); parts.ground(floor, "earth");
-  parts.model("excavation-and-foundations", [p.x, p.floor, p.z], 0, () => {
-    for (const x of [-12, 0, 12]) for (const z of [-8, 8]) {
-      parts.box([4.8, 0.6, 4.8], [x, 0.3, z], "concrete");
-      for (const sx of [-1, 1]) for (const sz of [-1, 1])
-        parts.cylinder(0.045, 2.4, [x + sx * 0.8, 1.8, z + sz * 0.8], "rebar", false);
-    }
-  });
-}
-
 export function buildConstruction(scene, world, RAPIER, map) {
-  const parts = createConstructionParts(scene, world, RAPIER), { box, beam, cylinder, model, part } = parts;
-  makeGround(parts);
-  // Deliberate circulation: central access road, cross streets and service yards.
-  box([19, 0.08, 570], [0, 0.04, 0], "gravel");
-  box([515, 0.08, 16], [0, 0.04, 205], "gravel");
-  box([515, 0.08, 14], [0, 0.04, -145], "gravel");
-  box([16, 0.08, 355], [211, 0.04, 30], "gravel");
-  box([15, 0.08, 110], [-225, 0.04, 205], "gravel");
-  box([13, 0.08, 462], [-246, 0.04, 30], "gravel");
-  box([510, 0.08, 13], [0, 0.04, -276], "gravel");
-  box([148, 0.08, 12], [-178, 0.04, 43], "gravel");
-  box([110, 0.08, 110], [172, 0.04, 175], "gravel");
-  box([84, 0.08, 66], [-168, 0.04, 239], "gravel");
+  const parts = createConstructionParts(scene, world, RAPIER);
+  let modelDepth = 0;
+  const grounded = position => [position[0], position[1] + (modelDepth ? 0 : constructionHeight(position[0], position[2])), position[2]];
+  const box = (size, position, ...args) => parts.box(size, grounded(position), ...args);
+  const cylinder = (diameter, length, position, ...args) => parts.cylinder(diameter, length, grounded(position), ...args);
+  const { beam, part } = parts;
+  const model = (name, position, angle, build) => parts.model(name, grounded(position), angle, () => {
+    modelDepth++;
+    try { build(); } finally { modelDepth--; }
+  });
+  buildConstructionTerrain(parts);
+  buildEarthworkDetails(parts);
   buildConcreteFrames(parts); buildTowerCranes(parts); buildConstructionVehicles(parts);
 
   function container(name, position, color = "blue", angle = 0) {
@@ -101,11 +63,6 @@ export function buildConstruction(scene, world, RAPIER, map) {
       }
     });
   }
-  for (const [x, z, diameter, height] of [[-227, 53, 23, 7], [-219, 157, 19, 5], [244, -215, 27, 8], [103, 188, 16, 4]]) {
-    part("cone", [diameter, height, diameter], [x, height / 2, z], "earth", "mesh");
-    // Trimesh collision follows the visible pile, avoiding a hidden cuboid.
-    part("cone", [diameter * 0.85, height * 0.92, diameter * 0.85], [x + 2, height * 0.46, z - 1], "gravel", "mesh");
-  }
   model("site-office-compound", [-173, 0, 244], 0, () => {
     for (const x of [-14, 0, 14]) {
       box([10, 0.2, 4], [x, 0.3, 0], "steel");
@@ -139,7 +96,7 @@ export function buildConstruction(scene, world, RAPIER, map) {
   for (let z = 82; z < 123; z += 4.5) barrier(-205, z, Math.PI / 2);
   for (let x = 65; x < 106; x += 4.5) barrier(x, 128);
   for (const z of [175, 200, 230]) for (const x of [-10.5, 10.5]) {
-    part("cone", [0.65, 1, 0.65], [x, 0.5, z], "orange", false);
+    part("cone", [0.65, 1, 0.65], [x, constructionHeight(x, z) + 0.5, z], "orange", false);
     box([0.75, 0.1, 0.75], [x, 0.05, z], "rubber", false);
   }
   // Tall temporary floodlight towers, with bases outside every working lane.

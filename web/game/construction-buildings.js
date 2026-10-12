@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { CONSTRUCTION_BUILDINGS, CONSTRUCTION_CRANES, floorOpening } from "../../shared/world/construction-layout.js";
+import { CONSTRUCTION_BUILDINGS, CONSTRUCTION_CRANES, floorOpening, constructionHeight } from "../../shared/world/construction-layout.js";
 
 export function buildConcreteFrames(parts) {
   const { model, box, cylinder, beam } = parts;
   for (const building of CONSTRUCTION_BUILDINGS) {
     const b = building, dx = b.width / b.nx, dz = b.depth / b.nz;
-    model(b.id, [b.x, 0, b.z], 0, () => {
+    model(b.id, [b.x, constructionHeight(b.x, b.z), b.z], 0, () => {
       box([b.width + 3, 0.24, b.depth + 3], [0, 0.12, 0], "concreteDark");
       // Open bays, with a continuous shaft through the slabs for vertical dives.
       for (let level = 0; level < b.levels; level++) {
@@ -70,7 +70,7 @@ export function buildConcreteFrames(parts) {
     });
   }
   // A different silhouette: the warehouse has steel portals and no roof/walls.
-  model("open-steel-warehouse", [135, 0, -185], 0, () => {
+  model("open-steel-warehouse", [135, constructionHeight(135, -185), -185], 0, () => {
     box([70, 0.22, 44], [0, 0.11, 0], "concreteDark");
     for (let x = -33; x <= 33; x += 11) {
       for (const z of [-19, 19]) {
@@ -91,7 +91,7 @@ export function buildConcreteFrames(parts) {
 
 export function buildTowerCranes(parts) {
   const { model, box, cylinder, beam, part } = parts;
-  for (const crane of CONSTRUCTION_CRANES) model(crane.id, [crane.x, 0, crane.z], crane.angle, () => {
+  for (const crane of CONSTRUCTION_CRANES) model(crane.id, [crane.x, constructionHeight(crane.x, crane.z), crane.z], crane.angle, () => {
     const h = crane.height, color = crane.color;
     box([11, 1.6, 11], [0, 0.8, 0], "concrete");
     for (const x of [-1.5, 1.5]) for (const z of [-1.5, 1.5]) {

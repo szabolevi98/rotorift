@@ -45,7 +45,9 @@ export function createConstructionParts(scene, world, RAPIER) {
     wood: new THREE.MeshStandardMaterial({ color: 0x9b7950, roughness: 0.85 }),
     brick: new THREE.MeshStandardMaterial({ color: 0xa4775a, roughness: 0.96 }),
   };
-  for (const material of [palette.earth, palette.gravel]) {
+  palette.earthTerrain = palette.earth.clone();
+  palette.earthTerrain.vertexColors = true;
+  for (const material of [palette.earth, palette.earthTerrain, palette.gravel]) {
     // Instanced road slabs have very different lengths. Sample in metres,
     // rather than stretching a unit-box UV over an entire 570 m working road.
     material.onBeforeCompile = (shader) => {
@@ -118,11 +120,18 @@ export function createConstructionParts(scene, world, RAPIER) {
     landmarks.push({ name, position: new THREE.Vector3().setFromMatrixPosition(anchor).toArray() });
     try { build(); } finally { anchor = previous; }
   }
-  function ground(geometry, color, solid = true) {
+  function ground(geometry, color, solid = true, regional = false) {
     const mesh = new THREE.Mesh(geometry, palette[color]); mesh.receiveShadow = true; root.add(mesh);
-    if (solid) colliders.push(world.createCollider(RAPIER.ColliderDesc.trimesh(
+    if (solid) {
+      const collider = world.createCollider(RAPIER.ColliderDesc.trimesh(
       new Float32Array(geometry.attributes.position.array), new Uint32Array(geometry.index.array),
-    ).setFriction(0.9)));
+      ).setFriction(0.9));
+      colliders.push(collider);
+      if (regional) {
+        geometry.computeBoundingBox();
+        regions.add(collider, geometry.boundingBox.min.toArray(), geometry.boundingBox.max.toArray());
+      }
+    }
     return mesh;
   }
   function finish() {

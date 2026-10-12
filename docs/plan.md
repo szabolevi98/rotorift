@@ -165,6 +165,10 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 - Saját név; ideiglenes munkanév: **Betonudvar**.
 - Befejezetlen épületváz, pillérek, födémek, nyílások és szintváltások.
 - 600 × 600 m-es építési terület, több eltérő magasságú betonvázzal és nyitott acélvázas csarnokkal.
+- Tényleges, dimbes-dombos terep közel 17 m szintkülönbséggel; szintre rendezett
+  építési teraszok, négy munkagödör, három géprámpa, szabálytalan földdepók,
+  dúcolás, zsaluzott alapozási területek és közműszerelés. Az utak követik a terepet,
+  a látható talaj és a fizikai ütközés ugyanazt a felületet használja.
 - Nagy rácsszerkezetes toronydaruk, kamionok, betonkeverő, kotrógép, bulldózer,
   homlokrakodó, dömper és billenőplatós teherautó; rendezett munkautak és géppark.
 - Valódi munkagödör alaptestekkel, anyagraktár, nyitott konténerek, üreges betoncsövek,
