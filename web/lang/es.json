@@ -194,6 +194,7 @@
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
   "fly.route": "Circuito",
+  "fly.noRoute": "Ninguno · freestyle",
   "settings.actionBindings": "Acciones de radio / mando",
   "settings.actionBindingsHint": "Asigna un botón o un interruptor AUX. Pulsa Asignar y después un botón o lleva un canal libre al extremo. Se excluyen los ejes de vuelo. Los botones alternan ARM; AUX activo arma y AUX inactivo desarma. Para armar, baja el acelerador. Se guarda para este dispositivo.",
   "settings.unassigned": "Sin asignar",

@@ -194,6 +194,7 @@
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
   "fly.route": "Parcours",
+  "fly.noRoute": "Aucun · freestyle",
   "settings.actionBindings": "Actions radio / manette",
   "settings.actionBindingsHint": "Associez un bouton ou un interrupteur AUX. Choisissez Associer, puis appuyez sur un bouton ou placez un canal libre en butée. Les axes de vol sont exclus. Un bouton bascule ARM ; AUX actif arme, AUX inactif désarme. Gaz bas requis pour armer. Enregistré pour cet appareil.",
   "settings.unassigned": "Non attribué",

@@ -66,6 +66,7 @@ export class Flight {
     this.remoteVersion++;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
     this.environment = buildEnvironment(this.scene, this.world, RAPIER, map);
+    this.environment.highlight(0, false);
     this.config = config;
     this.map = map;
     this.boundary = new MapBoundary(map);

@@ -194,6 +194,7 @@
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
   "fly.route": "Race route",
+  "fly.noRoute": "None · freestyle",
   "settings.actionBindings": "Radio / controller actions",
   "settings.actionBindingsHint": "Assign a button or an AUX switch. Press Assign, then press a button or move an unused channel to its end. Flight stick channels are excluded. Buttons toggle ARM; AUX on arms and AUX off disarms. Arming requires low throttle. Saved for this device.",
   "settings.unassigned": "Unassigned",

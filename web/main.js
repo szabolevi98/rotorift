@@ -14,7 +14,7 @@ import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
 import { resolveRoute } from "/shared/race/routes.js";
-import { canRace, isTimedSession } from "/shared/race/map-modes.js";
+import { canRace, isTimedSession, withoutRaceRoute } from "/shared/race/map-modes.js";
 import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, WIND_LEVELS, normalizeSimulation, simulationKey } from "/shared/simulation/options.js";
 const $ = (s) => document.querySelector(s),
@@ -303,8 +303,9 @@ function selectMap(id) {
   updateSessionOptions();
   refreshCatalogText();
 }
-function fillRoutes(select, base, selected = base?.routeId) {
+function fillRoutes(select, base, selected = base?.routeId, allowNone = false) {
   select.replaceChildren(...(base?.routes ?? []).map(route => new Option(route.name, route.id)));
+  if (allowNone) select.prepend(new Option(t("fly.noRoute"), ""));
   if ([...select.options].some(option => option.value === selected)) select.value = selected;
   select.disabled = !select.options.length;
 }
@@ -320,7 +321,8 @@ function updateSessionOptions() {
   for (const option of $("#room-kind").options) option.disabled = !enabled && option.value === "race";
   if (!enabled && $("#room-kind").value === "race") $("#room-kind").value = "free";
   const timed = $("#menu").dataset.panel === "multiplayer" ? $("#room-kind").value === "race" : isTimedSession($("#session").value);
-  visible(".race-row", timed);
+  fillRoutes($("#race-route"), catalog.maps.find(m => m.id === map.id), timed ? map.routeId : "", true);
+  visible(".race-row", true);
   visible("#map-mode-note", !enabled);
   refreshSimulationControls();
   refreshMenuNavigation();
@@ -363,6 +365,8 @@ function refreshCatalogText() {
   }
   for (const s of ["#records-map"])
     for (const o of $(s).options) o.textContent = t("map." + o.value);
+  const noRoute = $("#race-route").querySelector('option[value=""]');
+  if (noRoute) noRoute.textContent = t("fly.noRoute");
 }
 function createCatalogUI() {
   for (const [id,hex] of Object.entries(DRONE_COLORS)) {
@@ -679,7 +683,7 @@ function renderLobby() {
     " · " +
     catalog.drones.find((d) => d.id === room.droneId)?.name +
     " · " +
-    room.mode.toUpperCase() + (room.route?.name ? " · " + room.route.name : "");
+    room.mode.toUpperCase() + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
   $("#lobby-players").replaceChildren();
   for (const p of room.players) {
     const row = node("div", "player-row");
@@ -707,7 +711,7 @@ async function loadRoom(r) {
   const task = loading.begin("loading.flight", { name: t("map." + r.mapId) });
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
-  const roomMap = r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
+  const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
     routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
   $("#flight-mode").value = r.mode;
@@ -894,7 +898,7 @@ async function launch() {
   const task = loading.begin("loading.flight", { name: t("map." + map.id) });
   try {
     await paintLoading();
-    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress);
+    await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress);
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -1202,8 +1206,19 @@ function bindUI() {
   if (!$("#session").value) $("#session").value = "free";
   updateSessionOptions();
   $("#race-route").onchange = () => {
-    map = resolveRoute(catalog.maps.find(m => m.id === map.id), $("#race-route").value);
-    write("selected-race-" + map.id, map.routeId);
+    const routeId = $("#race-route").value;
+    if (routeId) {
+      map = resolveRoute(catalog.maps.find(m => m.id === map.id), routeId);
+      write("selected-race-" + map.id, map.routeId);
+    }
+    if ($("#menu").dataset.panel === "multiplayer") {
+      $("#room-kind").value = routeId ? "race" : "free";
+      write("room-kind", $("#room-kind").value);
+    } else {
+      if (!routeId) $("#session").value = "free";
+      else if (!isTimedSession($("#session").value)) $("#session").value = "time";
+      write("solo-session", $("#session").value);
+    }
     updateSessionOptions(); refreshCatalogText();
   };
   $("#nickname").value = read("nickname", "Pilot");

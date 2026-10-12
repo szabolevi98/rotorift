@@ -194,6 +194,7 @@
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
   "fly.route": "Versenyútvonal",
+  "fly.noRoute": "Nincs · freestyle",
   "settings.actionBindings": "Rádió / kontroller műveletek",
   "settings.actionBindingsHint": "Rendelj hozzá gombot vagy AUX kapcsolót. Nyomd meg a Hozzárendelés gombot, majd egy vezérlőgombot, vagy állíts egy szabad csatornát végállásba. A repülési stickcsatornákat kihagyjuk. A gomb váltja az ARM állapotot; az AUX beállása armol, kikapcsolása disarmol. Élesítéshez alacsony gáz kell. Eszközönként mentjük.",
   "settings.unassigned": "Nincs hozzárendelve",

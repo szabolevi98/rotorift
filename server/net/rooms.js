@@ -3,7 +3,7 @@ import { randomUUID, randomBytes } from "node:crypto";
 import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
-import { canRace } from "../../shared/race/map-modes.js";
+import { canRace, withoutRaceRoute } from "../../shared/race/map-modes.js";
 import { resolveRoute } from "../../shared/race/routes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
@@ -21,7 +21,7 @@ export function attachRooms(server, catalog, db) {
     phase: r.phase,
     mapId: r.map.id,
     routeId: r.map.routeId,
-    route: { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates },
+    route: r.kind === "free" ? null : { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates },
     droneId: r.drone.id,
     mode: r.mode,
     simulation: r.simulation,
@@ -181,7 +181,8 @@ export function attachRooms(server, catalog, db) {
             send(p, "error", { code: "roomFull" });
             return;
           }
-          const map = resolveRoute(catalog.maps.find((v) => v.id === m.mapId), m.routeId),
+          const baseMap = catalog.maps.find((v) => v.id === m.mapId);
+          const map = m.kind === "free" ? withoutRaceRoute(baseMap) : resolveRoute(baseMap, m.routeId),
             drone = catalog.drones.find((v) => v.id === m.droneId);
           if (
             !map ||

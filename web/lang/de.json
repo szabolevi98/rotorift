@@ -194,6 +194,7 @@
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
   "fly.route": "Rennstrecke",
+  "fly.noRoute": "Keine · Freestyle",
   "settings.actionBindings": "Funktionen für Sender / Controller",
   "settings.actionBindingsHint": "Eine Taste oder einen AUX-Schalter zuweisen. Zuweisen wählen und eine Taste drücken oder einen freien Kanal zum Endpunkt bewegen. Flugachsen sind ausgeschlossen. Tasten schalten ARM um; AUX ein aktiviert, AUX aus deaktiviert die Motoren. Aktivieren nur bei wenig Gas. Für dieses Gerät gespeichert.",
   "settings.unassigned": "Nicht zugewiesen",

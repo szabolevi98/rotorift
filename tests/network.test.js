@@ -115,6 +115,25 @@ test("a room pins the selected race file, gate order and start position for ever
   const pinned=(await host.next(m=>m.type==="room"&&m.room.players.length===2&&m.room.players[0].ready)).room;
   assert.equal(pinned.route.version,3);assert.deepEqual(pinned.route.gates,routes[1].gates);
 });
+test("freestyle rooms need no race route and use the base map spawn for all pilots", async t => {
+  const { client, catalog } = await fixture(t, {
+    baseSpawn: [30, 1, 40], routeId: "race_1", routeName: "Old course",
+    routes: [{ id: "race_1", name: "Old course", version: 1, spawn: [0, 1, -.5], gates: [] }],
+  });
+  const original = structuredClone(catalog.maps[0]);
+  const host = await client("Freestyle host"), guest = await client("Freestyle guest");
+  host.send("create", { mapId: "test-route", routeId: "", droneId: "rift-x5", mode: "acro", kind: "free" });
+  const created = (await host.next(m => m.type === "room")).room;
+  assert.equal(created.route, null);
+  assert.equal(created.routeId, null);
+  assert.deepEqual(created.players[0].p, [30, 1, 40]);
+  guest.send("join", { code: created.code });
+  const joined = (await guest.next(m => m.type === "room")).room;
+  assert.equal(joined.route, null);
+  assert.deepEqual(joined.players[1].p, [30.6, 1, 40], "guest uses the next launch slot at the base spawn");
+  assert.deepEqual(catalog.maps[0], original, "race geometry and records stay in the catalog");
+});
+
 test("multiplayer admits eight pilot colors, rejects a ninth pilot and frees a slot on leave", async t => {
   const { client } = await fixture(t);
   const colors = Object.keys(DRONE_COLORS);
