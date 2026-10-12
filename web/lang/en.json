@@ -95,6 +95,7 @@
   "axis.yaw": "Yaw",
   "axis.throttle": "Throttle",
   "hud.armed": "ARMED",
+  "hud.sticks": "Live stick positions · Mode 2",
   "hud.disarmed": "DISARMED",
   "hud.lowThrottle": "Lower throttle before arming.",
   "hud.keys": "{arm}: arm · {up}/{down}: throttle · {tilt}: tilt · {left}/{right}: yaw · Shift: fine · {hover}: hover gas · {reset}: reset · {view}: view · {menu}: menu",

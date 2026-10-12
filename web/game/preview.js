@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { loadModel } from "./models.js";
+import { configureDroneRenderer, addDroneReflections } from "/shared/visual/drone-rendering.js";
 export class Preview {
   constructor(canvas) {
     this.canvas = canvas;
@@ -10,9 +11,9 @@ export class Preview {
       alpha: true,
     });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    configureDroneRenderer(THREE, this.renderer);
     this.scene = new THREE.Scene();
+    this.reflections = addDroneReflections(THREE, this.renderer, this.scene);
     this.camera = new THREE.PerspectiveCamera(36, 1, 0.002, 10);
     this.camera.position.set(0.38, 0.3, 0.42);
     this.controls = new OrbitControls(this.camera, canvas);

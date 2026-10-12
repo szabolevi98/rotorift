@@ -176,6 +176,10 @@ rajzolási hívások csökkentése, LOD és egyszerű ütközési geometria kés
 - `cinewhoop3.js`: a Rift C3 védőkerete, váza, elektronikája és naked kamerája.
 - `catalog.js`: a modellválasztó katalógusa, nevek, státuszok, adatlapok és exportnevek.
 - `viewer.js`: kamera, stúdiófények, kezelőszervek és GLB export.
+- `../shared/visual/drone-rendering.js`: a játék és a demó közös színkezelése,
+  tükröződési környezete, zöld PCB-je és kékes optikai üveganyaga.
+- `sync-materials.mjs`: az elfogadott GLB-k anyagainak frissítése a közös
+  beállításokból; a geometria és a beágyazott textúrák megőrzésével. `node demo/sync-materials.mjs`.
 - `template.html`, `style.css`: a bemutató felülete.
 - `build.mjs`: a forrásokat egyetlen offline HTML-be csomagolja.
 - `vendor/`: Three.js r169, OrbitControls, GLTFExporter, TextureUtils.

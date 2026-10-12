@@ -359,6 +359,33 @@
       <div class="crosshair">+</div>
       <div id="race-hud"></div>
       <div id="scoreboard"></div>
+      <div id="stick-hud" role="group" aria-labelledby="stick-title">
+        <span id="stick-title" class="visually-hidden" data-i18n="hud.sticks"></span>
+        <div class="stick-display">
+          <svg viewBox="0 0 100 100" role="img" aria-labelledby="stick-left-label">
+            <rect class="stick-frame" x="5" y="5" width="90" height="90" rx="13" />
+            <path class="stick-grid" d="M27 7V93M73 7V93M7 27H93M7 73H93" />
+            <path class="stick-center" d="M50 7V93M7 50H93" />
+            <path id="stick-left-stem" class="stick-stem" d="M50 50L50 88" />
+            <g id="stick-left-dot" transform="translate(50 88)">
+              <circle class="stick-glow" r="10" /><circle class="stick-tip" r="5" /><circle class="stick-highlight" r="1.5" />
+            </g>
+          </svg>
+          <span id="stick-left-label" class="stick-label"><span data-i18n="axis.throttle"></span> · <span data-i18n="axis.yaw"></span></span>
+        </div>
+        <div class="stick-display">
+          <svg viewBox="0 0 100 100" role="img" aria-labelledby="stick-right-label">
+            <rect class="stick-frame" x="5" y="5" width="90" height="90" rx="13" />
+            <path class="stick-grid" d="M27 7V93M73 7V93M7 27H93M7 73H93" />
+            <path class="stick-center" d="M50 7V93M7 50H93" />
+            <path id="stick-right-stem" class="stick-stem" d="M50 50L50 50" />
+            <g id="stick-right-dot" transform="translate(50 50)">
+              <circle class="stick-glow" r="10" /><circle class="stick-tip" r="5" /><circle class="stick-highlight" r="1.5" />
+            </g>
+          </svg>
+          <span id="stick-right-label" class="stick-label"><span data-i18n="axis.pitch"></span> · <span data-i18n="axis.roll"></span></span>
+        </div>
+      </div>
       <div class="hud-bottom">
         <div>
           <span id="arm-state"></span><b id="hud-mode">ACRO</b

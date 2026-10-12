@@ -95,6 +95,7 @@
   "axis.yaw": "Gier",
   "axis.throttle": "Gas",
   "hud.armed": "SCHARF",
+  "hud.sticks": "Aktuelle Knüppelpositionen · Mode 2",
   "hud.disarmed": "ENTSCHÄRFT",
   "hud.lowThrottle": "Vor dem Scharfschalten Gas senken.",
   "hud.keys": "{arm}: scharf · {up}/{down}: Gas · {tilt}: neigen · {left}/{right}: Gier · Shift: fein · {hover}: Schwebegas · {reset}: Reset · {view}: Ansicht · {menu}: Menü",

@@ -1,6 +1,6 @@
 # Rotorift 0.1 – első repülési prototípus
 
-2026. október 11. A teljes kiadás követelményeit a `plan.md` tartalmazza;
+2026. október 12. A teljes kiadás követelményeit a `plan.md` tartalmazza;
       ez a dokumentum a most elkészült és ellenőrzött alapot különíti el a hátralévő munkától.
 
 ## Elkészült
@@ -26,6 +26,20 @@ A drónkonfigurációk 2. verziója a lebegési gázt 28% körülire, az X5 telj
 utazósebességét kb. 200 km/h-ra hangolja. A billentyűzet teljes Acro botkitérést
 ad, Shift mellett finom irányítással. Szűrt forgáscsillapítás mérsékli a túlpörgést.
 A mérések és a szerkeszthető paraméterek a [fizikai hangolási jegyzetben](physics-tuning.md) szerepelnek.
+
+Alul középen két élő Mode 2 botállásjelző látható: balra gáz/yaw, jobbra pitch/roll.
+A kalibrált, a fizikának átadott bemenetet követik minden képkockában, rádióval és
+billentyűzettel is; a feliratok mind az öt nyelven elérhetők. Keskeny képernyőn
+a telemetria föléjük kerül. A billentyűzet lineáris felfutási korlátot (slew rate
+limiter) használ: pitch/roll 0,22 s alatt éri el a teljes kitérést, yaw 0,30 s alatt
+75%-ig fut fel. Utóbbi a 70/670/0 alaprate mellett 390°/s. Elengedéskor 0,08 s alatt
+középre térnek; Shift mellett finomabb kitérés. A rádió analóg bemenetét ez nem módosítja.
+
+A játék, menü-előnézet és offline demó közös ACES/sRGB színkezelést, 1,2 expozíciót
+és egyszer előállított procedurális ég/föld tükröződési környezetet használ.
+A kamerák és akciókamerák kékes optikai üveget kaptak, a három drón PCB-je egységes
+zöld. A modellek anyagbeállításai a `shared/visual/drone-rendering.js` fájlban közösek;
+a GLB-k geometriája és beágyazott textúrái változatlanok.
 
 ## Liget átdolgozása
 

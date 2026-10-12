@@ -13,16 +13,23 @@ névleges akkufeszültség és 240 Hz-es Rapier lépés tartozik.
 A sebességpróba 80° előredőléssel, teljes gázzal, ütközés nélkül, 40 másodpercig
 tartott. Az X5 korábbi értéke ugyanezzel a próbával 382 km/h volt.
 A roll-próba már felpörgött motorokkal, lebegési gáznál indul. A billentyűzet
-felfutása ehhez néhány századmásodpercet hozzáad. A lebegési gáz a tömegtől,
+felfutása ehhez további időt ad: a fenti mérés közvetlen teljes botkitéréssel készült.
+A lebegési gáz a tömegtől,
 motor/prop párostól, görbétől és feszültségtől függ: nem minden valós drónnál 28%.
 
 ## Bemenet és forgás
 
 A korábbi billentyűzet normál módban csak 0,28-as kitérést adott: az alap
-rate-ekkel ez kb. 67°/s, vagyis egy roll több mint 5 s. Most a nyilak és yaw
-gombok teljes kitérést érnek el, rövid, időalapú felfutással és visszaközpontosítással.
+rate-ekkel ez kb. 67°/s, vagyis egy roll több mint 5 s. A nyilak most teljes
+kitérést érnek el 0,22 s alatt, lineáris felfutási korláttal (slew rate limiter).
+2026. október 12-től a yaw gombok 0,30 s alatt 75%-ig futnak fel, ami az alap
+rate-ekkel 390°/s. A botok elengedéskor 0,08 s alatt térnek középre.
 Bármelyik Shift lenyomva 35%-ra csökkenti a kitérést finom irányításhoz.
 A rádió kalibrált teljes tartománya és a személyes rate-ek megmaradnak.
+Az alapértékek megfelelnek a [Betaflight 4.5.2 Actual Rates profiljának](https://github.com/betaflight/betaflight/blob/4.5.2/src/main/fc/controlrate_profile.c#L44):
+70 középső érzékenység, 670°/s maximum, 0 expo mindhárom tengelyen.
+Ez teljes kitérésnél gyors, de szándékos; a billentyűzet korlátja a bemenetet formálja,
+nem írja át a drónonként mentett rate-eket.
 
 A forgást továbbra is motorerők és a konfigurált tehetetlenség hozzák létre.
 A P szabályozást szűrt, mért szögsebesség-változás csillapítása egészíti ki:

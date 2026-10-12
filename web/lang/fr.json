@@ -95,6 +95,7 @@
   "axis.yaw": "Lacet",
   "axis.throttle": "Gaz",
   "hud.armed": "ARMÉ",
+  "hud.sticks": "Position des manches en direct · Mode 2",
   "hud.disarmed": "DÉSARMÉ",
   "hud.lowThrottle": "Réduisez les gaz avant d’armer.",
   "hud.keys": "{arm} : armer · {up}/{down} : gaz · {tilt} : incliner · {left}/{right} : lacet · Maj : précis · {hover} : sustentation · {reset} : reset · {view} : vue · {menu} : menu",

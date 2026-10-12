@@ -7,16 +7,15 @@ import { DroneCameraRig } from "./camera-rig.js";
 import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
+import { configureDroneRenderer, addDroneReflections } from "/shared/visual/drone-rendering.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    configureDroneRenderer(THREE, this.renderer);
     this.scene = new THREE.Scene();
+    this.reflections = addDroneReflections(THREE, this.renderer, this.scene);
     this.scene.background = new THREE.Color(0xc9dedc);
     this.scene.fog = new THREE.Fog(0xc9dedc, 60, 190);
     this.scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));

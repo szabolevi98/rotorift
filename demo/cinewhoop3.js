@@ -18,10 +18,10 @@ function createRiftC3() {
   materials.silver=new THREE.MeshStandardMaterial({color:'#aab5b9',metalness:.91,roughness:.23});
   materials.copper=new THREE.MeshStandardMaterial({color:'#b37340',metalness:.8,roughness:.3});
   materials.gold=new THREE.MeshStandardMaterial({color:'#c5a159',metalness:.86,roughness:.28});
-  materials.pcb=new THREE.MeshStandardMaterial({color:'#173e38',roughness:.65,metalness:.15});
+  materials.pcb=new THREE.MeshStandardMaterial(DRONE_SURFACES.pcb);
   materials.chip=new THREE.MeshStandardMaterial({color:'#10191c',roughness:.72});
   materials.prop=new THREE.MeshPhysicalMaterial({color:'#243031',roughness:.31,metalness:0,transparent:true,opacity:.96,clearcoat:.55,side:THREE.DoubleSide,depthWrite:false});
-  materials.glass=new THREE.MeshPhysicalMaterial({color:'#162f41',metalness:.56,roughness:.07,clearcoat:1});
+  materials.glass=new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens);
   materials.battery=new THREE.MeshStandardMaterial({color:'#333e43',metalness:.22,roughness:.47});
   materials.red=new THREE.MeshStandardMaterial({color:'#c44937',roughness:.65});
   materials.white=new THREE.MeshStandardMaterial({color:'#dcded4',roughness:.62});

@@ -16,6 +16,14 @@ export const DEFAULT_KEYS = {
   mode: "KeyM",
   hover: "KeyH",
 };
+// Digital keys emulate gradual stick travel. The radio keeps its calibrated
+// analogue input. Yaw is gentler on keys; drone rate profiles remain unchanged.
+export const KEYBOARD_RESPONSE = {
+  roll: { limit: 1, riseSeconds: 0.22 },
+  pitch: { limit: 1, riseSeconds: 0.22 },
+  yaw: { limit: 0.75, riseSeconds: 0.30 },
+  returnSeconds: 0.08,
+};
 export const defaultProfile = () => ({
   deadzone: 0.015,
   axes: {
@@ -141,10 +149,13 @@ export class Controller {
       ["pitch", "pitchForward", "pitchBack"],
       ["yaw", "yawRight", "yawLeft"],
     ]) {
+      const response = KEYBOARD_RESPONSE[axis];
       const target =
         (Number(has(positive)) - Number(has(negative))) *
-        (p.has("ShiftLeft") || p.has("ShiftRight") ? 0.35 : 1);
-      k[axis] += (target - k[axis]) * (1 - Math.exp(-dt * 30));
+        (p.has("ShiftLeft") || p.has("ShiftRight") ? 0.35 : 1) * response.limit;
+      const returning = target === 0 || (Math.sign(target) === Math.sign(k[axis]) && Math.abs(target) < Math.abs(k[axis]));
+      const travel = dt * response.limit / (returning ? KEYBOARD_RESPONSE.returnSeconds : response.riseSeconds);
+      k[axis] += clamp(target - k[axis], -travel, travel);
     }
     if (this.source === "keyboard" || !this.pad) return { ...k };
     return radioInput(this.raw, this.profile);

@@ -11,13 +11,13 @@ function createRift65() {
     blue: new THREE.MeshStandardMaterial({color:'#348fa7',metalness:.72,roughness:.27}),
     black: new THREE.MeshStandardMaterial({color:'#182125',metalness:.12,roughness:.55}),
     rubber: new THREE.MeshStandardMaterial({color:'#202526',roughness:.88}),
-    pcb: new THREE.MeshStandardMaterial({color:'#192729',roughness:.68,metalness:.15}),
+    pcb: new THREE.MeshStandardMaterial(DRONE_SURFACES.pcb),
     gold: new THREE.MeshStandardMaterial({color:'#c9a354',metalness:.8,roughness:.32}),
     copper: new THREE.MeshStandardMaterial({color:'#b8783d',metalness:.82,roughness:.3}),
     red: new THREE.MeshStandardMaterial({color:'#bd392e',roughness:.66}),
     white: new THREE.MeshStandardMaterial({color:'#f0eeea',roughness:.6}),
     cell: new THREE.MeshStandardMaterial({color:'#bec4c3',metalness:.55,roughness:.45}),
-    glass: new THREE.MeshPhysicalMaterial({color:'#112e43',metalness:.55,roughness:.08,clearcoat:1}),
+    glass: new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens),
   };
   materials.frame.onBeforeCompile = shader => { shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight *= 0.7;\n#include <opaque_fragment>'); };
   materials.frame.customProgramCacheKey=()=> 'rotorift-saturated-pp-v1';

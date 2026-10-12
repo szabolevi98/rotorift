@@ -95,6 +95,7 @@
   "axis.yaw": "Guiñada",
   "axis.throttle": "Gases",
   "hud.armed": "ARMADO",
+  "hud.sticks": "Posición de los mandos en directo · Modo 2",
   "hud.disarmed": "DESARMADO",
   "hud.lowThrottle": "Baja los gases antes de armar.",
   "hud.keys": "{arm}: armar · {up}/{down}: gases · {tilt}: inclinar · {left}/{right}: guiñada · Shift: fino · {hover}: sustentación · {reset}: reiniciar · {view}: vista · {menu}: menú",

@@ -82,13 +82,15 @@ test("radio connection and loss emit one change action; forced keyboard remains 
   assert.equal(c.poll(0.01).throttle, 0);
   assert.equal(actions.length, 2);
 });
-test("keyboard reaches full stick promptly; either Shift gives fine control and release recenters", (t) => {
+test("keyboard ramps through partial stick before full roll; either Shift gives fine control and release recenters", (t) => {
   inputEnvironment(t);
   for (const hz of [60, 240]) {
     const c = new Controller(() => {});
     c.pressed.add("ArrowRight");
     for (let i = 0; i < hz * 0.1; i++) c.poll(1 / hz);
-    assert.ok(c.keyboard.roll > 0.95, "normal keys must reach full Acro rates");
+    assert.ok(c.keyboard.roll > 0.4 && c.keyboard.roll < 0.5, "short presses need useful partial stick control");
+    for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
+    assert.equal(c.keyboard.roll, 1, "held keys must still reach full roll/pitch rates");
     for (const shift of ["ShiftLeft", "ShiftRight"]) {
       c.pressed.add(shift);
       for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
@@ -99,6 +101,28 @@ test("keyboard reaches full stick promptly; either Shift gives fine control and 
     for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
     assert.ok(Math.abs(c.keyboard.roll) < 0.003, "release must promptly center the stick");
   }
+});
+test("keyboard yaw is gentler, reversal crosses neutral, and radio is not ramped or limited", (t) => {
+  const env = inputEnvironment(t);
+  for (const hz of [60, 240]) {
+    const c = new Controller(() => {});
+    c.pressed.add("KeyD");
+    for (let i = 0; i < hz * 0.1; i++) c.poll(1 / hz);
+    assert.ok(Math.abs(c.keyboard.yaw - 0.25) < 1e-12);
+    for (let i = 0; i < hz * 0.2; i++) c.poll(1 / hz);
+    assert.ok(Math.abs(c.keyboard.yaw - 0.75) < 1e-12);
+    assert.ok(Math.abs(actualRate(c.keyboard.yaw) - 390) < 1e-9);
+    c.pressed.delete("KeyD"); c.pressed.add("KeyA");
+    c.poll(1 / hz);
+    assert.ok(c.keyboard.yaw > 0, "reversal cannot jump from one endpoint to the other");
+    c.pressed.clear();
+    for (let i = 0; i < Math.ceil(hz * 0.08); i++) c.poll(1 / hz);
+    assert.equal(c.keyboard.yaw, 0);
+  }
+  const c = new Controller(() => {});
+  env.setPads([{ id: "Test USB radio", axes: [1, -1, -1, 1] }]);
+  const input = c.poll(1 / 240);
+  assert.equal(input.roll, 1); assert.equal(input.pitch, 1); assert.equal(input.yaw, 1);
 });
 test("Actual Rates endpoint, centre slope, expo and sign", () => {
   for (const expo of [0, 0.35, 1]) {

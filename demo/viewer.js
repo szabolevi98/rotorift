@@ -13,11 +13,7 @@
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setClearColor('#f5f5f1', 0);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  configureDroneRenderer(THREE, renderer);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, 1, .005, 8);
@@ -32,23 +28,10 @@
   controls.autoRotateSpeed = .8;
   const clock = new THREE.Clock();
 
-  // Saját stúdiófény, HDR-fájl és hálózati textúrák nélkül.
-  const room = new THREE.Scene();
-  room.background = new THREE.Color('#e3e5df');
-  const roomBox = new THREE.Mesh(new THREE.BoxGeometry(8, 8, 8), new THREE.MeshBasicMaterial({ color:'#adb5ae', side:THREE.BackSide }));
-  room.add(roomBox);
-  for (const [position,scale,power] of [ [[-2,3,1],[3,2,1],5], [[3,1,0],[1,3,3],3], [[0,2,-3],[3,2,1],4] ]) {
-    const panel = new THREE.Mesh(new THREE.BoxGeometry(...scale),new THREE.MeshBasicMaterial({color:new THREE.Color(power,power,power)}));
-    panel.position.set(...position);room.add(panel);
-  }
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const envTarget = pmrem.fromScene(room,.02,.1,12);
-  scene.environment = envTarget.texture;
-  scene.environmentIntensity = .58;
-  room.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose();}});
-  pmrem.dispose();
-  scene.add(new THREE.HemisphereLight('#ffffff','#a1a696',1.7));
-  const key = new THREE.DirectionalLight('#fff3e5',3.2); key.position.set(-.3,.55,-.35);
+  // Ugyanaz a színkezelés, tükröződési környezet és napfény, mint repüléskor.
+  const envTarget = addDroneReflections(THREE, renderer, scene);
+  scene.add(new THREE.HemisphereLight(0xfaf8e5, 0x768367, 2.4));
+  const key = new THREE.DirectionalLight(0xfff0d5,3); key.position.set(-.35,.75,.25);
   key.castShadow = true;
   key.shadow.mapSize.set(2048,2048);
   key.shadow.camera.left=-.32;key.shadow.camera.right=.32;key.shadow.camera.top=.32;key.shadow.camera.bottom=-.32;
@@ -56,8 +39,6 @@
   key.shadow.bias=-.00015;key.shadow.normalBias=.0007;
   key.shadow.radius=4;
   scene.add(key);
-  const fill = new THREE.DirectionalLight('#e2edf7',1.4);fill.position.set(.4,.2,.2);scene.add(fill);
-  const rim = new THREE.DirectionalLight('#ffffff',2);rim.position.set(0,.35,.45);scene.add(rim);
 
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.ShadowMaterial({color:'#4f5b46',opacity:.16}));
   floor.rotation.x=-Math.PI/2;floor.position.y=-.003;floor.receiveShadow=true;scene.add(floor);

@@ -95,6 +95,7 @@
   "axis.yaw": "Yaw",
   "axis.throttle": "Gáz",
   "hud.armed": "ARMED",
+  "hud.sticks": "Élő botállások · Mode 2",
   "hud.disarmed": "DISARMED",
   "hud.lowThrottle": "Armolás előtt vedd le a gázt.",
   "hud.keys": "{arm}: arm · {up}/{down}: gáz · {tilt}: döntés · {left}/{right}: yaw · Shift: finom · {hover}: lebegési gáz · {reset}: reset · {view}: nézet · {menu}: menü",

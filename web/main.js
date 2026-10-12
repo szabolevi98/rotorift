@@ -16,6 +16,24 @@ const $ = (s) => document.querySelector(s),
     return e;
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
+const stickMarkers = [
+  [$("#stick-left-dot"), $("#stick-left-stem")],
+  [$("#stick-right-dot"), $("#stick-right-stem")],
+];
+function updateSticks(input) {
+  // Mode 2: throttle starts at the bottom; pitch/roll/yaw are centred.
+  // Draw the calibrated input that is passed to the physics, every frame.
+  const clampAxis = (v) => Math.max(-1, Math.min(1, v));
+  const positions = [
+    [50 + clampAxis(input.yaw) * 38, 88 - Math.max(0, Math.min(1, input.throttle)) * 76],
+    [50 + clampAxis(input.roll) * 38, 50 - clampAxis(input.pitch) * 38],
+  ];
+  positions.forEach(([x, y], i) => {
+    const [dot, stem] = stickMarkers[i];
+    dot.setAttribute("transform", `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+    stem.setAttribute("d", `M50 50L${x.toFixed(2)} ${y.toFixed(2)}`);
+  });
+}
 const time = (ms) => (ms == null ? "—" : (ms / 1000).toFixed(3) + " s");
 const keyName = (key) =>
   ({
@@ -763,6 +781,7 @@ function frame(now) {
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
   input = controller.poll(dt);
+  if (playing && !paused) updateSticks(input);
   if (
     playing &&
     !paused &&

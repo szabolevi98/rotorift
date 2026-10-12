@@ -52,10 +52,10 @@ function createRiftX5() {
   materials.gold = new THREE.MeshStandardMaterial({ color: '#c3a360', metalness: .85, roughness: .32 });
   materials.connectorYellow = new THREE.MeshStandardMaterial({ color: '#ffc000', metalness: 0, roughness: .7 });
   materials.antennaShell = new THREE.MeshStandardMaterial({ color: '#16191b', metalness: .12, roughness: .52 });
-  materials.pcb = new THREE.MeshStandardMaterial({ color: '#143a35', metalness: .15, roughness: .63 });
+  materials.pcb = new THREE.MeshStandardMaterial(DRONE_SURFACES.pcb);
   materials.chip = new THREE.MeshStandardMaterial({ color: '#101718', metalness: .1, roughness: .73 });
   materials.prop = new THREE.MeshPhysicalMaterial({ color: '#263e3b', metalness: 0, roughness: .3, transparent: true, opacity: .9, side: THREE.DoubleSide, clearcoat: .65, clearcoatRoughness: .28, depthWrite: false });
-  materials.glass = new THREE.MeshPhysicalMaterial({ color: '#1a3750', metalness: .65, roughness: .1, clearcoat: 1 });
+  materials.glass = new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens);
   materials.battery = new THREE.MeshStandardMaterial({ color: '#303b40', metalness: .28, roughness: .43 });
   materials.redWire = new THREE.MeshStandardMaterial({ color: '#c44232', roughness: .66 });
   materials.white = new THREE.MeshStandardMaterial({ color: '#c8c9ba', roughness: .5 });
