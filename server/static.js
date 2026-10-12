@@ -16,6 +16,8 @@ const mime = {
   ".js": "text/javascript",
   ".mjs": "text/javascript",
   ".json": "application/json",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8",
   ".svg": "image/svg+xml",
   ".glb": "model/gltf-binary",
   ".wasm": "application/wasm",
