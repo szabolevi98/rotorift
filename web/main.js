@@ -22,6 +22,7 @@ const $ = (s) => document.querySelector(s),
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
+let fullscreen;
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
   [$("#stick-right-dot"), $("#stick-right-stem")],
@@ -164,6 +165,7 @@ function refreshMenuNavigation() {
 }
 function pause() {
   if (!playing) return;
+  void fullscreen?.enterMenu();
   paused = true;
   flight.active = false;
   flight.physics.armed = false;
@@ -178,6 +180,7 @@ function pause() {
 }
 function resume() {
   if (!playing) return;
+  void fullscreen?.enterFlight();
   paused = false;
   lastFrame = performance.now();
   flight.active = !room || room.phase === "flying";
@@ -560,6 +563,7 @@ async function loadRoom(r) {
   const key = r.code + ":" + r.startsAt;
   if (loadingRoom === key) return;
   loadingRoom = key;
+  void fullscreen?.enterFlight();
   const task = loading.begin("loading.flight", { name: t("map." + r.mapId) });
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
@@ -573,6 +577,7 @@ async function loadRoom(r) {
     await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
     if (!room || room.code !== r.code) {
       flight.active = false;
+      if (!room) void fullscreen?.enterMenu();
       return;
     }
     flight.reset(
@@ -591,6 +596,7 @@ async function loadRoom(r) {
     flight.startSound();
   } catch {
     loadingRoom = null;
+    if (!room || room.code === r.code) void fullscreen?.enterMenu();
     notice(t("error.requestFailed"));
   } finally {
     task.end();
@@ -601,12 +607,16 @@ function receive(m) {
     updateStatus();
     network.send("list");
   }
-  if (m.type === "error") notice(t("error." + m.code));
+  if (m.type === "error") {
+    if (m.code === "notReady") void fullscreen?.enterMenu();
+    notice(t("error." + m.code));
+  }
   if (m.type === "rooms") {
     rooms = m.rooms;
     renderRooms();
   }
   if (m.type === "left") {
+    void fullscreen?.enterMenu();
     flight.updateRemotes([], network.id);
     room = null;
     refreshSimulationControls();
@@ -663,6 +673,7 @@ function receive(m) {
     visible("#leave-flight", true);
     renderLobby();
     if (room.phase === "lobby") {
+      if (previousPhase !== "lobby") void fullscreen?.enterMenu();
       visible("#menu", true);
       visible("#hud", false);
       panel("lobby");
@@ -725,6 +736,8 @@ async function launch() {
     return;
   }
   $("#launch").disabled = true;
+  // Start from the launch click, before loading consumes its user activation.
+  void fullscreen?.enterFlight();
   const task = loading.begin("loading.flight", { name: t("map." + map.id) });
   try {
     await paintLoading();
@@ -736,6 +749,7 @@ async function launch() {
     resume();
   } catch (e) {
     console.error(e);
+    void fullscreen?.enterMenu();
     notice(t("error.requestFailed"));
   } finally {
     $("#launch").disabled = false;
@@ -971,7 +985,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function bindUI() {
-  bindFullscreen(t, notice);
+  fullscreen = bindFullscreen(t, notice);
   for (const b of document.querySelectorAll("[data-tab]"))
     b.onclick = () => {
       if (b.dataset.tab === "multiplayer") {
@@ -1017,7 +1031,11 @@ function bindUI() {
     network.send("ready", {
       ready: !room.players.find((p) => p.id === network.id)?.ready,
     });
-  $("#start-room").onclick = () => network.send("start");
+  $("#start-room").onclick = () => {
+    if (room?.phase === "lobby" && room.host === network.id && room.players.every(p => p.ready))
+      void fullscreen?.enterFlight();
+    network.send("start");
+  };
   $("#leave-room").onclick = () => network.send("leave");
   $("#leave-flight").onclick = () => network.send("leave");
   $("#rates-drone").value = config.id;

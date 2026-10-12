@@ -12,8 +12,9 @@ becslések, valódi rádiós és repülési hangolás szükséges.
 Node.js 22 vagy újabb és WebGL 2 képes böngésző kell.
 Mobilon fekvő nézetet kér a játék. A drónmodellek betöltésekor teljes képernyős
 jelzés mutatja a letöltés százalékát és a 3D modell előkészítését.
-A teljes képernyő a menüből, repülés közben és az elfordítási jelzésről is
-kapcsolható, ha a böngésző támogatja.
+Mobilon a repülés indításakor és folytatásakor automatikusan teljes képernyőre
+vált a játék, a menübe visszatérve kilép belőle. A kézi kapcsoló továbbra is
+elérhető. A működéshez a böngésző teljesképernyő-támogatása szükséges.
 
 ```powershell
 npm ci

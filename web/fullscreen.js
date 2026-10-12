@@ -11,7 +11,8 @@ export function fullscreenSupported(doc) {
 export function bindFullscreen(translate, onError, doc = document) {
   const buttons = [...doc.querySelectorAll("[data-fullscreen-toggle]")];
   const portraitError = doc.querySelector("#fullscreen-error");
-  let pending = false;
+  const mobile = doc.defaultView?.matchMedia?.("(hover: none) and (pointer: coarse), (max-width: 600px)") ?? { matches: false };
+  let pending = false, queued = null, inFlight = false, automaticWanted = false;
   const render = () => {
     const supported = fullscreenSupported(doc), active = !!fullscreenElement(doc);
     const label = translate(active ? "fullscreen.exit" : "fullscreen.enter");
@@ -28,14 +29,15 @@ export function bindFullscreen(translate, onError, doc = document) {
       if (text) text.textContent = label;
     }
   };
-  const toggle = async () => {
-    if (pending || !fullscreenSupported(doc)) return;
+  const change = async (active, silent = false) => {
+    if (pending) { queued = { active, silent }; return; }
+    if ((active && !fullscreenSupported(doc)) || active === !!fullscreenElement(doc)) return;
     pending = true;
     portraitError?.classList.add("hidden");
     render();
     try {
       // The request happens directly inside the user's click, before any await.
-      if (fullscreenElement(doc)) {
+      if (!active) {
         if (doc.fullscreenElement && doc.exitFullscreen) await doc.exitFullscreen();
         else if (doc.webkitFullscreenElement && doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
         else await doc.exitFullscreen();
@@ -46,20 +48,53 @@ export function bindFullscreen(translate, onError, doc = document) {
         else await root.webkitRequestFullscreen();
       }
     } catch {
-      if (portraitError) {
+      if (!silent && portraitError) {
         portraitError.textContent = translate("fullscreen.failed");
         portraitError.classList.remove("hidden");
       }
-      onError(translate("fullscreen.failed"));
+      if (!silent) onError(translate("fullscreen.failed"));
     } finally {
       pending = false;
       render();
       doc.activeElement?.blur();
+      // A menu can open while a fullscreen request is still being accepted.
+      // Honour the newest destination once that transition finishes.
+      const next = queued;
+      queued = null;
+      if (next) await change(next.active, next.silent);
     }
   };
+  const toggle = () => {
+    if (pending || !fullscreenSupported(doc)) return;
+    automaticWanted = false; // A manual exit must stay off until the next flight.
+    return change(!fullscreenElement(doc));
+  };
+  const changed = () => {
+    if (inFlight && !pending && !fullscreenElement(doc)) automaticWanted = false;
+    render();
+  };
   for (const button of buttons) button.addEventListener("click", toggle);
-  doc.addEventListener("fullscreenchange", render);
-  doc.addEventListener("webkitfullscreenchange", render);
+  doc.addEventListener("fullscreenchange", changed);
+  doc.addEventListener("webkitfullscreenchange", changed);
   doc.defaultView?.addEventListener("languagechange", render);
+  // A remotely started multiplayer race may arrive outside a user gesture.
+  // Like Racing, retry on the next touch without fighting a manual exit.
+  doc.defaultView?.addEventListener("pointerdown", event => {
+    if (!inFlight || !automaticWanted || pending || fullscreenElement(doc)) return;
+    if (event.target?.closest?.("[data-fullscreen-toggle], #menu-button, #leave-flight, #leave-room")) return;
+    void change(true, true);
+  }, { capture: true });
   render();
+  return {
+    enterFlight() {
+      inFlight = true;
+      automaticWanted = mobile.matches;
+      if (automaticWanted) return change(true, true);
+    },
+    enterMenu() {
+      inFlight = false;
+      automaticWanted = false;
+      return change(false, true);
+    },
+  };
 }
