@@ -26,6 +26,13 @@
 #hud .telemetry b { display: block; font-size: 28px; line-height: 1.2; margin: 3px 0; font-weight: 600; }
 #hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
 #hud .crosshair { transform: translate(-50%, -50%); }
+.arm-prompt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: min(420px, calc(100vw - 48px)); width: max-content; padding: 18px 24px; text-align: center; border: 1px solid #ff997c70; border-radius: 10px; background: #12161beb; text-shadow: none; }
+.arm-prompt strong { display: block; color: #ffd1c4; font-size: 19px; line-height: 1.45; }
+.arm-prompt span { display: block; margin-top: 8px; font-size: 11px; line-height: 1.5; color: #c4ccd6; }
+.arm-prompt span:empty { display: none; }
+#hud:has(#arm-prompt:not(.hidden)) .crosshair { visibility: hidden; }
+#hud:has(#arm-prompt:not(.hidden)) #arm-state:not(.armed) { border-color: #ff997c; color: #ffd1c4; }
+#hud:has(#flight-help:not(.hidden)) .arm-prompt { visibility: hidden; }
 .hud-flight-info { position: absolute; top: 84px; left: var(--hud-edge); max-width: min(300px, 40vw); display: grid; gap: 10px; }
 #hud #simulation-hud, #hud #race-hud { position: static; }
 #hud #simulation-hud { gap: 5px; }
@@ -66,6 +73,8 @@
   #hud .telemetry { padding: 8px 10px; gap: 14px; }
   #hud .telemetry b { font-size: 21px; }
   #hud .telemetry small { font-size: 8px; }
+  .arm-prompt { padding: 12px 18px; max-width: min(340px, calc(100vw - 48px)); }
+  .arm-prompt strong { font-size: 16px; }
   .hud-flight-info, #hud #scoreboard { top: 68px; }
   .hud-flight-info { max-height: calc(100svh - 164px); overflow-y: auto; pointer-events: auto; }
   #hud #race-hud { padding: 7px 10px; font-size: 10px; line-height: 1.5; }

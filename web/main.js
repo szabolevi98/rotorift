@@ -6,6 +6,7 @@ import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { FlightHelp } from "./game/flight-help.js";
+import { armPrompt } from "./game/arm-prompt.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
@@ -81,6 +82,7 @@ let playing = false,
   lastUi = 0;
 let roomRequest = null, roomRequestTimer, launching = false;
 let flightHelp;
+const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
@@ -975,6 +977,21 @@ function hud() {
   $("#arm-state").setAttribute("aria-pressed", String(flight.physics.armed));
   $("#arm-state").setAttribute("aria-label", t(flight.physics.armed ? "hud.disarmAction" : "hud.armAction"));
   $("#arm-state").disabled = !flight.physics.armed && !!room && (room.phase !== "flying" || own?.finished);
+  const configuredArm = controller.profile.actions?.arm;
+  const armBinding = controller.usingRadio && configuredArm &&
+    availableBindings(controller.pad, controller.profile).some(binding => bindingKey(binding) === bindingKey(configuredArm))
+    ? configuredArm : null;
+  const prompt = armPrompt({
+    armed: flight.physics.armed, canArm: !room || (room.phase === "flying" && !own?.finished),
+    radio: controller.usingRadio, radioReady: controller.radioReady, mobile: touchInput.matches,
+    lowThrottle: input.throttle <= 0.06, binding: armBinding,
+    control: armBinding ? bindingLabel(armBinding) : controller.keys.arm === "Space" ? t("hud.spaceKey") : keyName(controller.keys.arm),
+  }, t);
+  visible("#arm-prompt", !!prompt);
+  if (prompt) for (const field of ["title", "detail"]) {
+    const element = $("#arm-prompt-" + field);
+    if (element.textContent !== prompt[field]) element.textContent = prompt[field];
+  }
   $("#hud-reset").disabled = !!room && room.phase !== "flying";
   $("#hud-reset").setAttribute("aria-label", t("key.reset"));
   $("#hud-view").setAttribute("aria-label", t("key.view"));
