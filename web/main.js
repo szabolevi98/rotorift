@@ -72,10 +72,9 @@ const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
 let droneColor = normalizeDroneColor(read("drone-color", "coral"));
 function refreshColors() {
-  $("#drone-color-name").textContent = t("color." + droneColor);
   for (const button of document.querySelectorAll("[data-drone-color]")) {
     button.setAttribute("aria-pressed", String(button.dataset.droneColor === droneColor));
-    button.querySelector("span").textContent = t("color." + button.dataset.droneColor);
+    button.setAttribute("aria-label", t("color." + button.dataset.droneColor));
   }
 }
 function setDroneColor(value) {
@@ -249,7 +248,7 @@ function createCatalogUI() {
   for (const [id,hex] of Object.entries(DRONE_COLORS)) {
     const button=node("button", "drone-color-swatch"); button.type="button"; button.dataset.droneColor=id;
     const dot=node("i"); dot.style.setProperty("--pilot-color",hex); dot.setAttribute("aria-hidden","true");
-    button.append(dot,node("span")); button.onclick=()=>setDroneColor(id); $("#drone-color-picker").append(button);
+    button.append(dot); button.onclick=()=>setDroneColor(id); $("#drone-color-picker").append(button);
   }
   refreshColors();
   for (const d of catalog.drones) {

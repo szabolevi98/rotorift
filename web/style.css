@@ -221,11 +221,11 @@ h2 {
 }
 .drone-color-control { margin: 15px 0 24px; }
 .color-heading { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--muted); margin-bottom: 10px; }
-.color-heading strong { color: var(--ink); font-weight: 600; }
-#drone-color-picker { display: flex; flex-wrap: wrap; gap: 8px; }
-.drone-color-swatch { display: flex; align-items: center; gap: 7px; padding: 8px 11px; border-radius: 7px; border: 1px solid var(--line); background: #ffffff99; color: var(--muted); font-size: 11px; }
+#drone-color-picker { display: flex; flex-wrap: nowrap; gap: 6px; }
+.drone-color-swatch { display: grid; place-items: center; flex: none; width: 28px; height: 28px; padding: 4px; border-radius: 50%; border: 1px solid transparent; background: transparent; }
 .drone-color-swatch[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); box-shadow: 0 0 0 1px var(--ink); background: white; }
 .drone-color-swatch i, .pilot-color { display: inline-block; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--pilot-color); box-shadow: inset 0 0 0 1px #00000016; }
+.drone-color-swatch i { width: 18px; height: 18px; }
 .drone-color-control p { font-size: 10px; line-height: 1.6; color: var(--muted); margin: 9px 0 0; }
 .pilot-name { display: inline-flex; align-items: center; gap: 9px; }
 .map-card {
