@@ -19,7 +19,7 @@
 | Multiplayer    | Szobakód, nyilvános lista, lobby, készenlét, szerveres rajt, 20 Hz-es állapotok és távoli modellek          |
 | Verseny        | Háromkörös online verseny, kapusorrend és irányellenőrzés, élő scoreboard, teljes futamidő szerinti befutás |
 | Adattárolás    | MySQL/MariaDB profilok, köridők és futameredmények; kategóriánkénti ranglista                               |
-| Nyelvek        | EN/HU/DE/FR/ES, mentett választás, dinamikus felület és meta description                                    |
+| Nyelvek        | EN/HU/DE/FR/ES, mentett választás, dinamikus felület, oldalcím és kereső-/OG-/Twitter-leírás                  |
 | Arculat        | Rotorift ikon, favicon, saját narancssárga arculat; külön megmaradó showcase                                |
 
 A drónkonfigurációk 3. verziója megtartja a 2. verzió 28% körüli lebegési gázát és az X5 teljes gázas

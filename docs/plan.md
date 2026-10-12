@@ -22,6 +22,12 @@ A Rotorift böngészőben futó FPV drónszimulátor lesz, saját arculattal,
 pályákkal és drónnevekkel. A cél valósághű, jól hangolható repülési élmény,
 amely rádióval gyakorlásra, billentyűzettel pedig kipróbálásra is használható.
 
+Kiemelt termékcél: könnyű, telepítés nélküli böngészős FPV-szimulátor, amit
+számítógépen és telefonon, kompatibilis kontrollerrel útközben is elő lehet venni.
+A pályák low-poly vizuális stílusa és a részletes drónok ehhez igazodnak;
+a mobil böngészők tényleges teljesítményét és kontrollerkezelését külön ellenőrizni kell.
+A főmenü, keresőleírás és közösségi megosztási szöveg ezt emeli ki mind az öt nyelven.
+
 Az első kiadás tartalma:
 
 - Két saját környezet: füves, fás park és félkész építkezés.

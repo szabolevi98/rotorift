@@ -8,6 +8,9 @@ export const t = (key, values = {}) =>
   );
 export function applyLanguage() {
   document.documentElement.lang = language;
+  document.title = t("meta.title");
+  document.querySelector('meta[property="og:title"]').content = t("meta.title");
+  document.querySelector('meta[name="twitter:title"]').content = t("meta.title");
   document
     .querySelectorAll("[data-i18n]")
     .forEach((el) => (el.textContent = t(el.dataset.i18n)));
@@ -18,6 +21,7 @@ export function applyLanguage() {
     t("meta.description");
   document.querySelector('meta[property="og:description"]').content =
     t("meta.description");
+  document.querySelector('meta[name="twitter:description"]').content = t("meta.description");
   document
     .querySelector("#game-scene")
     .setAttribute("aria-label", t("aria.environment"));

@@ -6,9 +6,9 @@
   "nav.records": "Rekordok",
   "nav.showcase": "Modellbemutató ↗",
   "nav.menu": "Menü",
-  "fly.eyebrow": "A TE FPV JÁTSZÓTERED",
-  "fly.title": "Találd meg az íved.",
-  "fly.subtitle": "Egy apró whoop vagy egy freestyle gép. Válassz drónt és helyszínt, aztán szállj fel.",
+  "fly.eyebrow": "KÖNNYŰ · BÖNGÉSZŐS FPV",
+  "fly.title": "FPV. Bárhol.",
+  "fly.subtitle": "Könnyű FPV-szimulátor, ami a böngésződben fut. Csatlakoztass egy kompatibilis kontrollert, és repülj gépen vagy telefonon, bárhol jársz. Low-poly pályák, részletes drónok. Telepítés nélkül.",
   "fly.aircraft": "Drón",
   "fly.environment": "Helyszín",
   "fly.mode": "Repülési mód",
@@ -77,7 +77,7 @@
   "footer.flight": "TALÁLD MEG AZ ÍVED",
   "footer.build": "REPÜLÉSI PROTOTÍPUS / 0.1",
   "loading": "Repülőtér megnyitása…",
-  "meta.description": "Rotorift FPV drónszimulátor. Repülj háromféle drónnal két környezetben, és versenyezz a barátaiddal.",
+  "meta.description": "Könnyű, böngészős FPV-szimulátor. Repülj gépen vagy telefonon, kompatibilis kontrollerrel. Low-poly pályák, részletes drónok. Telepítés nélkül.",
   "aria.environment": "3D FPV repülési környezet",
   "aria.preview": "Kiválasztott drón 3D előnézete",
   "drone.rift-65": "65 mm tinywhoop · 1S",
@@ -162,5 +162,6 @@
   "hud.propDamage": "Propellersérülés · {damage}%",
   "error.hostOnly": "Csak a szoba házigazdája állíthatja a szimulációs opciókat.",
   "error.rulesLocked": "Indítás után a szobaszabályok már nem módosíthatók.",
-  "error.invalidSimulation": "Érvénytelen szimulációs beállítás."
+  "error.invalidSimulation": "Érvénytelen szimulációs beállítás.",
+  "meta.title": "Rotorift · Könnyű, böngészős FPV-szimulátor"
 }

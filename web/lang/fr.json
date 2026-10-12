@@ -6,9 +6,9 @@
   "nav.records": "Records",
   "nav.showcase": "Modèles ↗",
   "nav.menu": "Menu",
-  "fly.eyebrow": "VOTRE TERRAIN FPV",
-  "fly.title": "Trouvez votre trajectoire.",
-  "fly.subtitle": "Un petit whoop ou une machine freestyle. Choisissez votre drone et votre terrain, puis décollez.",
+  "fly.eyebrow": "LÉGER · FPV DANS LE NAVIGATEUR",
+  "fly.title": "FPV. Partout.",
+  "fly.subtitle": "Un simulateur FPV léger qui tourne dans votre navigateur. Branchez une manette compatible et volez sur ordinateur ou téléphone, où que vous soyez. Des terrains low-poly et des drones détaillés. Sans installation.",
   "fly.aircraft": "Drone",
   "fly.environment": "Environnement",
   "fly.mode": "Mode de vol",
@@ -77,7 +77,7 @@
   "footer.flight": "TROUVEZ VOTRE TRAJECTOIRE",
   "footer.build": "PROTOTYPE DE VOL / 0.1",
   "loading": "Ouverture du terrain de vol…",
-  "meta.description": "Rotorift, simulateur de drones FPV. Pilotez trois drones, explorez deux environnements et défiez vos amis.",
+  "meta.description": "Simulateur FPV léger dans le navigateur. Volez sur PC ou téléphone avec une manette compatible. Terrains low-poly, drones détaillés. Sans installation.",
   "aria.environment": "Environnement de vol FPV 3D",
   "aria.preview": "Aperçu 3D du drone sélectionné",
   "drone.rift-65": "Tinywhoop 65 mm · 1S",
@@ -162,5 +162,6 @@
   "hud.propDamage": "Dégâts aux hélices · {damage}%",
   "error.hostOnly": "Seul l’hôte peut modifier les options de simulation.",
   "error.rulesLocked": "Les règles du salon ne peuvent plus changer après le départ.",
-  "error.invalidSimulation": "Paramètres de simulation invalides."
+  "error.invalidSimulation": "Paramètres de simulation invalides.",
+  "meta.title": "Rotorift · Simulateur FPV léger dans le navigateur"
 }

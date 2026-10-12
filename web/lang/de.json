@@ -6,9 +6,9 @@
   "nav.records": "Bestzeiten",
   "nav.showcase": "Modelle ↗",
   "nav.menu": "Menü",
-  "fly.eyebrow": "DEIN FPV-SPIELPLATZ",
-  "fly.title": "Finde deine Linie.",
-  "fly.subtitle": "Ein kleiner Whoop oder eine Freestyle-Maschine. Wähle Drohne und Ort, dann starte.",
+  "fly.eyebrow": "LEICHT · FPV IM BROWSER",
+  "fly.title": "FPV. Überall.",
+  "fly.subtitle": "Ein leichtgewichtiger FPV-Simulator direkt im Browser. Verbinde einen kompatiblen Controller und fliege am Computer oder Smartphone, auch unterwegs. Low-Poly-Welten, detaillierte Drohnen. Ohne Installation.",
   "fly.aircraft": "Drohne",
   "fly.environment": "Umgebung",
   "fly.mode": "Flugmodus",
@@ -77,7 +77,7 @@
   "footer.flight": "FINDE DEINE LINIE",
   "footer.build": "FLUGPROTOTYP / 0.1",
   "loading": "Flugdeck wird geöffnet…",
-  "meta.description": "Rotorift FPV-Drohnensimulator. Fliege drei Drohnen, erkunde zwei Umgebungen und fahre Rennen mit Freunden.",
+  "meta.description": "Leichtgewichtiger FPV-Simulator im Browser. Fliege am PC oder Smartphone mit kompatiblem Controller. Low-Poly-Welten, detaillierte Drohnen. Ohne Installation.",
   "aria.environment": "3D-FPV-Flugumgebung",
   "aria.preview": "3D-Vorschau der gewählten Drohne",
   "drone.rift-65": "65 mm Tinywhoop · 1S",
@@ -162,5 +162,6 @@
   "hud.propDamage": "Propellerschäden · {damage}%",
   "error.hostOnly": "Nur der Gastgeber kann die Simulationsoptionen ändern.",
   "error.rulesLocked": "Raumregeln können nach dem Start nicht geändert werden.",
-  "error.invalidSimulation": "Ungültige Simulationseinstellungen."
+  "error.invalidSimulation": "Ungültige Simulationseinstellungen.",
+  "meta.title": "Rotorift · Leichtgewichtiger FPV-Simulator im Browser"
 }

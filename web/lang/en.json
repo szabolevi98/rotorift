@@ -6,9 +6,9 @@
   "nav.records": "Records",
   "nav.showcase": "Showcase ↗",
   "nav.menu": "Menu",
-  "fly.eyebrow": "YOUR FPV PLAYGROUND",
-  "fly.title": "Find your line.",
-  "fly.subtitle": "A small whoop or a freestyle machine. Pick your aircraft, choose a spot, and take off.",
+  "fly.eyebrow": "LIGHTWEIGHT · BROWSER FPV",
+  "fly.title": "FPV. On the go.",
+  "fly.subtitle": "A lightweight FPV simulator that runs in your browser. Connect a compatible controller and fly on your computer or phone, wherever you go. Low-poly worlds, detailed drones. No installation.",
   "fly.aircraft": "Aircraft",
   "fly.environment": "Environment",
   "fly.mode": "Flight mode",
@@ -77,7 +77,7 @@
   "footer.flight": "FIND YOUR LINE",
   "footer.build": "FLIGHT PROTOTYPE / 0.1",
   "loading": "Opening the flight deck…",
-  "meta.description": "Rotorift FPV drone simulator. Fly three aircraft, explore two environments and race with friends.",
+  "meta.description": "Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation.",
   "aria.environment": "3D FPV flight environment",
   "aria.preview": "Selected drone 3D preview",
   "drone.rift-65": "65 mm tinywhoop · 1S",
@@ -162,5 +162,6 @@
   "hud.propDamage": "Propeller damage · {damage}%",
   "error.hostOnly": "Only the host can change simulation options.",
   "error.rulesLocked": "Room rules cannot be changed after starting.",
-  "error.invalidSimulation": "Invalid simulation settings."
+  "error.invalidSimulation": "Invalid simulation settings.",
+  "meta.title": "Rotorift · Lightweight Browser FPV Simulator"
 }
