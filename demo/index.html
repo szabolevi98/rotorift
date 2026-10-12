@@ -59306,6 +59306,59 @@ function addDroneReflections(THREE, renderer, scene) {
   return target;
 }
 
+const variants = new WeakMap(), originals = new WeakMap();
+
+function isBatteryLabel(object) {
+  if (!/^(Label_|Battery_label_print|Rotorift_own_label)/.test(object.name)) return false;
+  for (let parent = object.parent; parent; parent = parent.parent)
+    if (/battery/i.test(parent.name)) return true;
+  return false;
+}
+
+// The orange ink is baked into the accepted label textures. Replace only its
+// hue, retaining print, background and antialiased edges against dark lettering.
+function recolorBatteryLabelPixels(pixels, hex) {
+  const value = parseInt(hex.replace("#", ""), 16), color = [value >> 16, (value >> 8) & 255, value & 255];
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+    if (r < 45 || g < 15 || r < g * 1.8 || g < b * 1.2 || g > 155 || b > 115) continue;
+    const ink = Math.min(1, r / 237);
+    pixels[i] = Math.round(color[0] * ink);
+    pixels[i + 1] = Math.round(color[1] * ink);
+    pixels[i + 2] = Math.round(color[2] * ink);
+  }
+}
+
+function colorBatteryLabel(material, hex) {
+  if (!material.map || typeof document === "undefined") return;
+  const source = originals.get(material.map) ?? material.map;
+  let colors = variants.get(source);
+  if (!colors) { colors = new Map(); variants.set(source, colors); }
+  if (!colors.has(hex)) {
+    const image = source.image, canvas = document.createElement("canvas");
+    canvas.width = image.width; canvas.height = image.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    recolorBatteryLabelPixels(pixels.data, hex); ctx.putImageData(pixels, 0, 0);
+    const texture = source.clone();
+    // Texture.clone shares its Source: replacing image on that clone alone would
+    // overwrite the pristine texture and recolor other pilots' labels as well.
+    texture.source = new source.source.constructor(canvas);
+    texture.needsUpdate = true;
+    originals.set(texture, source); colors.set(hex, texture);
+  }
+  material.map = colors.get(hex);
+}
+
+function applyBatteryLabelColor(root, hex) {
+  root.traverse(object => {
+    if (isBatteryLabel(object)) for (const material of Array.isArray(object.material) ? object.material : [object.material])
+      if (material) colorBatteryLabel(material, hex);
+  });
+}
+
+
 const DRONE_COLORS = Object.freeze({
   coral: "#ff6648", yellow: "#ffd000", teal: "#3e938c", violet: "#8573a8",
   blue: "#3986ff", lime: "#75cf35", pink: "#ed5aa6", white: "#e7edf3",
@@ -59321,7 +59374,7 @@ function tagDroneColorMaterials(root) {
   // Accepted GLBs share these materials across the TPU parts. Tag by semantic
   // mesh names before batching, so connectors, wiring, lenses and PCB stay intact.
   root.traverse(object => {
-    const role = anchors[object.name];
+    const role = anchors[object.name] ?? (isBatteryLabel(object) ? "label" : null);
     if (!role || !object.material) return;
     for (const material of Array.isArray(object.material) ? object.material : [object.material])
       material.userData.droneColorRole = role;
@@ -59333,7 +59386,9 @@ function applyDroneColor(root, value) {
     if (!object.material) return;
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       if (seen.has(material) || !material.userData.droneColorRole) continue;
-      seen.add(material); material.color.set(color);
+      seen.add(material);
+      if (material.userData.droneColorRole === "label") { colorBatteryLabel(material, color); continue; }
+      material.color.set(color);
       if (material.userData.droneColorRole === "detail") material.color.multiplyScalar(0.55);
     }
   });
@@ -59958,7 +60013,7 @@ function createRiftX5() {
   const uniqueMaterials=new Set();root.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])uniqueMaterials.add(m);});
   function setExplode(value) { for(const a of assemblies) a.group.position.copy(a.base).addScaledVector(a.delta,value); }
   function setWireframe(value) { for(const m of uniqueMaterials)m.wireframe=value; }
-  function setColor(hex) { materials.tpu.color.set(hex); materials.tpuDetail.color.set(hex).multiplyScalar(.55); }
+  function setColor(hex) { materials.tpu.color.set(hex); materials.tpuDetail.color.set(hex).multiplyScalar(.55); applyBatteryLabelColor(root,hex); }
   return { root, assemblies, propellers, batteryParts, actionParts, materials, meshes, triangles:Math.round(triangles), setExplode, setWireframe, setColor };
 }
 
@@ -60187,7 +60242,7 @@ function createRift65() {
   const uniqueMaterials=new Set();root.traverse(o=>{if(o.isMesh)uniqueMaterials.add(o.material);});
   function setExplode(v){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,v);}
   function setWireframe(v){for(const m of uniqueMaterials)m.wireframe=v;}
-  function setColor(hex){materials.frame.color.set(hex);}
+  function setColor(hex){materials.frame.color.set(hex);applyBatteryLabelColor(root,hex);}
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }
 
@@ -60568,7 +60623,7 @@ function createRiftC3() {
   let meshes=0,triangles=0;const allMaterials=new Set();root.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3;for(const m of Array.isArray(o.material)?o.material:[o.material])allMaterials.add(m);}});
   function setExplode(v){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,v);}
   function setWireframe(v){for(const m of allMaterials)m.wireframe=v;}
-  function setColor(hex){materials.orange.color.set(hex);materials.orangeDetail.color.set(hex).multiplyScalar(.55);}
+  function setColor(hex){materials.orange.color.set(hex);materials.orangeDetail.color.set(hex).multiplyScalar(.55);applyBatteryLabelColor(root,hex);}
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }
 

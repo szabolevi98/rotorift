@@ -375,6 +375,6 @@ function createRiftC3() {
   let meshes=0,triangles=0;const allMaterials=new Set();root.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count)/3;for(const m of Array.isArray(o.material)?o.material:[o.material])allMaterials.add(m);}});
   function setExplode(v){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,v);}
   function setWireframe(v){for(const m of allMaterials)m.wireframe=v;}
-  function setColor(hex){materials.orange.color.set(hex);materials.orangeDetail.color.set(hex).multiplyScalar(.55);}
+  function setColor(hex){materials.orange.color.set(hex);materials.orangeDetail.color.set(hex).multiplyScalar(.55);applyBatteryLabelColor(root,hex);}
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }

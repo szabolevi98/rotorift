@@ -223,6 +223,6 @@ function createRift65() {
   const uniqueMaterials=new Set();root.traverse(o=>{if(o.isMesh)uniqueMaterials.add(o.material);});
   function setExplode(v){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,v);}
   function setWireframe(v){for(const m of uniqueMaterials)m.wireframe=v;}
-  function setColor(hex){materials.frame.color.set(hex);}
+  function setColor(hex){materials.frame.color.set(hex);applyBatteryLabelColor(root,hex);}
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }

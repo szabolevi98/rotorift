@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { DRONE_COLORS, validDroneColor, normalizeDroneColor, tagDroneColorMaterials, applyDroneColor } from "../shared/visual/drone-colors.js";
 import { isolateModelMaterials, disposeModelMaterials } from "../web/game/models.js";
 import { DroneTrail, TRAIL_CAPACITY, TRAIL_LIFETIME } from "../web/game/drone-trail.js";
+import { colorBatteryLabel } from "../shared/visual/battery-labels.js";
 
 test("accepted drone assets tint their shared TPU/frame materials without recoloring wiring, optics or connectors", async () => {
   for (const id of ["x5","65","c3"]) {
@@ -12,12 +13,16 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
     const json=JSON.parse(buffer.subarray(20,20+buffer.readUInt32LE(12)).toString("utf8"));
     const materials=json.materials.map(m=>new THREE.MeshStandardMaterial({color:new THREE.Color().fromArray(m.pbrMetallicRoughness?.baseColorFactor??[1,1,1])}));
     const root=new THREE.Group(),geometry=new THREE.BoxGeometry();
-    for(const n of json.nodes.filter(n=>n.mesh!==undefined))for(const primitive of json.meshes[n.mesh].primitives) {
-      const mesh=new THREE.Mesh(geometry,materials[primitive.material]);mesh.name=n.name??"";root.add(mesh);
-    }
+    const nodes=json.nodes.map(n=>{
+      const primitive=n.mesh===undefined?null:json.meshes[n.mesh].primitives[0];
+      const object=primitive?new THREE.Mesh(geometry,materials[primitive.material]):new THREE.Group();object.name=n.name??"";return object;
+    });
+    for(const [index,n]of json.nodes.entries())for(const child of n.children??[])nodes[index].add(nodes[child]);
+    for(const object of nodes)if(!object.parent)root.add(object);
     tagDroneColorMaterials(root);
     assert.equal(materials.filter(m=>m.userData.droneColorRole==="base").length,1,id+" has one shared color material");
     assert.equal(materials.filter(m=>m.userData.droneColorRole==="detail").length,id==="65"?0:1);
+    assert.equal(materials.filter(m=>m.userData.droneColorRole==="label").length,id==="65"?1:2,"battery print only, excluding camera labels");
     const original=materials.map(m=>m.color.toArray()),a=root.clone(),b=root.clone();
     isolateModelMaterials(a);isolateModelMaterials(b);
     applyDroneColor(a,"teal");applyDroneColor(b,"violet");
@@ -35,7 +40,7 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
           assert.match(shader.fragmentShader, /outgoingLight \*= 0\.7;/);
           assert.equal(m.customProgramCacheKey(), "rotorift-polymer-0.7");
         } else assert.equal(m.toneMapped, source.toneMapped, "other surfaces keep their original tone mapping");
-        if(source.userData.droneColorRole) {
+        if(source.userData.droneColorRole && source.userData.droneColorRole!=="label") {
           const expected=new THREE.Color(DRONE_COLORS[color]);if(source.userData.droneColorRole==="detail")expected.multiplyScalar(.55);
           assert.ok(m.color.equals(expected),id+" TPU follows the chosen color");
         } else assert.deepEqual(m.color.toArray(),original[index],"non-TPU material stays unchanged");
@@ -45,6 +50,34 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
     geometry.dispose();materials.forEach(m=>m.dispose());
   }
   for(const value of ["#ff0000","__proto__",{},null,2]) {assert.equal(validDroneColor(value),false);assert.equal(normalizeDroneColor(value),"coral");}
+});
+
+test("battery label ink changes without modifying print, shared source images or another pilot's texture", () => {
+  const oldDocument=globalThis.document;
+  globalThis.document={createElement:()=>{
+    const canvas={width:0,height:0,pixels:null};let source;
+    canvas.getContext=()=>({drawImage:image=>source=image,
+      getImageData:()=>({data:new Uint8ClampedArray(source.pixels)}),putImageData:image=>canvas.pixels=new Uint8ClampedArray(image.data)});
+    return canvas;
+  }};
+  try {
+    const pixels=new Uint8ClampedArray([255,102,72,255,23,38,42,255,233,234,227,255,120,142,132,255]);
+    const texture=new THREE.Texture({width:4,height:1,pixels});texture.flipY=false;texture.colorSpace=THREE.SRGBColorSpace;
+    const source=new THREE.MeshStandardMaterial({map:texture}),a=source.clone(),b=source.clone();
+    colorBatteryLabel(a,DRONE_COLORS.teal);colorBatteryLabel(b,DRONE_COLORS.violet);
+    assert.deepEqual([...a.map.image.pixels.slice(0,4)],[62,147,140,255]);
+    assert.deepEqual([...b.map.image.pixels.slice(0,4)],[133,115,168,255]);
+    assert.deepEqual(a.map.image.pixels.slice(4),pixels.slice(4),"dark print and neutral backgrounds survive");
+    assert.deepEqual(texture.image.pixels,pixels,"cached source stays orange");
+    assert.notEqual(a.map.source,b.map.source);assert.notEqual(a.map.source,texture.source);
+    assert.equal(a.map.flipY,false);assert.equal(a.map.colorSpace,THREE.SRGBColorSpace);
+    const teal=a.map;
+    colorBatteryLabel(a,DRONE_COLORS.blue);colorBatteryLabel(a,DRONE_COLORS.teal);
+    assert.equal(a.map,teal,"repeated selections reuse the bounded palette cache");
+    assert.deepEqual([...b.map.image.pixels.slice(0,4)],[133,115,168,255],"another pilot stays violet");
+  } finally {
+    if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;
+  }
 });
 
 test("colored trails reuse bounded buffers, fade while hovering, and break on resets, teleports and rendering gaps", () => {

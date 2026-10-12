@@ -617,6 +617,6 @@ function createRiftX5() {
   const uniqueMaterials=new Set();root.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])uniqueMaterials.add(m);});
   function setExplode(value) { for(const a of assemblies) a.group.position.copy(a.base).addScaledVector(a.delta,value); }
   function setWireframe(value) { for(const m of uniqueMaterials)m.wireframe=value; }
-  function setColor(hex) { materials.tpu.color.set(hex); materials.tpuDetail.color.set(hex).multiplyScalar(.55); }
+  function setColor(hex) { materials.tpu.color.set(hex); materials.tpuDetail.color.set(hex).multiplyScalar(.55); applyBatteryLabelColor(root,hex); }
   return { root, assemblies, propellers, batteryParts, actionParts, materials, meshes, triangles:Math.round(triangles), setExplode, setWireframe, setColor };
 }

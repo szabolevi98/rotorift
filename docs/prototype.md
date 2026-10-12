@@ -92,7 +92,7 @@ valódi propellerkontaktus, propwash lecsengése, a négy szélerősség tényle
 ghost/ütközés és testfelszabadítás, host jogosultság és átadása, indítás utáni zárolás,
 szabályegyezés és személyes online módváltás, MariaDB kategóriák elkülönítése.
 Böngészőben: kapcsolók, offline és online módgomb, akkufogyás, szél-HUD és rögzített szabályok.
-A teljes tesztcsomag 83/83 tesztje sikeres.
+A teljes tesztcsomag 84/84 tesztje sikeres.
 
 ## Drónszínek és multiplayer nyomvonalak
 
@@ -100,6 +100,11 @@ A repülés menüjében és a showroomban nyolc szín választható: narancs, s�
 türkiz, lila, kék, zöld, rózsaszín és fehér. Mindkettő a közös palettát használja.
 A játék színválasztása böngészőben megmarad, az előnézet azonnal követi.
 Az X5 és C3 TPU-/védőelemei, valamint a 65 mm-es whoop váza színeződik;
+a három drón akkucímkéinek narancs díszítése is a pilótaszínt követi.
+A címke sötét/világos háttere és feliratai megmaradnak. A közös textúrákat
+nem módosítjuk: címkénként és palettaszínenként újrahasznált külön textúra készül,
+így egy másik pilóta vagy előnézet választása nem színezi át a saját címkét.
+A showroom ugyanazt a színezést használja, a letöltött GLB is az aktuális címkét kapja;
 a kábelek, csatlakozók, optika és PCB anyagai változatlanok. A színanyagokat
 szemantikus GLB-mesh-nevek alapján jelöljük összevonás előtt, és minden előnézet,
 saját drón és távoli pilóta külön anyagpéldányt kap; a geometria továbbra is közös.

@@ -1,3 +1,5 @@
+import { isBatteryLabel, colorBatteryLabel } from "./battery-labels.js";
+
 export const DRONE_COLORS = Object.freeze({
   coral: "#ff6648", yellow: "#ffd000", teal: "#3e938c", violet: "#8573a8",
   blue: "#3986ff", lime: "#75cf35", pink: "#ed5aa6", white: "#e7edf3",
@@ -13,7 +15,7 @@ export function tagDroneColorMaterials(root) {
   // Accepted GLBs share these materials across the TPU parts. Tag by semantic
   // mesh names before batching, so connectors, wiring, lenses and PCB stay intact.
   root.traverse(object => {
-    const role = anchors[object.name];
+    const role = anchors[object.name] ?? (isBatteryLabel(object) ? "label" : null);
     if (!role || !object.material) return;
     for (const material of Array.isArray(object.material) ? object.material : [object.material])
       material.userData.droneColorRole = role;
@@ -25,7 +27,9 @@ export function applyDroneColor(root, value) {
     if (!object.material) return;
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       if (seen.has(material) || !material.userData.droneColorRole) continue;
-      seen.add(material); material.color.set(color);
+      seen.add(material);
+      if (material.userData.droneColorRole === "label") { colorBatteryLabel(material, color); continue; }
+      material.color.set(color);
       if (material.userData.droneColorRole === "detail") material.color.multiplyScalar(0.55);
     }
   });
