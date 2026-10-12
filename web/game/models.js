@@ -3,13 +3,23 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
 import { configureDronePolymer } from "../../shared/visual/drone-rendering.js";
+import { paintLoading } from "../loading.js";
 const cache = new Map(),
   loader = new GLTFLoader();
-export async function loadModel(config, { isolateMaterials = false } = {}) {
-  if (!cache.has(config.id))
-    cache.set(
-      config.id,
-      loader.loadAsync(config.model).then(({ scene }) => {
+export async function loadModel(config, { isolateMaterials = false, onProgress } = {}) {
+  let entry = cache.get(config.id);
+  if (!entry) {
+    entry = { listeners: new Set(), progress: { phase: "download", loaded: 0, total: 0 } };
+    cache.set(config.id, entry);
+    const report = progress => {
+      entry.progress = progress;
+      for (const listener of entry.listeners) listener(progress);
+    };
+    entry.promise = loader.loadAsync(config.model, event => report({
+      phase: "download", loaded: event.loaded, total: event.lengthComputable ? event.total : 0,
+    })).then(async ({ scene }) => {
+        report({ phase: "prepare" });
+        await paintLoading();
         tagDroneColorMaterials(scene);
         scene.traverse(object => {
           for (const material of Array.isArray(object.material) ? object.material : [object.material])
@@ -114,11 +124,20 @@ export async function loadModel(config, { isolateMaterials = false } = {}) {
             parent.add(mesh);
           }
         return root;
-      }),
-    );
-  const model = (await cache.get(config.id)).clone();
-  if (isolateMaterials) isolateModelMaterials(model);
-  return model;
+      }).catch(error => {
+        // A temporary network failure must not permanently poison the cache.
+        if (cache.get(config.id) === entry) cache.delete(config.id);
+        throw error;
+      });
+  }
+  if (onProgress) { entry.listeners.add(onProgress); onProgress(entry.progress); }
+  try {
+    const model = (await entry.promise).clone();
+    if (isolateMaterials) isolateModelMaterials(model);
+    return model;
+  } finally {
+    if (onProgress) entry.listeners.delete(onProgress);
+  }
 }
 export function isolateModelMaterials(model) {
     // Flight lighting hooks must not change the cached menu/showcase materials.

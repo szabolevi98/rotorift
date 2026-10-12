@@ -52,7 +52,7 @@ export class Flight {
   async init() {
     await RAPIER.init();
   }
-  async load(map, config, rates, mode, color = this.color ?? "coral", simulation) {
+  async load(map, config, rates, mode, color = this.color ?? "coral", simulation, onProgress) {
     this.active = false;
     this.parkShadows?.dispose();
     this.parkShadows = null;
@@ -78,7 +78,7 @@ export class Flight {
     this.remotePlayers = [];
     this.physics.rates = rates;
     this.physics.mode = mode;
-    this.visual = await loadModel(config, { isolateMaterials: true });
+    this.visual = await loadModel(config, { isolateMaterials: true, onProgress });
     this.setColor(color);
     this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);

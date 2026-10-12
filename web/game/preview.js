@@ -50,9 +50,9 @@ export class Preview {
     this.version = 0;
     this.color = "coral";
   }
-  async select(config) {
+  async select(config, onProgress) {
     const version = ++this.version,
-      model = await loadModel(config, { isolateMaterials: true });
+      model = await loadModel(config, { isolateMaterials: true, onProgress });
     if (version !== this.version) { disposeModelMaterials(model); return; }
     if (this.model) { this.scene.remove(this.model); disposeModelMaterials(this.model); }
     this.model = model;

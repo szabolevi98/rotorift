@@ -840,7 +840,39 @@ footer {
   font-size: 13px;
 }
 #boot img {
-  width: 40px;
+  width: 52px;
+}
+html.loading-visible { overflow: hidden; }
+.loading-card { width: min(380px, 85vw); display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.loading-card strong { color: var(--ink); font-size: 20px; font-weight: 700; }
+#loading-detail { min-height: 1.5em; }
+.loading-meter { display: flex; align-items: center; gap: 14px; width: 100%; }
+#loading-progress { appearance: none; border: 0; border-radius: 5px; overflow: hidden; height: 5px; width: 100%; background: #ffffff12; accent-color: var(--orange); }
+#loading-progress::-webkit-progress-bar { background: #ffffff12; }
+#loading-progress::-webkit-progress-value { background: var(--orange); }
+#loading-progress::-moz-progress-bar { background: var(--orange); }
+#loading-progress:indeterminate { background: linear-gradient(90deg, #ffffff12 35%, var(--orange) 50%, #ffffff12 65%); background-size: 250% 100%; animation: loading-sweep 1.4s linear infinite; }
+#loading-progress:indeterminate::-webkit-progress-bar { background: transparent; }
+#loading-percent { min-width: 3ch; font-variant-numeric: tabular-nums; color: var(--ink); }
+.loading-error .loading-meter { display: none; }
+@keyframes loading-sweep { from { background-position: 100% 0; } to { background-position: 0 0; } }
+#orientation-prompt {
+  display: none; position: fixed; inset: 0; z-index: 40; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px; background: #101114f7;
+  padding: max(28px, env(safe-area-inset-top)) max(28px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(28px, env(safe-area-inset-left));
+  text-align: center; touch-action: none;
+}
+#orientation-prompt strong { font-size: clamp(20px, 5vw, 28px); max-width: 400px; line-height: 1.35; }
+#orientation-prompt span { color: var(--muted); max-width: 330px; line-height: 1.5; font-size: 14px; }
+.orientation-phone { width: 84px; height: 110px; fill: none; stroke: var(--orange); stroke-width: 4; animation: rotate-phone 2.8s ease-in-out infinite; }
+@keyframes rotate-phone { 0%, 15%, 100% { transform: rotate(0); } 45%, 75% { transform: rotate(90deg); } }
+@media (orientation: portrait) and (hover: none) and (pointer: coarse), (orientation: portrait) and (max-width: 600px) {
+  html { overflow: hidden; }
+  html:not(.loading-visible) #orientation-prompt { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orientation-phone { animation: none; transform: rotate(90deg); }
+  #loading-progress:indeterminate { animation: none; }
 }
 @media (min-width: 1500px) {
   main {

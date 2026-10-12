@@ -4,6 +4,7 @@ import { Controller } from "./input/controller.js";
 import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
+import { LoadingScreen, paintLoading } from "./loading.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -19,6 +20,7 @@ const $ = (s) => document.querySelector(s),
     return e;
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
+const loading = new LoadingScreen(t);
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
   [$("#stick-right-dot"), $("#stick-right-stem")],
@@ -184,6 +186,7 @@ function resume() {
   flight.startSound();
 }
 function action(kind) {
+  if (loading.tasks.size && !["lostFocus", "radioChanged"].includes(kind)) return;
   if (kind === "lostFocus" || kind === "radioChanged") {
     if (playing && !paused) pause();
     return;
@@ -236,12 +239,25 @@ function saveLocal(ms) {
   write("records", records);
 }
 async function selectDrone(id) {
+  const previous = config;
   config =
     catalog.drones.find((d) => d.id === id) ??
     catalog.drones.find((d) => d.id === "rift-x5");
   write("selected-drone", config.id);
   refreshCatalogText();
-  await preview.select(config);
+  const selected = config, task = loading.begin("loading.model", { name: selected.name });
+  try {
+    await paintLoading();
+    await preview.select(selected, task.progress);
+    preview.render();
+  } catch (error) {
+    if (config === selected && previous) {
+      config = previous;
+      write("selected-drone", config.id);
+      refreshCatalogText();
+    }
+    throw error;
+  } finally { task.end(); }
 }
 function selectMap(id) {
   const base = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
@@ -543,7 +559,7 @@ async function loadRoom(r) {
   const key = r.code + ":" + r.startsAt;
   if (loadingRoom === key) return;
   loadingRoom = key;
-  visible("#boot", true);
+  const task = loading.begin("loading.flight", { name: t("map." + r.mapId) });
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
   const roomMap = r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
@@ -552,7 +568,8 @@ async function loadRoom(r) {
   $("#flight-mode").value = r.mode;
   try {
     const own = r.players.find(p=>p.id===network.id);
-    await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation);
+    await paintLoading();
+    await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
     if (!room || room.code !== r.code) {
       flight.active = false;
       return;
@@ -575,7 +592,7 @@ async function loadRoom(r) {
     loadingRoom = null;
     notice(t("error.requestFailed"));
   } finally {
-    visible("#boot", false);
+    task.end();
   }
 }
 function receive(m) {
@@ -707,9 +724,10 @@ async function launch() {
     return;
   }
   $("#launch").disabled = true;
-  visible("#boot", true);
+  const task = loading.begin("loading.flight", { name: t("map." + map.id) });
   try {
-    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor, simulation);
+    await paintLoading();
+    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress);
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -720,7 +738,7 @@ async function launch() {
     notice(t("error.requestFailed"));
   } finally {
     $("#launch").disabled = false;
-    visible("#boot", false);
+    task.end();
   }
 }
 async function showRecords() {
@@ -1078,8 +1096,11 @@ function bindUI() {
   renderKeys();
   createSimulationControls();
 }
+let startupTask;
 try {
   await initLanguage();
+  startupTask = loading.begin("loading");
+  await paintLoading();
   const response = await fetch("/api/catalog");
   if (!response.ok) throw Error("Catalog unavailable");
   catalog = await response.json();
@@ -1094,9 +1115,9 @@ try {
   await selectDrone(read("selected-drone", "rift-x5"));
   bindUI();
   network.connect($("#nickname").value);
-  visible("#boot", false);
+  startupTask.end();
   requestAnimationFrame(frame);
 } catch (e) {
   console.error(e);
-  $("#boot span").textContent = t("error.boot");
+  loading.fail(t("error.boot"));
 }
