@@ -139,6 +139,11 @@ test("two lakes, open flight space and grounded small buildings have a deliberat
 test("the pavilion passage is flyable and the streamed landscape has no fence wall or leaking chunks", async () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const park = buildPark(scene, world, RAPIER, map);
+  const castRay = (ray, distance, solid) => {
+    // Stream the collision region to the actual query location, as flight does.
+    park.update([ray.origin.x, ray.origin.y, ray.origin.z]); world.step();
+    return world.castRay(ray, distance, solid);
+  };
   assert.ok(park.treeCount >= 280 && park.treeCount < 450, `tree count ${park.treeCount}: fill the park while preserving open flight space`);
   const assertObjectsInsideFence = () => {
     const half = map.size / 2, matrix = new THREE.Matrix4();
@@ -170,39 +175,40 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
   }
   world.step();
   const club = PARK_SPORT.clubhouse;
-  const clubhousePassage = world.castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z + 16 },
+  const clubhousePassage = castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z + 16 },
     { x: 0, y: 0, z: -1 }), 32, true);
   assert.equal(clubhousePassage, null, "the new clubhouse has an open central flight passage");
-  const clubRoof = world.castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z },
+  const clubRoof = castRay(new RAPIER.Ray({ x: club.x, y: club.baseY + 2, z: club.z },
     { x: 0, y: 1, z: 0 }), 5, true);
   assert.ok(clubRoof && clubRoof.timeOfImpact > 2);
   const carpark = PARK_SPORT.parking;
-  const driveway = world.castRay(new RAPIER.Ray({ x: 4, y: carpark.baseY + 1, z: carpark.z },
+  const driveway = castRay(new RAPIER.Ray({ x: 4, y: carpark.baseY + 1, z: carpark.z },
     { x: 1, y: 0, z: 0 }), 78, true);
   assert.equal(driveway, null, "driveway and parking aisle remain clear of cars and carport posts");
-  const carportRun = world.castRay(new RAPIER.Ray({ x: carpark.x - 26, y: carpark.baseY + 2.1, z: carpark.z - 16 },
+  const carportRun = castRay(new RAPIER.Ray({ x: carpark.x - 26, y: carpark.baseY + 2.1, z: carpark.z - 16 },
     { x: 1, y: 0, z: 0 }), 52, true);
   assert.equal(carportRun, null, "the space above parked cars and below the canopy is flyable");
   const court = PARK_SPORT.court;
-  const courtFloor = world.castRay(new RAPIER.Ray({ x: court.x + 4, y: court.baseY + 2, z: court.z },
+  const courtFloor = castRay(new RAPIER.Ray({ x: court.x + 4, y: court.baseY + 2, z: court.z },
     { x: 0, y: -1, z: 0 }), 4, true);
   assert.ok(courtFloor && Math.abs(courtFloor.timeOfImpact - 1.863) < 0.001, "court surface has matching collision");
-  const bridgeGap = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 160 }, { x: 0, y: 0, z: 1 }), 30, true);
+  const bridgeGap = castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 160 }, { x: 0, y: 0, z: 1 }), 30, true);
   assert.equal(bridgeGap, null, "the bridge must have a flyable passage below its deck");
-  const bridgeDeck = world.castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 175 }, { x: 0, y: 1, z: 0 }), 3, true);
+  const bridgeDeck = castRay(new RAPIER.Ray({ x: 203, y: 1.5, z: 175 }, { x: 0, y: 1, z: 0 }), 3, true);
   assert.ok(bridgeDeck && Math.abs(bridgeDeck.timeOfImpact - 1.08) < 0.001);
-  const cafeBay = world.castRay(new RAPIER.Ray({ x: 116, y: 4, z: -139 }, { x: 0, y: 0, z: -1 }), 20, true);
+  const cafeBay = castRay(new RAPIER.Ray({ x: 116, y: 4, z: -139 }, { x: 0, y: 0, z: -1 }), 20, true);
   assert.equal(cafeBay, null, "the cafe terrace and side bay must be open");
-  const passage = world.castRay(new RAPIER.Ray({ x: 0, y: 2, z: 22 }, { x: 0, y: 0, z: -1 }), 44, true);
+  const passage = castRay(new RAPIER.Ray({ x: 0, y: 2, z: 22 }, { x: 0, y: 0, z: -1 }), 44, true);
   assert.equal(passage, null);
-  const roof = world.castRay(new RAPIER.Ray({ x: 0, y: 2, z: 0 }, { x: 0, y: 1, z: 0 }), 7, true);
+  const roof = castRay(new RAPIER.Ray({ x: 0, y: 2, z: 0 }, { x: 0, y: 1, z: 0 }), 7, true);
   assert.ok(roof && roof.timeOfImpact > 2);
-  const start = world.castRay(new RAPIER.Ray({ x: 0, y: 1, z: 60 }, { x: 0, y: -1, z: 0 }), 2, true);
+  const start = castRay(new RAPIER.Ray({ x: 0, y: 1, z: 60 }, { x: 0, y: -1, z: 0 }), 2, true);
   assert.ok(start && Math.abs(1 - start.timeOfImpact - 0.065) < 0.001);
   // The fence is visual geometry only; it must never stop a low crossing.
-  const fence = world.castRay(new RAPIER.Ray({ x: 0, y: parkSurfaceHeight(0, 350) + 1.2, z: 348 },
+  const fence = castRay(new RAPIER.Ray({ x: 0, y: parkSurfaceHeight(0, 350) + 1.2, z: 348 },
     { x: 0, y: 0, z: 1 }), 4, true);
   assert.equal(fence, null);
+  park.update(map.spawn); world.step();
   for (const id of ["rift-65", "rift-c3", "rift-x5"]) {
     const config = JSON.parse(await readFile(new URL(`../data/drones/${id}.json`, import.meta.url)));
     const drone = new DronePhysics(RAPIER, world, config, map.spawn);
@@ -224,7 +230,7 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
     assert.equal(park.chunkCount, 49);
     assert.equal(park.physicsChunkCount, 9);
     assertObjectsInsideFence();
-    const hit = world.castRay(new RAPIER.Ray({ x: p[0], y: 60, z: p[2] }, { x: 0, y: -1, z: 0 }), 70, true);
+    const hit = castRay(new RAPIER.Ray({ x: p[0], y: 60, z: p[2] }, { x: 0, y: -1, z: 0 }), 70, true);
     assert.ok(hit, "terrain collision must continue outside the park");
   }
   assert.equal(world.colliders.len(), initialColliders);

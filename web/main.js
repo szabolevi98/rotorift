@@ -830,7 +830,7 @@ function frame(now) {
     hud();
   }
   preview.render();
-  if (playing) flight.render(dt);
+  if (playing && !paused) flight.render(dt);
   requestAnimationFrame(frame);
 }
 function bindUI() {

@@ -15,6 +15,23 @@ function updateLights(scene, shadows) {
   for (const light of shadows.csm.lights) light.shadow.updateMatrices(light);
 }
 
+test("static shadow maps are reused; movement, projection, geometry and dynamic drones invalidate them", () => {
+  const {scene,camera,shadows}=setup();
+  for(const light of shadows.csm.lights)light.shadow.map={dispose(){}};
+  const consume=()=>{for(const light of shadows.csm.lights)light.shadow.needsUpdate=false;};
+  shadows.update(); consume(); shadows.update();
+  assert.ok(shadows.csm.lights.every(light=>light.shadow.autoUpdate===false&&!light.shadow.needsUpdate));
+  camera.position.set(120,60,30);camera.lookAt(0,0,0);shadows.update();
+  assert.ok(shadows.csm.lights.some(light=>light.shadow.needsUpdate)); consume();
+  camera.fov=120;camera.updateProjectionMatrix();shadows.update();
+  assert.ok(shadows.csm.lights.every(light=>light.shadow.needsUpdate)); consume();
+  const caster=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial());caster.castShadow=true;scene.add(caster);shadows.update();
+  assert.ok(shadows.csm.lights.every(light=>light.shadow.needsUpdate)); consume();
+  shadows.update({dynamic:true});assert.ok(shadows.csm.lights.every(light=>light.shadow.needsUpdate));consume();
+  scene.remove(caster);shadows.update();assert.ok(shadows.csm.lights.every(light=>light.shadow.needsUpdate));
+  shadows.dispose();caster.geometry.dispose();caster.material.dispose();
+});
+
 test("park ground and tree crowns remain in the correct shadow cascade from 100–1000 m", () => {
   const { scene, camera, shadows } = setup();
   for (const altitude of [100, 500, 1000]) {

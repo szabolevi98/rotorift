@@ -117,6 +117,11 @@ tiltva helyben és online. A kerítés elhagyásakor 10 perces visszatérési id
 
 ## Ellenőrzések
 
+A pályák közös teljesítményjavítása a [mérési jegyzetben](performance.md) szerepel:
+240 Hz-es fizika felesleges scene-query indexépítés nélkül, közeli statikus
+ütközők aktivitása, változatlan árnyéktérképek újrahasználata és a menüben
+elfedett játékjelenet renderelésének leállítása. A látvány és az árnyéktávolság megmaradt.
+
 Az `npm test` a következőket ellenőrzi:
 
 - Actual Rates teljes kitérése, középső meredeksége, expo-ja és előjele.

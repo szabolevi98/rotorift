@@ -71,7 +71,7 @@ export class Flight {
       ? new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY)
       : new THREE.FogExp2(0xc9dedc, CONSTRUCTION_FOG_DENSITY);
     this.sun.visible = false;
-    this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn);
+    this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn, { updateSceneQueries: false });
     this.physics.rates = rates;
     this.physics.mode = mode;
     this.visual = await loadModel(config, { isolateMaterials: true });
@@ -217,7 +217,7 @@ export class Flight {
       r.model.position.lerp(p, 1 - Math.exp(-dt * 18));
       r.model.quaternion.slerp(q, 1 - Math.exp(-dt * 18));
     }
-    this.parkShadows?.update();
+    this.parkShadows?.update({ dynamic: this.chase || this.remotes.size > 0 });
     this.renderer.render(this.scene, this.camera);
   }
   startSound() {

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ColliderRegions } from "../../shared/world/collider-regions.js";
 
 export function constructionTexture(kind) {
   if (typeof document === "undefined") return null;
@@ -73,6 +74,7 @@ export function createConstructionParts(scene, world, RAPIER) {
     cone: new THREE.ConeGeometry(0.5, 1, 16), sphere: new THREE.SphereGeometry(0.5, 12, 8), pipe,
   };
   const batches = new Map(), colliders = [], landmarks = [];
+  const regions = new ColliderRegions();
   let anchor = new THREE.Matrix4();
   const unit = new THREE.Vector3(1, 1, 1);
   const quaternion = (rotation) => new THREE.Quaternion().setFromEuler(new THREE.Euler(...rotation));
@@ -96,7 +98,9 @@ export function createConstructionParts(scene, world, RAPIER) {
           : RAPIER.ColliderDesc.cuboid(scale.x / 2, scale.y / 2, scale.z / 2);
         desc.setTranslation(p.x, p.y, p.z).setRotation(q);
       }
-      colliders.push(world.createCollider(desc.setFriction(0.8)));
+      const collider = world.createCollider(desc.setFriction(0.8)); colliders.push(collider);
+      const bounds = new THREE.Box3(new THREE.Vector3(-0.5, -0.5, -0.5), new THREE.Vector3(0.5, 0.5, 0.5)).applyMatrix4(matrix);
+      regions.add(collider, bounds.min.toArray(), bounds.max.toArray());
     }
   }
   const box = (size, position, color, solid = true, rotation) => part("box", size, position, color, solid, rotation);
@@ -136,7 +140,10 @@ export function createConstructionParts(scene, world, RAPIER) {
     root.userData = { landmarks, instances, batches: batches.size, colliders: colliders.length };
     batches.clear();
     return {
-      root, update: () => {},
+      root, update: (position) => {
+        regions.update(position);
+        root.userData.activeColliders = regions.activeCount + colliders.length - regions.entries.size;
+      },
       dispose: () => {
         for (const collider of colliders) if (collider.isValid()) world.removeCollider(collider, false);
         const geometrySet = new Set(Object.values(geometries));
@@ -144,6 +151,7 @@ export function createConstructionParts(scene, world, RAPIER) {
         for (const geometry of geometrySet) geometry.dispose();
         for (const material of Object.values(palette)) { material.map?.dispose(); material.dispose(); }
         scene.remove(root);
+        regions.clear();
       },
     };
   }

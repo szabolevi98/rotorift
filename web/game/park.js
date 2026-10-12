@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { ColliderRegions } from "../../shared/world/collider-regions.js";
 import { buildParkLandmarks } from "./park-landmarks.js";
 import { buildParkCommunity } from "./park-community.js";
 import { appendTerrainVertex, makeParkDistantTerrain } from "./park-terrain.js";
@@ -196,6 +197,7 @@ export function buildPark(scene, world, RAPIER, map) {
   const cylinderGeometry = geometry(new THREE.CylinderGeometry(1, 1, 1, 12));
   const planterShrubGeometry = geometry(new THREE.SphereGeometry(1, 14, 10));
   const batches = new Map(), dummy = new THREE.Object3D();
+  const collisionRegions = new ColliderRegions();
   function part(size, p, mat, solid = true, angle = 0, shape = "box") {
     const g = shape === "box" ? boxGeometry : shape === "bush" ? planterShrubGeometry : cylinderGeometry;
     const key = `${shape}:${mat.uuid}`;
@@ -205,7 +207,9 @@ export function buildPark(scene, world, RAPIER, map) {
     if (solid) {
       const desc = shape === "box" ? RAPIER.ColliderDesc.cuboid(...size.map((v) => v / 2))
         : RAPIER.ColliderDesc.cylinder(size[1] / 2, size[0]);
-      world.createCollider(desc.setTranslation(...p).setRotation({ x: 0, y: Math.sin(angle / 2), z: 0, w: Math.cos(angle / 2) }).setFriction(0.85));
+      const collider = world.createCollider(desc.setTranslation(...p).setRotation({ x: 0, y: Math.sin(angle / 2), z: 0, w: Math.cos(angle / 2) }).setFriction(0.85));
+      const bounds = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(), new THREE.Vector3(shape === "box" ? 1 : 2, 1, shape === "box" ? 1 : 2)).applyMatrix4(dummy.matrix);
+      collisionRegions.add(collider, bounds.min.toArray(), bounds.max.toArray());
     }
   }
   function bench(x, z, angle = 0, lift = 0) {
@@ -502,6 +506,7 @@ export function buildPark(scene, world, RAPIER, map) {
     chunk.terrainGeometry.dispose();
   }
   function update(position) {
+    collisionRegions.update(position);
     waterMaterial.uniforms.time.value = performance.now() / 1000;
     landmarks.update(waterMaterial.uniforms.time.value);
     // A resting drone can jitter across a grid edge by fractions of a mm.
@@ -538,6 +543,7 @@ export function buildPark(scene, world, RAPIER, map) {
     get treeCount() { return [...chunks.values()].reduce((total, chunk) => total + chunk.treeCount, 0); },
     get physicsChunkCount() { return [...chunks.values()].filter((chunk) => chunk.colliderHandles.length > 0).length; },
     dispose() {
+      collisionRegions.clear();
       for (const chunk of chunks.values()) removeChunk(chunk);
       chunks.clear();
       distantTerrain.geometry.dispose();

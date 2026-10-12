@@ -42,3 +42,17 @@ test("construction site has open bays/shafts, a clear main road, a real excavati
     site.dispose(); assert.equal(scene.children.length, 0); assert.equal(world.colliders.len(), 0); world.free();
   }
 });
+
+test("construction keeps visuals intact while collision work follows the aircraft", () => {
+  const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  const site = buildConstruction(scene, world, RAPIER, map);
+  const meshes = [...site.root.children];
+  site.update(map.spawn); world.step();
+  assert.ok(site.root.userData.activeColliders < 350);
+  const corner = CONSTRUCTION_BUILDINGS[0];
+  const cast = () => world.castRay(new RAPIER.Ray({x:corner.x-corner.width/2-3,y:2,z:corner.z-corner.depth/2},{x:1,y:0,z:0}),4,true);
+  assert.equal(cast(),null,"a distant building need not participate in physics");
+  site.update([corner.x,2,corner.z]);world.step();assert.ok(cast(),"nearby columns reactivate before entry");
+  assert.deepEqual(site.root.children,meshes,"collision activation must never hide or rebuild the visible map");
+  site.dispose();world.free();
+});

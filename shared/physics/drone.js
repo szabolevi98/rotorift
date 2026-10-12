@@ -58,9 +58,10 @@ function invertMixer(rows) {
   return a.map((r) => r.slice(4));
 }
 export class DronePhysics {
-  constructor(RAPIER, world, config, spawn) {
+  constructor(RAPIER, world, config, spawn, { updateSceneQueries = true } = {}) {
     this.world = world;
     this.config = config;
+    this.updateSceneQueries = updateSceneQueries;
     this.rates = defaultRates();
     this.mode = "acro";
     this.armed = false;
@@ -208,7 +209,17 @@ export class DronePhysics {
       true,
     );
     this.world.timestep = dt;
-    this.world.step();
+    if (this.updateSceneQueries) this.world.step();
+    else {
+      // Rapier 0.14 World.step() also rebuilds the scene-query BVH. Flight
+      // uses no raycasts: rebuilding thousands of static shapes at 240 Hz
+      // costs much more than the actual rigid-body/contact/CCD simulation.
+      // Run the same public physics pipeline; query users retain World.step.
+      const world = this.world;
+      world.physicsPipeline.step(world.gravity, world.integrationParameters,
+        world.islands, world.broadPhase, world.narrowPhase, world.bodies,
+        world.colliders, world.impulseJoints, world.multibodyJoints, world.ccdSolver);
+    }
   }
   get pose() {
     return {

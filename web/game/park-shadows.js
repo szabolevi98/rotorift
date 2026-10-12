@@ -12,6 +12,11 @@ export class ParkShadows {
     this.camera = camera;
     this.projection = new THREE.Matrix4();
     this.materialHooks = new Map();
+    this.dirty = true;
+    this.casterHash = -1;
+    this.cachedLightPositions = SPLITS.map(() => new THREE.Vector3(Infinity, Infinity, Infinity));
+    this.lightBasis = new THREE.Matrix4().lookAt(new THREE.Vector3(), new THREE.Vector3(35, -75, -25), new THREE.Vector3(0, 1, 0)).invert();
+    this.lightPosition = new THREE.Vector3();
     this.csm = new CSM({
       camera, parent: scene, cascades: SPLITS.length,
       maxFar: PARK_SHADOW_DISTANCE, mode: "custom", shadowMapSize: 2048,
@@ -28,15 +33,20 @@ export class ParkShadows {
     this.csm.lights.forEach((light, i) => {
       light.color.setHex(0xfff0d5);
       light.shadow.normalBias = [0.015, 0.04, 0.1, 0.2][i];
+      light.shadow.autoUpdate = false;
     });
     this.projection.copy(camera.projectionMatrix);
     this.update();
   }
 
-  update() {
+  invalidate() { this.dirty = true; }
+
+  update({ dynamic = false } = {}) {
     // New streamed chunks and online drones can introduce materials later.
-    this.scene.traverse((object) => {
+    let casterHash = 2166136261;
+    this.scene.traverseVisible((object) => {
       if (!object.isMesh) return;
+      if (object.castShadow) casterHash = (Math.imul(casterHash, 16777619) ^ object.id) >>> 0;
       const materials = Array.isArray(object.material) ? object.material : [object.material];
       for (const material of materials) {
         if (!(material.isMeshStandardMaterial || material.isMeshPhongMaterial || material.isMeshLambertMaterial)) continue;
@@ -52,13 +62,30 @@ export class ParkShadows {
         material.needsUpdate = true;
       }
     });
+    if (casterHash !== this.casterHash) { this.dirty = true; this.casterHash = casterHash; }
     if (!this.projection.equals(this.camera.projectionMatrix)) {
       this.csm.updateFrustums();
       this.updateDepthBounds();
       this.projection.copy(this.camera.projectionMatrix);
+      this.dirty = true;
     }
     this.camera.updateMatrixWorld();
     this.csm.update();
+    this.csm.lights.forEach((light, i) => {
+      const current = this.lightPosition.copy(light.position).applyMatrix4(this.lightBasis);
+      const previous = this.cachedLightPositions[i];
+      // CSM snaps light-space XY to texels. Keep the old shadow matrix/map
+      // while that coverage stays unchanged; small depth translations fit
+      // inside the 200 m caster margin. Movement/rotation, changed geometry,
+      // changed FOV, or visible moving drones invalidates the required maps.
+      if (this.dirty || dynamic || !light.shadow.map ||
+        Math.abs(current.x - previous.x) > 0.00001 || Math.abs(current.y - previous.y) > 0.00001 ||
+        Math.abs(current.z - previous.z) > this.csm.lightMargin / 4) {
+        light.shadow.needsUpdate = true;
+        previous.copy(current);
+      }
+    });
+    this.dirty = false;
   }
 
   updateDepthBounds() {
