@@ -37,8 +37,11 @@ const html = read('template.html')
   .replace('/* DEMO_SCRIPT */', () => script.replace(/<\/script/gi, '<\\/script'));
 writeFileSync(join(root, 'index.html'), html);
 const catalog = await loadCatalog();
+// The showcase stays English; use the game's dictionary as the name source.
+const english = JSON.parse(read('../web/lang/en.json'));
+const maps = catalog.maps.map(map => ({ ...map, name: english['map.' + map.id] ?? map.name }));
 await build({
-  stdin: { contents: `import { startMapViewer } from './map-viewer.js'; startMapViewer(${JSON.stringify({maps:catalog.maps})}).catch(error => { document.querySelector('#loading').textContent = 'Cannot load the map: ' + error.message; console.error(error); });`, resolveDir: root, sourcefile: 'map-entry.js' },
+  stdin: { contents: `import { startMapViewer } from './map-viewer.js'; startMapViewer(${JSON.stringify({maps})}).catch(error => { document.querySelector('#loading').textContent = 'Cannot load the map: ' + error.message; console.error(error); });`, resolveDir: root, sourcefile: 'map-entry.js' },
   bundle: true, format: 'iife', platform: 'browser', target: 'es2022', minify: true,
   outfile: join(root,'map-viewer.bundle.js'),
   plugins: [{ name: 'project-absolute-imports', setup(api) {

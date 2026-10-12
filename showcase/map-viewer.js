@@ -42,6 +42,9 @@ const SITE_VIEWS = {
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");
   let maps = embeddedCatalog.maps, projectSaving = false;
+  // Local API map data keeps its stable metadata; display the English names
+  // embedded at build time, just like the static GitHub Pages showcase.
+  const mapName = map => embeddedCatalog.maps.find(item => item.id === map.id)?.name ?? map.name;
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
   if (local) {
     try { const response = await fetch("/api/catalog"); if (response.ok) { maps = (await response.json()).maps; projectSaving = true; } } catch { /* Static XAMPP preview uses the embedded catalog. */ }
@@ -137,7 +140,7 @@ export async function startMapViewer(embeddedCatalog) {
       environment=buildEnvironment(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
       camera.far=map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
       shadows=new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
-      $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${map.name.toUpperCase()}`;$("#map-size").textContent=`${map.size} × ${map.size} m`;
+      $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=`${map.size} × ${map.size} m`;
       const views=map.kind==="park"?PARK_VIEWS:SITE_VIEWS;
       $("#view-select").replaceChildren(...Object.entries(views).map(([id,view])=>new Option(view[0],id)));
       $("#route-select").replaceChildren(...map.routes.map(route=>new Option(route.name,route.id)));
@@ -151,7 +154,7 @@ export async function startMapViewer(embeddedCatalog) {
     if(!value){transform.detach();placing=false;$("#add-gate").textContent="Place gate";}else if(gateGroups[selected])transform.attach(gateGroups[selected]);
   }
   $("#edit").onclick=()=>setEditing(!editing);$("#close-editor").onclick=()=>setEditing(false);
-  $("#map-select").replaceChildren(...maps.map(map=>new Option(map.name,map.id)));
+  $("#map-select").replaceChildren(...maps.map(map=>new Option(mapName(map),map.id)));
   $("#map-select").onchange=()=>selectMap($("#map-select").value);
   $("#route-select").onchange=()=>{if($("#route-select").value!==draft.route.id)selectRoute($("#route-select").value);};
   $("#view-select").onchange=()=>setView($("#view-select").value);

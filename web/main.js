@@ -387,11 +387,11 @@ function createCatalogUI() {
     b.dataset.map = m.id;
     b.append(node("div", "map-art " + m.kind));
     const label = node("div", "map-label");
-    label.append(node("b", "", m.name), node("span", "", "↗"));
+    label.append(node("b", "", t("map." + m.id)), node("span", "", "↗"));
     b.append(label);
     b.addEventListener("click", () => selectMap(m.id));
     $("#map-picker").append(b);
-    $("#records-map").append(new Option(m.name, m.id));
+    $("#records-map").append(new Option(t("map." + m.id), m.id));
   }
   refreshRecordRoutes();
 }
@@ -1302,6 +1302,7 @@ function bindUI() {
     renderRooms();
     renderLobby();
     updateStatus();
+    refreshSessionBanner();
     inputSignature = "";
     renderInputUI();
     updateInputText();
