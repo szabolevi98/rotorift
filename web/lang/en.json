@@ -1,7 +1,7 @@
 {
   "hud.paused": "Flight paused and the drone disarmed.",
   "error.raceUnavailable": "Time trials and checkpoints are paused on this map until its layout is finished. Free flight is available.",
-  "nav.fly": "Fly",
+  "nav.fly": "Singleplayer",
   "nav.settings": "Settings",
   "nav.records": "Records",
   "nav.showcase": "Showcase ↗",
@@ -232,5 +232,19 @@
   "stickSetup.noAnalog": "No unused analogue movement found. Move only the instructed stick smoothly through its full travel. A switch is not a stick. If a channel is missing, see Android help.",
   "stickSetup.oneDirection": "Move only in the indicated direction, then return to the starting position and try again.",
   "settings.radioDevice": "Radio / controller",
-  "settings.radioDeviceAuto": "Automatic · prefer RadioMaster"
+  "settings.radioDeviceAuto": "Automatic · prefer RadioMaster",
+  "menu.activeFlight": "Paused flight",
+  "menu.endFlight": "End flight",
+  "online.roomKind": "Room mode",
+  "online.raceKind": "Race",
+  "online.createRoom": "Create room",
+  "online.joinByCode": "Join with a code",
+  "online.eyebrow": "FLY TOGETHER",
+  "online.menuHint": "Join a public room or enter a code. To host, choose your drone, map and shared rules below.",
+  "online.maxPlayers": "Up to 8 pilots",
+  "online.offlineHint": "Connecting to the multiplayer server…",
+  "online.requesting": "Opening room…",
+  "online.readyHint": "Everyone must be ready before the host can start.",
+  "online.inProgress": "Session in progress. Resume your flight or leave the room.",
+  "simulation.hostSetupHint": "These rules apply to everyone in your room. The host can change them in the lobby before starting."
 }

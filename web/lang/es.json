@@ -1,7 +1,7 @@
 {
   "hud.paused": "Vuelo en pausa y dron desarmado.",
   "error.raceUnavailable": "Las contrarrelojes y los checkpoints están pausados en este mapa hasta terminar su diseño. El vuelo libre está disponible.",
-  "nav.fly": "Volar",
+  "nav.fly": "Un jugador",
   "nav.settings": "Ajustes",
   "nav.records": "Récords",
   "nav.showcase": "Modelos ↗",
@@ -232,5 +232,19 @@
   "stickSetup.noAnalog": "No se detectó movimiento analógico libre. Mueve suavemente solo el stick indicado por todo su recorrido. Un interruptor no es un stick. Consulta la ayuda Android si falta un canal.",
   "stickSetup.oneDirection": "Mueve solo en el sentido indicado, vuelve al punto inicial e inténtalo de nuevo.",
   "settings.radioDevice": "Radio / mando",
-  "settings.radioDeviceAuto": "Automático · prioridad RadioMaster"
+  "settings.radioDeviceAuto": "Automático · prioridad RadioMaster",
+  "menu.activeFlight": "Vuelo en pausa",
+  "menu.endFlight": "Terminar vuelo",
+  "online.roomKind": "Modo de sala",
+  "online.raceKind": "Carrera",
+  "online.createRoom": "Crear sala",
+  "online.joinByCode": "Unirse con un código",
+  "online.eyebrow": "VOLAD JUNTOS",
+  "online.menuHint": "Únete a una sala pública o introduce un código. Para crear una sala, elige dron, mapa y reglas compartidas.",
+  "online.maxPlayers": "Hasta 8 pilotos",
+  "online.offlineHint": "Conectando al servidor multijugador…",
+  "online.requesting": "Abriendo sala…",
+  "online.readyHint": "Todos los pilotos deben estar listos antes de que el anfitrión pueda iniciar.",
+  "online.inProgress": "Vuelo en curso. Continúa o sal de la sala.",
+  "simulation.hostSetupHint": "Estas reglas se aplican a todos en la sala. El anfitrión puede cambiarlas en el lobby antes del inicio."
 }

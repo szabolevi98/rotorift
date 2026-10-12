@@ -1,7 +1,7 @@
 {
   "hud.paused": "Repülés szüneteltetve, a drón kikapcsolt.",
   "error.raceUnavailable": "Az időmérő és a checkpointok ezen a pályán szünetelnek, amíg elkészül a végleges elrendezés. Szabad repülés elérhető.",
-  "nav.fly": "Repülés",
+  "nav.fly": "Egyjátékos",
   "nav.settings": "Beállítások",
   "nav.records": "Rekordok",
   "nav.showcase": "Modellbemutató ↗",
@@ -232,5 +232,19 @@
   "stickSetup.noAnalog": "Nem találtunk szabad analóg mozgást. Csak a jelzett botot mozgasd lassan a teljes úton. A kapcsoló nem stick. Hiányzó csatornánál nézd meg az Android-súgót.",
   "stickSetup.oneDirection": "Csak a jelzett irányba mozdíts, majd térj vissza a kiinduló állásba, és próbáld újra.",
   "settings.radioDevice": "Rádió / kontroller",
-  "settings.radioDeviceAuto": "Automatikus · RadioMaster elsőként"
+  "settings.radioDeviceAuto": "Automatikus · RadioMaster elsőként",
+  "menu.activeFlight": "Szüneteltetett repülés",
+  "menu.endFlight": "Repülés befejezése",
+  "online.roomKind": "Szoba módja",
+  "online.raceKind": "Verseny",
+  "online.createRoom": "Szoba létrehozása",
+  "online.joinByCode": "Csatlakozás szobakóddal",
+  "online.eyebrow": "REPÜLJETEK EGYÜTT",
+  "online.menuHint": "Csatlakozz nyitott szobához vagy adj meg egy kódot. Saját szobához válassz drónt, pályát és közös szabályokat.",
+  "online.maxPlayers": "Legfeljebb 8 pilóta",
+  "online.offlineHint": "Csatlakozás a multiplayer szerverhez…",
+  "online.requesting": "Szoba megnyitása…",
+  "online.readyHint": "Indítás előtt minden pilótának jeleznie kell, hogy készen áll.",
+  "online.inProgress": "A repülés folyamatban van. Folytasd, vagy lépj ki a szobából.",
+  "simulation.hostSetupHint": "Ezek a szoba közös szabályai. Indítás előtt a lobbyban is módosíthatja őket a házigazda."
 }

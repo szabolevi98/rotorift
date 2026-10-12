@@ -90,6 +90,14 @@ drónra vagy mindháromra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek
 
 ## Multiplayer és rekordok
 
+Az Egyjátékos és Multiplayer külön menüképernyő. A multiplayer oldal
+szobalistát, szobakódos csatlakozást és önálló szobanyitást kínál; a nyitott
+szobák öt másodpercenként frissülnek. A drón 3D előnézete és a közös
+drón-/pályaválasztó mindkét indítási felületen megmarad.
+A szimulációs opciók mindig nyitott panelen látszanak. Szobában a házigazda
+állítja őket indítás előtt, a vendégeknél és indítás után zároltak.
+Szüneteltetett repülés a menü bármely oldaláról folytatható vagy befejezhető.
+
 Az online módban létrehozott szoba kóddal vagy a nyilvános listából érhető el.
 Legfeljebb nyolc pilóta csatlakozhat; az egyéni időmérő egyfős.
 Mindenki jelzi a készenlétét, a házigazda indítja a hárommásodperces rajtot.

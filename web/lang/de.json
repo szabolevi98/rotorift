@@ -1,7 +1,7 @@
 {
   "hud.paused": "Flug pausiert, die Drohne ist entschärft.",
   "error.raceUnavailable": "Zeitrennen und Checkpoints sind auf dieser Karte pausiert, bis das Layout fertig ist. Freier Flug ist verfügbar.",
-  "nav.fly": "Fliegen",
+  "nav.fly": "Einzelspieler",
   "nav.settings": "Einstellungen",
   "nav.records": "Bestzeiten",
   "nav.showcase": "Modelle ↗",
@@ -232,5 +232,19 @@
   "stickSetup.noAnalog": "Keine freie analoge Bewegung erkannt. Nur den gezeigten Stick langsam über den ganzen Weg bewegen. Ein Schalter ist kein Stick. Bei fehlenden Kanälen die Android-Hilfe lesen.",
   "stickSetup.oneDirection": "Nur in die gezeigte Richtung bewegen, dann in die Ausgangsposition zurückkehren und erneut versuchen.",
   "settings.radioDevice": "Sender / Controller",
-  "settings.radioDeviceAuto": "Automatisch · RadioMaster bevorzugen"
+  "settings.radioDeviceAuto": "Automatisch · RadioMaster bevorzugen",
+  "menu.activeFlight": "Pausierter Flug",
+  "menu.endFlight": "Flug beenden",
+  "online.roomKind": "Raummodus",
+  "online.raceKind": "Rennen",
+  "online.createRoom": "Raum erstellen",
+  "online.joinByCode": "Mit Raumcode beitreten",
+  "online.eyebrow": "GEMEINSAM FLIEGEN",
+  "online.menuHint": "Einem öffentlichen Raum beitreten oder einen Code eingeben. Als Gastgeber Drohne, Karte und gemeinsame Regeln wählen.",
+  "online.maxPlayers": "Bis zu 8 Piloten",
+  "online.offlineHint": "Verbindung zum Multiplayer-Server…",
+  "online.requesting": "Raum wird geöffnet…",
+  "online.readyHint": "Alle Piloten müssen bereit sein, bevor der Gastgeber startet.",
+  "online.inProgress": "Flug läuft. Flug fortsetzen oder Raum verlassen.",
+  "simulation.hostSetupHint": "Diese Regeln gelten für alle im Raum. Der Gastgeber kann sie vor dem Start in der Lobby ändern."
 }

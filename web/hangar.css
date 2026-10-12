@@ -78,7 +78,7 @@
   transform: perspective(320px) rotateX(58deg);
   pointer-events: none;
 }
-#menu #preview-scene { position: relative; z-index: 1; height: clamp(230px, 37vh, 440px); touch-action: none; cursor: grab; }
+#menu #preview-scene { position: relative; z-index: 1; height: clamp(180px, 24vh, 300px); touch-action: none; cursor: grab; }
 #menu #preview-scene:active { cursor: grabbing; }
 .preview-hint { position: absolute; right: 0; top: 75px; font-size: 11px; color: var(--muted); pointer-events: none; margin: 0; }
 #menu .launch-controls { display: grid; grid-template-columns: 1.15fr .85fr 1fr; gap: 22px; border-top: 1px solid var(--line); padding: 20px 0 18px; }
@@ -138,6 +138,58 @@
 #menu .records-filters > select { max-width: 100%; }
 #menu .online-controls { margin: 10px 0 22px; padding-top: 20px; }
 #notice { color: var(--ink); background: #1b1e24; border: 1px solid #ff66484a; }
+.active-session { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 14px 18px; margin-bottom: 22px; border: 1px solid var(--line); border-left: 2px solid var(--orange); border-radius: 5px; background: #ff664808; }
+.active-session strong { font-size: 12px; }
+.active-session p { margin: 5px 0 0; font-size: 11px; color: var(--muted); }
+.active-session .button-row { margin: 0; flex-wrap: wrap; }
+#menu .simulation-dock { padding: 16px; margin: 0 0 16px; border: 1px solid var(--line); border-radius: 6px; background: #ffffff02; }
+#flight-simulation, #lobby-simulation { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+#menu .simulation-dock .simulation-row { padding: 12px; margin: 0; min-height: 56px; border: 1px solid var(--line); border-radius: 5px; background: #ffffff03; }
+#menu .simulation-dock .simulation-row:has(input:checked) { border-color: #ff664840; background: #ff664809; }
+#menu .simulation-dock .simulation-row input { flex: none; min-height: 20px; min-width: 20px; }
+#menu .simulation-dock .simulation-row select { width: 100%; max-width: 150px; }
+#menu .simulation-dock .simulation-note { grid-column: 1 / -1; margin: 0; }
+.public-room-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 0 0 12px; }
+.public-room-row input { accent-color: var(--orange); width: 17px; height: 17px; }
+#menu .public-room-row span { margin: 0; }
+.multiplayer-workspace { display: grid; grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); gap: 28px; align-items: start; }
+#menu .multiplayer-workspace .online-controls { margin: 0; padding: 20px; position: sticky; top: 20px; border: 1px solid var(--line); }
+#menu .online-controls .name-row { margin: 0 0 22px; }
+#menu .online-controls .join-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-bottom: 24px; }
+#room-code { width: 100%; text-transform: uppercase; letter-spacing: .12em; }
+#menu .online-controls .section-title h2 { font-size: 14px; }
+#rooms-list { max-height: 420px; overflow-y: auto; }
+.room-summary { min-width: 0; display: grid; gap: 6px; }
+.room-summary strong { letter-spacing: .08em; }
+.room-summary span { color: var(--muted); font-size: 11px; line-height: 1.5; }
+#menu .room-row { gap: 12px; }
+#menu .room-row button { flex: none; font-size: 11px; padding: 10px; min-height: 44px; }
+.host-setup { min-width: 0; }
+.host-setup > .section-title { margin-bottom: 24px; }
+.host-setup > .section-title h2 { font-size: 20px; }
+.host-setup > .section-title span { font-size: 11px; }
+#menu #multiplayer-panel #preview-scene { height: 200px; }
+#menu #multiplayer-panel .intro { margin-bottom: 24px; }
+#menu #multiplayer-panel .intro h1 { font-size: 36px; margin-top: 12px; }
+#menu #multiplayer-panel .intro p { max-width: 850px; }
+#menu #tabs { position: sticky; top: 18px; }
+#menu #multiplayer-panel .launch-controls { grid-template-columns: 1fr 1fr; }
+#menu #multiplayer-panel .departure-controls { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+#menu #multiplayer-panel .session-settings { margin: 0; }
+#menu #multiplayer-panel .public-room-row { grid-column: 1; margin: 0; }
+#menu #multiplayer-panel .launch-row { grid-column: 2; grid-row: 1 / span 2; align-self: end; }
+@media (max-width: 1150px) {
+  .multiplayer-workspace { grid-template-columns: 1fr; }
+  #menu .multiplayer-workspace .online-controls { position: static; }
+}
+@media (max-width: 700px) {
+  .menu-sidebar { position: sticky; top: 0; z-index: 5; background: #101114; }
+  #menu #tabs { position: static; }
+  .active-session { flex-wrap: wrap; }
+  #menu #multiplayer-panel .departure-controls { grid-template-columns: 1fr; }
+  #menu #multiplayer-panel .launch-row { grid-column: 1; grid-row: auto; }
+  #menu .simulation-dock .simulation-row { min-height: 60px; }
+}
 @media (min-width: 1600px) {
   .menu-body { grid-template-columns: 210px minmax(0, 1fr); }
   #menu main { padding-right: 4vw; padding-left: 4vw; }

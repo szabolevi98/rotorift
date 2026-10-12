@@ -581,3 +581,18 @@ Ezek a követelményterv elkészítését nem akadályozzák:
 - Pályánként tetszőleges számú külön verseny-JSON: `data/maps/<map-id>/race_1.json`, `race_2.json`, stb. A játék ezeket olvassa, és útvonalat lehet választani singleplayerben és szobanyitáskor.
 - Egy bemutató útvonal mindkét pályán. A korábban szüneteltetett időmérő/versenymódok ezekkel újra elérhetők.
 - A rekordok route ID és route verzió alapján is elkülönülnek; a megnyitott multiplayer szobák saját útvonalpillanatképet használnak.
+
+## 2026-10-12 – Játékmenü felépítése
+
+- Külön Egyjátékos és Multiplayer képernyő. A navigáció nem módosítja az
+  egyjátékos játékmódot; a multiplayer oldalon önálló szobalista, kódos
+  csatlakozás és szobanyitás található.
+- Egy megosztott hangárblokk: 3D drónelőnézet, drón/szín, pálya/útvonal és
+  repülési mód. A választások megmaradnak a képernyők közötti váltáskor.
+- Akkumulátor, propellersérülés, propwash és szél mindig látható panelen;
+  multiplayerben a ghost mód is itt állítható. A lobbyban közös szerveroldali
+  szabályok látszanak, csak a házigazda szerkesztheti indítás előtt.
+- A szobalista automatikusan frissül, a csatlakozási állapot és a folyamatban
+  lévő kérés látható. Indítás előtt minden pilóta készenléte szükséges.
+- Globális folytatás/befejezés sáv szüneteltetett repüléshez. Lobbyfrissítés
+  nem navigálhatja el a pilótát egy megnyitott beállítási képernyőről.

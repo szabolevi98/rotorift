@@ -1,7 +1,7 @@
 {
   "hud.paused": "Vol en pause, drone désarmé.",
   "error.raceUnavailable": "Les contre-la-montre et les checkpoints sont suspendus sur cette carte jusqu’à la fin de son aménagement. Le vol libre reste disponible.",
-  "nav.fly": "Voler",
+  "nav.fly": "Solo",
   "nav.settings": "Réglages",
   "nav.records": "Records",
   "nav.showcase": "Modèles ↗",
@@ -232,5 +232,19 @@
   "stickSetup.noAnalog": "Aucun mouvement analogique libre détecté. Déplacez doucement uniquement le stick indiqué sur toute sa course. Un interrupteur ne remplace pas un stick. Consultez l’aide Android si un canal manque.",
   "stickSetup.oneDirection": "Déplacez uniquement dans le sens indiqué, revenez à la position de départ, puis réessayez.",
   "settings.radioDevice": "Radio / manette",
-  "settings.radioDeviceAuto": "Automatique · priorité RadioMaster"
+  "settings.radioDeviceAuto": "Automatique · priorité RadioMaster",
+  "menu.activeFlight": "Vol en pause",
+  "menu.endFlight": "Terminer le vol",
+  "online.roomKind": "Mode du salon",
+  "online.raceKind": "Course",
+  "online.createRoom": "Créer un salon",
+  "online.joinByCode": "Rejoindre avec un code",
+  "online.eyebrow": "VOLEZ ENSEMBLE",
+  "online.menuHint": "Rejoignez un salon public ou saisissez un code. Pour héberger, choisissez drone, carte et règles communes.",
+  "online.maxPlayers": "Jusqu’à 8 pilotes",
+  "online.offlineHint": "Connexion au serveur multijoueur…",
+  "online.requesting": "Ouverture du salon…",
+  "online.readyHint": "Tous les pilotes doivent être prêts avant que l’hôte puisse démarrer.",
+  "online.inProgress": "Vol en cours. Reprenez le vol ou quittez le salon.",
+  "simulation.hostSetupHint": "Ces règles s’appliquent à tous dans le salon. L’hôte peut les modifier dans le lobby avant le départ."
 }

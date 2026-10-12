@@ -65,7 +65,12 @@
           <div class="sidebar-caption"><strong data-i18n="fly.title"></strong><p data-i18n="hangar.tagline"></p></div>
         </aside>
       <main>
+        <section id="active-session" class="active-session hidden" aria-labelledby="active-session-title">
+          <div><strong id="active-session-title" data-i18n="menu.activeFlight"></strong><p id="active-session-description"></p></div>
+          <div class="button-row"><button id="resume" class="secondary" data-i18n="action.resume"></button><button id="leave-flight" class="text-button" data-i18n="menu.endFlight"></button></div>
+        </section>
         <section id="fly-panel" class="panel">
+          <div id="solo-hangar-slot"><div id="hangar-setup">
           <div class="aircraft-stage">
             <div class="stage-top"><span data-i18n="hangar.aircraft"></span><span id="model-number">R / X5</span></div>
             <div class="aircraft-title"><h1 id="selected-name">Rift X5</h1><p id="selected-description"></p></div>
@@ -85,30 +90,39 @@
               <h2 class="dock-label" data-i18n="fly.environment"></h2>
               <div id="map-picker" class="map-picker"></div>
               <label class="race-row"><span data-i18n="fly.route"></span><select id="race-route" aria-label="Race route"></select></label>
-              <details class="simulation-controls">
-                <summary data-i18n="simulation.title"></summary>
-                <div id="flight-simulation"></div>
-                <label class="name-row"><span data-i18n="fly.name"></span><input id="nickname" maxlength="32" value="Pilot" autocomplete="nickname" /></label>
-                <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
-                <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
-                <p class="prototype-note" data-i18n="fly.prototype"></p>
-              </details>
+              <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
             </div>
             <div class="departure-controls">
               <div class="session-settings">
                 <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
-                <label><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-free" data-i18n="session.onlineFree"></option><option value="online-race" data-i18n="session.onlineRace"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
+                <label id="local-session-label"><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
+                <label id="host-kind-label" class="hidden"><span class="dock-label" data-i18n="online.roomKind"></span><select id="room-kind"><option value="free" data-i18n="session.free"></option><option value="race" data-i18n="online.raceKind"></option></select></label>
               </div>
+              <label id="public-room-row" class="public-room-row hidden"><input type="checkbox" id="public-room" checked /><span data-i18n="online.public"></span></label>
               <div class="launch-row">
-                <button id="leave-flight" class="secondary hidden" data-i18n="action.leave"></button>
                 <button id="launch" class="primary"><span data-i18n="fly.launch"></span><span aria-hidden="true">↗</span></button>
-                <button id="resume" class="secondary hidden" data-i18n="action.resume"></button>
+                <button id="create-room" class="primary hidden" data-i18n="online.createRoom"></button>
               </div>
             </div>
           </div>
+          <section class="simulation-controls simulation-dock">
+            <h2 class="dock-label" data-i18n="simulation.title"></h2>
+            <div id="flight-simulation"></div>
+            <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
+          </section>
           <div class="hangar-specs"><div id="drone-specs" class="drone-specs"></div><p class="input-hint" id="input-status"></p></div>
-
-          <section id="online-controls" class="online-controls hidden">
+          </div></div>
+        </section>
+        <section id="multiplayer-panel" class="panel hidden">
+          <div class="intro"><span class="eyebrow" data-i18n="online.eyebrow"></span><h1 data-i18n="nav.multiplayer"></h1><p data-i18n="online.menuHint"></p></div>
+          <div class="multiplayer-workspace">
+          <section id="online-controls" class="online-controls card">
+            <label class="name-row"><span data-i18n="fly.name"></span><input id="nickname" maxlength="32" value="Pilot" autocomplete="nickname" /></label>
+            <label for="room-code" data-i18n="online.joinByCode"></label>
+            <div class="join-row">
+              <input id="room-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-placeholder="online.code" />
+              <button id="join-room" class="secondary" data-i18n="online.join"></button>
+            </div>
             <div class="section-title">
               <h2 data-i18n="online.rooms"></h2>
               <button
@@ -117,24 +131,11 @@
                 data-i18n="action.refresh"
               ></button>
             </div>
-            <div class="join-row">
-              <input
-                id="room-code"
-                maxlength="6"
-                data-i18n-placeholder="online.code"
-              /><button
-                id="join-room"
-                class="secondary"
-                data-i18n="online.join"
-              ></button
-              ><label
-                ><input type="checkbox" id="public-room" checked /><span
-                  data-i18n="online.public"
-                ></span
-              ></label>
-            </div>
+            <p id="rooms-status" class="muted" role="status"></p>
             <div id="rooms-list"></div>
           </section>
+          <section class="host-setup"><div class="section-title"><h2 data-i18n="online.createRoom"></h2><span class="muted" data-i18n="online.maxPlayers"></span></div><div id="multiplayer-hangar-slot"></div></section>
+          </div>
         </section>
         <section id="settings-panel" class="panel hidden">
           <div class="intro">
@@ -318,12 +319,13 @@
             <span class="eyebrow" data-i18n="online.lobby"></span>
             <h1 id="lobby-code"></h1>
             <p id="lobby-description"></p>
+            <p id="lobby-status" role="status"></p>
           </div>
           <div id="lobby-players" class="card"></div>
-          <details class="simulation-controls" open>
-            <summary data-i18n="simulation.title"></summary>
+          <section class="simulation-controls simulation-dock">
+            <h2 class="dock-label" data-i18n="simulation.title"></h2>
             <div id="lobby-simulation"></div>
-          </details>
+          </section>
           <div class="button-row">
             <button
               id="ready"

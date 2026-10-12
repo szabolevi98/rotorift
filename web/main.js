@@ -9,6 +9,7 @@ import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
 import { RADIO_PRESETS } from "./input/radio-profiles.js";
+import { simulationView, activeMenuTab } from "./menu-state.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -77,6 +78,8 @@ let playing = false,
   sendAt = 0,
   lastFrame = performance.now(),
   lastUi = 0;
+let roomRequest = null, roomRequestTimer, launching = false;
+let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
 let droneColor = normalizeDroneColor(read("drone-color", "coral"));
@@ -93,11 +96,14 @@ function createSimulationControls() {
       if (key === "wind") for (const value of WIND_LEVELS) { const option = node("option"); option.value = value; input.append(option); }
       else input.type = "checkbox";
       input.onchange = () => {
-        const next = { ...(room?.simulation ?? simulation), [key]: key === "wind" ? input.value : input.checked };
-        if (room) network.send("rules", { simulation: next });
+        const context = id === "lobby-simulation" ? "lobby" : $("#menu").dataset.panel === "multiplayer" ? "host" : "solo";
+        const view = simulationView(context, simulation, room, network.id);
+        if (view.locked) return;
+        const next = { ...view.options, [key]: key === "wind" ? input.value : input.checked };
+        if (context === "lobby" && room) network.send("rules", { simulation: next });
         else {
           simulation = normalizeSimulation(next); write("simulation", simulation);
-          if (playing) { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; }
+          if (playing && !room && context === "solo") { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; }
         }
         refreshSimulationControls();
       };
@@ -108,19 +114,22 @@ function createSimulationControls() {
   refreshSimulationControls();
 }
 function refreshSimulationControls() {
-  const options = normalizeSimulation(room?.simulation ?? simulation), online = !!room || $("#session").value.startsWith("online");
-  for (const input of document.querySelectorAll("[data-sim-option]")) {
-    const key = input.dataset.simOption;
-    input.disabled = !!room && (room.host !== network.id || room.phase !== "lobby");
-    input.parentElement.classList.toggle("hidden", key === "ghost" && !online);
-    input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
-    if (key === "wind") {
-      input.value = options.wind;
-      for (const option of input.options) option.textContent = t("wind." + option.value);
-    } else input.checked = options[key];
+  for (const id of ["flight-simulation", "lobby-simulation"]) {
+    const root = $("#" + id), context = id === "lobby-simulation" ? "lobby" : $("#menu").dataset.panel === "multiplayer" ? "host" : "solo";
+    const view = simulationView(context, simulation, room, network?.id);
+    for (const input of root.querySelectorAll("[data-sim-option]")) {
+      const key = input.dataset.simOption;
+      input.disabled = view.locked;
+      input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
+      input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
+      if (key === "wind") {
+        input.value = view.options.wind;
+        for (const option of input.options) option.textContent = t("wind." + option.value);
+      } else input.checked = view.options[key];
+    }
+    const note = root.querySelector(".simulation-note");
+    if (note) note.textContent = t(view.note);
   }
-  for (const note of document.querySelectorAll(".simulation-note"))
-    note.textContent = t(room ? (room.phase === "lobby" ? "simulation.hostHint" : "simulation.lockedHint") : "simulation.hint");
 }
 function refreshColors() {
   for (const button of document.querySelectorAll("[data-drone-color]")) {
@@ -154,19 +163,33 @@ function panel(name) {
   controller?.bindings.reset();
   if (controller) controller.setup = null;
   $("#menu").dataset.panel = name;
+  if (name === "fly" || name === "multiplayer")
+    $(name === "fly" ? "#solo-hangar-slot" : "#multiplayer-hangar-slot").append($("#hangar-setup"));
+  const host = name === "multiplayer";
+  for (const id of ["host-kind-label", "public-room-row", "create-room"]) visible("#" + id, host);
+  for (const id of ["local-session-label", "launch"]) visible("#" + id, !host);
   for (const el of document.querySelectorAll(".panel"))
     el.classList.toggle("hidden", el.id !== name + "-panel");
   refreshMenuNavigation();
+  updateSessionOptions();
+  refreshSessionBanner();
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   if (name === "records") showRecords();
 }
 function refreshMenuNavigation() {
   const name = $("#menu").dataset.panel ?? "fly";
-  const active = name === "lobby" || (name === "fly" && $("#session").value.startsWith("online")) ? "multiplayer" : name;
+  const active = activeMenuTab(name, room?.kind);
   for (const button of document.querySelectorAll("[data-tab]")) {
     button.classList.toggle("active", button.dataset.tab === active);
     if (button.dataset.tab === active) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   }
+}
+function refreshSessionBanner() {
+  const active = playing && paused && (!room || room.phase !== "lobby");
+  visible("#active-session", active);
+  if (active && flight?.config) $("#active-session-description").textContent =
+    `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
 }
 function pause() {
   if (!playing) return;
@@ -179,8 +202,7 @@ function pause() {
   controller.clear();
   visible("#menu", true);
   visible("#hud", false);
-  visible("#resume", true);
-  panel("fly");
+  panel(room ? "lobby" : "fly");
   notice(t(isTimedSession(session) && canRace(flight.map) ? "hud.interrupted" : "hud.paused"));
 }
 function resume() {
@@ -193,6 +215,7 @@ function resume() {
   document.activeElement?.blur();
   visible("#menu", false);
   visible("#hud", true);
+  refreshSessionBanner();
   flight.startSound();
 }
 function action(kind, currentInput = input) {
@@ -293,8 +316,11 @@ function updateSessionOptions() {
   for (const option of $("#session").options)
     option.disabled = !enabled && isTimedSession(option.value);
   if (!enabled && isTimedSession($("#session").value))
-    $("#session").value = $("#session").value.startsWith("online") ? "online-free" : "free";
-  visible("#online-controls", $("#session").value.startsWith("online"));
+    $("#session").value = "free";
+  for (const option of $("#room-kind").options) option.disabled = !enabled && option.value === "race";
+  if (!enabled && $("#room-kind").value === "race") $("#room-kind").value = "free";
+  const timed = $("#menu").dataset.panel === "multiplayer" ? $("#room-kind").value === "race" : isTimedSession($("#session").value);
+  visible(".race-row", timed);
   visible("#map-mode-note", !enabled);
   refreshSimulationControls();
   refreshMenuNavigation();
@@ -597,26 +623,53 @@ function updateInputText() {
 function renderRooms() {
   const root = $("#rooms-list");
   root.replaceChildren();
-  if (!rooms.length) root.append(node("p", "muted", t("online.empty")));
+  if (!rooms.length && network?.ready) root.append(node("p", "muted", t("online.empty")));
   for (const r of rooms) {
     const row = node("div", "room-row"),
       button = node("button", "secondary", t("online.join"));
-    button.onclick = () => network.send("join", { code: r.code });
+    button.onclick = () => requestRoom("join", { code: r.code });
+    button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
+    const summary = node("div", "room-summary");
+    summary.append(node("strong", "", r.code), node("span", "", t("map." + r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
+    summary.append(node("span", "", (catalog.drones.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
-      node("strong", "", r.code),
-      node(
-        "span",
-        "",
-        t("map." + r.mapId) +
-          " · " +
-          (r.routeName ? r.routeName + " · " : "") + r.players +
-          "/8 · " +
-          r.mode.toUpperCase(),
-      ),
+      summary,
       button,
     );
     root.append(row);
   }
+}
+function refreshRooms() {
+  roomsRefreshAt = performance.now();
+  network.send("list");
+}
+function requestRoom(type, data) {
+  if (!network.ready) { notice(t("error.connectFirst")); return; }
+  if (roomRequest) return;
+  roomRequest = type;
+  clearTimeout(roomRequestTimer);
+  roomRequestTimer = setTimeout(() => {
+    roomRequest = null; updateStatus(); notice(t("error.requestFailed"));
+  }, 10000);
+  network.send(type, data);
+  updateStatus();
+}
+function clearRoomRequest() {
+  clearTimeout(roomRequestTimer); roomRequest = null;
+}
+function createRoom() {
+  const kind = $("#room-kind").value;
+  if (kind === "race" && !canRace(map)) { notice(t("error.raceUnavailable")); return; }
+  requestRoom("create", { mapId: map.id, routeId: map.routeId, droneId: config.id,
+    mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation });
+}
+function endFlight() {
+  if (room) { network.send("leave"); return; }
+  void fullscreen?.enterMenu();
+  playing = false; paused = true; flight.active = false;
+  if (flight.physics) flight.physics.armed = false;
+  flight.mute(); controller.clear(); lap.invalid = true;
+  visible("#hud", false); visible("#menu", true); panel("fly");
 }
 function renderLobby() {
   if (!room) return;
@@ -637,10 +690,13 @@ function renderLobby() {
     $("#lobby-players").append(row);
   }
   const own = room.players.find((p) => p.id === network.id);
+  $("#lobby-status").textContent = t(room.phase === "lobby" ? "online.readyHint" : room.phase === "finished" ? "online.finished" : "online.inProgress");
   $("#ready").textContent = t(own?.ready ? "online.notReady" : "online.ready");
   $("#ready").disabled = room.phase !== "lobby";
   $("#start-room").disabled =
-    room.phase !== "lobby" || room.host !== network.id;
+    room.phase !== "lobby" || room.host !== network.id || !room.players.every(player => player.ready);
+  visible("#ready", room.phase === "lobby");
+  visible("#start-room", room.phase === "lobby" && room.host === network.id);
   refreshSimulationControls();
 }
 async function loadRoom(r) {
@@ -676,7 +732,7 @@ async function loadRoom(r) {
     document.activeElement?.blur();
     visible("#menu", false);
     visible("#hud", true);
-    visible("#resume", true);
+    refreshSessionBanner();
     flight.startSound();
   } catch {
     loadingRoom = null;
@@ -689,9 +745,10 @@ async function loadRoom(r) {
 function receive(m) {
   if (m.type === "welcome") {
     updateStatus();
-    network.send("list");
+    refreshRooms();
   }
   if (m.type === "error") {
+    clearRoomRequest(); updateStatus();
     if (m.code === "notReady") void fullscreen?.enterMenu();
     notice(t("error." + m.code));
   }
@@ -700,6 +757,8 @@ function receive(m) {
     renderRooms();
   }
   if (m.type === "left") {
+    const destination = nextLaunch || room?.kind === "hotlap" ? "fly" : "multiplayer";
+    clearRoomRequest();
     void fullscreen?.enterMenu();
     flight.updateRemotes([], network.id);
     room = null;
@@ -712,9 +771,7 @@ function receive(m) {
     flight.mute();
     visible("#menu", true);
     visible("#hud", false);
-    visible("#resume", false);
-    visible("#leave-flight", false);
-    panel("fly");
+    panel(destination); updateStatus(); refreshRooms();
     if (nextLaunch) {
       nextLaunch = false;
       void launch();
@@ -732,6 +789,7 @@ function receive(m) {
         : t("hud.invalid"),
     );
   if (m.type === "disconnected") {
+    clearRoomRequest();
     flight.updateRemotes([], network.id);
     if (room) {
       pause();
@@ -739,14 +797,15 @@ function receive(m) {
       room = null;
       refreshSimulationControls();
       playing = false;
-      visible("#resume", false);
-      visible("#leave-flight", false);
+      panel("multiplayer");
     }
     nextLaunch = false;
     updateStatus();
   }
   if (m.type === "room") {
     const previousPhase = room?.phase;
+    const previousCode = room?.code;
+    clearRoomRequest();
     room = m.room;
     if (flight.physics && loadedRoom === room.code + ":" + room.startsAt) {
       if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
@@ -754,13 +813,15 @@ function receive(m) {
       if (own?.mode) { flight.physics.mode = own.mode; $("#flight-mode").value = own.mode; }
       flight.updateRemotes(room.players, network.id);
     }
-    visible("#leave-flight", true);
     renderLobby();
     if (room.phase === "lobby") {
-      if (previousPhase !== "lobby") void fullscreen?.enterMenu();
-      visible("#menu", true);
-      visible("#hud", false);
-      panel("lobby");
+      if (previousPhase !== "lobby" || previousCode !== room.code) {
+        void fullscreen?.enterMenu();
+        playing = false; paused = true; flight.active = false;
+        if (flight.physics) flight.physics.armed = false;
+        flight.mute();
+        visible("#menu", true); visible("#hud", false); panel("lobby");
+      }
       if (room.kind === "hotlap" && loadingRoom !== room.code) {
         loadingRoom = room.code;
         network.send("start");
@@ -783,6 +844,7 @@ function receive(m) {
       flight.mute();
       if (previousPhase !== "finished") notice(t("online.finished"));
     }
+    refreshSessionBanner(); updateStatus();
   }
 }
 function updateStatus() {
@@ -790,6 +852,12 @@ function updateStatus() {
     network?.ready ? "status.online" : "status.offline",
   );
   $("#server-status").classList.toggle("offline", !network?.ready);
+  $("#rooms-status").textContent = !network?.ready ? t("online.offlineHint") : roomRequest ? t("online.requesting") : "";
+  $("#join-room").disabled = !network?.ready || !!roomRequest || $("#room-code").value.trim().length !== 6;
+  $("#create-room").disabled = !network?.ready || !!roomRequest;
+  $("#refresh-rooms").disabled = !network?.ready || !!roomRequest;
+  $("#launch").disabled = launching || (!!roomRequest && $("#session").value === "online-hotlap");
+  renderRooms();
 }
 async function launch() {
   visible("#notice", false);
@@ -808,17 +876,18 @@ async function launch() {
       notice(t("error.connectFirst"));
       return;
     }
-    network.send("create", {
+    requestRoom("create", {
       mapId: map.id,
       routeId: map.routeId,
       droneId: config.id,
       mode: $("#flight-mode").value,
       kind: session.replace("online-", ""),
-      public: $("#public-room").checked,
+      public: false,
       simulation,
     });
     return;
   }
+  launching = true;
   $("#launch").disabled = true;
   // Start from the launch click, before loading consumes its user activation.
   void fullscreen?.enterFlight();
@@ -836,8 +905,9 @@ async function launch() {
     void fullscreen?.enterMenu();
     notice(t("error.requestFailed"));
   } finally {
-    $("#launch").disabled = false;
+    launching = false;
     task.end();
+    updateStatus();
   }
 }
 async function showRecords() {
@@ -1018,6 +1088,8 @@ function hud() {
   }
 }
 function frame(now) {
+  if (!$("#menu").classList.contains("hidden") && $("#menu").dataset.panel === "multiplayer" && network.ready && !room && !roomRequest && now - roomsRefreshAt > 5000)
+    refreshRooms();
   const elapsed = Math.max(0, (now - lastFrame) / 1000);
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
@@ -1085,15 +1157,9 @@ function bindUI() {
     b.onclick = () => {
       if (b.dataset.tab === "multiplayer") {
         if (room) { panel("lobby"); return; }
-        $("#session").value = "online-free";
-        updateSessionOptions();
-        panel("fly");
-        network.send("list");
+        panel("multiplayer");
+        refreshRooms();
       } else {
-        if (b.dataset.tab === "fly" && !room && $("#session").value.startsWith("online")) {
-          $("#session").value = "free";
-          updateSessionOptions();
-        }
         panel(b.dataset.tab);
       }
     };
@@ -1102,6 +1168,7 @@ function bindUI() {
     await setLanguage(e.target.value);
   };
   $("#launch").onclick = launch;
+  $("#create-room").onclick = createRoom;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
@@ -1124,8 +1191,16 @@ function bindUI() {
   };
   $("#stick-setup-cancel").onclick = () => { controller.setup = null; controller.bindings.reset(); renderInputUI(); };
   $("#session").onchange = () => {
+    write("solo-session", $("#session").value);
     updateSessionOptions();
   };
+  $("#room-kind").value = read("room-kind", "free");
+  $("#room-kind").onchange = () => { write("room-kind", $("#room-kind").value); updateSessionOptions(); };
+  $("#public-room").checked = read("public-room", true);
+  $("#public-room").onchange = () => write("public-room", $("#public-room").checked);
+  $("#session").value = read("solo-session", "free");
+  if (!$("#session").value) $("#session").value = "free";
+  updateSessionOptions();
   $("#race-route").onchange = () => {
     map = resolveRoute(catalog.maps.find(m => m.id === map.id), $("#race-route").value);
     write("selected-race-" + map.id, map.routeId);
@@ -1137,9 +1212,14 @@ function bindUI() {
     network.name = $("#nickname").value;
     network.send("rename", { name: network.name });
   };
-  $("#refresh-rooms").onclick = () => network.send("list");
-  $("#join-room").onclick = () =>
-    network.send("join", { code: $("#room-code").value.trim().toUpperCase() });
+  $("#refresh-rooms").onclick = refreshRooms;
+  $("#room-code").oninput = () => {
+    $("#room-code").value = $("#room-code").value.toUpperCase().replace(/[^A-Z0-9]/g, ""); updateStatus();
+  };
+  $("#join-room").onclick = () => requestRoom("join", { code: $("#room-code").value.trim().toUpperCase() });
+  $("#room-code").onkeydown = (event) => {
+    if (event.key === "Enter" && !$("#join-room").disabled) { event.preventDefault(); $("#join-room").click(); }
+  };
   $("#ready").onclick = () =>
     network.send("ready", {
       ready: !room.players.find((p) => p.id === network.id)?.ready,
@@ -1150,7 +1230,7 @@ function bindUI() {
     network.send("start");
   };
   $("#leave-room").onclick = () => network.send("leave");
-  $("#leave-flight").onclick = () => network.send("leave");
+  $("#leave-flight").onclick = endFlight;
   $("#rates-drone").value = config.id;
   $("#rates-drone").onchange = renderRates;
   $("#rates-save").onclick = () => saveRates([$("#rates-drone").value]);
