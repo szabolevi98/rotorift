@@ -44,6 +44,12 @@ export class Database {
       const [simulationColumn] = await this.pool.query("SHOW COLUMNS FROM laps LIKE 'simulation_key'");
       if (!simulationColumn.length)
         await this.pool.query("ALTER TABLE laps ADD COLUMN simulation_key CHAR(5) NOT NULL DEFAULT '00010'");
+      const [routeColumn] = await this.pool.query("SHOW COLUMNS FROM laps LIKE 'route_id'");
+      if (!routeColumn.length)
+        await this.pool.query("ALTER TABLE laps ADD COLUMN route_id VARCHAR(64) NOT NULL DEFAULT ''");
+      const [routeIndex] = await this.pool.query("SHOW INDEX FROM laps WHERE Key_name='category_route'");
+      if (!routeIndex.length)
+        await this.pool.query("CREATE INDEX category_route ON laps(map_id,route_id,route_version,drone_id,config_hash,flight_mode,simulation_key)");
       this.available = true;
     } catch {
       this.available = false;
@@ -80,11 +86,12 @@ export class Database {
     if (!this.available) return false;
     try {
       await this.pool.execute(
-        "INSERT INTO laps(id,player_id,map_id,route_version,drone_id,config_hash,flight_mode,duration_ms,simulation_key) VALUES(?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO laps(id,player_id,map_id,route_id,route_version,drone_id,config_hash,flight_mode,duration_ms,simulation_key) VALUES(?,?,?,?,?,?,?,?,?,?)",
         [
           randomUUID(),
           player,
           map.id,
+          map.routeId ?? "",
           map.routeVersion,
           drone.id,
           drone.configHash,
@@ -128,8 +135,8 @@ export class Database {
     if (!this.available) return { available: false, entries: [] };
     try {
       const [rows] = await this.pool.execute(
-        "SELECT p.nick AS name, MIN(l.duration_ms) AS ms, MAX(l.created_at) AS date FROM laps l JOIN players p ON p.id=l.player_id WHERE l.map_id=? AND l.route_version=? AND l.drone_id=? AND l.config_hash=? AND l.flight_mode=? AND l.simulation_key=? GROUP BY l.player_id,p.nick ORDER BY ms ASC LIMIT 30",
-        [map.id, map.routeVersion, drone.id, drone.configHash, mode, simulationKey(simulation)],
+        "SELECT p.nick AS name, MIN(l.duration_ms) AS ms, MAX(l.created_at) AS date FROM laps l JOIN players p ON p.id=l.player_id WHERE l.map_id=? AND l.route_id=? AND l.route_version=? AND l.drone_id=? AND l.config_hash=? AND l.flight_mode=? AND l.simulation_key=? GROUP BY l.player_id,p.nick ORDER BY ms ASC LIMIT 30",
+        [map.id, map.routeId ?? "", map.routeVersion, drone.id, drone.configHash, mode, simulationKey(simulation)],
       );
       return { available: true, entries: rows };
     } catch {

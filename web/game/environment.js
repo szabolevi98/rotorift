@@ -15,7 +15,7 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     return materials.get(color);
   };
   let park, construction;
-  if (map.kind === "park") park = buildPark(scene, world, RAPIER, map);
+  if (map.kind === "park") park = buildPark(scene, world, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
   else construction = buildConstruction(scene, world, RAPIER, map);
   const gateMeshes = [], gateGroups = [], gateColliders = [];
   let gatesEnabled = true;

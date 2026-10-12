@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Explore Rotorift drones and maps in 3D. Inspect the fleet, export GLB models and design race gates with JSON export.">
+  <title>Rotorift Showcase · Rift X5</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23202223'/%3E%3Cpath d='M15 17h22l12 12-12 12h-9l-6 9H12l17-24h9l-4-4H22z' fill='%23ff6648'/%3E%3C/svg%3E">
+  <style>/* DEMO_STYLE */</style>
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="#" aria-label="Rotorift showcase home" id="brand-reset">
+      <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="currentColor"/><path d="M15 17h22l12 12-12 12h-9l-6 9H12l17-24h9l-4-4H22z" fill="#ff6648"/></svg>
+      <span>ROTORIFT<span class="brand-separator">/</span><span class="brand-sub">SHOWCASE</span></span>
+    </a>
+    <span class="demo-badge"><span></span> Interactive 3D showcase</span>
+    <span class="edition">001 / FREESTYLE</span>
+  </header>
+  <nav class="showcase-tabs" aria-label="Explore Rotorift"><button type="button" data-showcase-tab="drones" aria-pressed="true">Drones</button><button type="button" data-showcase-tab="maps" aria-pressed="false">Maps &amp; races</button></nav>
+  <section id="drone-panel">
+  <section class="catalog" aria-labelledby="catalog-heading">
+    <div class="catalog-intro"><h2 id="catalog-heading">The fleet</h2><p id="catalog-count">3 models</p></div>
+    <nav id="model-picker" class="model-picker" aria-label="Select a drone model"></nav>
+  </section>
+  <main class="layout">
+    <section class="stage" aria-label="Interactive drone model">
+      <div class="stage-heading"><span class="eyebrow" id="model-eyebrow">ORIGINAL MODEL · 5″ FREESTYLE</span><h1><span id="model-title" class="model-title">Rift</span> <span id="model-suffix">X5.</span></h1><p id="model-tagline">Small details. Big freedom.</p></div>
+      <div id="viewport"><canvas id="scene" aria-label="Rift X5 3D model. Drag to rotate, scroll to zoom."></canvas></div>
+      <div id="loading" role="status">Opening the workshop…</div>
+      <div class="stage-meta"><span><span class="live-dot"></span> <span id="view-label">Perspective</span></span><span id="mesh-stats">Original geometry</span></div>
+      <nav class="view-controls" aria-label="Camera views">
+        <button type="button" data-view="hero" aria-pressed="true" title="Perspective view">3D</button>
+        <button type="button" data-view="top" aria-pressed="false">Top</button>
+        <button type="button" data-view="front" aria-pressed="false">Front</button>
+        <button type="button" data-view="side" aria-pressed="false">Side</button>
+        <button type="button" data-view="rear" aria-pressed="false">Rear</button>
+        <span class="control-divider"></span>
+        <button type="button" id="reset-view" title="Reset view" aria-label="Reset view">↺</button>
+      </nav>
+      <div class="orbit-hint"><span>↔</span> Drag to rotate <span class="hint-dot">·</span> Scroll to zoom</div>
+      <div class="axis-caption" aria-hidden="true">STUDIO / 01<span>PROCEDURAL GEOMETRY</span></div>
+    </section>
+    <aside class="sidebar">
+      <div class="side-intro"><span class="eyebrow">MEET THE AIRCRAFT</span><h2 id="model-heading">Born for freestyle.</h2><p id="model-description">A carbon frame, tri-blade propellers and all the small details you look for in an FPV aircraft.</p></div>
+      <div class="specs" id="model-specs"><div><span>Propeller</span><strong>5″ <small>/ 3 blades</small></strong></div><div><span>Battery</span><strong>6S <small>/ 1 300 mAh</small></strong></div><div><span>Diagonal wheelbase</span><strong>230 <small>mm</small></strong></div><div><span>Arm thickness</span><strong>5 <small>mm</small></strong></div></div>
+      <section class="options" aria-labelledby="options-heading"><h3 id="options-heading">Explore the details</h3>
+        <label class="toggle-row"><span>Battery</span><input id="battery" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Propellers</span><input id="props" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Action camera</span><input id="action-camera" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Auto rotate</span><input id="rotate" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Animate propellers</span><input id="spin" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+        <div class="explode-label"><label for="explode">Exploded view</label><output id="explode-value" for="explode">0%</output></div><input id="explode" type="range" min="0" max="100" step="1" value="0" aria-label="Exploded view amount">
+        <div class="color-row"><span id="model-color-label">TPU accessories</span><div id="color-picker" role="group" aria-label="Plastic parts color"></div></div>
+        <label class="toggle-row wire-row"><span>Wireframe</span><input id="wireframe" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+      </section>
+      <button type="button" class="export-button" id="export"><span>Download model</span><span>GLB ↗</span></button>
+      <p class="export-hint">A real 3D file. Open it in Blender or Three.js.</p>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <div class="side-footer"><span class="footer-mark" id="model-mark">R / X5</span><p>Your fleet in detail.<br>Explore the maps in the next tab.</p></div>
+    </aside>
+  </main>
+  </section>
+  <section id="maps-panel" hidden aria-label="Maps and race editor"><iframe id="map-viewer" title="Rotorift maps and race editor" loading="lazy"></iframe></section>
+  <footer class="footer"><span>Copyright © <span id="copyright-year"></span> <a href="https://github.com/szabolevi98" target="_blank" rel="noopener">szabolevi98</a></span><span>Original models · Maps · Race editor · Three.js</span><span>FPV. ON THE GO.</span></footer>
+  <noscript>Enable JavaScript to use the 3D showcase.</noscript>
+  <script>
+    window.addEventListener('error', function (event) { const el = document.getElementById('loading'); if (el) { el.hidden = false; el.textContent = 'Cannot open the 3D view: ' + event.message; } });
+  </script>
+  <script>
+    (() => {
+      const frame=document.getElementById('map-viewer');
+      const params=new URLSearchParams(location.search);
+      let tab=params.get('tab')==='maps'?'maps':'drones';
+      function select(next) {
+        tab=next; document.title=tab==='maps'?'Rotorift Showcase · Maps & races':'Rotorift Showcase · '+document.getElementById('model-title').textContent+' '+document.getElementById('model-suffix').textContent.slice(0,-1);document.querySelector('.edition').textContent=tab==='maps'?'MAPS / RACE EDITOR':(document.querySelector('.edition').dataset.droneEdition??document.querySelector('.edition').textContent); document.getElementById('drone-panel').hidden=tab!=='drones'; document.getElementById('maps-panel').hidden=tab!=='maps';
+        document.querySelectorAll('[data-showcase-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.showcaseTab===tab)));
+        if(tab==='maps'&&!frame.hasAttribute('src')) { const query=new URLSearchParams();for(const key of ['map','route'])if(params.has(key))query.set(key,params.get(key));frame.src='./map-viewer.html?'+query; }
+        frame.contentWindow?.postMessage({type:'showcase-map-active',active:tab==='maps'},location.origin==='null'?'*':location.origin);
+      }
+      document.querySelectorAll('[data-showcase-tab]').forEach(button=>button.onclick=()=>select(button.dataset.showcaseTab));
+      frame.onload=()=>frame.contentWindow?.postMessage({type:'showcase-map-active',active:tab==='maps'},location.origin==='null'?'*':location.origin);
+      document.getElementById('copyright-year').textContent=new Date().getFullYear();
+      select(tab);
+    })();
+  </script>
+  <script>/* DEMO_SCRIPT */</script>
+</body>
+</html>

@@ -95,6 +95,26 @@ async function fixture(t, mapOverrides = {}) {
   }
   return { client, catalog, db };
 }
+
+test("a room pins the selected race file, gate order and start position for every pilot", async t => {
+  const gates=[{p:[12,2,4],n:[0,0,-1],width:5,height:4},{p:[20,2,4],n:[1,0,0],width:5,height:4}];
+  const routes=[{id:"race_1",name:"First race",version:1,spawn:[0,1,-.5],gates},
+    {id:"race_2",name:"Second race",version:3,spawn:[12,1,8],gates:[...gates].reverse()}];
+  const {client,catalog}=await fixture(t,{routeId:"race_1",routes});
+  const host=await client("Route host"),guest=await client("Route guest");
+  host.send("create",{mapId:"test-route",routeId:"race_2",droneId:"rift-x5",mode:"angle",kind:"race"});
+  const created=(await host.next(m=>m.type==="room")).room;
+  assert.equal(created.routeId,"race_2");assert.equal(created.route.version,3);
+  assert.deepEqual(created.route.gates,routes[1].gates);assert.deepEqual(created.players[0].p,[12,1,8]);
+  assert.equal(catalog.maps[0].routeId,"race_1","room selection must not mutate the map catalog");
+  guest.send("join",{code:created.code});
+  const joined=(await guest.next(m=>m.type==="room")).room;
+  assert.deepEqual(joined.route,created.route);assert.equal(joined.players.length,2);
+  catalog.maps[0]={...catalog.maps[0],routes:[{...routes[1],version:99,gates:[]}]};
+  host.send("ready",{ready:true});
+  const pinned=(await host.next(m=>m.type==="room"&&m.room.players.length===2&&m.room.players[0].ready)).room;
+  assert.equal(pinned.route.version,3);assert.deepEqual(pinned.route.gates,routes[1].gates);
+});
 test("multiplayer admits eight pilot colors, rejects a ninth pilot and frees a slot on leave", async t => {
   const { client } = await fixture(t);
   const colors = Object.keys(DRONE_COLORS);

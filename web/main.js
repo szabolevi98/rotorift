@@ -7,6 +7,7 @@ import { Flight } from "./game/flight.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
+import { resolveRoute } from "/shared/race/routes.js";
 import { canRace, isTimedSession } from "/shared/race/map-modes.js";
 import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, WIND_LEVELS, normalizeSimulation, simulationKey } from "/shared/simulation/options.js";
@@ -243,10 +244,20 @@ async function selectDrone(id) {
   await preview.select(config);
 }
 function selectMap(id) {
-  map = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
+  const base = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
+  map = resolveRoute(base, read("selected-race-" + base.id, base.routeId)) ?? base;
+  fillRoutes($("#race-route"), base, map.routeId);
   write("selected-map", map.id);
   updateSessionOptions();
   refreshCatalogText();
+}
+function fillRoutes(select, base, selected = base?.routeId) {
+  select.replaceChildren(...(base?.routes ?? []).map(route => new Option(route.name, route.id)));
+  if ([...select.options].some(option => option.value === selected)) select.value = selected;
+  select.disabled = !select.options.length;
+}
+function refreshRecordRoutes() {
+  fillRoutes($("#records-route"), catalog.maps.find(m => m.id === $("#records-map").value));
 }
 function updateSessionOptions() {
   const enabled = canRace(map);
@@ -260,7 +271,7 @@ function updateSessionOptions() {
   refreshMenuNavigation();
 }
 function refreshCatalogText() {
-  if (map) $("#map-preview-link").href = "/map-preview.html?map=" + encodeURIComponent(map.id);
+  if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
   for (const d of catalog.drones) {
     const b = $(`[data-drone="${d.id}"]`);
     b.classList.toggle("selected", config?.id === d.id);
@@ -327,6 +338,7 @@ function createCatalogUI() {
     $("#map-picker").append(b);
     $("#records-map").append(new Option(m.name, m.id));
   }
+  refreshRecordRoutes();
 }
 function drawRates() {
   const c = $("#rate-graph"),
@@ -493,7 +505,7 @@ function renderRooms() {
         "",
         t("map." + r.mapId) +
           " · " +
-          r.players +
+          (r.routeName ? r.routeName + " · " : "") + r.players +
           "/8 · " +
           r.mode.toUpperCase(),
       ),
@@ -510,7 +522,7 @@ function renderLobby() {
     " · " +
     catalog.drones.find((d) => d.id === room.droneId)?.name +
     " · " +
-    room.mode.toUpperCase();
+    room.mode.toUpperCase() + (room.route?.name ? " · " + room.route.name : "");
   $("#lobby-players").replaceChildren();
   for (const p of room.players) {
     const row = node("div", "player-row");
@@ -533,7 +545,9 @@ async function loadRoom(r) {
   loadingRoom = key;
   visible("#boot", true);
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
-  const roomMap = catalog.maps.find((m) => m.id === r.mapId);
+  const baseMap = catalog.maps.find((m) => m.id === r.mapId);
+  const roomMap = r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
+    routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
   $("#flight-mode").value = r.mode;
   try {
@@ -683,6 +697,7 @@ async function launch() {
     }
     network.send("create", {
       mapId: map.id,
+      routeId: map.routeId,
       droneId: config.id,
       mode: $("#flight-mode").value,
       kind: session.replace("online-", ""),
@@ -710,7 +725,7 @@ async function launch() {
 }
 async function showRecords() {
   if (!catalog) return;
-  const m = catalog.maps.find((v) => v.id === $("#records-map").value),
+  const m = resolveRoute(catalog.maps.find((v) => v.id === $("#records-map").value), $("#records-route").value || undefined),
     c = catalog.drones.find((v) => v.id === $("#records-drone").value),
     mode = $("#records-mode").value,
     root = $("#records-body");
@@ -728,7 +743,7 @@ async function showRecords() {
   try {
     const res = await fetch(
       "/api/leaderboard?" +
-        new URLSearchParams({ map: m.id, drone: c.id, mode, simulation: simulationKey(simulation) }),
+        new URLSearchParams({ map: m.id, route: m.routeId, drone: c.id, mode, simulation: simulationKey(simulation) }),
     );
     if (!res.ok) throw Error("Leaderboard unavailable");
     const data = await res.json();
@@ -964,6 +979,11 @@ function bindUI() {
   $("#session").onchange = () => {
     updateSessionOptions();
   };
+  $("#race-route").onchange = () => {
+    map = resolveRoute(catalog.maps.find(m => m.id === map.id), $("#race-route").value);
+    write("selected-race-" + map.id, map.routeId);
+    updateSessionOptions(); refreshCatalogText();
+  };
   $("#nickname").value = read("nickname", "Pilot");
   $("#nickname").onchange = () => {
     write("nickname", $("#nickname").value);
@@ -1034,8 +1054,9 @@ function bindUI() {
   for (const s of ["#camera-angle", "#camera-fov", "#sound"])
     $(s).oninput = camera;
   camera();
-  for (const s of ["#records-map", "#records-drone", "#records-mode"])
+  for (const s of ["#records-route", "#records-drone", "#records-mode"])
     $(s).onchange = showRecords;
+  $("#records-map").onchange = () => { refreshRecordRoutes(); showRecords(); };
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
     refreshColors();

@@ -4,6 +4,7 @@ import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
 import { canRace } from "../../shared/race/map-modes.js";
+import { resolveRoute } from "../../shared/race/routes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
 const MODES = FLIGHT_MODES;
@@ -19,6 +20,8 @@ export function attachRooms(server, catalog, db) {
     kind: r.kind,
     phase: r.phase,
     mapId: r.map.id,
+    routeId: r.map.routeId,
+    route: { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates },
     droneId: r.drone.id,
     mode: r.mode,
     simulation: r.simulation,
@@ -84,6 +87,8 @@ export function attachRooms(server, catalog, db) {
       .map((r) => ({
         code: r.code,
         mapId: r.map.id,
+        routeId: r.map.routeId,
+        routeName: r.map.routeName,
         droneId: r.drone.id,
         kind: r.kind,
         players: r.players.size,
@@ -176,7 +181,7 @@ export function attachRooms(server, catalog, db) {
             send(p, "error", { code: "roomFull" });
             return;
           }
-          const map = catalog.maps.find((v) => v.id === m.mapId),
+          const map = resolveRoute(catalog.maps.find((v) => v.id === m.mapId), m.routeId),
             drone = catalog.drones.find((v) => v.id === m.droneId);
           if (
             !map ||

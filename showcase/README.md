@@ -10,7 +10,7 @@ a játék, a repülési fizika és az irányítás még nem készül ebben a dem
 - GitHub Pages: <https://szabolevi98.github.io/rotorift/>.
   A `main` ágra kerülő showcase-változásokat a `showcase-pages.yml` workflow
   újraépíti és publikálja; csak az önálló modellbemutató kerül a Pages-re.
-- XAMPP/Apache alatt: <http://localhost/rotorift/demo/>.
+- XAMPP/Apache alatt: <http://localhost/rotorift/showcase/>.
 - Vagy nyisd meg az `index.html` fájlt közvetlenül Chrome-ban / Edge-ben.
 - A kész HTML a teljes Three.js kódot és minden textúrát tartalmazza;
   internetkapcsolat és telepítés nélkül is működik. WebGL 2 szükséges.
@@ -179,7 +179,7 @@ rajzolási hívások csökkentése, LOD és egyszerű ütközési geometria kés
 - `../shared/visual/drone-rendering.js`: a játék és a demó közös színkezelése,
   tükröződési környezete, zöld PCB-je és kékes optikai üveganyaga.
 - `sync-materials.mjs`: az elfogadott GLB-k anyagainak frissítése a közös
-  beállításokból; a geometria és a beágyazott textúrák megőrzésével. `node demo/sync-materials.mjs`.
+  beállításokból; a geometria és a beágyazott textúrák megőrzésével. `node showcase/sync-materials.mjs`.
 - `template.html`, `style.css`: a bemutató felülete.
 - `build.mjs`: a forrásokat egyetlen offline HTML-be csomagolja.
 - `vendor/`: Three.js r169, OrbitControls, GLTFExporter, TextureUtils.
@@ -187,7 +187,7 @@ rajzolási hívások csökkentése, LOD és egyszerű ütközési geometria kés
 A forrás módosítása után, Node.js-szel:
 
 ```powershell
-node demo/build.mjs
+node showcase/build.mjs
 ```
 
 Új modellhez készíts egy, a `createRiftX5()` felületét követő gyártófüggvényt,

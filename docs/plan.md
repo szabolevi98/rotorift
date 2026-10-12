@@ -107,7 +107,7 @@ a menük a `web/main.js`-ben működnek. Az alábbi külön `api/`, `game/`, `ui
 
 ```text
 docs/                  követelmények, terv és technikai jegyzetek
-demo/                  meglévő, különálló showcase és részletes modellforrások
+showcase/                  meglévő, különálló showcase és részletes modellforrások
 package.json           tervezett Node indítási, fejlesztési és tesztparancsok
 .env.example           tervezett port-, host- és adatbázis-beállítások mintája
 web/                   publikus kliens, belépő HTML és stílusok
@@ -133,7 +133,7 @@ deploy/                tervezett Node szolgáltatás és reverse proxy minták
 test/                  fizika, rate-ek, időmérés, hálózat, ranglista és fordítások
 ```
 
-A `demo/` már létezik; a játékhoz felsorolt többi új mappa csak tervezett.
+A `showcase/` már létezik; a játékhoz felsorolt többi új mappa csak tervezett.
 A kliens a szerver által közzétett katalógusból kapja a pályák és drónok adatait;
 az adatbázishoz kizárólag a szerver kapcsolódik. A showcase részletes modelljei
 optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőtestek külön készülnek.
@@ -559,3 +559,12 @@ Ezek a követelményterv elkészítését nem akadályozzák:
 - Profilkezelés részletei, kapcsolatvesztés türelmi ideje, szerverhost és publikálási mód.
 - Ranglista-validáció végleges szigorúsága; szükség esetén szerveres visszaellenőrzés.
 - Későbbi drónkategóriák és AI ellenfelek; a multiplayer már az első kiadás része.
+
+## 2026-10-12 – Összevont showcase és versenyútvonalak
+
+- A `demo/` mappa neve `showcase/` lett. Fix angol felület, Drónok és Pályák/versenyek nézettel, a meglévő GitHub Pages címen.
+- Drónsorrend: Rift 65 → Rift C3 → Rift X5. A forgatható modellek, színezés és GLB-export megmaradnak.
+- A pályanézőből kapuszerkesztő: elhelyezés, mozgatás/forgatás, méretek, sorrend, rajtpozíció, undo/redo, JSON-import/export és localhostos projektmentés. A teljes épületek vagy terep átépítése nem része ennek a szerkesztőnek.
+- Pályánként tetszőleges számú külön verseny-JSON: `data/maps/<map-id>/race_1.json`, `race_2.json`, stb. A játék ezeket olvassa, és útvonalat lehet választani singleplayerben és szobanyitáskor.
+- Egy bemutató útvonal mindkét pályán. A korábban szüneteltetett időmérő/versenymódok ezekkel újra elérhetők.
+- A rekordok route ID és route verzió alapján is elkülönülnek; a megnyitott multiplayer szobák saját útvonalpillanatképet használnak.

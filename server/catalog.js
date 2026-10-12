@@ -1,15 +1,17 @@
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { validateDrone, validateMap } from "../shared/physics/config.js";
-export async function loadCatalog() {
+import { loadRoutes, DATA_ROOT } from "./routes.js";
+import { resolveRoute } from "../shared/race/routes.js";
+export async function loadCatalog(dataRoot = DATA_ROOT) {
   const load = async (dir) =>
     Promise.all(
-      (await readdir(new URL("../data/" + dir + "/", import.meta.url)))
+      (await readdir(new URL(dir + "/", dataRoot)))
         .filter((f) => f.endsWith(".json"))
         .map(async (f) =>
           JSON.parse(
             await readFile(
-              new URL("../data/" + dir + "/" + f, import.meta.url),
+              new URL(dir + "/" + f, dataRoot),
               "utf8",
             ),
           ),
@@ -24,6 +26,11 @@ export async function loadCatalog() {
       .digest("hex")
       .slice(0, 16);
   }
-  for (const m of maps) validateMap(m);
+  for (let i = 0; i < maps.length; i++) {
+    const map = maps[i];
+    validateMap(map);
+    map.routes = await loadRoutes(map, dataRoot);
+    if (map.routes.length) maps[i] = resolveRoute(map, map.routes[0].id);
+  }
   return { drones, maps };
 }

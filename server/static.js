@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const roots = {
   "/shared/": "shared",
-  "/demo/": "demo",
+  "/showcase/": "showcase",
+  "/demo/": "showcase",
   "/vendor/three/": "node_modules/three",
   "/vendor/rapier/": "node_modules/@dimforge/rapier3d-compat",
 };

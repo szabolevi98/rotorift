@@ -1,6 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { build } from 'esbuild';
+import { loadCatalog } from '../server/catalog.js';
 
 // A klasszikus scriptbe csomagolt könyvtárakkal a kész HTML file:// alatt is fut.
 // Nem kell npm install, hálózat, modulbetöltés vagy külön webszerver.
@@ -34,4 +36,17 @@ const html = read('template.html')
   .replace('/* DEMO_STYLE */', () => read('style.css'))
   .replace('/* DEMO_SCRIPT */', () => script.replace(/<\/script/gi, '<\\/script'));
 writeFileSync(join(root, 'index.html'), html);
-console.log(`Offline demo kész: ${join(root, 'index.html')} (${Math.round(Buffer.byteLength(html) / 1024)} KiB)`);
+const catalog = await loadCatalog();
+await build({
+  stdin: { contents: `import { startMapViewer } from './map-viewer.js'; startMapViewer(${JSON.stringify({maps:catalog.maps})}).catch(error => { document.querySelector('#loading').textContent = 'Cannot load the map: ' + error.message; console.error(error); });`, resolveDir: root, sourcefile: 'map-entry.js' },
+  bundle: true, format: 'iife', platform: 'browser', target: 'es2022', minify: true,
+  outfile: join(root,'map-viewer.bundle.js'),
+  plugins: [{ name: 'project-absolute-imports', setup(api) {
+    api.onResolve({filter:/^\/(shared|web)\//}, args => ({path:join(root,'..',args.path.slice(1))}));
+  }}],
+});
+// Shader template strings retain vendor indentation after bundling. Whitespace
+// at line ends and mixed leading indentation are insignificant to GLSL.
+const mapBundle = join(root,'map-viewer.bundle.js');
+writeFileSync(mapBundle, readFileSync(mapBundle,'utf8').replace(/[ \t]+$/gm,'').replace(/^ +(\t+)/gm,'$1'));
+console.log(`Showcase built: drones, maps and race editor (${Math.round(Buffer.byteLength(html) / 1024)} KiB drone HTML).`);

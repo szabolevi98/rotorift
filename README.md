@@ -110,11 +110,25 @@ A konfiguráció hash-e változik, a korábbi online idő más kategóriában ma
 ## Modellbemutató és dokumentáció
 
 Az elfogadott modellek önálló nézegetője: [GitHub Pages](https://szabolevi98.github.io/rotorift/),
-illetve `http://localhost/rotorift/demo/` XAMPP alatt. Csak a statikus modellbemutató
-kerül a Pages-re; a játékhoz külön Node szerver kell.
+illetve `http://localhost/rotorift/showcase/` XAMPP alatt. A statikus drón- és pályabemutató,
+valamint a kapuszerkesztő is a Pages-re kerül; a játékhoz külön Node szerver kell.
 
 - [Fejlesztési terv](docs/plan.md)
 - [Prototípus állapota és ellenőrzése](docs/prototype.md)
-- [Modellek leírása](demo/README.md)
+- [Modellek leírása](showcase/README.md)
 
 Licenc: [AGPL-3.0](LICENSE).
+
+## Showcase and race editor
+
+The English showcase combines the drone studio (65 → C3 → X5) with both map viewers. Open http://localhost:3015/showcase/ or the GitHub Pages site. The old /map-preview.html entry redirects to the map tab.
+
+Choose **Maps & races → Edit gates**. Place gates by clicking terrain or floors; select numbered gates to move/rotate them with the gizmo or numeric controls. Gate 1 is start/finish; arrows show the required crossing direction. Use Earlier/Later, Undo/Redo and the start-position controls to arrange the race.
+
+Each route is a separate file: `data/maps/liget/race_1.json`, `data/maps/betonudvar/race_1.json`, then `race_2.json`, etc. The server discovers these JSON files automatically at startup. **Save to project** writes directly to these folders on same-origin localhost; reload the game after saving. **Download JSON** and **Import JSON** also work on GitHub Pages. Exported files must be placed in the matching map folder to become game routes.
+
+Routes have `id`, `name`, `version`, `spawn` and ordered `gates`. Gate positions `p` are absolute metres; direction `n` is a horizontal unit vector; `width` and `height` are metres. Spawn X/Z are world coordinates and spawn Y is ground clearance. Increase the version when editing JSON manually. The editor increments it for changes; project saving also detects geometry changes and bumps the version. Records are separated by map, route ID/version, drone/config, flight mode and simulation rules. Multiplayer rooms retain their chosen route snapshot even if a file is edited later.
+
+One demo race ships for each map: **Park Flow** (6 gates, including the pavilion passage) and **Concrete Circuit** (10 gates). Free flight hides race gates.
+
+Build the complete static showcase with `npm ci` and `npm run showcase:build`. For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and `map-viewer.bundle.js` together. Both renderers pause when their tab is inactive. The GitHub Pages workflow rebuilds and publishes these files; re-run the build after changing map geometry or race files.

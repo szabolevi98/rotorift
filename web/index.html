@@ -81,6 +81,7 @@
             <div class="environment-controls">
               <h2 class="dock-label" data-i18n="fly.environment"></h2>
               <div id="map-picker" class="map-picker"></div>
+              <label class="race-row"><span data-i18n="fly.route"></span><select id="race-route" aria-label="Race route"></select></label>
               <details class="simulation-controls">
                 <summary data-i18n="simulation.title"></summary>
                 <div id="flight-simulation"></div>
@@ -263,6 +264,7 @@
           </div>
           <div class="records-filters">
             <select id="records-map"></select
+            ><select id="records-route" aria-label="Race route"></select
             ><select id="records-drone"></select
             ><select id="records-mode">
               <option value="acro">Acro</option>

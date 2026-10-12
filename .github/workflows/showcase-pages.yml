@@ -1,8 +1,8 @@
-name: Publish drone showcase
+name: Publish Rotorift showcase
 on:
   push:
     branches: [main]
-    paths: ['demo/**', 'shared/visual/**', '.github/workflows/showcase-pages.yml']
+    paths: ['showcase/**', 'web/game/**', 'shared/**', 'data/maps/**', 'server/catalog.js', 'server/routes.js', 'package*.json', '.github/workflows/showcase-pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,9 +24,10 @@ jobs:
           node-version: '22'
       - name: Build standalone showcase
         run: |
-          node demo/build.mjs
+          npm ci
+          npm run showcase:build
           mkdir _site
-          cp demo/index.html _site/index.html
+          cp showcase/index.html showcase/map-viewer.html showcase/map-viewer.css showcase/map-viewer.bundle.js _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

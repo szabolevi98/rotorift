@@ -1,50 +1,9 @@
 <!doctype html>
-<html lang="hu">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Liget · Rotorift pályanézet</title>
-    <link rel="icon" href="/assets/icon.svg" />
-    <style>
-      * { box-sizing: border-box; }
-      body { margin: 0; background: #bcd4df; color: #24342e; font: 14px system-ui,sans-serif; }
-      canvas { display: block; width: 100vw; height: 100vh; }
-      header { position: fixed; top: 22px; left: 24px; right: 24px; display: flex; align-items: center; gap: 16px; }
-      strong { font-size: 20px; letter-spacing: .04em; }
-      .badge { border-radius: 6px; padding: 9px 14px; background: #faf8eeeb; }
-      nav { position: fixed; bottom: 24px; left: 24px; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 48px); }
-      button, a { border: 1px solid #5b6c6040; padding: 10px 16px; border-radius: 6px; background: #faf8eeed; color: #24342e; font: inherit; text-decoration: none; cursor: pointer; }
-      button:hover { background: #fff; }
-      button[aria-pressed="true"] { background: #24342e; color: #fff; }
-      a { margin-left: auto; }
-      #status { position: fixed; inset: 0; display: grid; place-items: center; background: #e9e9dc; }
-      @media(max-width: 640px) { header { flex-wrap: wrap; } strong { font-size: 17px; } .hint { display: none; } }
-    </style>
-    <script type="importmap">
-      { "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/", "@dimforge/rapier3d-compat": "/vendor/rapier/rapier.es.js" } }
-    </script>
-  </head>
-  <body>
-    <canvas id="scene" aria-label="Liget, körbeforgatható 3D pályanézet"></canvas>
-    <header>
-      <strong class="badge" id="map-title">ROTORIFT. / LIGET</strong>
-      <span class="badge" id="map-size">700 × 700 m</span>
-      <span class="badge hint" id="hint">Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás</span>
-      <a href="/" id="fly">Repülés ↗</a>
-    </header>
-    <nav aria-label="Parknézetek">
-      <button data-view="park">Park áttekintése</button>
-      <button data-view="pavilion">Épület és átjáró</button>
-      <button data-view="garden">Kerti pergola</button>
-      <button data-view="lake">Kis tó és híd</button>
-      <button data-view="hill">Dombtetői pavilon</button>
-      <button data-view="fence">Kerítés és külső táj</button>
-      <button data-view="largeLake">Nagy tó és szökőkút</button>
-      <button data-view="cafe">Kávézó és terasz</button>
-      <button data-view="arcade">Fedett sétány</button>
-      <button data-view="community">Sportliget és parkoló</button>
-    </nav>
-    <div id="status" role="status">A Liget betöltése…</div>
-    <script type="module" src="/game/map-preview.js"></script>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Rotorift Showcase · Maps</title>
+  <script>const query=new URLSearchParams(location.search);query.set("tab","maps");location.replace("/showcase/?"+query);</script>
+</head>
+<body><p>The map viewer has moved to the <a href="/showcase/?tab=maps">Rotorift showcase</a>.</p></body>
 </html>

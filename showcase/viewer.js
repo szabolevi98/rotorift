@@ -7,7 +7,7 @@
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
   } catch (error) {
-    loading.textContent = 'A 3D nézethez WebGL 2 támogatás szükséges. Próbáld Chrome-ban vagy Edge-ben, bekapcsolt grafikus gyorsítással.';
+    loading.textContent = 'WebGL 2 is required. Try Chrome or Edge with hardware acceleration enabled.';
     document.getElementById('export').disabled = true;
     console.error(error); return;
   }
@@ -51,10 +51,10 @@
   let originalPropRotations=drone.propellers.map(p=>p.group.rotation.y);
   const modelPropRotations=new Map([[currentModel.id,originalPropRotations]]);
   const stats = document.getElementById('mesh-stats');
-  stats.textContent=`${Math.round(drone.triangles/1000)}k háromszög · ${drone.meshes} rész`;
+  stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
   const state={explode:0,spin:false};
   let cameraTransition=null, exporting=false;
-  const names={hero:'Perspektíva',top:'Felülnézet',front:'Elölnézet',side:'Oldalnézet',rear:'Hátulnézet'};
+  const names={hero:'Perspective',top:'Top view',front:'Front view',side:'Side view',rear:'Rear view'};
   const views={hero:[.32,.255,-.36],top:[0,.57,.0001],front:[0,.105,-.56],side:[.56,.105,0],rear:[.22,.16,.46]};
   function cameraPosition(view){
     const p=new THREE.Vector3(...views[view]);
@@ -74,47 +74,47 @@
   }
   function resize(){
     const width=viewport.clientWidth,height=viewport.clientHeight;
-    renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
+    if(!width||!height)return;renderer.setSize(width,height,false);camera.aspect=width/height;camera.fov=Math.min(75,36*Math.max(1,1.25/camera.aspect));camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(viewport);
   resize();setView('hero',true);
 
-  // Csak elérhető, gyártófüggvénnyel rendelkező modellek választhatók.
+  // Csak available, gyártófüggvénnyel rendelkező modellek választhatók.
   // A katalógus bővítése a nézegető kódjának módosítása nélkül történhet.
   const picker=document.getElementById('model-picker');
   const ready=MODEL_CATALOG.filter(model=>model.status==='ready'&&typeof model.create==='function').length;
-  document.getElementById('catalog-count').textContent=`${ready} elérhető · ${MODEL_CATALOG.length-ready} készül`;
+  document.getElementById('catalog-count').textContent=`${ready} available · ${MODEL_CATALOG.length-ready} coming soon`;
   for(const model of MODEL_CATALOG){
     const available=model.status==='ready'&&typeof model.create==='function';
     const button=document.createElement('button');button.type='button';button.className='model-card';
     button.dataset.model=model.id;button.disabled=!available;
     button.setAttribute('aria-pressed',String(model.id===currentModel.id));
-    button.setAttribute('aria-label',`${model.name}, ${model.category}${available?'':', Készül'}`);
+    button.setAttribute('aria-label',`${model.name}, ${model.category}${available?'':', Coming soon'}`);
     const badge=document.createElement('span');badge.className='model-badge';badge.textContent=model.badge;
     const info=document.createElement('span');info.className='model-info';
     const name=document.createElement('strong');name.textContent=model.name;
     const category=document.createElement('span');category.textContent=model.category;info.append(name,category);
-    const status=document.createElement('span');status.className='model-status';status.textContent=available?'Megnézem ↗':'Készül';
+    const status=document.createElement('span');status.className='model-status';status.textContent=available?'View ↗':'Coming soon';
     button.append(badge,info,status);button.addEventListener('click',()=>selectModel(model));picker.append(button);
   }
   function updateModelInfo(model){
-    document.getElementById('model-color-label').textContent=model.colorLabel || 'TPU kiegészítők';
+    document.getElementById('model-color-label').textContent=model.colorLabel || 'TPU accessories';
     for(const [id,text] of Object.entries({
       'model-title':model.title,'model-suffix':model.suffix,'model-eyebrow':model.eyebrow,
       'model-tagline':model.tagline,'model-heading':model.heading,'model-description':model.description,'model-mark':model.mark,
     }))document.getElementById(id).textContent=text;
-    document.querySelector('.edition').textContent=model.edition;
-    document.title=`Rotorift Showcase · ${model.name}`;
-    canvas.setAttribute('aria-label',`${model.name} háromdimenziós modell. Húzással forgatható, görgetéssel nagyítható.`);
+    document.querySelector('.edition').dataset.droneEdition=model.edition;if(!document.getElementById('drone-panel').hidden)document.querySelector('.edition').textContent=model.edition;
+    if(!document.getElementById("drone-panel").hidden)document.title=`Rotorift Showcase · ${model.name}`;
+    canvas.setAttribute('aria-label',`${model.name} 3D model. Drag to rotate, scroll to zoom.`);
     const rows=model.specs.map(spec=>{
       const row=document.createElement('div'),label=document.createElement('span'),value=document.createElement('strong'),detail=document.createElement('small');
       label.textContent=spec.label;value.textContent=`${spec.value} `;detail.textContent=spec.detail;value.append(detail);row.append(label,value);return row;
     });
     document.getElementById('model-specs').replaceChildren(...rows);
-    stats.textContent=`${Math.round(drone.triangles/1000)}k háromszög · ${drone.meshes} rész`;
+    stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
     picker.querySelectorAll('[data-model]').forEach(button=>{
       const active=button.dataset.model===model.id;button.setAttribute('aria-pressed',String(active));
-      if(!button.disabled)button.querySelector('.model-status').textContent=active?'Megnyitva':'Megnézem ↗';
+      if(!button.disabled)button.querySelector('.model-status').textContent=active?'Selected':'View ↗';
     });
     const actionToggle=document.getElementById('action-camera');
     actionToggle.disabled=drone.actionParts.length===0;actionToggle.checked=drone.actionParts.length>0;
@@ -140,7 +140,7 @@
       controls.minDistance=.19*(model.cameraScale||1);controls.maxDistance=1.25*(model.cameraScale||1);
       studioCircle.scale.setScalar(model.cameraScale||1);
       updateModelInfo(model);setView('hero',true);
-    }catch(error){document.getElementById('status').textContent='A modell betöltése nem sikerült. '+error.message;console.error(error);}
+    }catch(error){document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
   }
   updateModelInfo(currentModel);
   document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
@@ -148,7 +148,7 @@
   }));
   document.getElementById('reset-view').addEventListener('click',()=>setView('hero'));
   document.getElementById('brand-reset').addEventListener('click',e=>{e.preventDefault();setView('hero');});
-  controls.addEventListener('start',()=>{cameraTransition=null;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));document.getElementById('view-label').textContent='Szabad nézet';});
+  controls.addEventListener('start',()=>{cameraTransition=null;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));document.getElementById('view-label').textContent='Free view';});
   document.getElementById('battery').addEventListener('change',e=>drone.batteryParts.forEach(p=>p.visible=e.target.checked));
   document.getElementById('props').addEventListener('change',e=>drone.propellers.forEach(p=>p.group.visible=e.target.checked));
   document.getElementById('action-camera').addEventListener('change',e=>drone.actionParts.forEach(p=>p.visible=e.target.checked));
@@ -163,7 +163,7 @@
     document.getElementById('explode-value').textContent=`${e.target.value}%`;
   });
   const colors=DRONE_COLORS;
-  const colorNames={coral:'Narancssárga',yellow:'Sárga',teal:'Türkiz',violet:'Lila',blue:'Kék',lime:'Zöld',pink:'Rózsaszín',white:'Fehér'};
+  const colorNames={coral:'Orange',yellow:'Yellow',teal:'Teal',violet:'Violet',blue:'Blue',lime:'Green',pink:'Pink',white:'White'};
   for(const [id,hex] of Object.entries(colors)){
     const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=id;
     button.style.background=hex;button.setAttribute('aria-label',colorNames[id]);button.setAttribute('aria-pressed',String(id==='coral'));
@@ -175,7 +175,7 @@
 
   document.getElementById('export').addEventListener('click',async()=>{
     const button=document.getElementById('export'),status=document.getElementById('status');
-    button.disabled=true;exporting=true;status.textContent='GLB modell összeállítása…';
+    button.disabled=true;exporting=true;status.textContent='Building GLB model…';
     try{
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
       const exported=drone.root.clone(true);
@@ -186,13 +186,14 @@
       const blob=new Blob([result],{type:'model/gltf-binary'}),url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=currentModel.filename;document.body.append(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
-      status.textContent=`A modell elkészült (${(blob.size/1024/1024).toFixed(2)} MB).`;
-    }catch(error){status.textContent='Az export nem sikerült. '+error.message;console.error(error);}
+      status.textContent=`A modell elcoming soont (${(blob.size/1024/1024).toFixed(2)} MB).`;
+    }catch(error){status.textContent='Cannot export the model. '+error.message;console.error(error);}
     finally{button.disabled=false;exporting=false;}
   });
 
   renderer.setAnimationLoop(()=>{
     const dt=Math.min(clock.getDelta(),.05);
+    if(document.getElementById("drone-panel").hidden || document.hidden) return;
     if(cameraTransition){
       cameraTransition.time+=dt;
       const t=Math.min(cameraTransition.time/.6,1),ease=t*t*(3-2*t);
@@ -204,7 +205,7 @@
     controls.update(dt);renderer.render(scene,camera);
   });
   canvas.addEventListener('webglcontextlost',event=>{
-    event.preventDefault();loading.hidden=false;loading.textContent='A grafikus kapcsolat megszakadt. Töltsd újra a demót.';
+    event.preventDefault();loading.hidden=false;loading.textContent='Graphics context lost. Reload the showcase.';
   });
   loading.hidden=true;
 })();

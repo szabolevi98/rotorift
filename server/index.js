@@ -6,6 +6,8 @@ import { Database } from "./db/index.js";
 import { serveStatic } from "./static.js";
 import { attachRooms } from "./net/rooms.js";
 import { DEFAULT_SIMULATION, WIND_LEVELS } from "../shared/simulation/options.js";
+import { saveRoute, readRouteBody, localEditorRequest } from "./routes.js";
+import { resolveRoute } from "../shared/race/routes.js";
 export async function createServer() {
   const catalog = await loadCatalog(),
     db = new Database();
@@ -21,6 +23,17 @@ export async function createServer() {
   const server = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, "http://localhost");
+      if (req.method === "POST" && url.pathname === "/api/routes") {
+        if (!localEditorRequest(req)) return json(res, { error: "Project saving is available on localhost only." }, 403);
+        try {
+          const body = await readRouteBody(req), map = catalog.maps.find(m => m.id === body.mapId);
+          if (!map) return json(res, { error: "Unknown map." }, 400);
+          const route = await saveRoute(map, body.route);
+          const fresh = await loadCatalog();
+          catalog.maps = fresh.maps;
+          return json(res, { route, catalog });
+        } catch (error) { return json(res, { error: error.message }, 400); }
+      }
       if (req.method === "GET" && url.pathname === "/api/catalog")
         return json(res, catalog);
       if (req.method === "GET" && url.pathname === "/api/status")
@@ -32,9 +45,9 @@ export async function createServer() {
       if (req.method === "GET" && url.pathname === "/api/rooms")
         return json(res, { rooms: network.list() });
       if (req.method === "GET" && url.pathname === "/api/leaderboard") {
-        const map = catalog.maps.find(
+          const map = resolveRoute(catalog.maps.find(
             (m) => m.id === url.searchParams.get("map"),
-          ),
+          ), url.searchParams.get("route") ?? undefined),
           drone = catalog.drones.find(
             (d) => d.id === url.searchParams.get("drone"),
           ),

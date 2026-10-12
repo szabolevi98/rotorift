@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Rotorift Showcase – saját FPV drónmodellek interaktív 3D bemutatója, forgatható nézetekkel és GLB exporttal.">
+  <meta name="description" content="Explore Rotorift drones and maps in 3D. Inspect the fleet, export GLB models and design race gates with JSON export.">
   <title>Rotorift Showcase · Rift X5</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23202223'/%3E%3Cpath d='M15 17h22l12 12-12 12h-9l-6 9H12l17-24h9l-4-4H22z' fill='%23ff6648'/%3E%3C/svg%3E">
   <style>@font-face{font-family:Studio;src:local('Bahnschrift')}*{box-sizing:border-box}html,body{margin:0;min-height:100%;color:#262b2c;background:#f5f5f1;font-family:Arial,Helvetica,sans-serif}button,input,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #f26a4b;outline-offset:5px}button{touch-action:manipulation}.header{height:90px;display:flex;align-items:center;justify-content:space-between;margin:0 44px;border-bottom:1px solid #dcded7;gap:20px}.brand{display:flex;align-items:center;gap:13px;text-decoration:none;color:#252a29;font-size:17px;font-weight:800;letter-spacing:1.1px}.brand-separator{margin:0 17px;color:#a9aca4;font-weight:400}.brand-sub{font-size:11px;letter-spacing:1.5px;color:#7e837b;font-weight:500}.demo-badge{display:flex;align-items:center;gap:8px;background:#e9ede4;border-radius:20px;padding:8px 13px;font-size:11px;color:#5e7055}.demo-badge>span,.live-dot{width:6px;height:6px;display:inline-block;background:#7c9270;border-radius:50%}.edition{font:10px Consolas,monospace;color:#8c9188;letter-spacing:1px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;max-width:1680px;margin:0 auto;padding:0 44px;min-height:calc(100vh - 139px)}.stage{position:relative;min-height:690px;border-right:1px solid #dcded7;overflow:hidden}.stage-heading{position:absolute;z-index:2;top:39px;left:0;pointer-events:none}.eyebrow{font:10px Consolas,monospace;letter-spacing:1.6px;color:#878e83}h1{font-family:Studio,Arial,sans-serif;font-size:clamp(58px,6vw,91px);letter-spacing:-4px;line-height:1.02;margin:15px 0 9px;font-weight:700}h1 span{color:#ef6448}.stage-heading p{font-size:12px;color:#82887e;margin:0}#viewport{position:absolute;inset:65px 0 85px}#scene{width:100%;height:100%;display:block;touch-action:none}#loading{position:absolute;left:24px;top:290px;z-index:5;font-size:13px;color:#64735d;max-width:80%;padding:15px;background:#f5f5f1}#loading[hidden]{display:none}.stage-meta{position:absolute;left:0;right:28px;top:251px;display:flex;justify-content:space-between;pointer-events:none;font:10px Consolas,monospace;color:#8b9286}.stage-meta>span:first-child{display:flex;align-items:center;gap:8px}.view-controls{position:absolute;z-index:2;bottom:55px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;border:1px solid #dddeda;background:#fafbf8;border-radius:9px;padding:5px;box-shadow:0 4px 16px #303e2510}.view-controls button{border:0;background:transparent;border-radius:5px;padding:9px 15px;font-size:11px;color:#7d8378;white-space:nowrap;transition:background .2s}.view-controls button:hover{background:#eceee8}.view-controls button[aria-pressed=true]{color:#fff;background:#292e2b}.control-divider{width:1px;height:19px;margin:0 3px;background:#dfe2d9}#reset-view{font-size:19px;padding:5px 13px}.orbit-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);color:#92978c;font-size:10px;white-space:nowrap}.orbit-hint>span:first-child{font-size:15px;margin-right:4px}.hint-dot{margin:0 8px}.axis-caption{position:absolute;bottom:28px;left:0;display:grid;gap:5px;font:9px Consolas,monospace;letter-spacing:1px;color:#959b90}.axis-caption span{font-size:8px;color:#b4b9af}.sidebar{padding:42px 0 22px 29px}.side-intro h2{font-family:Studio,Arial,sans-serif;font-size:23px;letter-spacing:-.6px;font-weight:600;margin:13px 0 11px}.side-intro p{font-size:12px;color:#858c7f;line-height:1.7;margin:0 0 23px;max-width:260px}.specs{border-top:1px solid #dcded7;border-bottom:1px solid #dcded7;padding:12px 0;margin-bottom:24px}.specs>div{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:8px 0}.specs>div>span{color:#91988b}.specs strong{font:14px Studio,Arial,sans-serif;font-weight:600}.specs small{font-family:Arial,sans-serif;color:#858d7c;font-weight:400;font-size:10px}h3{font-size:11px;font-weight:600;margin:0 0 10px}.toggle-row{position:relative;display:flex;justify-content:space-between;align-items:center;min-height:33px;font-size:11px;color:#798170;cursor:pointer}.toggle-row input{position:absolute;right:0;width:30px;height:20px;opacity:0;cursor:pointer}.switch{display:block;width:28px;height:16px;border-radius:20px;background:#d6dacf;position:relative;transition:background .2s;pointer-events:none}.switch:after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;top:2px;left:2px;background:#fff;box-shadow:0 1px 3px #26301b25;transition:transform .2s}.toggle-row input:checked+.switch{background:#849673}.toggle-row input:checked+.switch:after{transform:translateX(12px)}.toggle-row input:focus-visible+.switch{outline:3px solid #f26a4b;outline-offset:3px}.explode-label{display:flex;justify-content:space-between;font-size:11px;color:#798170;margin-top:16px}.explode-label output{font:10px Consolas,monospace;color:#949b8b}input[type=range]{width:100%;height:3px;margin:14px 0 20px;accent-color:#839472;cursor:pointer}.color-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#798170}.color-row>div{display:grid;grid-template-columns:repeat(4,18px);gap:9px}.swatch{width:18px;height:18px;border:3px solid #f5f5f1;border-radius:50%;outline:1px solid transparent}.swatch[aria-pressed=true]{outline-color:#758368}.wire-row{margin:10px 0 17px}.export-button{width:100%;display:flex;justify-content:space-between;align-items:center;background:#292e2b;color:#fff;border:0;padding:15px 16px;border-radius:6px;font-size:11px}.export-button span:last-child{font:10px Consolas,monospace;color:#afbaaa}.export-button:hover{background:#404a3c}.export-button:disabled{opacity:.6;cursor:wait}.export-hint{font-size:9px;color:#9da494;text-align:center;line-height:1.7}.status{font-size:10px;line-height:1.5;color:#64735d;min-height:12px;margin:8px 0}.side-footer{display:flex;gap:15px;align-items:center;padding-top:16px;border-top:1px solid #dcded7;color:#a1a994}.footer-mark{font:20px Studio,Arial,sans-serif;letter-spacing:-1px;font-weight:700;color:#b5bcaa}.side-footer p{font-size:9px;line-height:1.7}.footer{margin:0 44px;min-height:49px;border-top:1px solid #dcded7;display:flex;justify-content:space-between;align-items:center;gap:15px;font:9px Consolas,monospace;color:#98a08e;letter-spacing:.3px}
@@ -14,62 +14,86 @@
 @media(min-height:950px){.stage{min-height:810px}.sidebar{padding-top:55px}.side-intro p{margin-bottom:30px}.specs{margin-bottom:30px}.toggle-row{min-height:38px}.stage-meta{top:275px}}
 @media(max-width:1050px){.header,.footer{margin-left:24px;margin-right:24px}.layout{padding:0 24px;grid-template-columns:minmax(0,1fr) 280px}.sidebar{padding-left:22px}.stage-heading{top:30px}.stage-meta{top:214px;right:15px}.stage-meta>span:last-child{display:none}.axis-caption{display:none}.edition{display:none}h1{font-size:69px}}
 @media(max-width:720px){.header{height:70px;margin:0 18px}.brand{font-size:14px;gap:9px}.brand svg{width:27px;height:27px}.brand-separator{margin:0 9px}.brand-sub{font-size:9px}.demo-badge{font-size:0;padding:8px}.layout{display:block;padding:0 18px}.stage{min-height:570px;border-right:0;border-bottom:1px solid #dcded7}.stage-heading{top:26px}h1{font-size:63px}.stage-meta{top:184px}.stage-heading p{font-size:11px}#viewport{inset:99px -18px 74px}.view-controls{bottom:48px}.view-controls button{padding:9px 12px}.orbit-hint{bottom:21px}.sidebar{padding:27px 0 18px;max-width:480px;margin:auto}.side-intro p{max-width:none}.specs{display:grid;grid-template-columns:1fr 1fr;gap:0 25px}.side-footer{margin-top:14px}.footer{margin:0 18px;min-height:65px;flex-wrap:wrap;justify-content:center;text-align:center;gap:8px;padding:15px 0}.footer>span:last-child{display:none}}
+
+[hidden]{display:none!important}.showcase-tabs{display:flex;gap:8px;margin:18px 44px 0}.showcase-tabs button{padding:10px 18px;background:transparent;border:1px solid #dce0d5;border-radius:6px;color:#59674f;font:600 12px Arial,sans-serif}.showcase-tabs button[aria-pressed=true]{background:#292e2b;color:#fff;border-color:#292e2b}#maps-panel{margin:20px 24px;max-width:1680px}#map-viewer{display:block;width:100%;height:800px;height:max(720px,calc(100svh - 200px));border:1px solid #dce0d5;border-radius:8px;background:#f4f5ee}.footer a{color:inherit;text-decoration:none}.showcase-tabs button:focus-visible{outline:2px solid #ff6648;outline-offset:3px}@media(max-width:720px){.showcase-tabs{margin:14px 18px 0}#maps-panel{margin:16px 0}#map-viewer{border-radius:0;height:1150px}.model-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.model-card{min-width:0;flex:none;padding:10px 6px;gap:6px}.model-info strong{font-size:11px}.model-info>span{display:none}.model-badge{width:24px;font-size:12px}.model-card .model-status{display:none!important}}
+@media(max-width:720px){.view-controls{width:100%;gap:2px;justify-content:center}.view-controls button{padding:9px 7px}.control-divider{margin:0 3px}}
 </style>
 </head>
 <body>
   <header class="header">
-    <a class="brand" href="#" aria-label="Rotorift demó kezdőnézet" id="brand-reset">
+    <a class="brand" href="#" aria-label="Rotorift showcase home" id="brand-reset">
       <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="currentColor"/><path d="M15 17h22l12 12-12 12h-9l-6 9H12l17-24h9l-4-4H22z" fill="#ff6648"/></svg>
       <span>ROTORIFT<span class="brand-separator">/</span><span class="brand-sub">SHOWCASE</span></span>
     </a>
-    <span class="demo-badge"><span></span> Interaktív 3D demó</span>
+    <span class="demo-badge"><span></span> Interactive 3D showcase</span>
     <span class="edition">001 / FREESTYLE</span>
   </header>
+  <nav class="showcase-tabs" aria-label="Explore Rotorift"><button type="button" data-showcase-tab="drones" aria-pressed="true">Drones</button><button type="button" data-showcase-tab="maps" aria-pressed="false">Maps &amp; races</button></nav>
+  <section id="drone-panel">
   <section class="catalog" aria-labelledby="catalog-heading">
-    <div class="catalog-intro"><h2 id="catalog-heading">A flotta</h2><p id="catalog-count">1 modell · 2 készül</p></div>
-    <nav id="model-picker" class="model-picker" aria-label="Drónmodell kiválasztása"></nav>
+    <div class="catalog-intro"><h2 id="catalog-heading">The fleet</h2><p id="catalog-count">3 models</p></div>
+    <nav id="model-picker" class="model-picker" aria-label="Select a drone model"></nav>
   </section>
   <main class="layout">
-    <section class="stage" aria-label="Interaktív drónmodell">
-      <div class="stage-heading"><span class="eyebrow" id="model-eyebrow">SAJÁT TERVEZÉS · 5″ FREESTYLE</span><h1><span id="model-title" class="model-title">Rift</span> <span id="model-suffix">X5.</span></h1><p id="model-tagline">Kicsi részletek. Nagy szabadság.</p></div>
-      <div id="viewport"><canvas id="scene" aria-label="Rift X5 háromdimenziós modell. Húzással forgatható, görgetéssel nagyítható."></canvas></div>
-      <div id="loading" role="status">A műhely megnyitása…</div>
-      <div class="stage-meta"><span><span class="live-dot"></span> <span id="view-label">Perspektíva</span></span><span id="mesh-stats">Saját geometria</span></div>
-      <nav class="view-controls" aria-label="Kameranézetek">
-        <button type="button" data-view="hero" aria-pressed="true" title="Perspektivikus nézet">3D</button>
-        <button type="button" data-view="top" aria-pressed="false">Felül</button>
-        <button type="button" data-view="front" aria-pressed="false">Elöl</button>
-        <button type="button" data-view="side" aria-pressed="false">Oldalt</button>
-        <button type="button" data-view="rear" aria-pressed="false">Hátul</button>
+    <section class="stage" aria-label="Interactive drone model">
+      <div class="stage-heading"><span class="eyebrow" id="model-eyebrow">ORIGINAL MODEL · 5″ FREESTYLE</span><h1><span id="model-title" class="model-title">Rift</span> <span id="model-suffix">X5.</span></h1><p id="model-tagline">Small details. Big freedom.</p></div>
+      <div id="viewport"><canvas id="scene" aria-label="Rift X5 3D model. Drag to rotate, scroll to zoom."></canvas></div>
+      <div id="loading" role="status">Opening the workshop…</div>
+      <div class="stage-meta"><span><span class="live-dot"></span> <span id="view-label">Perspective</span></span><span id="mesh-stats">Original geometry</span></div>
+      <nav class="view-controls" aria-label="Camera views">
+        <button type="button" data-view="hero" aria-pressed="true" title="Perspective view">3D</button>
+        <button type="button" data-view="top" aria-pressed="false">Top</button>
+        <button type="button" data-view="front" aria-pressed="false">Front</button>
+        <button type="button" data-view="side" aria-pressed="false">Side</button>
+        <button type="button" data-view="rear" aria-pressed="false">Rear</button>
         <span class="control-divider"></span>
-        <button type="button" id="reset-view" title="Alapnézet visszaállítása" aria-label="Alapnézet visszaállítása">↺</button>
+        <button type="button" id="reset-view" title="Reset view" aria-label="Reset view">↺</button>
       </nav>
-      <div class="orbit-hint"><span>↔</span> Húzd a forgatáshoz <span class="hint-dot">·</span> Görgess a nagyításhoz</div>
+      <div class="orbit-hint"><span>↔</span> Drag to rotate <span class="hint-dot">·</span> Scroll to zoom</div>
       <div class="axis-caption" aria-hidden="true">STUDIO / 01<span>PROCEDURAL GEOMETRY</span></div>
     </section>
     <aside class="sidebar">
-      <div class="side-intro"><span class="eyebrow">ISMERD MEG A GÉPET</span><h2 id="model-heading">Freestyle-ra született.</h2><p id="model-description">Karbonváz, háromágú propellerek és minden apró részlet, amit egy FPV gépen keresel.</p></div>
-      <div class="specs" id="model-specs"><div><span>Propeller</span><strong>5″ <small>/ 3 ág</small></strong></div><div><span>Akkumulátor</span><strong>6S <small>/ 1 300 mAh</small></strong></div><div><span>Motortáv, átló</span><strong>230 <small>mm</small></strong></div><div><span>Karvastagság</span><strong>5 <small>mm</small></strong></div></div>
-      <section class="options" aria-labelledby="options-heading"><h3 id="options-heading">Nézd a részleteket</h3>
-        <label class="toggle-row"><span>Akkumulátor</span><input id="battery" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
-        <label class="toggle-row"><span>Propellerek</span><input id="props" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
-        <label class="toggle-row"><span>Akciókamera</span><input id="action-camera" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
-        <label class="toggle-row"><span>Automatikus forgatás</span><input id="rotate" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
-        <label class="toggle-row"><span>Propelleranimáció</span><input id="spin" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
-        <div class="explode-label"><label for="explode">Széthúzott nézet</label><output id="explode-value" for="explode">0%</output></div><input id="explode" type="range" min="0" max="100" step="1" value="0" aria-label="Széthúzott nézet mértéke">
-        <div class="color-row"><span id="model-color-label">TPU kiegészítők</span><div id="color-picker" role="group" aria-label="Műanyag alkatrészek színe"></div></div>
-        <label class="toggle-row wire-row"><span>Drótváz</span><input id="wireframe" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+      <div class="side-intro"><span class="eyebrow">MEET THE AIRCRAFT</span><h2 id="model-heading">Born for freestyle.</h2><p id="model-description">A carbon frame, tri-blade propellers and all the small details you look for in an FPV aircraft.</p></div>
+      <div class="specs" id="model-specs"><div><span>Propeller</span><strong>5″ <small>/ 3 blades</small></strong></div><div><span>Battery</span><strong>6S <small>/ 1 300 mAh</small></strong></div><div><span>Diagonal wheelbase</span><strong>230 <small>mm</small></strong></div><div><span>Arm thickness</span><strong>5 <small>mm</small></strong></div></div>
+      <section class="options" aria-labelledby="options-heading"><h3 id="options-heading">Explore the details</h3>
+        <label class="toggle-row"><span>Battery</span><input id="battery" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Propellers</span><input id="props" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Action camera</span><input id="action-camera" type="checkbox" checked><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Auto rotate</span><input id="rotate" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+        <label class="toggle-row"><span>Animate propellers</span><input id="spin" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
+        <div class="explode-label"><label for="explode">Exploded view</label><output id="explode-value" for="explode">0%</output></div><input id="explode" type="range" min="0" max="100" step="1" value="0" aria-label="Exploded view amount">
+        <div class="color-row"><span id="model-color-label">TPU accessories</span><div id="color-picker" role="group" aria-label="Plastic parts color"></div></div>
+        <label class="toggle-row wire-row"><span>Wireframe</span><input id="wireframe" type="checkbox"><span class="switch" aria-hidden="true"></span></label>
       </section>
-      <button type="button" class="export-button" id="export"><span>Modell letöltése</span><span>GLB ↗</span></button>
-      <p class="export-hint">Valódi 3D fájl. Megnyitható Blenderben és Three.js-ben.</p>
+      <button type="button" class="export-button" id="export"><span>Download model</span><span>GLB ↗</span></button>
+      <p class="export-hint">A real 3D file. Open it in Blender or Three.js.</p>
       <p class="status" id="status" role="status" aria-live="polite"></p>
-      <div class="side-footer"><span class="footer-mark" id="model-mark">R / X5</span><p>Ez a modellbemutató.<br>A repülés a következő fejezet.</p></div>
+      <div class="side-footer"><span class="footer-mark" id="model-mark">R / X5</span><p>Your fleet in detail.<br>Explore the maps in the next tab.</p></div>
     </aside>
   </main>
-  <footer class="footer"><span>ROTORIFT © 2026</span><span>Saját modell · Offline is megnyitható · Three.js</span><span>ÉPÍTSÜNK VALAMI JÓT.</span></footer>
-  <noscript>A 3D demóhoz engedélyezni kell a JavaScriptet.</noscript>
+  </section>
+  <section id="maps-panel" hidden aria-label="Maps and race editor"><iframe id="map-viewer" title="Rotorift maps and race editor" loading="lazy"></iframe></section>
+  <footer class="footer"><span>Copyright © <span id="copyright-year"></span> <a href="https://github.com/szabolevi98" target="_blank" rel="noopener">szabolevi98</a></span><span>Original models · Maps · Race editor · Three.js</span><span>FPV. ON THE GO.</span></footer>
+  <noscript>Enable JavaScript to use the 3D showcase.</noscript>
   <script>
-    window.addEventListener('error', function (event) { const el = document.getElementById('loading'); if (el) { el.hidden = false; el.textContent = 'A 3D nézet nem indult el: ' + event.message; } });
+    window.addEventListener('error', function (event) { const el = document.getElementById('loading'); if (el) { el.hidden = false; el.textContent = 'Cannot open the 3D view: ' + event.message; } });
+  </script>
+  <script>
+    (() => {
+      const frame=document.getElementById('map-viewer');
+      const params=new URLSearchParams(location.search);
+      let tab=params.get('tab')==='maps'?'maps':'drones';
+      function select(next) {
+        tab=next; document.title=tab==='maps'?'Rotorift Showcase · Maps & races':'Rotorift Showcase · '+document.getElementById('model-title').textContent+' '+document.getElementById('model-suffix').textContent.slice(0,-1);document.querySelector('.edition').textContent=tab==='maps'?'MAPS / RACE EDITOR':(document.querySelector('.edition').dataset.droneEdition??document.querySelector('.edition').textContent); document.getElementById('drone-panel').hidden=tab!=='drones'; document.getElementById('maps-panel').hidden=tab!=='maps';
+        document.querySelectorAll('[data-showcase-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.showcaseTab===tab)));
+        if(tab==='maps'&&!frame.hasAttribute('src')) { const query=new URLSearchParams();for(const key of ['map','route'])if(params.has(key))query.set(key,params.get(key));frame.src='./map-viewer.html?'+query; }
+        frame.contentWindow?.postMessage({type:'showcase-map-active',active:tab==='maps'},location.origin==='null'?'*':location.origin);
+      }
+      document.querySelectorAll('[data-showcase-tab]').forEach(button=>button.onclick=()=>select(button.dataset.showcaseTab));
+      frame.onload=()=>frame.contentWindow?.postMessage({type:'showcase-map-active',active:tab==='maps'},location.origin==='null'?'*':location.origin);
+      document.getElementById('copyright-year').textContent=new Date().getFullYear();
+      select(tab);
+    })();
   </script>
   <script>/**
  * @license
@@ -60627,51 +60651,11 @@ function createRiftC3() {
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }
 
-// A showcase egyetlen nyilvántartása. Új modellhez saját gyártófüggvény és
-// status: 'ready' szükséges. A készülő kártyák nem hoznak létre 3D geometriát.
+// One catalog, ordered 65 → C3 → X5. Models share the accepted procedural geometry.
 const MODEL_CATALOG = [
-  {
-    id: 'rift-x5', status: 'ready', name: 'Rift X5', badge: 'X5', category: '5″ freestyle · 6S',
-    create: createRiftX5, filename: 'rotorift-rift-x5.glb',
-    title: 'Rift', suffix: 'X5.', eyebrow: 'SAJÁT TERVEZÉS · 5″ FREESTYLE',
-    tagline: 'Kicsi részletek. Nagy szabadság.', heading: 'Freestyle-ra született.',
-    description: 'Karbonváz, háromágú propellerek és minden apró részlet, amit egy FPV gépen keresel.',
-    edition: '001 / FREESTYLE', mark: 'R / X5', cameraScale: 1,
-    specs: [
-      { label: 'Propeller', value: '5″', detail: '/ 3 ág' },
-      { label: 'Akkumulátor', value: '6S', detail: '/ 1 300 mAh' },
-      { label: 'Motortáv, átló', value: '230', detail: 'mm' },
-      { label: 'Karvastagság', value: '5', detail: 'mm' },
-    ],
-  },
-  {
-    id:'rift-65', status:'ready', name:'Rift 65', badge:'65', category:'Tinywhoop · 1S',
-    create:createRift65, filename:'rotorift-rift-65.glb',
-    title:'Rift', suffix:'65.', eyebrow:'SAJÁT TERVEZÉS · 65 MM TINYWHOOP',
-    tagline:'Apró gép. Tele részletekkel.', heading:'Könnyűre tervezve.',
-    description:'Narancssárga, nyitott váz, áttetsző kameratartó és négy apró motor. Egy tenyérnyi FPV világ.',
-    edition:'002 / TINYWHOOP', mark:'R / 65', cameraScale:.29, colorLabel:'Műanyag váz',
-    specs:[
-      {label:'Propeller',value:'31',detail:'mm / 3 ág'},
-      {label:'Akkumulátor',value:'1S',detail:'/ 300 mAh'},
-      {label:'Motortáv, átló',value:'65',detail:'mm'},
-      {label:'Motor',value:'0702',detail:'/ brushless'},
-    ],
-  },
-  {
-    id:'rift-c3',status:'ready',name:'Rift C3',badge:'C3',category:'3″ cinewhoop · 4S',
-    create:createRiftC3,filename:'rotorift-rift-c3.glb',
-    title:'Rift',suffix:'C3.',eyebrow:'SAJÁT MODELL · 3″ CINEWHOOP',
-    tagline:'Közel a témához. Szabadon a levegőben.',heading:'Filmezésre hangolva.',
-    description:'Karbonváz, összekötött propellervédők és alul forgó propellerek. Felül egy könnyített akciókamera és a 4S akku.',
-    edition:'003 / CINEWHOOP',mark:'R / C3',cameraScale:.65,colorLabel:'Védőkeret és tartók',
-    specs:[
-      {label:'Propeller',value:'3″',detail:'/ 76 mm · 3 ág'},
-      {label:'Akkumulátor',value:'4S',detail:'/ 720 mAh'},
-      {label:'Motortáv, átló',value:'128',detail:'mm'},
-      {label:'Motor',value:'1404',detail:'/ fordított beépítés'},
-    ],
-  },
+ {id:'rift-65',status:'ready',name:'Rift 65',badge:'65',category:'65 mm tinywhoop · 1S',create:createRift65,filename:'rotorift-rift-65.glb',title:'Rift',suffix:'65.',eyebrow:'ORIGINAL MODEL · 65 MM TINYWHOOP',tagline:'Tiny aircraft. Every detail.',heading:'Built to be light.',description:'An open orange frame, a translucent camera canopy and four miniature motors. A palm-sized FPV world.',edition:'001 / TINYWHOOP',mark:'R / 65',cameraScale:.29,colorLabel:'Plastic frame',specs:[{label:'Propeller',value:'31',detail:'mm / 3 blades'},{label:'Battery',value:'1S',detail:'/ 300 mAh'},{label:'Diagonal wheelbase',value:'65',detail:'mm'},{label:'Motor',value:'0702',detail:'/ brushless'}]},
+ {id:'rift-c3',status:'ready',name:'Rift C3',badge:'C3',category:'3″ cinewhoop · 4S',create:createRiftC3,filename:'rotorift-rift-c3.glb',title:'Rift',suffix:'C3.',eyebrow:'ORIGINAL MODEL · 3″ CINEWHOOP',tagline:'Close to the scene. Free in the air.',heading:'Tuned for filmmaking.',description:'Carbon frame, connected propeller guards and pusher propellers. A lightweight action camera and 4S battery on top.',edition:'002 / CINEWHOOP',mark:'R / C3',cameraScale:.65,colorLabel:'Guards and mounts',specs:[{label:'Propeller',value:'3″',detail:'/ 76 mm · 3 blades'},{label:'Battery',value:'4S',detail:'/ 720 mAh'},{label:'Diagonal wheelbase',value:'128',detail:'mm'},{label:'Motor',value:'1404',detail:'/ pusher mount'}]},
+ {id:'rift-x5',status:'ready',name:'Rift X5',badge:'X5',category:'5″ freestyle · 6S',create:createRiftX5,filename:'rotorift-rift-x5.glb',title:'Rift',suffix:'X5.',eyebrow:'ORIGINAL MODEL · 5″ FREESTYLE',tagline:'Small details. Big freedom.',heading:'Born for freestyle.',description:'A carbon frame, tri-blade propellers and all the small details you look for in an FPV aircraft.',edition:'003 / FREESTYLE',mark:'R / X5',cameraScale:1,specs:[{label:'Propeller',value:'5″',detail:'/ 3 blades'},{label:'Battery',value:'6S',detail:'/ 1 300 mAh'},{label:'Diagonal wheelbase',value:'230',detail:'mm'},{label:'Arm thickness',value:'5',detail:'mm'}]}
 ];
 
 (() => {
@@ -60683,7 +60667,7 @@ const MODEL_CATALOG = [
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
   } catch (error) {
-    loading.textContent = 'A 3D nézethez WebGL 2 támogatás szükséges. Próbáld Chrome-ban vagy Edge-ben, bekapcsolt grafikus gyorsítással.';
+    loading.textContent = 'WebGL 2 is required. Try Chrome or Edge with hardware acceleration enabled.';
     document.getElementById('export').disabled = true;
     console.error(error); return;
   }
@@ -60727,10 +60711,10 @@ const MODEL_CATALOG = [
   let originalPropRotations=drone.propellers.map(p=>p.group.rotation.y);
   const modelPropRotations=new Map([[currentModel.id,originalPropRotations]]);
   const stats = document.getElementById('mesh-stats');
-  stats.textContent=`${Math.round(drone.triangles/1000)}k háromszög · ${drone.meshes} rész`;
+  stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
   const state={explode:0,spin:false};
   let cameraTransition=null, exporting=false;
-  const names={hero:'Perspektíva',top:'Felülnézet',front:'Elölnézet',side:'Oldalnézet',rear:'Hátulnézet'};
+  const names={hero:'Perspective',top:'Top view',front:'Front view',side:'Side view',rear:'Rear view'};
   const views={hero:[.32,.255,-.36],top:[0,.57,.0001],front:[0,.105,-.56],side:[.56,.105,0],rear:[.22,.16,.46]};
   function cameraPosition(view){
     const p=new THREE.Vector3(...views[view]);
@@ -60750,47 +60734,47 @@ const MODEL_CATALOG = [
   }
   function resize(){
     const width=viewport.clientWidth,height=viewport.clientHeight;
-    renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
+    if(!width||!height)return;renderer.setSize(width,height,false);camera.aspect=width/height;camera.fov=Math.min(75,36*Math.max(1,1.25/camera.aspect));camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(viewport);
   resize();setView('hero',true);
 
-  // Csak elérhető, gyártófüggvénnyel rendelkező modellek választhatók.
+  // Csak available, gyártófüggvénnyel rendelkező modellek választhatók.
   // A katalógus bővítése a nézegető kódjának módosítása nélkül történhet.
   const picker=document.getElementById('model-picker');
   const ready=MODEL_CATALOG.filter(model=>model.status==='ready'&&typeof model.create==='function').length;
-  document.getElementById('catalog-count').textContent=`${ready} elérhető · ${MODEL_CATALOG.length-ready} készül`;
+  document.getElementById('catalog-count').textContent=`${ready} available · ${MODEL_CATALOG.length-ready} coming soon`;
   for(const model of MODEL_CATALOG){
     const available=model.status==='ready'&&typeof model.create==='function';
     const button=document.createElement('button');button.type='button';button.className='model-card';
     button.dataset.model=model.id;button.disabled=!available;
     button.setAttribute('aria-pressed',String(model.id===currentModel.id));
-    button.setAttribute('aria-label',`${model.name}, ${model.category}${available?'':', Készül'}`);
+    button.setAttribute('aria-label',`${model.name}, ${model.category}${available?'':', Coming soon'}`);
     const badge=document.createElement('span');badge.className='model-badge';badge.textContent=model.badge;
     const info=document.createElement('span');info.className='model-info';
     const name=document.createElement('strong');name.textContent=model.name;
     const category=document.createElement('span');category.textContent=model.category;info.append(name,category);
-    const status=document.createElement('span');status.className='model-status';status.textContent=available?'Megnézem ↗':'Készül';
+    const status=document.createElement('span');status.className='model-status';status.textContent=available?'View ↗':'Coming soon';
     button.append(badge,info,status);button.addEventListener('click',()=>selectModel(model));picker.append(button);
   }
   function updateModelInfo(model){
-    document.getElementById('model-color-label').textContent=model.colorLabel || 'TPU kiegészítők';
+    document.getElementById('model-color-label').textContent=model.colorLabel || 'TPU accessories';
     for(const [id,text] of Object.entries({
       'model-title':model.title,'model-suffix':model.suffix,'model-eyebrow':model.eyebrow,
       'model-tagline':model.tagline,'model-heading':model.heading,'model-description':model.description,'model-mark':model.mark,
     }))document.getElementById(id).textContent=text;
-    document.querySelector('.edition').textContent=model.edition;
-    document.title=`Rotorift Showcase · ${model.name}`;
-    canvas.setAttribute('aria-label',`${model.name} háromdimenziós modell. Húzással forgatható, görgetéssel nagyítható.`);
+    document.querySelector('.edition').dataset.droneEdition=model.edition;if(!document.getElementById('drone-panel').hidden)document.querySelector('.edition').textContent=model.edition;
+    if(!document.getElementById("drone-panel").hidden)document.title=`Rotorift Showcase · ${model.name}`;
+    canvas.setAttribute('aria-label',`${model.name} 3D model. Drag to rotate, scroll to zoom.`);
     const rows=model.specs.map(spec=>{
       const row=document.createElement('div'),label=document.createElement('span'),value=document.createElement('strong'),detail=document.createElement('small');
       label.textContent=spec.label;value.textContent=`${spec.value} `;detail.textContent=spec.detail;value.append(detail);row.append(label,value);return row;
     });
     document.getElementById('model-specs').replaceChildren(...rows);
-    stats.textContent=`${Math.round(drone.triangles/1000)}k háromszög · ${drone.meshes} rész`;
+    stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
     picker.querySelectorAll('[data-model]').forEach(button=>{
       const active=button.dataset.model===model.id;button.setAttribute('aria-pressed',String(active));
-      if(!button.disabled)button.querySelector('.model-status').textContent=active?'Megnyitva':'Megnézem ↗';
+      if(!button.disabled)button.querySelector('.model-status').textContent=active?'Selected':'View ↗';
     });
     const actionToggle=document.getElementById('action-camera');
     actionToggle.disabled=drone.actionParts.length===0;actionToggle.checked=drone.actionParts.length>0;
@@ -60816,7 +60800,7 @@ const MODEL_CATALOG = [
       controls.minDistance=.19*(model.cameraScale||1);controls.maxDistance=1.25*(model.cameraScale||1);
       studioCircle.scale.setScalar(model.cameraScale||1);
       updateModelInfo(model);setView('hero',true);
-    }catch(error){document.getElementById('status').textContent='A modell betöltése nem sikerült. '+error.message;console.error(error);}
+    }catch(error){document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
   }
   updateModelInfo(currentModel);
   document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
@@ -60824,7 +60808,7 @@ const MODEL_CATALOG = [
   }));
   document.getElementById('reset-view').addEventListener('click',()=>setView('hero'));
   document.getElementById('brand-reset').addEventListener('click',e=>{e.preventDefault();setView('hero');});
-  controls.addEventListener('start',()=>{cameraTransition=null;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));document.getElementById('view-label').textContent='Szabad nézet';});
+  controls.addEventListener('start',()=>{cameraTransition=null;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));document.getElementById('view-label').textContent='Free view';});
   document.getElementById('battery').addEventListener('change',e=>drone.batteryParts.forEach(p=>p.visible=e.target.checked));
   document.getElementById('props').addEventListener('change',e=>drone.propellers.forEach(p=>p.group.visible=e.target.checked));
   document.getElementById('action-camera').addEventListener('change',e=>drone.actionParts.forEach(p=>p.visible=e.target.checked));
@@ -60839,7 +60823,7 @@ const MODEL_CATALOG = [
     document.getElementById('explode-value').textContent=`${e.target.value}%`;
   });
   const colors=DRONE_COLORS;
-  const colorNames={coral:'Narancssárga',yellow:'Sárga',teal:'Türkiz',violet:'Lila',blue:'Kék',lime:'Zöld',pink:'Rózsaszín',white:'Fehér'};
+  const colorNames={coral:'Orange',yellow:'Yellow',teal:'Teal',violet:'Violet',blue:'Blue',lime:'Green',pink:'Pink',white:'White'};
   for(const [id,hex] of Object.entries(colors)){
     const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.color=id;
     button.style.background=hex;button.setAttribute('aria-label',colorNames[id]);button.setAttribute('aria-pressed',String(id==='coral'));
@@ -60851,7 +60835,7 @@ const MODEL_CATALOG = [
 
   document.getElementById('export').addEventListener('click',async()=>{
     const button=document.getElementById('export'),status=document.getElementById('status');
-    button.disabled=true;exporting=true;status.textContent='GLB modell összeállítása…';
+    button.disabled=true;exporting=true;status.textContent='Building GLB model…';
     try{
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
       const exported=drone.root.clone(true);
@@ -60862,13 +60846,14 @@ const MODEL_CATALOG = [
       const blob=new Blob([result],{type:'model/gltf-binary'}),url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=currentModel.filename;document.body.append(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
-      status.textContent=`A modell elkészült (${(blob.size/1024/1024).toFixed(2)} MB).`;
-    }catch(error){status.textContent='Az export nem sikerült. '+error.message;console.error(error);}
+      status.textContent=`A modell elcoming soont (${(blob.size/1024/1024).toFixed(2)} MB).`;
+    }catch(error){status.textContent='Cannot export the model. '+error.message;console.error(error);}
     finally{button.disabled=false;exporting=false;}
   });
 
   renderer.setAnimationLoop(()=>{
     const dt=Math.min(clock.getDelta(),.05);
+    if(document.getElementById("drone-panel").hidden || document.hidden) return;
     if(cameraTransition){
       cameraTransition.time+=dt;
       const t=Math.min(cameraTransition.time/.6,1),ease=t*t*(3-2*t);
@@ -60880,7 +60865,7 @@ const MODEL_CATALOG = [
     controls.update(dt);renderer.render(scene,camera);
   });
   canvas.addEventListener('webglcontextlost',event=>{
-    event.preventDefault();loading.hidden=false;loading.textContent='A grafikus kapcsolat megszakadt. Töltsd újra a demót.';
+    event.preventDefault();loading.hidden=false;loading.textContent='Graphics context lost. Reload the showcase.';
   });
   loading.hidden=true;
 })();
