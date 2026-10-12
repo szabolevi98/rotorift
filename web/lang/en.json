@@ -193,5 +193,22 @@
   "hangar.drone.rift-65": "65 mm",
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
-  "fly.route": "Race route"
+  "fly.route": "Race route",
+  "settings.actionBindings": "Radio / controller actions",
+  "settings.actionBindingsHint": "Assign a button or an AUX switch. Press Assign, then press a button or move an unused channel to its end. Flight stick channels are excluded. Buttons toggle ARM; AUX on arms and AUX off disarms. Arming requires low throttle. Saved for this device.",
+  "settings.unassigned": "Unassigned",
+  "settings.buttonBinding": "{action} control",
+  "settings.assignButton": "Assign",
+  "settings.assignAction": "Assign {action}",
+  "settings.bindingWait": "{action}: press a button or move an AUX switch within 12 seconds. Release held controls first.",
+  "settings.bindingsaved": "Binding saved.",
+  "settings.bindingtimeout": "No control detected. Try again.",
+  "settings.cancelBinding": "Cancel",
+  "settings.buttonNumber": "Button {number}",
+  "settings.pressedButtons": "Active: {buttons}",
+  "hud.armAction": "ARM",
+  "hud.disarmAction": "DISARM",
+  "hud.resetAction": "Reset",
+  "hud.viewAction": "View",
+  "hud.touchHint": "ARM switches the motors on/off. Use a radio or controller to fly."
 }

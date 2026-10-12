@@ -7,6 +7,7 @@ import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
+import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -149,6 +150,7 @@ function notice(message) {
   noticeTimer = setTimeout(() => visible("#notice", false), 4200);
 }
 function panel(name) {
+  controller?.bindings.reset();
   $("#menu").dataset.panel = name;
   for (const el of document.querySelectorAll(".panel"))
     el.classList.toggle("hidden", el.id !== name + "-panel");
@@ -183,6 +185,7 @@ function resume() {
   if (!playing) return;
   void fullscreen?.enterFlight();
   paused = false;
+  controller.bindings.reset();
   lastFrame = performance.now();
   flight.active = !room || room.phase === "flying";
   document.activeElement?.blur();
@@ -190,7 +193,7 @@ function resume() {
   visible("#hud", true);
   flight.startSound();
 }
-function action(kind) {
+function action(kind, currentInput = input) {
   if (loading.tasks.size && !["lostFocus", "radioChanged"].includes(kind)) return;
   if (kind === "lostFocus" || kind === "radioChanged") {
     if (playing && !paused) pause();
@@ -204,14 +207,16 @@ function action(kind) {
     return;
   }
   if (!playing || paused) return;
-  if (kind === "arm") {
-    if (room && room.phase !== "flying") return;
-    if (!flight.physics.armed && input.throttle > 0.06) {
+  if (["arm", "armOn", "armOff"].includes(kind)) {
+    const armed = kind === "armOn" || (kind === "arm" && !flight.physics.armed);
+    if (armed && room && (room.phase !== "flying" || room.players.find((p) => p.id === network.id)?.finished)) return;
+    if (armed && currentInput.throttle > 0.06) {
       notice(t("hud.lowThrottle"));
       return;
     }
-    flight.physics.armed = !flight.physics.armed;
+    flight.physics.armed = armed;
     flight.startSound();
+    hud();
   }
   if (kind === "hover" && !controller.usingRadio)
     controller.keyboard.throttle = hoverThrottle(flight.config);
@@ -438,6 +443,12 @@ function renderInputUI() {
   const signature = [
     controller.pad?.id,
     controller.raw.length,
+    controller.pad?.buttons?.length,
+    Object.values(controller.profile.axes).map((axis) => axis.index).join(","),
+    JSON.stringify(controller.profile.actions),
+    controller.bindings.capture?.action,
+    controller.bindings.result,
+    !!controller.range,
     document.documentElement.lang,
   ].join("|");
   if (signature === inputSignature) return;
@@ -456,6 +467,7 @@ function renderInputUI() {
     select.value = a.index;
     select.onchange = () => {
       a.index = Number(select.value);
+      controller.bindings.reset();
       controller.save();
     };
     const label = node("label");
@@ -479,6 +491,39 @@ function renderInputUI() {
     row.append(select, label, meter);
     $("#axis-settings").append(row);
   }
+  const bindings = $("#radio-actions");
+  bindings.replaceChildren();
+  const options = availableBindings(controller.pad, controller.profile);
+  for (const name of RADIO_ACTIONS) {
+    const row = node("div", "radio-action-row"), select = node("select");
+    select.setAttribute("aria-label", t("settings.buttonBinding", { action: t("key." + name) }));
+    select.append(new Option(t("settings.unassigned"), ""));
+    for (const binding of options) select.append(new Option(bindingLabel(binding), bindingKey(binding)));
+    select.value = bindingKey(controller.profile.actions?.[name]);
+    select.disabled = !controller.pad || !!controller.range;
+    select.onchange = () => {
+      controller.bindAction(name, parseBinding(select.value));
+      controller.bindings.result = "saved";
+    };
+    const learn = node("button", "secondary", t("settings.assignButton"));
+    learn.type = "button";
+    learn.disabled = select.disabled;
+    learn.setAttribute("aria-label", t("settings.assignAction", { action: t("key." + name) }));
+    learn.onclick = () => {
+      controller.bindings.listen(name, controller.pad, controller.profile);
+      renderInputUI();
+    };
+    row.append(node("span", "", t("key." + name)), select, learn);
+    bindings.append(row);
+  }
+  visible("#binding-cancel", !!controller.bindings.capture);
+  $("#binding-status").textContent = controller.bindings.capture
+    ? t("settings.bindingWait", { action: t("key." + controller.bindings.capture.action) })
+    : controller.bindings.result ? t("settings.binding" + controller.bindings.result) : "";
+}
+function bindingLabel(binding) {
+  return binding.type === "button" ? t("settings.buttonNumber", { number: binding.index + 1 })
+    : `CH ${binding.index + 1} ${binding.direction > 0 ? "+" : "−"}`;
 }
 function renderKeys() {
   const container = $("#keyboard-bindings");
@@ -512,6 +557,10 @@ function updateInputText() {
   $("#radio-name").textContent = controller.pad?.id ?? t("input.noRadio");
   for (const m of document.querySelectorAll("[data-meter]"))
     m.value = input[m.dataset.meter];
+  const active = availableBindings(controller.pad, controller.profile).filter((b) => b.type === "button"
+    ? controller.pad.buttons[b.index].pressed || controller.pad.buttons[b.index].value > 0.5
+    : controller.raw[b.index] * b.direction > 0.7);
+  $("#radio-buttons-live").textContent = active.length ? t("settings.pressedButtons", { buttons: active.map(bindingLabel).join(" · ") }) : "";
 }
 function renderRooms() {
   const root = $("#rooms-list");
@@ -807,9 +856,16 @@ function hud() {
     own = room?.players.find((p) => p.id === network.id),
     currentLap = own?.lap ?? lap;
   $("#arm-state").textContent = t(
-    flight.physics.armed ? "hud.armed" : "hud.disarmed",
+    flight.physics.armed ? "hud.disarmAction" : "hud.armAction",
   );
   $("#arm-state").classList.toggle("armed", flight.physics.armed);
+  $("#arm-state").setAttribute("aria-pressed", String(flight.physics.armed));
+  $("#arm-state").setAttribute("aria-label", t(flight.physics.armed ? "hud.disarmAction" : "hud.armAction"));
+  $("#arm-state").disabled = !flight.physics.armed && !!room && (room.phase !== "flying" || own?.finished);
+  $("#hud-reset").disabled = !!room && room.phase !== "flying";
+  $("#hud-reset").setAttribute("aria-label", t("key.reset"));
+  $("#hud-view").setAttribute("aria-label", t("key.view"));
+  $("#hud-view").setAttribute("aria-pressed", String(flight.chase));
   $("#hud-mode").textContent = flight.physics.mode.toUpperCase() + " ↻";
   $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flight.physics.mode.toUpperCase());
   $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);
@@ -1016,7 +1072,12 @@ function bindUI() {
   $("#launch").onclick = launch;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;
-  $("#hud-mode").onclick = () => { action("mode"); document.activeElement?.blur(); };
+  $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
+  for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"]])
+    $("#" + id).onclick = () => { action(kind); hud(); document.activeElement?.blur(); };
+  $("#binding-cancel").onclick = () => {
+    controller.bindings.reset(); controller.bindings.result = null; renderInputUI();
+  };
   $("#session").onchange = () => {
     updateSessionOptions();
   };

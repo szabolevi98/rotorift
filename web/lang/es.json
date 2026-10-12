@@ -193,5 +193,22 @@
   "hangar.drone.rift-65": "65 mm",
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
-  "fly.route": "Circuito"
+  "fly.route": "Circuito",
+  "settings.actionBindings": "Acciones de radio / mando",
+  "settings.actionBindingsHint": "Asigna un botón o un interruptor AUX. Pulsa Asignar y después un botón o lleva un canal libre al extremo. Se excluyen los ejes de vuelo. Los botones alternan ARM; AUX activo arma y AUX inactivo desarma. Para armar, baja el acelerador. Se guarda para este dispositivo.",
+  "settings.unassigned": "Sin asignar",
+  "settings.buttonBinding": "Control de {action}",
+  "settings.assignButton": "Asignar",
+  "settings.assignAction": "Asignar {action}",
+  "settings.bindingWait": "{action}: pulsa un botón o mueve un interruptor AUX en 12 segundos. Suelta primero los controles que ya estén activos.",
+  "settings.bindingsaved": "Asignación guardada.",
+  "settings.bindingtimeout": "No se detectó ningún control. Inténtalo de nuevo.",
+  "settings.cancelBinding": "Cancelar",
+  "settings.buttonNumber": "Botón {number}",
+  "settings.pressedButtons": "Activo: {buttons}",
+  "hud.armAction": "ARM",
+  "hud.disarmAction": "DISARM",
+  "hud.resetAction": "Reset",
+  "hud.viewAction": "Vista",
+  "hud.touchHint": "ARM activa/desactiva los motores. Usa una radio o un mando para volar."
 }

@@ -193,5 +193,22 @@
   "hangar.drone.rift-65": "65 mm",
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
-  "fly.route": "Parcours"
+  "fly.route": "Parcours",
+  "settings.actionBindings": "Actions radio / manette",
+  "settings.actionBindingsHint": "Associez un bouton ou un interrupteur AUX. Choisissez Associer, puis appuyez sur un bouton ou placez un canal libre en butée. Les axes de vol sont exclus. Un bouton bascule ARM ; AUX actif arme, AUX inactif désarme. Gaz bas requis pour armer. Enregistré pour cet appareil.",
+  "settings.unassigned": "Non attribué",
+  "settings.buttonBinding": "Commande pour {action}",
+  "settings.assignButton": "Associer",
+  "settings.assignAction": "Associer {action}",
+  "settings.bindingWait": "{action} : appuyez sur un bouton ou actionnez un interrupteur AUX dans les 12 secondes. Relâchez d’abord les commandes déjà activées.",
+  "settings.bindingsaved": "Association enregistrée.",
+  "settings.bindingtimeout": "Aucune commande détectée. Réessayez.",
+  "settings.cancelBinding": "Annuler",
+  "settings.buttonNumber": "Bouton {number}",
+  "settings.pressedButtons": "Actif : {buttons}",
+  "hud.armAction": "ARM",
+  "hud.disarmAction": "DISARM",
+  "hud.resetAction": "Reset",
+  "hud.viewAction": "Vue",
+  "hud.touchHint": "ARM active/désactive les moteurs. Utilisez une radio ou une manette pour voler."
 }

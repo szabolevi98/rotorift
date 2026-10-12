@@ -193,5 +193,22 @@
   "hangar.drone.rift-65": "65 mm",
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
-  "fly.route": "Rennstrecke"
+  "fly.route": "Rennstrecke",
+  "settings.actionBindings": "Funktionen für Sender / Controller",
+  "settings.actionBindingsHint": "Eine Taste oder einen AUX-Schalter zuweisen. Zuweisen wählen und eine Taste drücken oder einen freien Kanal zum Endpunkt bewegen. Flugachsen sind ausgeschlossen. Tasten schalten ARM um; AUX ein aktiviert, AUX aus deaktiviert die Motoren. Aktivieren nur bei wenig Gas. Für dieses Gerät gespeichert.",
+  "settings.unassigned": "Nicht zugewiesen",
+  "settings.buttonBinding": "Steuerung für {action}",
+  "settings.assignButton": "Zuweisen",
+  "settings.assignAction": "{action} zuweisen",
+  "settings.bindingWait": "{action}: innerhalb von 12 Sekunden eine Taste drücken oder einen AUX-Schalter bewegen. Gedrückte Bedienelemente zuerst loslassen.",
+  "settings.bindingsaved": "Zuweisung gespeichert.",
+  "settings.bindingtimeout": "Kein Bedienelement erkannt. Erneut versuchen.",
+  "settings.cancelBinding": "Abbrechen",
+  "settings.buttonNumber": "Taste {number}",
+  "settings.pressedButtons": "Aktiv: {buttons}",
+  "hud.armAction": "ARM",
+  "hud.disarmAction": "DISARM",
+  "hud.resetAction": "Reset",
+  "hud.viewAction": "Ansicht",
+  "hud.touchHint": "ARM schaltet die Motoren ein/aus. Zum Fliegen Sender oder Controller verwenden."
 }

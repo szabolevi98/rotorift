@@ -193,5 +193,22 @@
   "hangar.drone.rift-65": "65 mm",
   "hangar.drone.rift-x5": "5″",
   "hangar.drone.rift-c3": "3″",
-  "fly.route": "Versenyútvonal"
+  "fly.route": "Versenyútvonal",
+  "settings.actionBindings": "Rádió / kontroller műveletek",
+  "settings.actionBindingsHint": "Rendelj hozzá gombot vagy AUX kapcsolót. Nyomd meg a Hozzárendelés gombot, majd egy vezérlőgombot, vagy állíts egy szabad csatornát végállásba. A repülési stickcsatornákat kihagyjuk. A gomb váltja az ARM állapotot; az AUX beállása armol, kikapcsolása disarmol. Élesítéshez alacsony gáz kell. Eszközönként mentjük.",
+  "settings.unassigned": "Nincs hozzárendelve",
+  "settings.buttonBinding": "{action} vezérlője",
+  "settings.assignButton": "Hozzárendelés",
+  "settings.assignAction": "{action} hozzárendelése",
+  "settings.bindingWait": "{action}: 12 másodpercen belül nyomj meg egy gombot vagy állíts át egy AUX kapcsolót. Előbb engedd el a már nyomott vezérlőket.",
+  "settings.bindingsaved": "Hozzárendelés mentve.",
+  "settings.bindingtimeout": "Nem érzékeltünk vezérlőt. Próbáld újra.",
+  "settings.cancelBinding": "Mégse",
+  "settings.buttonNumber": "{number}. gomb",
+  "settings.pressedButtons": "Aktív: {buttons}",
+  "hud.armAction": "ARM",
+  "hud.disarmAction": "DISARM",
+  "hud.resetAction": "Reset",
+  "hud.viewAction": "Nézet",
+  "hud.touchHint": "ARM: motorok be/ki. A repüléshez használj rádiót vagy kontrollert."
 }

@@ -275,6 +275,14 @@ Az első kiadásban csak a három elkészült modell indítható el.
 - Élő csatornakijelzés a kiosztás ellenőrzésére, az alapértelmezett Mode 2
   mellett szabadon módosítható hozzárendeléssel.
 - Az eszközprofilok és a kalibráció helyben megmaradnak újratöltés után.
+- ARM/DISARM, reset, kameranézet, repülési mód és menü műveletekhez
+  rádió-/kontrollergomb vagy szabad AUX csatorna rendelhető, eszközönként mentve.
+  Gombtanítás és élő állapotjelzés segíti a kiosztást. ARM gomb: váltás;
+  ARM AUX kapcsoló: be = élesítés, ki = disarm. Aktív kapcsoló csatlakozáskor,
+  resetkor és folytatáskor nem élesíthet automatikusan. Élesítés csak alacsony gáznál.
+- A repülési felületen érinthető ARM/DISARM, reset, nézet- és módváltás,
+  menü és teljes képernyő gomb is rendelkezésre áll; a mobil használathoz
+  nem kell fizikai billentyűzet. A repülési tengelyeket rádió/kontroller vezérli.
 
 A felhasználónál később rendelkezésre álló teszteszközök:
 

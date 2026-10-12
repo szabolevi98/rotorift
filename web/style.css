@@ -236,6 +236,10 @@ h2 {
 .simulation-row:has(:disabled) { opacity: 0.65; }
 #hud-mode { pointer-events: auto; border: 1px solid #fff6; background: #0003; color: white; border-radius: 4px; padding: 6px 9px; font: inherit; font-weight: 700; }
 #hud-mode:disabled { opacity: 0.5; }
+.radio-action-row { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(100px, 1.2fr) auto; gap: 8px; align-items: center; margin: 10px 0; }
+.radio-action-row select { width: 100%; min-width: 0; }
+.radio-action-row button { min-height: 44px; }
+#binding-status { color: var(--orange); }
 #simulation-hud { position: absolute; left: 32px; top: 86px; display: grid; gap: 8px; }
 #simulation-hud > div { padding: 7px 10px; border-radius: 4px; background: #0004; }
 #battery-hud.low { color: #ffdb77; }
@@ -645,6 +649,8 @@ footer {
   color: #fff;
   background: #0003;
   padding: 9px 14px;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 .hud-actions { display: flex; align-items: center; gap: 8px; }
 .fullscreen-toggle, .hud-top .fullscreen-toggle {
@@ -673,6 +679,14 @@ footer {
   align-items: center;
 }
 #arm-state {
+  pointer-events: auto;
+  touch-action: manipulation;
+  min-height: 44px;
+  min-width: 96px;
+  background: #1119;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
   padding: 6px 8px;
   border: 1px solid #fff6;
   border-radius: 4px;
@@ -681,6 +695,8 @@ footer {
   color: #abeb94;
   border-color: #abeb94;
 }
+#arm-state:disabled, .hud-actions button:disabled { opacity: 0.5; }
+#hud-mode { min-height: 44px; touch-action: manipulation; }
 .telemetry {
   display: flex;
   gap: 30px;
@@ -783,12 +799,17 @@ footer {
   text-transform: uppercase;
   color: #ffffffde;
 }
-#key-hint {
+#key-hint, #touch-hint {
   position: absolute;
   bottom: 18px;
   left: 32px;
   color: #fffe;
   font-size: 10px;
+}
+#touch-hint { display: none; }
+@media (hover: none) and (pointer: coarse), (max-width: 750px) {
+  #key-hint { display: none; }
+  #touch-hint { display: block; left: 15px; right: 15px; }
 }
 #race-hud {
   position: absolute;
@@ -1015,7 +1036,11 @@ html.loading-visible { overflow: hidden; }
   }
   .hud-top {
     padding: 18px 15px;
+    gap: 8px;
   }
+  .hud-brand { display: none; }
+  .hud-actions { gap: 5px; }
+  .hud-top button { padding: 9px 10px; }
   #race-hud {
     left: 15px;
   }

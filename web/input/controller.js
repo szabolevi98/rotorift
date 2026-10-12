@@ -1,5 +1,6 @@
 import { read, write } from "../storage.js";
 import { clamp } from "../../shared/physics/math.js";
+import { ActionBindings, RADIO_ACTIONS, availableBindings, bindingKey } from "./action-bindings.js";
 export const DEFAULT_KEYS = {
   throttleUp: "KeyW",
   throttleDown: "KeyS",
@@ -26,6 +27,7 @@ export const KEYBOARD_RESPONSE = {
 };
 export const defaultProfile = () => ({
   deadzone: 0.015,
+  actions: Object.fromEntries(RADIO_ACTIONS.map((action) => [action, null])),
   axes: {
     roll: { index: 0, invert: false, center: 0, min: -1, max: 1 },
     pitch: { index: 1, invert: true, center: 0, min: -1, max: 1 },
@@ -75,8 +77,10 @@ export class Controller {
     this.raw = [];
     this.pad = null;
     this.lastId = null;
+    this.lastIndex = null;
     this.profile = defaults();
     this.range = null;
+    this.bindings = new ActionBindings();
     window.addEventListener("keydown", (e) => {
       if (e.target.closest("input,select,textarea,button")) return;
       if (Object.values(this.keys).includes(e.code) || ["ShiftLeft", "ShiftRight"].includes(e.code)) {
@@ -98,6 +102,22 @@ export class Controller {
   clear() {
     this.pressed.clear();
     this.keyboard = { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
+    this.bindings.reset();
+  }
+  bindAction(action, binding) {
+    if (!this.pad || !RADIO_ACTIONS.includes(action)) return false;
+    if (binding && !availableBindings(this.pad, this.profile).some((b) => bindingKey(b) === bindingKey(binding))) return false;
+    this.profile.actions ??= {};
+    // A control belongs to one action; do not accidentally arm and reset together.
+    if (binding) for (const name of RADIO_ACTIONS) {
+      const other = this.profile.actions[name];
+      if (other?.type === binding.type && other.index === binding.index)
+        this.profile.actions[name] = null;
+    }
+    this.profile.actions[action] = binding;
+    this.bindings.reset();
+    this.save();
+    return true;
   }
   save() {
     if (this.pad) write("radio." + this.pad.id, this.profile);
@@ -107,11 +127,15 @@ export class Controller {
   poll(dt) {
     const pads = Array.from(navigator.getGamepads?.() ?? []).filter(Boolean);
     this.pad = pads.find((p) => p.id === this.lastId) ?? pads[0] ?? null;
-    if ((this.pad?.id ?? null) !== this.lastId) {
+    if ((this.pad?.id ?? null) !== this.lastId || (this.pad?.index ?? null) !== this.lastIndex) {
       this.lastId = this.pad?.id ?? null;
+      this.lastIndex = this.pad?.index ?? null;
       this.profile = this.pad
         ? read("radio." + this.pad.id, defaults())
         : defaults();
+      this.bindings.reset();
+      this.bindings.result = null;
+      this.range = null;
       if (this.source !== "keyboard") this.action("radioChanged");
     }
     this.raw = this.pad ? Array.from(this.pad.axes) : [];
@@ -157,8 +181,15 @@ export class Controller {
       const travel = dt * response.limit / (returning ? KEYBOARD_RESPONSE.returnSeconds : response.riseSeconds);
       k[axis] += clamp(target - k[axis], -travel, travel);
     }
-    if (this.source === "keyboard" || !this.pad) return { ...k };
-    return radioInput(this.raw, this.profile);
+    const out = this.usingRadio ? radioInput(this.raw, this.profile) : { ...k };
+    const { events, assignment } = this.bindings.sample(this.pad, this.profile, this.usingRadio && !this.range);
+    if (assignment) this.bindAction(assignment.action, assignment.binding);
+    for (const event of events) {
+      // Supply this frame's throttle, so arming never uses a stale low value.
+      this.action(event, out);
+      if (event === "menu" || event === "reset") break;
+    }
+    return out;
   }
   get usingRadio() {
     return this.source !== "keyboard" && !!this.pad;
@@ -172,6 +203,7 @@ export class Controller {
   }
   calibrateRange() {
     if (!this.pad) return false;
+    this.bindings.reset();
     const start = performance.now();
     this.range = { start, end: start + 6000, min: [], max: [] };
     return true;

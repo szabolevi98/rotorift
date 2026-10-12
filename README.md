@@ -71,6 +71,15 @@ fordítás, holtjáték, botközép és hatmásodperces végpontkalibráció tal
 A böngészőnek a csatlakoztatott rádión egy botmozdításra is szüksége lehet.
 A TX15, Pocket és DJI vezérlők tényleges hardveres tesztje még hátravan.
 
+Telefonon is elérhető a képernyőn az **ARM/DISARM**, **Reset**, nézetváltás,
+repülési mód és menü. A repülési tengelyeket a csatlakoztatott rádió/kontroller vezérli.
+A Beállítások → Rádió / kontroller műveletek alatt a **Hozzárendelés** után
+nyomj meg egy gombot vagy állíts egy szabad AUX csatornát végállásba.
+Az ARM gomb váltja az állapotot; az AUX ARM kapcsoló beállása élesít,
+kikapcsolása leállítja a motorokat. Alacsony gáz kell az élesítéshez.
+A kiosztás eszközönként megmarad; csatlakozáskor/folytatáskor a már aktív kapcsoló
+nem élesít automatikusan. Az AUX csatorna nem lehet repülési stickhez rendelve.
+
 Az Actual Rates tengelyenként Center Sensitivity / Max Rate / Expo értékeket használ;
 alapértékük 70 / 670 / 0. A beállítás külön menthető drónonként, másolható egy másik
 drónra vagy mindháromra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek a böngészőben maradnak.

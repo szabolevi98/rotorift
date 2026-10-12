@@ -195,6 +195,12 @@
                   value="0.015"
               /></label>
               <p class="muted" data-i18n="settings.hardware"></p>
+              <h3 data-i18n="settings.actionBindings"></h3>
+              <p class="muted" data-i18n="settings.actionBindingsHint"></p>
+              <div id="radio-actions"></div>
+              <p id="radio-buttons-live" class="muted"></p>
+              <p id="binding-status" class="muted" role="status"></p>
+              <button id="binding-cancel" type="button" class="secondary hidden" data-i18n="settings.cancelBinding"></button>
             </section>
             <section class="card">
               <h2>Actual Rates</h2>
@@ -340,7 +346,7 @@
     <div id="hud" class="hidden">
       <div class="hud-top">
         <span class="hud-brand">ROTORIFT.</span><span id="hud-session"></span
-        ><div class="hud-actions"><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="menu-button" data-i18n="nav.menu"></button></div>
+        ><div class="hud-actions"><button id="hud-reset" type="button" data-i18n="hud.resetAction"></button><button id="hud-view" type="button" data-i18n="hud.viewAction" aria-pressed="false"></button><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="menu-button" data-i18n="nav.menu"></button></div>
       </div>
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>
@@ -381,7 +387,7 @@
       </div>
       <div class="hud-bottom">
         <div>
-          <span id="arm-state"></span><button id="hud-mode" type="button">ACRO ↻</button
+          <button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button
           ><span id="hud-input"></span>
         </div>
         <div class="telemetry">
@@ -391,6 +397,7 @@
         </div>
       </div>
       <div id="key-hint"></div>
+      <div id="touch-hint" data-i18n="hud.touchHint"></div>
     </div>
     <div id="notice" role="status" class="hidden"></div>
     <div id="boot" role="status">
