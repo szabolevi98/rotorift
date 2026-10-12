@@ -24,9 +24,9 @@ export class Preview {
     this.controls.maxDistance = 1;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 0.7;
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x7b856e, 2.3));
-    const sun = new THREE.DirectionalLight(0xffffff, 3);
-    sun.position.set(0.3, 0.6, 0.15);
+    this.scene.add(new THREE.HemisphereLight(0xdce9ff, 0x45443b, 2.1));
+    const sun = new THREE.DirectionalLight(0xfff1e1, 3.2);
+    sun.position.set(-0.4, 0.7, -0.3);
     sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024);
     sun.shadow.camera.left = -0.4;
@@ -37,6 +37,9 @@ export class Preview {
     sun.shadow.camera.far = 2;
     sun.shadow.bias = -0.0001;
     this.scene.add(sun);
+    const rim = new THREE.DirectionalLight(0xa7dcff, 1.6);
+    rim.position.set(0.5, 0.1, 0.4);
+    this.scene.add(rim);
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(3, 3),
       new THREE.ShadowMaterial({ opacity: 0.13 }),
@@ -61,7 +64,9 @@ export class Preview {
     this.controls.target.set(center.x, center.y, center.z);
     this.camera.position
       .copy(center)
-      .add(new THREE.Vector3(extent * 0.75, extent * 0.58, extent * 0.85));
+      .add(new THREE.Vector3(extent * 0.62, extent * 0.42, -extent * 0.70));
+    this.controls.minDistance = extent * 0.5;
+    this.controls.maxDistance = extent * 2.5;
     this.controls.update();
   }
   setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.model, this.color); }
@@ -77,6 +82,7 @@ export class Preview {
     ) {
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
+      this.camera.fov = Math.min(75, 36 * Math.max(1, 1.7 / this.camera.aspect));
       this.camera.updateProjectionMatrix();
     }
     this.controls.update();

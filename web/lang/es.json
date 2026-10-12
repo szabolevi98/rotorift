@@ -163,5 +163,13 @@
   "error.hostOnly": "Solo el anfitrión puede cambiar las opciones de simulación.",
   "error.rulesLocked": "Las reglas de la sala no se pueden cambiar tras empezar.",
   "error.invalidSimulation": "Ajustes de simulación no válidos.",
-  "meta.title": "Rotorift · Simulador FPV ligero en el navegador"
+  "meta.title": "Rotorift · Simulador FPV ligero en el navegador",
+  "nav.multiplayer": "Multijugador",
+  "hangar.aircraft": "TU DRON",
+  "hangar.aircraftColor": "DRON Y COLOR",
+  "hangar.tagline": "En ordenador o teléfono.",
+  "hangar.rotate": "Arrastra para girar ↔",
+  "hangar.drone.rift-65": "65 mm",
+  "hangar.drone.rift-x5": "5″",
+  "hangar.drone.rift-c3": "3″"
 }

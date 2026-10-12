@@ -163,5 +163,13 @@
   "error.hostOnly": "Only the host can change simulation options.",
   "error.rulesLocked": "Room rules cannot be changed after starting.",
   "error.invalidSimulation": "Invalid simulation settings.",
-  "meta.title": "Rotorift · Lightweight Browser FPV Simulator"
+  "meta.title": "Rotorift · Lightweight Browser FPV Simulator",
+  "nav.multiplayer": "Multiplayer",
+  "hangar.aircraft": "YOUR AIRCRAFT",
+  "hangar.aircraftColor": "AIRCRAFT & COLOR",
+  "hangar.tagline": "Desktop or phone.",
+  "hangar.rotate": "Drag to rotate ↔",
+  "hangar.drone.rift-65": "65 mm",
+  "hangar.drone.rift-x5": "5″",
+  "hangar.drone.rift-c3": "3″"
 }

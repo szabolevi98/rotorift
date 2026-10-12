@@ -163,5 +163,13 @@
   "error.hostOnly": "Csak a szoba házigazdája állíthatja a szimulációs opciókat.",
   "error.rulesLocked": "Indítás után a szobaszabályok már nem módosíthatók.",
   "error.invalidSimulation": "Érvénytelen szimulációs beállítás.",
-  "meta.title": "Rotorift · Könnyű, böngészős FPV-szimulátor"
+  "meta.title": "Rotorift · Könnyű, böngészős FPV-szimulátor",
+  "nav.multiplayer": "Multiplayer",
+  "hangar.aircraft": "A TE GÉPED",
+  "hangar.aircraftColor": "DRÓN ÉS SZÍN",
+  "hangar.tagline": "Gépen vagy telefonon.",
+  "hangar.rotate": "Húzd a forgatáshoz ↔",
+  "hangar.drone.rift-65": "65 mm",
+  "hangar.drone.rift-x5": "5″",
+  "hangar.drone.rift-c3": "3″"
 }

@@ -7,7 +7,7 @@
       name="description"
       content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation."
     />
-    <meta name="theme-color" content="#ff6648" />
+    <meta name="theme-color" content="#101114" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Rotorift · Lightweight Browser FPV Simulator" />
     <meta
@@ -20,6 +20,7 @@
     <title>Rotorift · Lightweight Browser FPV Simulator</title>
     <link rel="icon" href="/assets/icon.svg" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/hangar.css" />
     <script type="importmap">
       {
         "imports": {
@@ -39,11 +40,6 @@
             >ROTORIFT<span class="brand-dot">.</span></span
           ></a
         >
-        <nav id="tabs">
-          <button class="active" data-tab="fly" data-i18n="nav.fly"></button
-          ><button data-tab="settings" data-i18n="nav.settings"></button
-          ><button data-tab="records" data-i18n="nav.records"></button>
-        </nav>
         <div class="header-end">
           <span id="server-status" class="connection"></span
           ><select id="language" aria-label="Language">
@@ -55,105 +51,59 @@
           </select>
         </div>
       </header>
+      <div class="menu-body">
+        <aside class="menu-sidebar">
+          <nav id="tabs" aria-label="Main menu">
+            <button class="active" data-tab="fly"><span class="nav-icon" aria-hidden="true">↗</span><span data-i18n="nav.fly"></span></button>
+            <button data-tab="multiplayer"><span class="nav-icon" aria-hidden="true">⌁</span><span data-i18n="nav.multiplayer"></span></button>
+            <button data-tab="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span data-i18n="nav.settings"></span></button>
+            <button data-tab="records"><span class="nav-icon" aria-hidden="true">≡</span><span data-i18n="nav.records"></span></button>
+          </nav>
+          <div class="sidebar-caption"><strong data-i18n="fly.title"></strong><p data-i18n="hangar.tagline"></p></div>
+        </aside>
       <main>
         <section id="fly-panel" class="panel">
-          <div class="intro">
-            <span class="eyebrow" data-i18n="fly.eyebrow">LIGHTWEIGHT · BROWSER FPV</span>
-            <h1 data-i18n="fly.title">FPV. On the go.</h1>
-            <p data-i18n="fly.subtitle">A lightweight FPV simulator that runs in your browser. Connect a compatible controller and fly on your computer or phone, wherever you go. Low-poly worlds, detailed drones. No installation.</p>
+          <div class="aircraft-stage">
+            <div class="stage-top"><span data-i18n="hangar.aircraft"></span><span id="model-number">R / X5</span></div>
+            <div class="aircraft-title"><h1 id="selected-name">Rift X5</h1><p id="selected-description"></p></div>
+            <div class="preview-floor"><canvas id="preview-scene" aria-label="Selected drone 3D preview"></canvas></div>
+            <p class="preview-hint" data-i18n="hangar.rotate"></p>
           </div>
-          <div class="launch-layout">
-            <div class="launch-controls">
-              <div class="step-label">
-                <span>01</span>
-                <h2 data-i18n="fly.aircraft"></h2>
-              </div>
+          <div class="launch-controls">
+            <div class="aircraft-controls">
+              <h2 class="dock-label" data-i18n="hangar.aircraftColor"></h2>
               <div id="drone-picker" class="drone-picker"></div>
               <div class="drone-color-control">
-                <div class="color-heading"><span id="drone-color-label" data-i18n="fly.color"></span></div>
+                <span id="drone-color-label" class="visually-hidden" data-i18n="fly.color"></span>
                 <div id="drone-color-picker" role="group" aria-labelledby="drone-color-label"></div>
-                <p data-i18n="fly.colorHint"></p>
               </div>
-              <div class="step-label">
-                <span>02</span>
-                <h2 data-i18n="fly.environment"></h2>
-              </div>
+            </div>
+            <div class="environment-controls">
+              <h2 class="dock-label" data-i18n="fly.environment"></h2>
               <div id="map-picker" class="map-picker"></div>
-              <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
-              <div class="session-settings">
-                <label
-                  ><span data-i18n="fly.mode"></span
-                  ><select id="flight-mode">
-                    <option value="acro">Acro</option>
-                    <option value="angle">Angle</option>
-                    <option value="horizon">Horizon</option>
-                  </select></label
-                >
-                <label
-                  ><span data-i18n="fly.session"></span
-                  ><select id="session">
-                    <option value="free" data-i18n="session.free"></option>
-                    <option value="time" data-i18n="session.time"></option>
-                    <option
-                      value="online-free"
-                      data-i18n="session.onlineFree"
-                    ></option>
-                    <option
-                      value="online-race"
-                      data-i18n="session.onlineRace"
-                    ></option>
-                    <option
-                      value="online-hotlap"
-                      data-i18n="session.hotlap"
-                    ></option></select
-                ></label>
-              </div>
-              <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
               <details class="simulation-controls">
                 <summary data-i18n="simulation.title"></summary>
                 <div id="flight-simulation"></div>
+                <label class="name-row"><span data-i18n="fly.name"></span><input id="nickname" maxlength="32" value="Pilot" autocomplete="nickname" /></label>
+                <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
+                <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
+                <p class="prototype-note" data-i18n="fly.prototype"></p>
               </details>
-              <label class="name-row"
-                ><span data-i18n="fly.name"></span
-                ><input
-                  id="nickname"
-                  maxlength="32"
-                  value="Pilot"
-                  autocomplete="nickname"
-              /></label>
-              <div class="launch-row">
-                <button
-                  id="leave-flight"
-                  class="secondary hidden"
-                  data-i18n="action.leave"
-                ></button>
-                <button id="launch" class="primary">
-                  <span data-i18n="fly.launch"></span><span>↗</span></button
-                ><button
-                  id="resume"
-                  class="secondary hidden"
-                  data-i18n="action.resume"
-                ></button>
-              </div>
-              <p class="input-hint" id="input-status"></p>
-              <p class="prototype-note" data-i18n="fly.prototype"></p>
             </div>
-            <div class="aircraft-stage">
-              <div class="stage-top">
-                <span data-i18n="fly.ready"></span
-                ><span id="model-number">R / X5</span>
+            <div class="departure-controls">
+              <div class="session-settings">
+                <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
+                <label><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-free" data-i18n="session.onlineFree"></option><option value="online-race" data-i18n="session.onlineRace"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
               </div>
-              <canvas
-                id="preview-scene"
-                aria-label="Selected drone 3D preview"
-              ></canvas>
-              <div class="aircraft-title">
-                <h2 id="selected-name">Rift X5</h2>
-                <p id="selected-description"></p>
+              <div class="launch-row">
+                <button id="leave-flight" class="secondary hidden" data-i18n="action.leave"></button>
+                <button id="launch" class="primary"><span data-i18n="fly.launch"></span><span aria-hidden="true">↗</span></button>
+                <button id="resume" class="secondary hidden" data-i18n="action.resume"></button>
               </div>
-              <div id="drone-specs" class="drone-specs"></div>
             </div>
           </div>
+          <div class="hangar-specs"><div id="drone-specs" class="drone-specs"></div><p class="input-hint" id="input-status"></p></div>
+
           <section id="online-controls" class="online-controls hidden">
             <div class="section-title">
               <h2 data-i18n="online.rooms"></h2>
@@ -356,6 +306,7 @@
           </div>
         </section>
       </main>
+      </div>
       <footer>
         <span>ROTORIFT / <span data-i18n="footer.flight"></span></span
         ><span data-i18n="footer.build"></span

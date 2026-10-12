@@ -143,11 +143,20 @@ function notice(message) {
   noticeTimer = setTimeout(() => visible("#notice", false), 4200);
 }
 function panel(name) {
+  $("#menu").dataset.panel = name;
   for (const el of document.querySelectorAll(".panel"))
     el.classList.toggle("hidden", el.id !== name + "-panel");
-  for (const b of document.querySelectorAll("[data-tab]"))
-    b.classList.toggle("active", b.dataset.tab === name);
+  refreshMenuNavigation();
   if (name === "records") showRecords();
+}
+function refreshMenuNavigation() {
+  const name = $("#menu").dataset.panel ?? "fly";
+  const active = name === "lobby" || (name === "fly" && $("#session").value.startsWith("online")) ? "multiplayer" : name;
+  for (const button of document.querySelectorAll("[data-tab]")) {
+    button.classList.toggle("active", button.dataset.tab === active);
+    if (button.dataset.tab === active) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  }
 }
 function pause() {
   if (!playing) return;
@@ -248,6 +257,7 @@ function updateSessionOptions() {
   visible("#online-controls", $("#session").value.startsWith("online"));
   visible("#map-mode-note", !enabled);
   refreshSimulationControls();
+  refreshMenuNavigation();
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/map-preview.html?map=" + encodeURIComponent(map.id);
@@ -255,7 +265,7 @@ function refreshCatalogText() {
     const b = $(`[data-drone="${d.id}"]`);
     b.classList.toggle("selected", config?.id === d.id);
     b.setAttribute("aria-pressed", String(config?.id === d.id));
-    b.querySelector("small").textContent = t("drone." + d.id);
+    b.querySelector("small").textContent = t("hangar.drone." + d.id);
   }
   for (const m of catalog.maps) {
     const b = $(`[data-map="${m.id}"]`);
@@ -323,7 +333,7 @@ function drawRates() {
     ctx = c.getContext("2d"),
     r = readRatesForm();
   ctx.clearRect(0, 0, c.width, c.height);
-  ctx.strokeStyle = "#dce0d6";
+  ctx.strokeStyle = "#ffffff18";
   ctx.lineWidth = 1;
   for (let i = 0; i < 5; i++) {
     ctx.beginPath();
@@ -334,7 +344,7 @@ function drawRates() {
   if (!r) return;
   const max = Math.max(...Object.values(r).map((v) => v.max));
   for (const [i, axis] of ["roll", "pitch", "yaw"].entries()) {
-    ctx.strokeStyle = ["#ff6648", "#54756a", "#879553"][i];
+    ctx.strokeStyle = ["#ff6648", "#73d9d0", "#a5c776"][i];
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let j = 0; j <= 100; j++) {
@@ -928,7 +938,21 @@ function frame(now) {
 }
 function bindUI() {
   for (const b of document.querySelectorAll("[data-tab]"))
-    b.onclick = () => panel(b.dataset.tab);
+    b.onclick = () => {
+      if (b.dataset.tab === "multiplayer") {
+        if (room) { panel("lobby"); return; }
+        $("#session").value = "online-free";
+        updateSessionOptions();
+        panel("fly");
+        network.send("list");
+      } else {
+        if (b.dataset.tab === "fly" && !room && $("#session").value.startsWith("online")) {
+          $("#session").value = "free";
+          updateSessionOptions();
+        }
+        panel(b.dataset.tab);
+      }
+    };
   $("#language").onchange = async (e) => {
     const { setLanguage } = await import("./lang.js");
     await setLanguage(e.target.value);
@@ -938,7 +962,7 @@ function bindUI() {
   $("#menu-button").onclick = pause;
   $("#hud-mode").onclick = () => { action("mode"); document.activeElement?.blur(); };
   $("#session").onchange = () => {
-    visible("#online-controls", $("#session").value.startsWith("online")); refreshSimulationControls();
+    updateSessionOptions();
   };
   $("#nickname").value = read("nickname", "Pilot");
   $("#nickname").onchange = () => {

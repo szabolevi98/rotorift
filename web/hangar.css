@@ -1,0 +1,199 @@
+/* Game hangar. The standalone model showcase keeps its own appearance. */
+#menu {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: #101114;
+  backdrop-filter: none;
+  color-scheme: dark;
+}
+#menu > header {
+  height: 76px;
+  min-height: 76px;
+  padding: 0 32px;
+  gap: 24px;
+  background: #101114;
+}
+#menu .brand { font-size: 20px; gap: 10px; }
+#menu .brand img { width: 32px; }
+#menu .header-end { gap: 22px; }
+#menu .connection { color: var(--muted); }
+#menu .connection:before { background: #89c291; }
+#menu .connection.offline:before { background: var(--orange); }
+#menu select,
+#menu input:not([type="checkbox"]):not([type="range"]) {
+  background: #1b1e24;
+  border-color: #ffffff18;
+  color: var(--ink);
+  min-width: 0;
+}
+#menu select:disabled { opacity: .6; }
+#menu option { background: #1b1e24; color: var(--ink); }
+#menu #language { padding: 8px 10px; background: #ffffff04; font-size: 12px; max-width: 135px; }
+.menu-body { display: grid; grid-template-columns: 180px minmax(0, 1fr); flex: 1; }
+.menu-sidebar { display: flex; flex-direction: column; border-right: 1px solid var(--line); padding: 30px 18px; }
+#menu #tabs { display: flex; flex-direction: column; align-items: stretch; gap: 9px; }
+#menu #tabs button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 12px;
+  text-align: left;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+#menu #tabs button:hover { background: #ffffff05; color: var(--ink); }
+#menu #tabs button.active { background: #ff664811; color: var(--ink); border-left-color: var(--orange); }
+.nav-icon { display: inline-block; width: 17px; font-size: 19px; line-height: 1; color: var(--muted); text-align: center; flex: none; }
+.sidebar-caption { margin: auto 10px 10px; padding-top: 80px; font-size: 11px; color: var(--muted); line-height: 1.65; }
+.sidebar-caption strong { color: var(--ink); font-weight: 500; }
+.sidebar-caption p { margin: 0; }
+#menu main { margin: 0; max-width: none; min-width: 0; padding: 24px 30px 0; }
+#menu .aircraft-stage { margin: 0; border: 0; border-radius: 0; background: none; min-height: 0; overflow: visible; position: relative; }
+#menu .stage-top { padding: 0; font-size: 11px; letter-spacing: .15em; }
+#menu .stage-top span:first-child:before { content: none; }
+#menu #model-number { color: #7c848d; font-size: 10px; }
+#menu .aircraft-title { padding: 0; }
+#menu .aircraft-title h1 { margin: 12px 0 6px; font-size: clamp(28px, 3vw, 38px); letter-spacing: -.045em; line-height: 1.1; }
+#menu .aircraft-title p { font-size: 12px; margin: 0; color: var(--muted); }
+.preview-floor {
+  position: relative;
+  isolation: isolate;
+  margin: 0 -15px;
+  background: radial-gradient(ellipse at 50% 84%, #ff664818, transparent 48%), radial-gradient(ellipse at 50% 50%, #ffffff05, transparent 65%);
+}
+.preview-floor:before {
+  content: "";
+  position: absolute;
+  width: 78%;
+  height: 42%;
+  bottom: 0;
+  left: 11%;
+  background-image: linear-gradient(#ffffff07 1px, transparent 1px), linear-gradient(90deg, #ffffff07 1px, transparent 1px);
+  background-size: 32px 32px;
+  transform: perspective(320px) rotateX(58deg);
+  pointer-events: none;
+}
+#menu #preview-scene { position: relative; z-index: 1; height: clamp(230px, 37vh, 440px); touch-action: none; cursor: grab; }
+#menu #preview-scene:active { cursor: grabbing; }
+.preview-hint { position: absolute; right: 0; top: 75px; font-size: 11px; color: var(--muted); pointer-events: none; margin: 0; }
+#menu .launch-controls { display: grid; grid-template-columns: 1.15fr .85fr 1fr; gap: 22px; border-top: 1px solid var(--line); padding: 20px 0 18px; }
+#menu .launch-controls > div { min-width: 0; }
+#menu .dock-label { display: block; font-size: 11px; letter-spacing: .11em; text-transform: uppercase; font-weight: 500; color: var(--muted); margin: 0 0 12px; line-height: 1.4; }
+#menu .drone-picker { gap: 6px; }
+#menu .drone-card { min-height: 62px; padding: 10px; border-radius: 5px; background: #ffffff04; }
+#menu .drone-card strong { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+#menu .drone-card small { display: block; font-size: 11px; line-height: 1.35; }
+#menu .drone-card.selected { border-color: var(--orange); background: #ff664815; box-shadow: none; }
+#menu .drone-card.selected:after { content: none; }
+#menu .drone-color-control { margin: 12px 0 0; }
+#menu #drone-color-picker { gap: 6px; }
+#menu .drone-color-swatch { width: 26px; height: 26px; }
+#menu .drone-color-swatch i { width: 16px; height: 16px; }
+#menu .drone-color-swatch[aria-pressed="true"] { border-color: #dce5ed; box-shadow: none; background: transparent; }
+#menu .map-picker { gap: 7px; }
+#menu .map-card { background: #ffffff04; color: var(--ink); border-radius: 5px; }
+#menu .map-card.selected { border-color: var(--orange); box-shadow: none; background: #ff664809; }
+#menu .map-art { display: none; }
+#menu .map-label { padding: 12px 10px; font-size: 12px; }
+#menu .map-label b { font-weight: 500; }
+#menu .map-label span { display: none; }
+#menu .session-settings { grid-template-columns: .65fr 1fr; margin: 0 0 12px; gap: 10px; }
+#menu .session-settings select { font-size: 12px; padding: 10px 8px; border-radius: 5px; }
+#menu .primary { color: #16191c; background: var(--orange); border-radius: 5px; font-weight: 750; text-transform: uppercase; padding: 18px; }
+#menu .primary:hover { background: #ff7c62; }
+#menu .primary > span:last-child { color: #16191c; }
+#menu .secondary { background: #ffffff04; color: var(--ink); border-color: #ffffff20; }
+#menu .secondary:hover { border-color: #ffffff50; }
+#menu .launch-row { flex-wrap: wrap; gap: 8px; }
+#menu #launch { min-width: 130px; }
+#menu .simulation-controls { margin: 12px 0 0; border: 0; border-radius: 0; padding: 0; }
+#menu .simulation-controls summary { color: var(--muted); font-size: 11px; font-weight: 400; padding: 4px 0; }
+#menu .simulation-controls[open] { padding-bottom: 12px; }
+#menu .simulation-row { flex-wrap: wrap; gap: 6px; font-size: 12px; }
+#menu .name-row { margin: 18px 0 6px; }
+#menu .map-preview-link { font-size: 11px; color: var(--muted); margin: 12px 0; }
+#menu .prototype-note { font-size: 11px; margin: 8px 0 0; line-height: 1.5; }
+.hangar-specs { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); gap: 26px; padding: 17px 0; }
+#menu .drone-specs { display: flex; flex-wrap: wrap; border: 0; padding: 0; margin: 0; gap: 30px; }
+#menu .drone-specs strong { font-size: 16px; font-weight: 650; white-space: nowrap; }
+#menu .drone-specs small { font-size: 11px; margin-top: 5px; }
+#menu .input-hint { margin: 0; color: var(--muted); font-size: 11px; max-width: 280px; text-align: right; line-height: 1.5; }
+#menu > footer { margin: 0; padding: 18px 30px; font-size: 10px; letter-spacing: .07em; gap: 20px; flex-wrap: wrap; }
+#menu .intro { margin: 8px 0 30px; }
+#menu .intro h1 { font-size: clamp(30px, 4vw, 48px); }
+#menu .intro p { color: var(--muted); }
+#menu .settings-grid { gap: 20px; }
+#menu .card { background: #ffffff03; border-color: var(--line); border-radius: 6px; }
+#menu .rates-table input { width: 100% !important; min-width: 0; }
+#menu .rates-table { table-layout: fixed; }
+#menu .rates-table th:first-child { width: 14%; }
+#menu .rates-table th { overflow-wrap: anywhere; font-size: 11px; }
+#menu .records-filters > select { max-width: 100%; }
+#menu .online-controls { margin: 10px 0 22px; padding-top: 20px; }
+#notice { color: var(--ink); background: #1b1e24; border: 1px solid #ff66484a; }
+@media (min-width: 1600px) {
+  .menu-body { grid-template-columns: 210px minmax(0, 1fr); }
+  #menu main { padding-right: 4vw; padding-left: 4vw; }
+  #menu .launch-controls { gap: 36px; }
+}
+@media (max-width: 1050px) {
+  .menu-body { grid-template-columns: 152px minmax(0, 1fr); }
+  .menu-sidebar { padding: 24px 12px; }
+  #menu main { padding: 22px 22px 0; }
+  #menu .launch-controls { grid-template-columns: 1.1fr .9fr; gap: 20px; }
+  .departure-controls { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end; }
+  #menu .departure-controls .session-settings { margin: 0; }
+  #menu .launch-row { align-items: center; }
+  #menu .settings-grid { grid-template-columns: 1fr; }
+  .hangar-specs { align-items: start; }
+  #menu .input-hint { max-width: 180px; }
+  #menu .drone-specs { gap: 18px; }
+}
+@media (max-width: 700px) {
+  #menu > header { padding: 0 18px; height: 68px; min-height: 68px; }
+  #menu .brand { font-size: 17px; }
+  #menu .brand img { width: 27px; }
+  #menu .header-end { gap: 10px; }
+  #menu .connection { display: none; }
+  #menu #language { max-width: 105px; }
+  .menu-body { display: block; }
+  .menu-sidebar { padding: 12px 18px; border-right: 0; border-bottom: 1px solid var(--line); }
+  #menu #tabs { flex-direction: row; flex-wrap: wrap; gap: 5px; }
+  #menu #tabs button { padding: 10px 8px; flex: 1; justify-content: center; font-size: 11px; gap: 6px; min-height: 42px; }
+  .nav-icon { font-size: 16px; width: 15px; }
+  .sidebar-caption { display: none; }
+  #menu main { padding: 24px 20px 0; }
+  #menu #preview-scene { height: 270px; }
+  .preview-hint { top: 48px; max-width: 86px; text-align: right; }
+  #menu .aircraft-title p { max-width: 70%; }
+  #menu .launch-controls { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .departure-controls { grid-template-columns: 1fr; gap: 12px; }
+  #menu .hangar-specs { flex-direction: column; gap: 15px; }
+  #menu .input-hint { max-width: none; text-align: left; }
+  #menu > footer { padding: 20px; gap: 12px 20px; }
+  #menu .card { padding: 18px 14px; }
+}
+@media (max-width: 480px) {
+  #menu #tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  #menu #tabs button { justify-content: start; }
+  #menu .launch-controls { grid-template-columns: 1fr; gap: 24px; }
+  .departure-controls { grid-column: auto; }
+  #menu .drone-card { min-height: 64px; }
+  #menu .session-settings { grid-template-columns: .65fr 1fr; }
+  #menu .drone-specs { gap: 16px; }
+  #menu .drone-specs strong { font-size: 14px; }
+  #menu .drone-specs small { font-size: 10px; }
+  #menu .stage-top { font-size: 10px; }
+}
+@media (pointer: coarse) {
+  #menu .drone-color-swatch { width: 32px; height: 44px; border-radius: 6px; }
+  #menu .drone-color-swatch i { width: 20px; height: 20px; }
+  #menu #drone-color-picker { gap: 2px; }
+  #menu .map-label { padding: 15px 10px; }
+  #menu .simulation-controls summary { min-height: 44px; display: flex; align-items: center; }
+}

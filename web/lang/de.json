@@ -163,5 +163,13 @@
   "error.hostOnly": "Nur der Gastgeber kann die Simulationsoptionen ändern.",
   "error.rulesLocked": "Raumregeln können nach dem Start nicht geändert werden.",
   "error.invalidSimulation": "Ungültige Simulationseinstellungen.",
-  "meta.title": "Rotorift · Leichtgewichtiger FPV-Simulator im Browser"
+  "meta.title": "Rotorift · Leichtgewichtiger FPV-Simulator im Browser",
+  "nav.multiplayer": "Mehrspieler",
+  "hangar.aircraft": "DEINE DROHNE",
+  "hangar.aircraftColor": "DROHNE & FARBE",
+  "hangar.tagline": "Am Computer oder Smartphone.",
+  "hangar.rotate": "Zum Drehen ziehen ↔",
+  "hangar.drone.rift-65": "65 mm",
+  "hangar.drone.rift-x5": "5″",
+  "hangar.drone.rift-c3": "3″"
 }

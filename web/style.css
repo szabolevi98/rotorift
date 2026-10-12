@@ -1,10 +1,10 @@
 :root {
-  --ink: #202624;
-  --muted: #7b827c;
-  --paper: #f4f5ee;
+  --ink: #eef1f4;
+  --muted: #a0a7af;
+  --paper: #101114;
   --orange: #ff6648;
-  --line: #dce0d6;
-  --green: #537057;
+  --line: #ffffff16;
+  --green: #9db9a7;
   font-family: Inter, Arial, sans-serif;
   color: var(--ink);
   background: var(--paper);
