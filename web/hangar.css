@@ -181,6 +181,10 @@
   #menu .card { padding: 18px 14px; }
 }
 @media (max-width: 480px) {
+  #menu > header { gap: 12px; padding: 0 14px; }
+  #menu .brand { font-size: 15px; gap: 8px; }
+  #menu .brand img { width: 24px; }
+  #menu #language { max-width: 88px; }
   #menu #tabs { display: grid; grid-template-columns: 1fr 1fr; }
   #menu #tabs button { justify-content: start; }
   #menu .launch-controls { grid-template-columns: 1fr; gap: 24px; }

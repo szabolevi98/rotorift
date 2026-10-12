@@ -43,6 +43,7 @@
           ></a
         >
         <div class="header-end">
+          <button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button>
           <span id="server-status" class="connection"></span
           ><select id="language" aria-label="Language">
             <option value="en">English</option>
@@ -324,7 +325,7 @@
     <div id="hud" class="hidden">
       <div class="hud-top">
         <span class="hud-brand">ROTORIFT.</span><span id="hud-session"></span
-        ><button id="menu-button" data-i18n="nav.menu"></button>
+        ><div class="hud-actions"><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="menu-button" data-i18n="nav.menu"></button></div>
       </div>
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>
@@ -389,6 +390,8 @@
       <svg class="orientation-phone" viewBox="0 0 80 100" aria-hidden="true"><rect x="17" y="5" width="46" height="86" rx="9"/><path d="M32 15H48M35 81H45"/></svg>
       <strong data-i18n="orientation.rotate">Rotate your device to landscape.</strong>
       <span data-i18n="orientation.hint">The flight deck works best with a wide view.</span>
+      <button type="button" class="fullscreen-toggle fullscreen-with-label hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg><span data-fullscreen-label>Full screen</span></button>
+      <span id="fullscreen-error" class="hidden" role="status"></span>
     </div>
     <script type="module" src="/main.js"></script>
   </body>

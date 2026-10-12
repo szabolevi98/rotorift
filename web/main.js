@@ -5,6 +5,7 @@ import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
+import { bindFullscreen } from "./fullscreen.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -970,6 +971,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function bindUI() {
+  bindFullscreen(t, notice);
   for (const b of document.querySelectorAll("[data-tab]"))
     b.onclick = () => {
       if (b.dataset.tab === "multiplayer") {

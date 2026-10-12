@@ -628,6 +628,18 @@ footer {
   background: #0003;
   padding: 9px 14px;
 }
+.hud-actions { display: flex; align-items: center; gap: 8px; }
+.fullscreen-toggle, .hud-top .fullscreen-toggle {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 44px; height: 44px; padding: 10px; border: 1px solid #ffffff30;
+  border-radius: 6px; color: var(--ink); background: #ffffff08;
+}
+.fullscreen-toggle:hover { background: #ffffff16; }
+.fullscreen-toggle[aria-pressed="true"] { border-color: var(--orange); color: var(--orange); }
+.fullscreen-toggle svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fullscreen-with-label { width: auto; min-height: 44px; height: auto; padding: 12px 18px; gap: 12px; }
+#orientation-prompt .fullscreen-with-label span { color: inherit; }
+#orientation-prompt #fullscreen-error { color: var(--orange); font-size: 13px; }
 .hud-bottom {
   position: absolute;
   bottom: 52px;
