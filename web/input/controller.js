@@ -1,6 +1,9 @@
 import { read, write } from "../storage.js";
 import { clamp } from "../../shared/physics/math.js";
 import { ActionBindings, RADIO_ACTIONS, availableBindings, bindingKey } from "./action-bindings.js";
+import { defaultProfile, radioPreset, profileStorageKey, restoreRadioProfile, isEdgeTXRadio } from "./radio-profiles.js";
+import { StickSetup } from "./stick-setup.js";
+export { defaultProfile } from "./radio-profiles.js";
 export const DEFAULT_KEYS = {
   throttleUp: "KeyW",
   throttleDown: "KeyS",
@@ -25,16 +28,6 @@ export const KEYBOARD_RESPONSE = {
   yaw: { limit: 0.75, riseSeconds: 0.30 },
   returnSeconds: 0.08,
 };
-export const defaultProfile = () => ({
-  deadzone: 0.015,
-  actions: Object.fromEntries(RADIO_ACTIONS.map((action) => [action, null])),
-  axes: {
-    roll: { index: 0, invert: false, center: 0, min: -1, max: 1 },
-    pitch: { index: 1, invert: true, center: 0, min: -1, max: 1 },
-    yaw: { index: 3, invert: false, center: 0, min: -1, max: 1 },
-    throttle: { index: 2, invert: false, center: 0, min: -1, max: 1 },
-  },
-});
 const defaults = defaultProfile;
 export function radioInput(raw, profile) {
   const out = {};
@@ -76,11 +69,14 @@ export class Controller {
     this.keyboard = { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
     this.raw = [];
     this.pad = null;
+    this.pads = [];
+    this.deviceId = read("radio-device", "auto");
     this.lastId = null;
     this.lastIndex = null;
     this.profile = defaults();
     this.range = null;
     this.bindings = new ActionBindings();
+    this.setup = null;
     window.addEventListener("keydown", (e) => {
       if (e.target.closest("input,select,textarea,button")) return;
       if (Object.values(this.keys).includes(e.code) || ["ShiftLeft", "ShiftRight"].includes(e.code)) {
@@ -103,6 +99,28 @@ export class Controller {
     this.pressed.clear();
     this.keyboard = { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
     this.bindings.reset();
+    this.setup = null;
+  }
+  applyPreset(preset) {
+    if (!this.pad) return;
+    if (preset === "custom") { this.markCustom(); this.save(); return; }
+    this.profile = { ...radioPreset(this.pad, preset), actions: this.profile.actions, deadzone: this.profile.deadzone };
+    this.clear(); this.range = null; this.save();
+  }
+  markCustom() { this.profile.preset = "custom"; this.profile.supported = true; }
+  startStickSetup() {
+    if (!this.pad) return false;
+    this.clear(); this.range = null;
+    this.setup = new StickSetup(this.raw);
+    return true;
+  }
+  advanceStickSetup() {
+    if (!this.setup?.advance(this.raw)) return false;
+    if (!this.setup.axis) {
+      this.profile.axes = this.setup.axes;
+      this.markCustom(); this.setup = null; this.bindings.reset(); this.save();
+    }
+    return true;
   }
   bindAction(action, binding) {
     if (!this.pad || !RADIO_ACTIONS.includes(action)) return false;
@@ -120,25 +138,33 @@ export class Controller {
     return true;
   }
   save() {
-    if (this.pad) write("radio." + this.pad.id, this.profile);
+    if (this.pad) {
+      write(profileStorageKey(this.pad), this.profile);
+      write("radio." + this.pad.id, this.profile);
+    }
     write("keys", this.keys);
     write("input-source", this.source);
+    write("radio-device", this.deviceId);
   }
   poll(dt) {
     const pads = Array.from(navigator.getGamepads?.() ?? []).filter(Boolean);
-    this.pad = pads.find((p) => p.id === this.lastId) ?? pads[0] ?? null;
+    this.pads = pads;
+    this.pad = this.deviceId !== "auto" ? pads.find((p) => p.id === this.deviceId) ?? null
+      : pads.find(isEdgeTXRadio) ?? pads.find((p) => p.id === this.lastId) ?? pads[0] ?? null;
     if ((this.pad?.id ?? null) !== this.lastId || (this.pad?.index ?? null) !== this.lastIndex) {
       this.lastId = this.pad?.id ?? null;
       this.lastIndex = this.pad?.index ?? null;
       this.profile = this.pad
-        ? read("radio." + this.pad.id, defaults())
+        ? restoreRadioProfile(this.pad, read(profileStorageKey(this.pad), null), read("radio." + this.pad.id, null))
         : defaults();
       this.bindings.reset();
       this.bindings.result = null;
       this.range = null;
+      this.setup = null;
       if (this.source !== "keyboard") this.action("radioChanged");
     }
     this.raw = this.pad ? Array.from(this.pad.axes) : [];
+    this.setup?.sample(this.raw);
     if (this.range) {
       for (let i = 0; i < this.raw.length; i++) {
         this.range.min[i] = Math.min(this.range.min[i] ?? 1, this.raw[i]);
@@ -181,8 +207,8 @@ export class Controller {
       const travel = dt * response.limit / (returning ? KEYBOARD_RESPONSE.returnSeconds : response.riseSeconds);
       k[axis] += clamp(target - k[axis], -travel, travel);
     }
-    const out = this.usingRadio ? radioInput(this.raw, this.profile) : { ...k };
-    const { events, assignment } = this.bindings.sample(this.pad, this.profile, this.usingRadio && !this.range);
+    const out = this.usingRadio ? this.radioReady ? radioInput(this.raw, this.profile) : { roll: 0, pitch: 0, yaw: 0, throttle: 0 } : { ...k };
+    const { events, assignment } = this.bindings.sample(this.pad, this.profile, this.usingRadio && !this.range && !this.setup);
     if (assignment) this.bindAction(assignment.action, assignment.binding);
     for (const event of events) {
       // Supply this frame's throttle, so arming never uses a stale low value.
@@ -194,8 +220,13 @@ export class Controller {
   get usingRadio() {
     return this.source !== "keyboard" && !!this.pad;
   }
+  get radioReady() {
+    const axes = Object.values(this.profile.axes);
+    return !this.setup && this.profile.supported !== false && new Set(axes.map((axis) => axis.index)).size === 4 && axes.every((axis) => Number.isFinite(this.raw[axis.index]));
+  }
   calibrateCenter() {
     if (!this.pad) return false;
+    if (this.setup) return false;
     for (const [axis, a] of Object.entries(this.profile.axes))
       if (axis !== "throttle") a.center = this.raw[a.index] ?? 0;
     this.save();
@@ -203,6 +234,7 @@ export class Controller {
   }
   calibrateRange() {
     if (!this.pad) return false;
+    this.setup = null;
     this.bindings.reset();
     const start = performance.now();
     this.range = { start, end: start + 6000, min: [], max: [] };

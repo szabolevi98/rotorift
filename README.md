@@ -70,6 +70,10 @@ automatikusan működik a billentyűzet. A beállításokban csatornakiosztás,
 fordítás, holtjáték, botközép és hatmásodperces végpontkalibráció található.
 A böngészőnek a csatlakoztatott rádión egy botmozdításra is szüksége lehet.
 A TX15, Pocket és DJI vezérlők tényleges hardveres tesztje még hátravan.
+A RadioMaster/EdgeTX rádiókhoz automatikus profil és eszközprioritás tartozik;
+egyéni kiosztást négy mozdulatos botfelismerő tanít be. A PC-s és androidos
+profilok külön mentődnek. A régi Android USB-csatornavesztéséről és a külön SIM
+rádiómodell beállításáról: [rádióbeállítási útmutató](docs/radio-setup.md).
 
 Telefonon is elérhető a képernyőn az **ARM/DISARM**, **Reset**, nézetváltás,
 repülési mód és menü. A repülési tengelyeket a csatlakoztatott rádió/kontroller vezérli.

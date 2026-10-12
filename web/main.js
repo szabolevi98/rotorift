@@ -8,6 +8,7 @@ import { LoadingScreen, paintLoading } from "./loading.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
+import { RADIO_PRESETS } from "./input/radio-profiles.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -151,6 +152,7 @@ function notice(message) {
 }
 function panel(name) {
   controller?.bindings.reset();
+  if (controller) controller.setup = null;
   $("#menu").dataset.panel = name;
   for (const el of document.querySelectorAll(".panel"))
     el.classList.toggle("hidden", el.id !== name + "-panel");
@@ -209,6 +211,7 @@ function action(kind, currentInput = input) {
   if (!playing || paused) return;
   if (["arm", "armOn", "armOff"].includes(kind)) {
     const armed = kind === "armOn" || (kind === "arm" && !flight.physics.armed);
+    if (armed && controller.usingRadio && !controller.radioReady) { notice(t("settings.radioMissing")); return; }
     if (armed && room && (room.phase !== "flying" || room.players.find((p) => p.id === network.id)?.finished)) return;
     if (armed && currentInput.throttle > 0.06) {
       notice(t("hud.lowThrottle"));
@@ -442,6 +445,8 @@ function saveRates(ids) {
 function renderInputUI() {
   const signature = [
     controller.pad?.id,
+    controller.pads.map((pad) => pad.id + ":" + pad.index).join(","),
+    controller.deviceId,
     controller.raw.length,
     controller.pad?.buttons?.length,
     Object.values(controller.profile.axes).map((axis) => axis.index).join(","),
@@ -449,12 +454,36 @@ function renderInputUI() {
     controller.bindings.capture?.action,
     controller.bindings.result,
     !!controller.range,
+    controller.profile.preset,
+    controller.profile.supported,
+    controller.setup?.step,
+    controller.setup?.error,
     document.documentElement.lang,
   ].join("|");
   if (signature === inputSignature) return;
   inputSignature = signature;
   $("#axis-settings").replaceChildren();
   $("#deadzone").value = controller.profile.deadzone;
+  const devices = $("#radio-device");
+  devices.replaceChildren(new Option(t("settings.radioDeviceAuto"), "auto"));
+  for (const pad of controller.pads) devices.append(new Option(pad.id, pad.id));
+  if (controller.deviceId !== "auto" && !controller.pads.some((pad) => pad.id === controller.deviceId))
+    devices.append(new Option(controller.deviceId + " · " + t("input.noRadio"), controller.deviceId));
+  devices.value = controller.deviceId;
+  const presets = $("#radio-preset");
+  presets.replaceChildren();
+  for (const preset of RADIO_PRESETS) presets.append(new Option(t("radioPreset." + preset), preset));
+  presets.value = controller.profile.preset ?? "auto";
+  presets.disabled = !controller.pad || !!controller.setup;
+  $("#radio-recommend").disabled = !controller.pad || !!controller.setup;
+  $("#stick-setup-start").disabled = !controller.pad || !!controller.range || !!controller.setup;
+  const setup = controller.setup;
+  $("#calibrate-center").disabled = $("#calibrate-range").disabled = !!setup;
+  visible("#stick-setup", !!setup);
+  $("#stick-setup-instruction").textContent = setup ? `${setup.step + 1}/4 · ${t("stickSetup." + setup.axis)}` : "";
+  $("#stick-setup-status").textContent = setup?.error ? t("stickSetup." + setup.error) : "";
+  if (setup) radioGuide?.setAxis(setup.axis);
+  visible("#radio-preset-warning", controller.profile.supported === false);
   for (const [axis, a] of Object.entries(controller.profile.axes)) {
     const row = node("div", "axis-row");
     row.dataset.radioAxisRow = axis;
@@ -467,6 +496,7 @@ function renderInputUI() {
     select.value = a.index;
     select.onchange = () => {
       a.index = Number(select.value);
+      controller.markCustom();
       controller.bindings.reset();
       controller.save();
     };
@@ -481,6 +511,7 @@ function renderInputUI() {
     );
     invert.onchange = () => {
       a.invert = invert.checked;
+      controller.markCustom();
       controller.save();
     };
     label.append(invert, node("span", "", "↔"));
@@ -488,6 +519,7 @@ function renderInputUI() {
     meter.min = -1;
     meter.max = 1;
     meter.dataset.meter = axis;
+    select.disabled = invert.disabled = !!setup;
     row.append(select, label, meter);
     $("#axis-settings").append(row);
   }
@@ -500,7 +532,7 @@ function renderInputUI() {
     select.append(new Option(t("settings.unassigned"), ""));
     for (const binding of options) select.append(new Option(bindingLabel(binding), bindingKey(binding)));
     select.value = bindingKey(controller.profile.actions?.[name]);
-    select.disabled = !controller.pad || !!controller.range;
+    select.disabled = !controller.pad || !!controller.range || !!setup;
     select.onchange = () => {
       controller.bindAction(name, parseBinding(select.value));
       controller.bindings.result = "saved";
@@ -1078,6 +1110,19 @@ function bindUI() {
   $("#binding-cancel").onclick = () => {
     controller.bindings.reset(); controller.bindings.result = null; renderInputUI();
   };
+  $("#radio-preset").onchange = (event) => {
+    controller.applyPreset(event.target.value); renderInputUI();
+  };
+  $("#radio-device").onchange = (event) => {
+    controller.deviceId = event.target.value; controller.clear(); controller.save();
+  };
+  $("#radio-recommend").onclick = () => { controller.applyPreset("auto"); renderInputUI(); };
+  $("#stick-setup-start").onclick = () => { controller.startStickSetup(); renderInputUI(); };
+  $("#stick-setup-next").onclick = () => {
+    if (controller.advanceStickSetup() && !controller.setup) $("#calibration-status").textContent = t("settings.saved");
+    renderInputUI();
+  };
+  $("#stick-setup-cancel").onclick = () => { controller.setup = null; controller.bindings.reset(); renderInputUI(); };
   $("#session").onchange = () => {
     updateSessionOptions();
   };

@@ -240,6 +240,10 @@ h2 {
 .radio-action-row select { width: 100%; min-width: 0; }
 .radio-action-row button { min-height: 44px; }
 #binding-status { color: var(--orange); }
+.radio-warning { color: var(--orange); line-height: 1.5; }
+#stick-setup { margin: 14px 0; padding: 12px; background: #ffffff08; border-left: 2px solid var(--orange); }
+.radio-mobile-help { margin: 15px 0; }
+.radio-mobile-help summary { cursor: pointer; }
 #simulation-hud { position: absolute; left: 32px; top: 86px; display: grid; gap: 8px; }
 #simulation-hud > div { padding: 7px 10px; border-radius: 4px; background: #0004; }
 #battery-hud.low { color: #ffdb77; }

@@ -275,6 +275,11 @@ Az első kiadásban csak a három elkészült modell indítható el.
 - Élő csatornakijelzés a kiosztás ellenőrzésére, az alapértelmezett Mode 2
   mellett szabadon módosítható hozzárendeléssel.
 - Az eszközprofilok és a kalibráció helyben megmaradnak újratöltés után.
+- RadioMaster/EdgeTX automatikus felismerés és előnyben részesített eszközválasztás,
+  ajánlott AETR/Android profilok, négy mozdulatos botfelismerés és külön PC/Android
+  profilmentés. A hiányzó vagy kapcsolóra mutató USB-tengely nem helyettesítheti
+  észrevétlenül a repülési botot; analóg tanítás és Android-kompatibilis SIM
+  rádiómodell segít a korlátozott böngészős USB-leképezéseknél.
 - ARM/DISARM, reset, kameranézet, repülési mód és menü műveletekhez
   rádió-/kontrollergomb vagy szabad AUX csatorna rendelhető, eszközönként mentve.
   Gombtanítás és élő állapotjelzés segíti a kiosztást. ARM gomb: váltás;

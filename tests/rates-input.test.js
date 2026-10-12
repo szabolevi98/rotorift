@@ -82,6 +82,21 @@ test("radio connection and loss emit one change action; forced keyboard remains 
   assert.equal(c.poll(0.01).throttle, 0);
   assert.equal(actions.length, 2);
 });
+
+test("automatic device choice prefers RadioMaster; a selected missing device never falls through to another", (t) => {
+  const env = inputEnvironment(t), c = new Controller(() => {});
+  const xbox = { id: "Xbox 360 Controller", index: 0, mapping: "standard", axes: [0, 1, 0, 0] };
+  const pocket = { id: "RadioMaster Pocket Joystick", index: 1, axes: [0, 0, -1, 0, 0, 0, 0, 0] };
+  env.setPads([xbox, pocket]); c.poll(0.01);
+  assert.equal(c.pad.id, pocket.id);
+  c.deviceId = xbox.id; c.poll(0.01);
+  assert.equal(c.pad.id, xbox.id);
+  env.setPads([pocket]); c.poll(0.01);
+  assert.equal(c.pad, null);
+  assert.equal(c.usingRadio, false);
+  c.deviceId = "auto"; c.poll(0.01);
+  assert.equal(c.pad.id, pocket.id);
+});
 test("keyboard ramps through partial stick before full roll; either Shift gives fine control and release recenters", (t) => {
   inputEnvironment(t);
   for (const hz of [60, 240]) {

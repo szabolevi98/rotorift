@@ -155,6 +155,17 @@
                   ></option></select
               ></label>
               <p id="radio-name" class="muted"></p>
+              <label><span data-i18n="settings.radioDevice"></span><select id="radio-device"></select></label>
+              <label><span data-i18n="settings.radioPreset"></span><select id="radio-preset"></select></label>
+              <div class="button-row"><button id="radio-recommend" type="button" class="secondary" data-i18n="settings.radioRecommend"></button><button id="stick-setup-start" type="button" class="secondary" data-i18n="stickSetup.start"></button></div>
+              <p class="muted" data-i18n="stickSetup.startHint"></p>
+              <p id="radio-preset-warning" class="radio-warning hidden" data-i18n="settings.radioMissing" role="status"></p>
+              <div id="stick-setup" class="hidden">
+                <p id="stick-setup-instruction"></p>
+                <p id="stick-setup-status" class="radio-warning" role="status"></p>
+                <div class="button-row"><button id="stick-setup-next" type="button" class="secondary" data-i18n="stickSetup.next"></button><button id="stick-setup-cancel" type="button" class="secondary" data-i18n="settings.cancelBinding"></button></div>
+              </div>
+              <details class="radio-mobile-help"><summary data-i18n="settings.radioMobileHelp"></summary><p class="muted" data-i18n="settings.radioMobileRecipe"></p></details>
               <div id="radio-guide" class="radio-guide">
                 <div class="radio-guide-heading"><h3 id="radio-guide-title" data-i18n="radioGuide.title"></h3><span>Mode 2</span></div>
                 <div class="radio-guide-visual">
