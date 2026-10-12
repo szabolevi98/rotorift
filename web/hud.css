@@ -1,5 +1,5 @@
 /* Flight instruments stay at the edges; no blur or extra rendering effects. */
-#hud { --hud-edge: max(20px, env(safe-area-inset-left)); font-family: Inter, Arial, sans-serif; background: linear-gradient(#0005, transparent 20%, transparent 78%, #0005); }
+#hud { --hud-edge: max(20px, env(safe-area-inset-left)); color-scheme: dark; scrollbar-width: thin; font-family: Inter, Arial, sans-serif; background: linear-gradient(#0005, transparent 20%, transparent 78%, #0005); }
 #hud .hud-top { padding: max(16px, env(safe-area-inset-top)) var(--hud-edge); gap: 16px; }
 .hud-location { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 #hud .hud-brand { display: block; font-size: 11px; color: #fff9; }
