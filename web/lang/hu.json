@@ -75,7 +75,7 @@
   "records.empty": "Ebben a kategóriában még nincs befejezett kör.",
   "records.unavailable": "Az online rekordok nem elérhetők. A helyi időmérő működik.",
   "footer.flight": "TALÁLD MEG AZ ÍVED",
-  "footer.build": "Copyright © 2026 szabolevi98",
+  "footer.build": "Copyright © {year} szabolevi98",
   "loading": "Repülőtér megnyitása…",
   "meta.description": "Könnyű, böngészős FPV-szimulátor. Repülj gépen vagy telefonon, kompatibilis kontrollerrel. Low-poly pályák, részletes drónok. Telepítés nélkül.",
   "aria.environment": "3D FPV repülési környezet",

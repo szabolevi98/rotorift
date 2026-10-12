@@ -75,7 +75,7 @@
   "records.empty": "Aucun tour terminé dans cette catégorie.",
   "records.unavailable": "Records en ligne indisponibles. Le contre-la-montre local reste disponible.",
   "footer.flight": "TROUVEZ VOTRE TRAJECTOIRE",
-  "footer.build": "Copyright © 2026 szabolevi98",
+  "footer.build": "Copyright © {year} szabolevi98",
   "loading": "Ouverture du terrain de vol…",
   "meta.description": "Simulateur FPV léger dans le navigateur. Volez sur PC ou téléphone avec une manette compatible. Terrains low-poly, drones détaillés. Sans installation.",
   "aria.environment": "Environnement de vol FPV 3D",

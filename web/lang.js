@@ -7,13 +7,14 @@ export const t = (key, values = {}) =>
     String(values[k] ?? ""),
   );
 export function applyLanguage() {
+  const values = { year: new Date().getFullYear() };
   document.documentElement.lang = language;
   document.title = t("meta.title");
   document.querySelector('meta[property="og:title"]').content = t("meta.title");
   document.querySelector('meta[name="twitter:title"]').content = t("meta.title");
   document
     .querySelectorAll("[data-i18n]")
-    .forEach((el) => (el.textContent = t(el.dataset.i18n)));
+    .forEach((el) => (el.textContent = t(el.dataset.i18n, values)));
   document
     .querySelectorAll("[data-i18n-placeholder]")
     .forEach((el) => (el.placeholder = t(el.dataset.i18nPlaceholder)));

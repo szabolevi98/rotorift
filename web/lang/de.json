@@ -75,7 +75,7 @@
   "records.empty": "Noch keine abgeschlossenen Runden in dieser Kategorie.",
   "records.unavailable": "Online-Bestzeiten nicht verfügbar. Lokales Zeitfahren funktioniert weiter.",
   "footer.flight": "FINDE DEINE LINIE",
-  "footer.build": "Copyright © 2026 szabolevi98",
+  "footer.build": "Copyright © {year} szabolevi98",
   "loading": "Flugdeck wird geöffnet…",
   "meta.description": "Leichtgewichtiger FPV-Simulator im Browser. Fliege am PC oder Smartphone mit kompatiblem Controller. Low-Poly-Welten, detaillierte Drohnen. Ohne Installation.",
   "aria.environment": "3D-FPV-Flugumgebung",
