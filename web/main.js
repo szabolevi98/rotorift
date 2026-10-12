@@ -5,6 +5,7 @@ import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
+import { FlightHelp } from "./game/flight-help.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
@@ -79,6 +80,7 @@ let playing = false,
   lastFrame = performance.now(),
   lastUi = 0;
 let roomRequest = null, roomRequestTimer, launching = false;
+let flightHelp;
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
@@ -193,6 +195,7 @@ function refreshSessionBanner() {
 }
 function pause() {
   if (!playing) return;
+  flightHelp?.setOpen(false);
   void fullscreen?.enterMenu();
   paused = true;
   flight.active = false;
@@ -207,12 +210,14 @@ function pause() {
 }
 function resume() {
   if (!playing) return;
+  flightHelp?.setOpen(false);
   void fullscreen?.enterFlight();
   paused = false;
   controller.bindings.reset();
   lastFrame = performance.now();
   flight.active = !room || room.phase === "flying";
   document.activeElement?.blur();
+  hud();
   visible("#menu", false);
   visible("#hud", true);
   refreshSessionBanner();
@@ -714,6 +719,7 @@ async function loadRoom(r) {
   const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
     routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
+  flightHelp?.setOpen(false);
   $("#flight-mode").value = r.mode;
   try {
     const own = r.players.find(p=>p.id===network.id);
@@ -734,6 +740,7 @@ async function loadRoom(r) {
     flight.active = room.phase === "flying";
     controller.clear();
     document.activeElement?.blur();
+    hud();
     visible("#menu", false);
     visible("#hud", true);
     refreshSessionBanner();
@@ -986,7 +993,7 @@ function hud() {
   $("#throttle").textContent = Math.round(Math.min(input.throttle, flight.physics.effects.throttleLimit) * 100);
   const effects = flight.physics.effects, state = effects.telemetry;
   visible("#battery-hud", effects.options.battery);
-  $("#battery-hud").textContent = `${t("simulation.battery")} · ${state.voltage.toFixed(1)} V · ${Math.round(state.charge * 100)}%` +
+  $("#battery-hud").textContent = `${t("hud.batteryLabel")} · ${state.voltage.toFixed(1)} V · ${Math.round(state.charge * 100)}%` +
     (state.batteryState !== "normal" ? " · " + t("hud.battery." + state.batteryState) : "");
   $("#battery-hud").classList.toggle("low", state.batteryState === "low");
   $("#battery-hud").classList.toggle("critical", state.batteryState === "critical");
@@ -1005,26 +1012,7 @@ function hud() {
       time: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`,
     });
   }
-  $("#key-hint").textContent = t("hud.keys", {
-    arm: keyName(controller.keys.arm),
-    up: keyName(controller.keys.throttleUp),
-    down: keyName(controller.keys.throttleDown),
-    tilt: [
-      controller.keys.pitchForward,
-      controller.keys.pitchBack,
-      controller.keys.rollLeft,
-      controller.keys.rollRight,
-    ]
-      .map(keyName)
-      .join(""),
-    left: keyName(controller.keys.yawLeft),
-    right: keyName(controller.keys.yawRight),
-    hover: keyName(controller.keys.hover),
-    reset: keyName(controller.keys.reset),
-    view: keyName(controller.keys.view),
-    mode: keyName(controller.keys.mode),
-    menu: keyName(controller.keys.menu),
-  });
+  flightHelp?.update();
   const race = $("#race-hud");
   race.replaceChildren();
   const timed = canRace(flight.map) && isTimedSession(session);
@@ -1077,12 +1065,13 @@ function hud() {
     );
     for (const p of players) {
       const r = node("div", "score-row");
+      r.classList.toggle("own-pilot", p.id === network.id);
       r.append(
         pilotName(p),
         node(
           "span",
           "",
-          p.lap.completed +
+          room.kind === "free" ? p.mode.toUpperCase() : p.lap.completed +
             " / " +
             time(p.finished ? p.finishMs : p.lap.bestMs),
         ),
@@ -1090,6 +1079,21 @@ function hud() {
       board.append(r);
     }
   }
+}
+function flightHelpContent() {
+  const radio = controller.usingRadio;
+  const name = action => controller.keys[action] === "Space" ? t("hud.spaceKey") : keyName(controller.keys[action]);
+  const rows = radio ? RADIO_ACTIONS.map(action => [t("key." + action),
+    [controller.profile.actions?.[action] ? bindingLabel(controller.profile.actions[action]) : t("settings.unassigned")],
+  ]) : [
+    ...[["throttle", "throttleUp", "throttleDown"], ["pitch", "pitchForward", "pitchBack"],
+      ["roll", "rollLeft", "rollRight"], ["yaw", "yawLeft", "yawRight"]]
+      .map(([axis, ...actions]) => [t("axis." + axis), actions.map(name)]),
+    ...["arm", "reset", "view", "mode", "hover", "menu"].map(action => [t("key." + action), [name(action)]]),
+    [t("hud.fineControl"), ["Shift"]],
+  ];
+  return { source: t(radio ? "settings.controller" : "input.keyboard"),
+    note: t(radio ? "hud.helpRadio" : "hud.helpKeyboard"), rows };
 }
 function frame(now) {
   if (!$("#menu").classList.contains("hidden") && $("#menu").dataset.panel === "multiplayer" && network.ready && !room && !roomRequest && now - roomsRefreshAt > 5000)
@@ -1175,6 +1179,7 @@ function bindUI() {
   $("#create-room").onclick = createRoom;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;
+  flightHelp = new FlightHelp(t, flightHelpContent);
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
   for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"]])
     $("#" + id).onclick = () => { action(kind); hud(); document.activeElement?.blur(); };
@@ -1318,6 +1323,7 @@ function bindUI() {
     renderLobby();
     updateStatus();
     refreshSessionBanner();
+    flightHelp?.update(true);
     inputSignature = "";
     renderInputUI();
     updateInputText();

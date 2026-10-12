@@ -23,6 +23,7 @@
     <link rel="icon" href="/assets/icon.svg" />
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/hangar.css" />
+    <link rel="stylesheet" href="/hud.css" />
     <script type="importmap">
       {
         "imports": {
@@ -358,19 +359,33 @@
     </div>
     <div id="hud" class="hidden">
       <div class="hud-top">
-        <span class="hud-brand">ROTORIFT.</span><span id="hud-session"></span
-        ><div class="hud-actions"><button id="hud-reset" type="button" data-i18n="hud.resetAction"></button><button id="hud-view" type="button" data-i18n="hud.viewAction" aria-pressed="false"></button><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="menu-button" data-i18n="nav.menu"></button></div>
+        <div class="hud-location"><span class="hud-brand">ROTORIFT.</span><span id="hud-session"></span></div>
+        <div class="hud-actions"><button id="hud-reset" type="button" data-i18n="hud.resetAction"></button><button id="hud-view" type="button" data-i18n="hud.viewAction" aria-pressed="false"></button><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="hud-help-button" class="hud-info-button" type="button" aria-controls="flight-help" aria-expanded="false">i</button><button id="menu-button" type="button" data-i18n="nav.menu"></button></div>
       </div>
+      <aside id="flight-help" class="flight-help hidden" aria-labelledby="flight-help-title">
+        <div class="flight-help-heading"><h2 id="flight-help-title" data-i18n="hud.controls"></h2><button id="flight-help-close" type="button">×</button></div>
+        <p id="flight-help-source" class="flight-help-source"></p>
+        <p id="flight-help-note"></p>
+        <dl id="flight-help-keys"></dl>
+        <p class="flight-help-footer" data-i18n="hud.helpLive"></p>
+      </aside>
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>
       <div class="crosshair">+</div>
-      <div id="race-hud"></div>
       <div id="scoreboard"></div>
+      <div class="hud-flight-info">
       <div id="simulation-hud" aria-live="polite">
         <div id="battery-hud" class="hidden"></div>
         <div id="damage-hud" class="hidden"></div>
         <div id="wind-hud" class="hidden"></div>
       </div>
+      <div id="race-hud"></div>
+      </div>
+      <div class="hud-bottom">
+        <div class="hud-pilot-controls">
+          <div class="hud-control-buttons"><button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button></div>
+          <span id="hud-input"></span>
+        </div>
       <div id="stick-hud" role="group" aria-labelledby="stick-title">
         <span id="stick-title" class="visually-hidden" data-i18n="hud.sticks"></span>
         <div class="stick-display">
@@ -398,19 +413,12 @@
           <span id="stick-right-label" class="stick-label"><span data-i18n="axis.pitch"></span> · <span data-i18n="axis.roll"></span></span>
         </div>
       </div>
-      <div class="hud-bottom">
-        <div>
-          <button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button
-          ><span id="hud-input"></span>
-        </div>
         <div class="telemetry">
-          <span><b id="speed">0</b><small>km/h</small></span
-          ><span><b id="altitude">0</b><small>m</small></span
-          ><span><b id="throttle">0</b><small>%</small></span>
+          <span><small data-i18n="hud.speed"></small><b id="speed">0</b><small>km/h</small></span>
+          <span><small data-i18n="hud.altitude"></small><b id="altitude">0</b><small>m</small></span>
+          <span><small data-i18n="axis.throttle"></small><b id="throttle">0</b><small>%</small></span>
         </div>
       </div>
-      <div id="key-hint"></div>
-      <div id="touch-hint" data-i18n="hud.touchHint"></div>
     </div>
     <div id="notice" role="status" class="hidden"></div>
     <div id="boot" role="status">

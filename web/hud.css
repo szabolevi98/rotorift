@@ -1,0 +1,85 @@
+/* Flight instruments stay at the edges; no blur or extra rendering effects. */
+#hud { --hud-edge: max(20px, env(safe-area-inset-left)); font-family: Inter, Arial, sans-serif; background: linear-gradient(#0005, transparent 20%, transparent 78%, #0005); }
+#hud .hud-top { padding: max(16px, env(safe-area-inset-top)) var(--hud-edge); gap: 16px; }
+.hud-location { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+#hud .hud-brand { display: block; font-size: 11px; color: #fff9; }
+#hud-session { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#hud .hud-actions { flex: none; gap: 6px; }
+#hud .hud-top button { background: #11151bd9; border: 1px solid #ffffff28; border-radius: 7px; min-height: 44px; font-size: 11px; }
+#hud button:hover { background: #29313be8; }
+#hud button:focus-visible { outline: 2px solid #ff997c; outline-offset: 3px; }
+#hud .fullscreen-toggle { color: #fff; }
+#hud .hud-info-button { width: 44px; padding: 0; font: italic 700 20px Georgia, serif; }
+#hud .hud-info-button[aria-expanded="true"], #hud #hud-view[aria-pressed="true"] { color: #ffb29e; border-color: #ff6648; }
+#hud .hud-bottom { left: var(--hud-edge); right: max(20px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 20px; }
+#hud .hud-pilot-controls { display: flex; flex-direction: column; align-items: start; gap: 8px; }
+.hud-control-buttons { display: flex; gap: 6px; }
+#hud #arm-state, #hud #hud-mode { min-height: 44px; padding: 8px 12px; border: 1px solid #ffffff30; background: #11151bd9; border-radius: 7px; }
+#hud #arm-state { min-width: 82px; }
+#hud #arm-state.armed { color: #b6f0a6; border-color: #a3d995; background: #183125d9; }
+#hud-input { color: #ffffffb3; font-size: 10px; }
+#hud #stick-hud { position: static; transform: none; gap: 14px; }
+#hud .stick-display { width: 78px; }
+#hud .stick-frame { fill: #11151bba; stroke: #ffffff50; }
+#hud .stick-label { font-size: 8px; letter-spacing: .04em; }
+#hud .telemetry { justify-self: end; gap: 22px; text-align: right; padding: 10px 14px; border: 1px solid #ffffff16; border-radius: 8px; background: #11151ba8; }
+#hud .telemetry b { display: block; font-size: 28px; line-height: 1.2; margin: 3px 0; font-weight: 600; }
+#hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
+#hud .crosshair { transform: translate(-50%, -50%); }
+.hud-flight-info { position: absolute; top: 84px; left: var(--hud-edge); max-width: min(300px, 40vw); display: grid; gap: 10px; }
+#hud #simulation-hud, #hud #race-hud { position: static; }
+#hud #simulation-hud { gap: 5px; }
+#hud #simulation-hud:not(:has(> div:not(.hidden))) { display: none; }
+#hud #simulation-hud > div { background: #11151bba; border: 1px solid #ffffff18; padding: 8px 10px; font-size: 11px; }
+#hud #battery-hud.critical { background: #551e19df; border-color: #ff826b; font-weight: 700; }
+#hud #race-hud { background: #11151bba; border: 1px solid #ffffff18; border-radius: 7px; padding: 10px 14px; font-size: 12px; }
+#hud #race-hud:empty { display: none; }
+#hud #race-hud b { display: block; font-size: 26px; line-height: 1.4; }
+#hud #scoreboard { top: 84px; right: var(--hud-edge); max-height: calc(100svh - 220px); overflow-y: auto; pointer-events: auto; background: #11151bba; border: 1px solid #ffffff18; }
+#hud #scoreboard .score-row.own-pilot { color: #ffb29e; }
+#hud #boundary-hud { top: 82px; max-width: 45%; font-size: 11px; }
+.flight-help { position: absolute; top: 72px; right: var(--hud-edge); width: min(320px, calc(100vw - 32px)); max-height: min(500px, calc(100svh - 172px)); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; color: #edf1f5; background: #12161bf5; border: 1px solid #ffffff25; border-radius: 10px; padding: 14px 16px; z-index: 5; text-shadow: none; box-shadow: 0 10px 35px #0005; }
+.flight-help-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: -14px; background: #14181d; margin: -14px -16px 10px; padding: 6px 12px; z-index: 1; }
+.flight-help h2 { margin: 0; font-size: 15px; }
+#hud #flight-help-close { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: #c2cad3; font-size: 24px; }
+.flight-help p { line-height: 1.6; font-size: 11px; color: #aeb9c7; margin: 8px 0 12px; }
+.flight-help .flight-help-source { margin-top: 0; color: #ffb29e; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.flight-help dl { margin: 0; }
+.flight-help dl > div { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 5px 0; border-top: 1px solid #ffffff10; }
+.flight-help dt { font-size: 11px; line-height: 1.4; }
+.flight-help dd { margin: 0; display: flex; flex-wrap: wrap; justify-content: end; gap: 4px; flex-shrink: 0; max-width: 55%; }
+.flight-help kbd { font: 600 10px Inter, Arial, sans-serif; padding: 4px 6px; min-width: 24px; text-align: center; background: #ffffff09; border: 1px solid #ffffff20; border-radius: 4px; }
+.flight-help .flight-help-footer { border-top: 1px solid #ffffff18; margin-bottom: 0; padding-top: 10px; font-size: 10px; }
+@media (max-width: 800px), (max-height: 500px) {
+  #hud { --hud-edge: max(12px, env(safe-area-inset-left)); }
+  #hud .hud-top { padding-top: max(10px, env(safe-area-inset-top)); gap: 10px; }
+  #hud .hud-brand { display: none; }
+  #hud-session { font-size: 10px; }
+  #hud .hud-top button { padding: 8px 10px; }
+  #hud .hud-top .hud-info-button { padding: 0; }
+  #hud .hud-bottom { gap: 12px; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
+  #hud #stick-hud { gap: 10px; }
+  #hud .stick-display { width: 58px; }
+  #hud .stick-label { font-size: 7px; }
+  #hud #arm-state, #hud #hud-mode { padding: 6px 8px; font-size: 10px; }
+  #hud #arm-state { min-width: 64px; }
+  #hud .telemetry { padding: 8px 10px; gap: 14px; }
+  #hud .telemetry b { font-size: 21px; }
+  #hud .telemetry small { font-size: 8px; }
+  .hud-flight-info, #hud #scoreboard { top: 68px; }
+  .hud-flight-info { max-height: calc(100svh - 164px); overflow-y: auto; pointer-events: auto; }
+  #hud #race-hud { padding: 7px 10px; font-size: 10px; line-height: 1.5; }
+  #hud #race-hud b { font-size: 20px; }
+  #hud #simulation-hud > div { padding: 6px 8px; font-size: 10px; }
+  #hud #scoreboard { min-width: 145px; max-height: calc(100svh - 160px); padding: 6px 10px; font-size: 10px; }
+  #hud #scoreboard .score-row { padding: 5px 0; }
+  #hud #boundary-hud { top: 65px; padding: 7px 10px; }
+  .flight-help { top: 64px; max-height: calc(100svh - 82px); }
+}
+@media (max-width: 520px) {
+  #hud .hud-bottom { grid-template-columns: 1fr 1fr; }
+  #hud #stick-hud { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
+  #hud .telemetry { grid-row: 2; }
+  #hud .hud-pilot-controls { grid-row: 2; }
+  #hud .hud-location { max-width: 90px; }
+}
