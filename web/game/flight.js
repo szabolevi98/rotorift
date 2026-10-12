@@ -8,6 +8,7 @@ import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE, PARK_FOG_DENSITY } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
 import { configureDroneRenderer, addDroneReflections } from "/shared/visual/drone-rendering.js";
+import { CONSTRUCTION_VIEW_DISTANCE, CONSTRUCTION_FOG_DENSITY } from "./construction.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -63,20 +64,13 @@ export class Flight {
     this.config = config;
     this.map = map;
     this.boundary = new MapBoundary(map);
-    this.camera.far = map.kind === "park" ? PARK_VIEW_DISTANCE : 350;
+    this.camera.far = map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
     this.camera.updateProjectionMatrix();
     this.scene.background.setHex(map.kind === "park" ? 0xbcd4df : 0xc9dedc);
     this.scene.fog = map.kind === "park"
       ? new THREE.FogExp2(0xbcd4df, PARK_FOG_DENSITY)
-      : new THREE.Fog(0xc9dedc, 60, 190);
-    this.sun.visible = map.kind !== "park";
-    if (map.kind !== "park") {
-      this.sun.position.set(-35, 60, 25);
-      this.sun.target.position.set(0, 0, 0);
-      this.sun.target.updateMatrixWorld();
-      Object.assign(this.sun.shadow.camera, { left: -75, right: 75, top: 75, bottom: -75, far: 150 });
-      this.sun.shadow.camera.updateProjectionMatrix();
-    }
+      : new THREE.FogExp2(0xc9dedc, CONSTRUCTION_FOG_DENSITY);
+    this.sun.visible = false;
     this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn);
     this.physics.rates = rates;
     this.physics.mode = mode;
@@ -91,7 +85,7 @@ export class Flight {
     this.previous = this.physics.pose;
     this.current = this.physics.pose;
     this.place(this.current, 1);
-    if (map.kind === "park") this.parkShadows = new ParkShadows(this.scene, this.camera);
+    this.parkShadows = new ParkShadows(this.scene, this.camera);
     this.active = true;
   }
   reset(position = this.map.spawn) {

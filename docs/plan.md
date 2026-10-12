@@ -164,6 +164,14 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 
 - Saját név; ideiglenes munkanév: **Betonudvar**.
 - Befejezetlen épületváz, pillérek, födémek, nyílások és szintváltások.
+- 600 × 600 m-es építési terület, több eltérő magasságú betonvázzal és nyitott acélvázas csarnokkal.
+- Nagy rácsszerkezetes toronydaruk, kamionok, betonkeverő, kotrógép, bulldózer,
+  homlokrakodó, dömper és billenőplatós teherautó; rendezett munkautak és géppark.
+- Valódi munkagödör alaptestekkel, anyagraktár, nyitott konténerek, üreges betoncsövek,
+  irodakonténerek, szervizterület, állványzat és ideiglenes kerítés.
+- A kerítésen kívül folytatódó, objektumok nélküli föld és 10 perces visszatérési idő.
+- Az átépítés idején az időmérő és checkpointok itt is kikapcsolva;
+  a kapus útvonalat a végleges pálya alapján tervezzük újra.
 - Beltéri és kültéri szakaszok, repülhető rések, freestyle vonalak és kapus útvonalak.
 - A látható akadályok és az ütközési geometria egyezzenek a repülés szempontjából.
 

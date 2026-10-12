@@ -19,10 +19,12 @@ test("catalog contains three valid drone models and two maps with explicit race 
   const park = maps.find((m) => m.id === "liget");
   assert.equal(canRace(park), false);
   assert.deepEqual(park.gates, []);
-  assert.equal(canRace(maps.find((m) => m.id === "betonudvar")), true);
+  const construction = maps.find((m) => m.id === "betonudvar");
+  assert.equal(canRace(construction), false);
+  assert.deepEqual(construction.gates, []);
   assert.throws(() => validateMap({ ...park, racingEnabled: true }));
   const bad = structuredClone(maps[0]);
-  bad.gates[0].n = [0, 0, 2];
+  bad.gates = [{ p: [0, 2, 0], n: [0, 0, 2], width: 4, height: 3 }];
   assert.throws(() => validateMap(bad));
 });
 test("five languages have identical nonempty keys and cover the HTML", async () => {

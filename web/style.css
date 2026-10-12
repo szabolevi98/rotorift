@@ -660,6 +660,13 @@ footer {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.map-preview-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: 12px;
+  text-underline-offset: 3px;
+}
 #stick-hud {
   position: absolute;
   left: 50%;

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { buildPark } from "./park.js";
 import { parkSurfaceHeight } from "/shared/world/park-layout.js";
+import { buildConstruction } from "./construction.js";
 export function buildEnvironment(scene, world, RAPIER, map) {
   const root = new THREE.Group();
   scene.add(root);
@@ -13,61 +14,9 @@ export function buildEnvironment(scene, world, RAPIER, map) {
       );
     return materials.get(color);
   };
-  const box = (size, p, color, solid = true, q = null) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(...size), material(color));
-    m.position.set(...p);
-    if (q) m.quaternion.copy(q);
-    m.castShadow = true;
-    m.receiveShadow = true;
-    root.add(m);
-    if (solid) {
-      const d = RAPIER.ColliderDesc.cuboid(...size.map((v) => v / 2))
-        .setTranslation(...p)
-        .setFriction(0.8);
-      if (q) d.setRotation(q);
-      world.createCollider(d);
-    }
-    return m;
-  };
-  let park;
-  if (map.kind === "park") {
-    park = buildPark(scene, world, RAPIER, map);
-  } else {
-    box([map.size, 1, map.size], [0, -0.5, 0], 0xb6af9b);
-    for (const y of [5, 10]) {
-      box([11, 0.35, 44], [-8.5, y, -12], 0x969991);
-      box([19, 0.35, 44], [12.5, y, -12], 0x969991);
-      for (const x of [-14, 8, 22])
-        for (const z of [-34, -12, 10])
-          box([0.65, 4.65, 0.65], [x, y - 2.5, z], 0x858b87);
-      for (const z of [-34, 10])
-        box([36, 0.65, 0.6], [4, y - 0.5, z], 0x737b75);
-    }
-    for (const [x, z, color] of [
-      [-30, 12, 0x8c6550],
-      [-30, -5, 0x697d78],
-      [40, 14, 0x9b8c63],
-    ]) {
-      box([7, 3.5, 3], [x, 1.75, z], color);
-      for (let i = 0; i < 16; i++)
-        box([0.05, 3.3, 3.06], [x - 3.2 + i * 0.42, 1.75, z], 0x45534e, false);
-    }
-    for (let i = 0; i < 6; i++)
-      box([3, 0.25, 1], [34, 0.13 + i * 0.27, -30], 0x9d8d75);
-    box([0.55, 20, 0.55], [-24, 10, -32], 0xc8a353);
-    box([35, 0.5, 0.55], [-10, 20, -32], 0xc8a353);
-    box([0.1, 12, 0.1], [7, 14, -32], 0x454d4a, false);
-    for (const z of [0, 8, 16]) {
-      box([1.6, 1.2, 0.12], [-8, 0.9, z], 0xecad54);
-      box([1.6, 0.15, 0.15], [-8, 0.35, z], 0x424940);
-    }
-  }
-  if (map.kind !== "park") {
-  for (const x of [-map.size / 2, map.size / 2])
-    box([0.2, 1.1, map.size], [x, 0.55, 0], 0x696f63);
-  for (const z of [-map.size / 2, map.size / 2])
-    box([map.size, 1.1, 0.2], [0, 0.55, z], 0x696f63);
-  }
+  let park, construction;
+  if (map.kind === "park") park = buildPark(scene, world, RAPIER, map);
+  else construction = buildConstruction(scene, world, RAPIER, map);
   const gateMeshes = [], gateGroups = [], gateColliders = [];
   let gatesEnabled = true;
   map.gates.forEach((gate, i) => {
@@ -133,12 +82,12 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     new THREE.CylinderGeometry(0.65, 0.65, 0.002, 48),
     material(0x232f2d),
   );
-  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : 0) + 0.0018, map.spawn[2]);
+  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : 0.08) + 0.0018, map.spawn[2]);
   root.add(pad);
   return {
     root,
-    update: (position) => park?.update(position),
-    heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : 0,
+    update: (position) => (park ?? construction)?.update(position),
+    heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : construction.heightAt(x, z),
     highlight: (next, enabled) => {
       if (gatesEnabled !== enabled) {
         gatesEnabled = enabled;
@@ -154,6 +103,7 @@ export function buildEnvironment(scene, world, RAPIER, map) {
     },
     dispose: () => {
       park?.dispose();
+      construction?.dispose();
       root.traverse((o) => {
         if (o.isMesh) {
           o.geometry.dispose();

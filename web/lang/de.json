@@ -129,5 +129,6 @@
   "key.mode": "Flugmodus wechseln",
   "key.hover": "Schwebegas für Tastatur",
   "hud.boundary": "Außerhalb des Parks · Rückkehr zum Start in {time} · Fliege zurück hinter den Zaun",
-  "hud.boundaryReset": "10 Minuten außerhalb des Parks sind abgelaufen. Die Drohne ist zum Start zurückgekehrt."
+  "hud.boundaryReset": "10 Minuten außerhalb des Parks sind abgelaufen. Die Drohne ist zum Start zurückgekehrt.",
+  "fly.mapPreview": "Karte in 3D ansehen ↗"
 }

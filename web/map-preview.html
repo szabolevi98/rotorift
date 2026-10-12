@@ -15,6 +15,7 @@
       nav { position: fixed; bottom: 24px; left: 24px; display: flex; gap: 8px; flex-wrap: wrap; max-width: calc(100% - 48px); }
       button, a { border: 1px solid #5b6c6040; padding: 10px 16px; border-radius: 6px; background: #faf8eeed; color: #24342e; font: inherit; text-decoration: none; cursor: pointer; }
       button:hover { background: #fff; }
+      button[aria-pressed="true"] { background: #24342e; color: #fff; }
       a { margin-left: auto; }
       #status { position: fixed; inset: 0; display: grid; place-items: center; background: #e9e9dc; }
       @media(max-width: 640px) { header { flex-wrap: wrap; } strong { font-size: 17px; } .hint { display: none; } }
@@ -26,8 +27,8 @@
   <body>
     <canvas id="scene" aria-label="Liget, körbeforgatható 3D pályanézet"></canvas>
     <header>
-      <strong class="badge">ROTORIFT. / LIGET</strong>
-      <span class="badge">700 × 700 m</span>
+      <strong class="badge" id="map-title">ROTORIFT. / LIGET</strong>
+      <span class="badge" id="map-size">700 × 700 m</span>
       <span class="badge hint" id="hint">Egér: forgatás · Görgő: közelítés · Jobb gomb: mozgatás</span>
       <a href="/" id="fly">Repülés ↗</a>
     </header>

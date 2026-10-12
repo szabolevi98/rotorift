@@ -188,6 +188,7 @@ function updateSessionOptions() {
   visible("#map-mode-note", !enabled);
 }
 function refreshCatalogText() {
+  if (map) $("#map-preview-link").href = "/map-preview.html?map=" + encodeURIComponent(map.id);
   for (const d of catalog.drones) {
     const b = $(`[data-drone="${d.id}"]`);
     b.classList.toggle("selected", config?.id === d.id);

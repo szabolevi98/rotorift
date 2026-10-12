@@ -14,7 +14,7 @@
 | Repülési módok | Acro, Angle, Horizon; saját FPV kamera és követőnézet                                                       |
 | Bemenet        | Gamepad API rádiókiosztás, tengelyfordítás, holtjáték és kalibráció; menthető billentyűzetes kiosztás       |
 | Rate-ek        | Tengelyenként Actual Rates, 70/670/0 alapérték; mentés drónonként és másolás egyre/mindenre                 |
-| Pályák         | Liget park szabad repülésre, Betonudvar építkezés 3D kapukkal és útvonallal                                 |
+| Pályák         | Liget park és nagy Betonudvar építkezés; mindkettő helyi/online szabad repülésre                            |
 | Helyi játék    | Szabad repülés, kapus időmérő, elkülönített helyi rekord                                                    |
 | Multiplayer    | Szobakód, nyilvános lista, lobby, készenlét, szerveres rajt, 20 Hz-es állapotok és távoli modellek          |
 | Verseny        | Háromkörös online verseny, kapusorrend és irányellenőrzés, élő scoreboard, teljes futamidő szerinti befutás |
@@ -87,6 +87,34 @@ Helyi és online szabad repülés elérhető; a végleges checkpointokat későb
 
 Külön körbeforgatható pályanézet: `/map-preview.html`, a játékban választott nyelvvel.
 
+## Betonudvar első részletes változata
+
+600 × 600 méteres építkezés nyolc, 2–11 szintes nyitott betonvázzal és egy
+acélvázas, fedetlen csarnokkal. A födémekben egymás fölötti nyitott aknák,
+széleken befejezetlen szakaszok, kilógó betonvasak és állványzatok vannak.
+A lépcsők és a parkoló külső rámpája tényleges szinteket kötnek össze.
+Három rácsszerkezetes toronydaru 48/64/76 m magas, hosszú gémmel, ellensúlyokkal,
+vezetőfülkével és függő horoggal; a rácsok közötti nyílásokat nem zárja rejtett doboz.
+
+Nyolc munkagép/jármű: rakományos kamion, mélyágyas szállító, betonkeverő,
+kotrógép, bulldózer, homlokrakodó, dömper és megemelt platós teherautó.
+A központi munkautat keresztutak, nyugati/keleti kiszolgálóutak és rendezett
+iroda-, szerviz- és anyagtároló területek egészítik ki. Nyitott konténerek,
+betoncsövek, betonlemez-rakások, vasanyag, földkupacok, kordonok és világítótornyok
+adnak további helyszíneket. A 48 × 40 m-es munkagödör 4,5 m mély, lejtős oldallal,
+alaptestekkel és vasalással; a megjelenített és fizikai talaj megegyezik.
+
+Az ideiglenes kerítés térbeli jelzés, átjárható; kívül csak a talaj folytatódik.
+A látótávolság 12 km, fokozatos köddel; a napárnyékok ugyanúgy négy tartományban
+követik a kamerát, mint a Ligeten. A 8163 ismétlődő elem 292 térbeli/anyag/geometria
+szerinti instancelt csoportra oszlik; 3917 statikus ütköző szolgálja a repülést.
+Ez az első részletes változat, az eszközönkénti teljesítményhangolás még hátravan.
+
+Pálya- és útvonalverzió: 2. A régi kapuk eltávolítva, az időmérő ideiglenesen
+tiltva helyben és online. A kerítés elhagyásakor 10 perces visszatérési idő jár.
+3D nézet a játék pályaválasztója alatt, vagy
+`/map-preview.html?map=betonudvar`, nyolc közeli nézettel és öt nyelven.
+
 ## Ellenőrzések
 
 Az `npm test` a következőket ellenőrzi:
@@ -115,6 +143,9 @@ Az `npm test` a következőket ellenőrzi:
   és fekvő/álló képarány; új anyagok árnyékolása és erőforrások felszabadítása.
 - A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
+- Betonudvar: szabad főút, nyitott födémaknák és átrepülhető első szint minden
+  betonvázban; ütköző oszlopok, tényleges munkagödör/lejtők, üreges betoncsövek,
+  kerítésen túli talaj, korlátos rajzolási csoportszám és erőforrás-felszabadítás.
 
 Valódi böngészőben ellenőrzött: mindhárom modell betöltése, billentyűzetes élesítés és
 felszállás, közeli külső kamerakövetés, reset és FPV nézetváltás, menü miatti leállítás,
