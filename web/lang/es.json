@@ -130,5 +130,12 @@
   "key.hover": "Gases de sustentación con teclado",
   "hud.boundary": "Fuera del parque · Regreso al inicio en {time} · Vuelve al interior de la valla",
   "hud.boundaryReset": "Han transcurrido 10 minutos fuera del parque. El dron ha vuelto al inicio.",
-  "fly.mapPreview": "Ver el mapa en 3D ↗"
+  "fly.mapPreview": "Ver el mapa en 3D ↗",
+  "fly.color": "Color del dron",
+  "fly.colorHint": "TPU y chasis whoop. En multijugador, tu estela también usa este color.",
+  "color.coral": "Naranja",
+  "color.yellow": "Amarillo",
+  "color.teal": "Turquesa",
+  "color.violet": "Violeta",
+  "error.invalidColor": "Este color de dron no está disponible."
 }

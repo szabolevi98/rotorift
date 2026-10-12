@@ -8,6 +8,7 @@ import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
 import { canRace, isTimedSession } from "/shared/race/map-modes.js";
+import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
 const $ = (s) => document.querySelector(s),
   node = (tag, cls = "", text = "") => {
     const e = document.createElement(tag);
@@ -69,6 +70,24 @@ let playing = false,
   lastUi = 0;
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
+let droneColor = normalizeDroneColor(read("drone-color", "coral"));
+function refreshColors() {
+  $("#drone-color-name").textContent = t("color." + droneColor);
+  for (const button of document.querySelectorAll("[data-drone-color]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.droneColor === droneColor));
+    button.querySelector("span").textContent = t("color." + button.dataset.droneColor);
+  }
+}
+function setDroneColor(value) {
+  droneColor = normalizeDroneColor(value); write("drone-color", droneColor);
+  preview.setColor(droneColor); flight.setColor(droneColor); network.setColor(droneColor); refreshColors();
+}
+function pilotName(player, text = player.name) {
+  const label = node("span", "pilot-name"), dot = node("i", "pilot-color");
+  const color = normalizeDroneColor(player.color);
+  dot.style.setProperty("--pilot-color", DRONE_COLORS[color]); dot.setAttribute("aria-label", t("color." + color));
+  label.append(dot, node("strong", "", text)); return label;
+}
 function rates(id) {
   const r = rateProfiles[id];
   return r && ["roll", "pitch", "yaw"].every((a) => validRate(r[a]))
@@ -227,6 +246,12 @@ function refreshCatalogText() {
     for (const o of $(s).options) o.textContent = t("map." + o.value);
 }
 function createCatalogUI() {
+  for (const [id,hex] of Object.entries(DRONE_COLORS)) {
+    const button=node("button", "drone-color-swatch"); button.type="button"; button.dataset.droneColor=id;
+    const dot=node("i"); dot.style.setProperty("--pilot-color",hex); dot.setAttribute("aria-hidden","true");
+    button.append(dot,node("span")); button.onclick=()=>setDroneColor(id); $("#drone-color-picker").append(button);
+  }
+  refreshColors();
   for (const d of catalog.drones) {
     const b = node("button", "drone-card");
     b.dataset.drone = d.id;
@@ -437,11 +462,7 @@ function renderLobby() {
   for (const p of room.players) {
     const row = node("div", "player-row");
     row.append(
-      node(
-        "strong",
-        "",
-        p.name + (p.id === room.host ? " / " + t("online.host") : ""),
-      ),
+      pilotName(p, p.name + (p.id === room.host ? " / " + t("online.host") : "")),
       node("span", "", p.ready ? t("online.ready") : t("online.notReady")),
     );
     $("#lobby-players").append(row);
@@ -462,7 +483,7 @@ async function loadRoom(r) {
   session = "online-" + r.kind;
   $("#flight-mode").value = r.mode;
   try {
-    await flight.load(roomMap, roomConfig, rates(roomConfig.id), r.mode);
+    await flight.load(roomMap, roomConfig, rates(roomConfig.id), r.mode, room.players.find(p=>p.id===network.id)?.color ?? droneColor);
     if (!room || room.code !== r.code) {
       flight.active = false;
       return;
@@ -499,6 +520,7 @@ function receive(m) {
     renderRooms();
   }
   if (m.type === "left") {
+    flight.updateRemotes([], network.id);
     room = null;
     loadingRoom = null;
     loadedRoom = null;
@@ -528,6 +550,7 @@ function receive(m) {
         : t("hud.invalid"),
     );
   if (m.type === "disconnected") {
+    flight.updateRemotes([], network.id);
     if (room) {
       pause();
       notice(t("online.disconnected"));
@@ -542,6 +565,8 @@ function receive(m) {
   if (m.type === "room") {
     const previousPhase = room?.phase;
     room = m.room;
+    if (flight.physics && loadedRoom === room.code + ":" + room.startsAt)
+      flight.updateRemotes(room.players, network.id);
     visible("#leave-flight", true);
     renderLobby();
     if (room.phase === "lobby") {
@@ -555,7 +580,6 @@ function receive(m) {
     } else if (room.phase === "countdown" || room.phase === "flying") {
       loadRoom(room);
       if (flight.physics && loadedRoom === room.code + ":" + room.startsAt) {
-        flight.updateRemotes(room.players, network.id);
         const finished = room.players.find(
           (p) => p.id === network.id,
         )?.finished;
@@ -608,7 +632,7 @@ async function launch() {
   $("#launch").disabled = true;
   visible("#boot", true);
   try {
-    await flight.load(map, config, rates(config.id), $("#flight-mode").value);
+    await flight.load(map, config, rates(config.id), $("#flight-mode").value, droneColor);
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -764,7 +788,7 @@ function hud() {
     for (const p of players) {
       const r = node("div", "score-row");
       r.append(
-        node("span", "", p.name),
+        pilotName(p),
         node(
           "span",
           "",
@@ -919,6 +943,7 @@ function bindUI() {
     $(s).onchange = showRecords;
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
+    refreshColors();
     refreshCatalogText();
     renderRates();
     renderKeys();
@@ -944,6 +969,7 @@ try {
   flight = new Flight($("#game-scene"));
   controller = new Controller(action);
   network = new Network(receive);
+  preview.setColor(droneColor); flight.setColor(droneColor);
   await flight.init();
   createCatalogUI();
   selectMap(read("selected-map", "liget"));

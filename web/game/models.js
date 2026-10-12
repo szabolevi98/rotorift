@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
 const cache = new Map(),
   loader = new GLTFLoader();
 export async function loadModel(config, { isolateMaterials = false } = {}) {
@@ -8,6 +9,7 @@ export async function loadModel(config, { isolateMaterials = false } = {}) {
     cache.set(
       config.id,
       loader.loadAsync(config.model).then(({ scene }) => {
+        tagDroneColorMaterials(scene);
         scene.updateMatrixWorld(true);
         const batches = new Map(),
           root = new THREE.Group(),
@@ -110,7 +112,10 @@ export async function loadModel(config, { isolateMaterials = false } = {}) {
       }),
     );
   const model = (await cache.get(config.id)).clone();
-  if (isolateMaterials) {
+  if (isolateMaterials) isolateModelMaterials(model);
+  return model;
+}
+export function isolateModelMaterials(model) {
     // Flight lighting hooks must not change the cached menu/showcase materials.
     const copies = new Map();
     const copy = (material) => {
@@ -121,6 +126,11 @@ export async function loadModel(config, { isolateMaterials = false } = {}) {
       if (object.isMesh) object.material = Array.isArray(object.material)
         ? object.material.map(copy) : copy(object.material);
     });
-  }
-  return model;
+}
+export function disposeModelMaterials(model) {
+  const materials = new Set();
+  model?.traverse(object => {
+    if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) materials.add(material);
+  });
+  for (const material of materials) material.dispose();
 }

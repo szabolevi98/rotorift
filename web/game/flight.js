@@ -3,6 +3,8 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { DronePhysics, PHYSICS_DT } from "/shared/physics/drone.js";
 import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
+import { applyDroneColor, normalizeDroneColor } from "../../shared/visual/drone-colors.js";
+import { DroneTrail } from "./drone-trail.js";
 import { DroneCameraRig } from "./camera-rig.js";
 import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE } from "./park-terrain.js";
@@ -48,7 +50,7 @@ export class Flight {
   async init() {
     await RAPIER.init();
   }
-  async load(map, config, rates, mode) {
+  async load(map, config, rates, mode, color = this.color ?? "coral") {
     this.active = false;
     this.parkShadows?.dispose();
     this.parkShadows = null;
@@ -56,7 +58,7 @@ export class Flight {
     this.atmosphere?.dispose();
     this.world?.free();
     this.removeModel(this.visual);
-    for (const o of this.remotes.values()) this.removeModel(o.model);
+    for (const o of this.remotes.values()) { this.removeModel(o.model); o.trail.dispose(); }
     this.remotes.clear();
     this.remoteVersion++;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
@@ -72,6 +74,7 @@ export class Flight {
     this.physics.rates = rates;
     this.physics.mode = mode;
     this.visual = await loadModel(config, { isolateMaterials: true });
+    this.setColor(color);
     this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);
     this.props = [];
@@ -85,6 +88,7 @@ export class Flight {
     this.parkShadows = new ParkShadows(this.scene, this.camera, this.atmosphere.profile);
     this.active = true;
   }
+  setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.visual, this.color); }
   reset(position = this.map.spawn) {
     this.physics.reset(position);
     this.boundary.reset();
@@ -154,23 +158,28 @@ export class Flight {
     let remote = this.remotes.get(player.id);
     if (!remote) {
       const version = this.remoteVersion;
-      remote = { model: null, target: player };
+      remote = { model: null, target: player, trail: new DroneTrail(this.scene, player.color, this.config.maxSpeedMps), initialized: false };
       this.remotes.set(player.id, remote);
       const model = await loadModel(this.config, { isolateMaterials: true });
-      if (version !== this.remoteVersion || !this.remotes.has(player.id)) {
+      if (version !== this.remoteVersion || this.remotes.get(player.id) !== remote) {
         this.removeModel(model);
         return;
       }
       remote.model = model;
+      applyDroneColor(model, remote.target.color);
       this.scene.add(model);
+    } else {
+      remote.target = player;
+      applyDroneColor(remote.model, player.color);
+      remote.trail.setColor(player.color);
     }
-    remote.target = player;
   }
   updateRemotes(players, ownId) {
     const ids = new Set(players.filter((p) => p.id !== ownId).map((p) => p.id));
     for (const [id, r] of this.remotes)
       if (!ids.has(id)) {
         this.removeModel(r.model);
+        r.trail.dispose();
         this.remotes.delete(id);
       }
     for (const p of players)
@@ -211,8 +220,15 @@ export class Flight {
         p = new THREE.Vector3(...r.target.p).add(
           new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q),
         );
-      r.model.position.lerp(p, 1 - Math.exp(-dt * 18));
-      r.model.quaternion.slerp(q, 1 - Math.exp(-dt * 18));
+      if (!r.initialized || r.resetId !== r.target.resetId) {
+        r.model.position.copy(p); r.model.quaternion.copy(q); r.trail.clear();
+        r.resetId = r.target.resetId; r.initialized = true;
+      } else {
+        r.model.position.lerp(p, 1 - Math.exp(-dt * 18));
+        r.model.quaternion.slerp(q, 1 - Math.exp(-dt * 18));
+      }
+      const tail = new THREE.Vector3(0, 0.015, this.config.motorDiagonalM * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
+      r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
     this.parkShadows?.update({ dynamic: this.chase || this.remotes.size > 0 });
     this.renderer.render(this.scene, this.camera);

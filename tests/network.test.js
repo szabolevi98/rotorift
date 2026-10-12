@@ -50,7 +50,7 @@ async function fixture(t, mapOverrides = {}) {
     for (const ws of sockets) ws.terminate();
     await new Promise((resolve) => server.close(resolve));
   });
-  async function client(name) {
+  async function client(name, color) {
     const ws = new WebSocket("ws://127.0.0.1:" + server.address().port + "/ws");
     sockets.push(ws);
     const messages = [];
@@ -69,7 +69,7 @@ async function fixture(t, mapOverrides = {}) {
         "Message timed out: " + messages.slice(-3).map((m) => m.type),
       );
     }
-    send("hello", { name });
+    send("hello", { name, color });
     const welcome = await next((m) => m.type === "welcome");
     let seq = 0;
     return {
@@ -93,6 +93,35 @@ async function fixture(t, mapOverrides = {}) {
   }
   return { client, catalog, db };
 }
+test("multiplayer replicates validated pilot colors and reset epochs without changing aircraft physics", async t => {
+  const {client,catalog}=await fixture(t),a=await client("Teal pilot","teal"),b=await client("Violet pilot","violet");
+  const hash=catalog.drones.find(d=>d.id==="rift-x5").configHash;
+  a.send("create",{mapId:"test-route",droneId:"rift-x5",mode:"angle",kind:"free"});
+  const created=await a.next(m=>m.type==="room");b.send("join",{code:created.room.code});
+  const joined=await a.next(m=>m.type==="room"&&m.room.players.length===2);
+  assert.equal(joined.room.players.find(p=>p.id===a.id).color,"teal");
+  assert.equal(joined.room.players.find(p=>p.id===b.id).color,"violet");
+  b.send("appearance",{color:"yellow"});
+  const changed=await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.color==="yellow");
+  const epoch=changed.room.players.find(p=>p.id===b.id).resetId;
+  b.send("appearance",{color:"#00ff00"});assert.equal((await b.next(m=>m.type==="error")).code,"invalidColor");
+  b.send("appearance",{color:"__proto__"});assert.equal((await b.next(m=>m.type==="error")).code,"invalidColor");
+  a.send("ready",{ready:true});b.send("ready",{ready:true});
+  await a.next(m=>m.type==="room"&&m.room.players.every(p=>p.ready));a.send("start");
+  const flying=await a.next(m=>m.type==="room"&&m.room.phase==="flying");
+  assert.equal(flying.room.players.find(p=>p.id===b.id).color,"yellow");
+  assert.ok(flying.room.players.find(p=>p.id===b.id).resetId>epoch);
+  b.send("appearance",{color:"coral"});
+  await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.color==="coral");
+  const before=flying.room.players.find(p=>p.id===b.id).resetId;b.send("reset");
+  const reset=await a.next(m=>m.type==="room"&&m.room.players.find(p=>p.id===b.id)?.resetId>before);
+  assert.equal(reset.room.players.find(p=>p.id===b.id).color,"coral");assert.equal(catalog.drones.find(d=>d.id==="rift-x5").configHash,hash);
+  const c=await client("Legacy pilot","invalid");c.send("join",{code:created.room.code});
+  // A flying room cannot be joined, but the already connected legacy/default
+  // color remains usable when creating another lobby.
+  c.send("create",{mapId:"test-route",droneId:"rift-x5",mode:"angle",kind:"free"});
+  const legacy=await c.next(m=>m.type==="room");assert.equal(legacy.room.players[0].color,"coral");
+});
 test("two pilots share a room, host starts a race and both finish three verified laps", async (t) => {
   const { client, db } = await fixture(t),
     a = await client("Pilot A"),

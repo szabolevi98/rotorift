@@ -130,5 +130,12 @@
   "key.hover": "Schwebegas für Tastatur",
   "hud.boundary": "Außerhalb des Parks · Rückkehr zum Start in {time} · Fliege zurück hinter den Zaun",
   "hud.boundaryReset": "10 Minuten außerhalb des Parks sind abgelaufen. Die Drohne ist zum Start zurückgekehrt.",
-  "fly.mapPreview": "Karte in 3D ansehen ↗"
+  "fly.mapPreview": "Karte in 3D ansehen ↗",
+  "fly.color": "Drohnenfarbe",
+  "fly.colorHint": "TPU und Whoop-Rahmen. Im Multiplayer hat deine Flugspur dieselbe Farbe.",
+  "color.coral": "Orange",
+  "color.yellow": "Gelb",
+  "color.teal": "Türkis",
+  "color.violet": "Violett",
+  "error.invalidColor": "Diese Drohnenfarbe ist nicht verfügbar."
 }

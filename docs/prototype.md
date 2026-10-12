@@ -41,6 +41,32 @@ A kamerák és akciókamerák kékes optikai üveget kaptak, a három drón PCB-
 zöld. A modellek anyagbeállításai a `shared/visual/drone-rendering.js` fájlban közösek;
 a GLB-k geometriája és beágyazott textúrái változatlanok.
 
+## Drónszínek és multiplayer nyomvonalak
+
+A repülés menüjében a showroom négy színe választható: narancs, sárga, türkiz,
+lila. A közös választás böngészőben megmarad, az előnézet azonnal követi.
+Az X5 és C3 TPU-/védőelemei, valamint a 65 mm-es whoop váza színeződik;
+a kábelek, csatlakozók, optika és PCB anyagai változatlanok. A színanyagokat
+szemantikus GLB-mesh-nevek alapján jelöljük összevonás előtt, és minden előnézet,
+saját drón és távoli pilóta külön anyagpéldányt kap; a geometria továbbra is közös.
+
+A Node szerver csak a paletta négy színazonosítóját fogadja el. A hello/appearance
+üzenetek és a szobapillanatkép továbbítják a színt. Csatlakozás, újracsatlakozás,
+futamindítás és reset megtartja; a lobby és scoreboard színes jelölőket mutat.
+A kozmetikai választás nem része a fizikai konfiguráció hashének vagy a rekordkategóriának.
+
+A többi pilóta drónja 3 másodperc alatt elhalványuló, saját színű nyomvonalat húz.
+A csík képernyőn 3 px széles; a talaj és objektumok mögött takarásban marad.
+Pilótánként egy újrahasznált, legfeljebb 128 pontos geometria van, 30 Hz-es mintavétellel.
+Resetkor (szerveres resetId), teleportnál és renderelési szünet után új nyomvonal kezdődik;
+megálláskor a meglévő csík fokozatosan tűnik el. Kilépéskor, kapcsolatbontáskor
+és pályaváltáskor a távoli modellek és nyomvonalak felszabadulnak.
+
+Ellenőrzött: mindhárom elfogadott GLB színanyagai és izolációja, nyomvonal-korlátok,
+elhalványulás és reset/teleport, valódi WebSocket-színváltás, csatlakozás közbeni
+választás és újracsatlakozás; böngészőben mentett szín és két további kliens élő nyomvonala.
+A teljes ellenőrzés 71/71 tesztje sikeres.
+
 ## Liget átdolgozása
 
 A park 700 × 700 méteres. A két épületszárnyat az emelet köti össze, alatta 8 méter

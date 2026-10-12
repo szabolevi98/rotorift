@@ -1,4 +1,5 @@
 import { read, write } from "../storage.js";
+import { normalizeDroneColor } from "../../shared/visual/drone-colors.js";
 export class Network {
   constructor(receive) {
     this.receive = receive;
@@ -10,6 +11,7 @@ export class Network {
     this.room = null;
     this.pingTimer = null;
     this.retry = null;
+    this.color = normalizeDroneColor(read("drone-color", "coral"));
   }
   connect(name) {
     clearTimeout(this.retry);
@@ -20,7 +22,7 @@ export class Network {
         "/ws",
     );
     this.ws.onopen = () =>
-      this.send("hello", { name: this.name, token: read("profile", null) });
+      this.send("hello", { name: this.name, token: read("profile", null), color: this.color });
     this.ws.onmessage = (e) => {
       let m;
       try {
@@ -33,6 +35,9 @@ export class Network {
         write("profile", m.token);
         this.offset = m.now - Date.now();
         this.ready = true;
+        // The selection may have changed while the profile handshake awaited
+        // the database. Send the current preference after authentication too.
+        this.send("appearance", { color: this.color });
         this.send("ping", { at: Date.now() });
         clearInterval(this.pingTimer);
         this.pingTimer = setInterval(
@@ -53,6 +58,10 @@ export class Network {
       this.retry = setTimeout(() => this.connect(this.name), 3000);
     };
     this.ws.onerror = () => {};
+  }
+  setColor(value) {
+    this.color = normalizeDroneColor(value);
+    if (this.ready) this.send("appearance", { color: this.color });
   }
   send(type, data = {}) {
     if (this.ws?.readyState === WebSocket.OPEN)

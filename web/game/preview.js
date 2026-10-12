@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { loadModel } from "./models.js";
+import { loadModel, disposeModelMaterials } from "./models.js";
+import { applyDroneColor, normalizeDroneColor } from "../../shared/visual/drone-colors.js";
 import { configureDroneRenderer, addDroneReflections } from "/shared/visual/drone-rendering.js";
 export class Preview {
   constructor(canvas) {
@@ -44,13 +45,15 @@ export class Preview {
     floor.receiveShadow = true;
     this.scene.add(floor);
     this.version = 0;
+    this.color = "coral";
   }
   async select(config) {
     const version = ++this.version,
-      model = await loadModel(config);
-    if (version !== this.version) return;
-    if (this.model) this.scene.remove(this.model);
+      model = await loadModel(config, { isolateMaterials: true });
+    if (version !== this.version) { disposeModelMaterials(model); return; }
+    if (this.model) { this.scene.remove(this.model); disposeModelMaterials(this.model); }
     this.model = model;
+    applyDroneColor(model, this.color);
     this.scene.add(model);
     const size = new THREE.Box3().setFromObject(model),
       center = size.getCenter(new THREE.Vector3()),
@@ -61,6 +64,7 @@ export class Preview {
       .add(new THREE.Vector3(extent * 0.75, extent * 0.58, extent * 0.85));
     this.controls.update();
   }
+  setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.model, this.color); }
   render() {
     if (!this.canvas.offsetParent) return;
     const { clientWidth: w, clientHeight: h } = this.canvas;

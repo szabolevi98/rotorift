@@ -4,6 +4,7 @@ import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
 import { canRace } from "../../shared/race/map-modes.js";
+import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 const MODES = ["acro", "angle", "horizon"];
 export function attachRooms(server, catalog, db) {
   const rooms = new Map(),
@@ -25,6 +26,8 @@ export function attachRooms(server, catalog, db) {
     players: [...r.players.values()].map((p) => ({
       id: p.id,
       name: p.name,
+      color: p.color,
+      resetId: p.resetId,
       ready: p.ready,
       p: p.pose?.p,
       q: p.pose?.q,
@@ -52,6 +55,7 @@ export function attachRooms(server, catalog, db) {
     broadcast(r);
   };
   const reset = (p, r) => {
+    p.resetId = (p.resetId ?? 0) + 1;
     p.boundary = new MapBoundary(r.map);
     p.boundaryAt = null;
     p.boundaryPaused = false;
@@ -87,6 +91,8 @@ export function attachRooms(server, catalog, db) {
       ws,
       room: null,
       name: "Pilot",
+      color: "coral",
+      resetId: 0,
       token: null,
       ready: false,
       lap: newLap(),
@@ -115,6 +121,7 @@ export function attachRooms(server, catalog, db) {
                 .trim()
                 .slice(0, 32) || "Pilot";
             p.name = name;
+            p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
             send(p, "welcome", {
               id: p.id,
@@ -141,6 +148,12 @@ export function attachRooms(server, catalog, db) {
               .trim()
               .slice(0, 32) || "Pilot";
           await db.profile(p.token, p.name);
+          if (p.room) broadcast(p.room);
+          return;
+        }
+        if (m.type === "appearance") {
+          if (!validDroneColor(m.color)) { send(p, "error", { code: "invalidColor" }); return; }
+          p.color = m.color;
           if (p.room) broadcast(p.room);
           return;
         }

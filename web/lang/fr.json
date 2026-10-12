@@ -130,5 +130,12 @@
   "key.hover": "Gaz de sustentation clavier",
   "hud.boundary": "Hors du parc · Retour au départ dans {time} · Repasse à l’intérieur de la clôture",
   "hud.boundaryReset": "Les 10 minutes hors du parc sont écoulées. Le drone est revenu au départ.",
-  "fly.mapPreview": "Voir la carte en 3D ↗"
+  "fly.mapPreview": "Voir la carte en 3D ↗",
+  "fly.color": "Couleur du drone",
+  "fly.colorHint": "TPU et châssis whoop. En multijoueur, ta traînée utilise aussi cette couleur.",
+  "color.coral": "Orange",
+  "color.yellow": "Jaune",
+  "color.teal": "Turquoise",
+  "color.violet": "Violet",
+  "error.invalidColor": "Cette couleur de drone est indisponible."
 }

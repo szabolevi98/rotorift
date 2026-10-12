@@ -369,6 +369,14 @@ Pálya-, drón- és repülésimód-választás után kötetlen gyakorlás, szün
 
 ### Multiplayer: közös szabad repülés és kapus verseny
 
+- Választható, mentett pilótaszín a showroom palettájával (narancs, sárga, türkiz, lila).
+  Az előnézet és a repülés TPU-/whoopváz-színe kövesse a választást.
+- A multiplayerben a többi drón a saját színű, fokozatosan elhalványuló nyomvonalát
+  húzza; a lobby és scoreboard ugyanilyen jelölőket mutat. A szín szerveresen
+  validált kozmetikai adat, nem változtatja a fizikát vagy a rekordkategóriát.
+- Reset/teleport megszakítja a nyomvonalat; kilépés, kapcsolatbontás és pályaváltás
+  felszabadítja a hozzá tartozó grafikát.
+
 - Szobalista, szobalétrehozás és csatlakozás kóddal; publikus és kódos szobák.
 - Lobby játékoslistával, pálya-, útvonal- és drónválasztással, készenléti állapottal.
 - Közös szabad repülésnél a játékosok látják egymás drónját és nevét.

@@ -130,5 +130,12 @@
   "key.hover": "Billentyűzetes lebegési gáz",
   "hud.boundary": "A parkon kívül vagy · Visszatérés a rajthelyre: {time} · Repülj vissza a kerítésen belülre",
   "hud.boundaryReset": "Letelt a 10 perc a parkon kívül. A drón visszakerült a rajthelyre.",
-  "fly.mapPreview": "Pálya megtekintése 3D-ben ↗"
+  "fly.mapPreview": "Pálya megtekintése 3D-ben ↗",
+  "fly.color": "Drón színe",
+  "fly.colorHint": "TPU és whoopváz. Multiplayerben a nyomvonalad is ezt a színt kapja.",
+  "color.coral": "Narancs",
+  "color.yellow": "Sárga",
+  "color.teal": "Türkiz",
+  "color.violet": "Lila",
+  "error.invalidColor": "Ez a drónszín nem választható."
 }
