@@ -60329,7 +60329,9 @@ function createRift75(){
  // [camera-local Z, width scale, underside height, crown height]. The two
  // side mounting eyes at (+/-18.38,12.1,0) are integrated into row 14.83.
  const earZ=14.829,earBase=-4.461,earScale=1.08;
- const profiles=[[-4.7,.80,-12,8.1],[0,1.05,-11.2,10.5],[7,1.14,-8.5,13],[earZ,earScale,earBase,13.5],[21,.88,-1.6,16],[27,.48,2.7,11],[31.06,.28,4.17,5.3]];
+ // Crown heights compensate for the camera group's 28-degree tilt: the
+ // world-space roof forms one convex dome, without a dip over the side ears.
+ const profiles=[[-4.7,.80,-12,8.1],[0,1.05,-11.2,13.8],[7,1.14,-8.5,17.5],[earZ,earScale,earBase,17],[21,.88,-1.6,15],[27,.48,2.7,11],[31.06,.28,4.17,5.3]];
  const profileCurve=new THREE.CatmullRomCurve3(profiles.map(([z,w,b,h])=>new THREE.Vector3(w,b,h)),false,'catmullrom',.25);
  const zCurve=new THREE.CatmullRomCurve3(profiles.map(([z])=>new THREE.Vector3(z,0,0)),false,'catmullrom',.25);
  const rows=80,cols=64,positions=[],indices=[],stride=cols+1,layerSize=(rows+1)*stride,kept=[];
