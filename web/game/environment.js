@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { buildPark } from "./park.js";
 import { parkSurfaceHeight } from "/shared/world/park-layout.js";
 import { buildConstruction } from "./construction.js";
+import { buildPlayground } from "./playground.js";
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
   const root = new THREE.Group();
   scene.add(root);
@@ -14,10 +15,12 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       );
     return materials.get(color);
   };
-  let park, construction;
+  let park, construction, playground;
   const staticWorld = bakedCollisions ? null : world;
   if (map.kind === "park") park = buildPark(scene, staticWorld, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
+  else if(map.kind==="playground")playground=buildPlayground(scene,staticWorld,RAPIER,map);
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
+  const environment=park??construction??playground;
   const gateMeshes = [], gateGroups = [], gateColliders = [];
   let gatesEnabled = true;
   map.gates.forEach((gate, i) => {
@@ -83,15 +86,15 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
     new THREE.CylinderGeometry(0.65, 0.65, 0.002, 48),
     material(0x232f2d),
   );
-  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : construction.heightAt(map.spawn[0], map.spawn[2])) + 0.003, map.spawn[2]);
+  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : environment.heightAt(map.spawn[0], map.spawn[2])) + 0.003, map.spawn[2]);
   root.add(pad);
   return {
     root,
     update: (position, velocity) => {
-      (park ?? construction)?.update(position, velocity);
+      environment?.update(position, velocity);
       bakedCollisions?.update(position, velocity);
     },
-    heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : construction.heightAt(x, z),
+    heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : environment.heightAt(x, z),
     highlight: (next, enabled) => {
       if (gatesEnabled !== enabled) {
         gatesEnabled = enabled;
@@ -108,6 +111,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
     dispose: () => {
       park?.dispose();
       construction?.dispose();
+      playground?.dispose();
       bakedCollisions?.dispose();
       root.traverse((o) => {
         if (o.isMesh) {

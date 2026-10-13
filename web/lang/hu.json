@@ -312,5 +312,8 @@
   "hud.prop.position.2": "Bal hátsó",
   "hud.prop.short.2": "BH",
   "hud.prop.position.3": "Jobb hátsó",
-  "hud.prop.short.3": "JH"
+  "hud.prop.short.3": "JH",
+  "map.jatszoter": "Játszótér",
+  "drone.rift-75": "75-ös whoop · 1S",
+  "hangar.drone.rift-75": "75 mm"
 }

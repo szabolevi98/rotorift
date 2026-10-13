@@ -35,7 +35,7 @@ export async function loadModel(config, { isolateMaterials = false, onProgress }
             prop = null;
           while (ancestor) {
             if (
-              /^(Propeller_\d|65_04_Propeller_|C3_05_Pusher_propeller_)/.test(
+              /^(Propeller_\d|(?:65|75)_04_Propeller_|C3_05_Pusher_propeller_)/.test(
                 ancestor.name,
               )
             ) {

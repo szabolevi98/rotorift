@@ -312,5 +312,8 @@
   "hud.prop.position.2": "Rear left",
   "hud.prop.short.2": "RL",
   "hud.prop.position.3": "Rear right",
-  "hud.prop.short.3": "RR"
+  "hud.prop.short.3": "RR",
+  "map.jatszoter": "Pocket Park",
+  "drone.rift-75": "75 class whoop · 1S",
+  "hangar.drone.rift-75": "75 mm"
 }

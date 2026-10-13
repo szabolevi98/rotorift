@@ -312,5 +312,8 @@
   "hud.prop.position.2": "Hinten links",
   "hud.prop.short.2": "HL",
   "hud.prop.position.3": "Hinten rechts",
-  "hud.prop.short.3": "HR"
+  "hud.prop.short.3": "HR",
+  "map.jatszoter": "Spielplatz",
+  "drone.rift-75": "75er Whoop · 1S",
+  "hangar.drone.rift-75": "75 mm"
 }

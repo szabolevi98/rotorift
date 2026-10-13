@@ -4,7 +4,7 @@ Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfi
 Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
 Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
 VPS-telepítés és frissítés: [DEPLOY.md](DEPLOY.md).
-Az első **játszható prototípus** elkészült; a három drón alapfizikája automatizált
+Az első **játszható prototípus** elkészült; a négy drón alapfizikája automatizált
 repülési méréssel ellenőrzött. A konkrét valós gépekkel való pontos egyezéshez
 repülési logokkal végzett hangolás, a rádiókhoz hardveres kompatibilitási próba szükséges.
 
@@ -52,7 +52,10 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 
 ## Repülés
 
-- Rift 65: 65 mm, 1S tinywhoop; Rift C3: 3″, 4S cinewhoop; Rift X5: 5″, 6S freestyle.
+- Rift 65: 65 mm, 1S tinywhoop; Rift 75: 75-ös osztály, 80,8 mm motortáv, 1S whoop; Rift C3: 3″, 4S cinewhoop; Rift X5: 5″, 6S freestyle.
+- Játszótér / Pocket Park: kis, 84 × 84 m-es gyakorlópálya mászóvárral, hintákkal,
+  nyújtósorral, fahengerrel és játszóházzal. A 65/75 whoopokhoz épült, választható
+  hétkapus versenyútvonallal. Részletek: [pocket-park-and-rift75.md](docs/pocket-park-and-rift75.md).
 - Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
   sűrűbb facsoportokkal, tóparti fákkal és fasorral, nyílt freestyle térrel, két tóval és animált szökőkúttal.
   Csónakház, móló, híd, kávézó, fedett sétány és dombtetői pavilon ad repülhető részleteket.
@@ -99,7 +102,7 @@ nem élesít automatikusan. Az AUX csatorna nem lehet repülési stickhez rendel
 
 Az Actual Rates tengelyenként Center Sensitivity / Max Rate / Expo értékeket használ;
 alapértékük 70 / 670 / 0. A beállítás külön menthető drónonként, másolható egy másik
-drónra vagy mindháromra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek a böngészőben maradnak.
+drónra vagy minden drónra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek a böngészőben maradnak.
 
 ## Multiplayer és rekordok
 

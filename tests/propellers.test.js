@@ -46,6 +46,10 @@ for(const config of drones.filter(c=>c.category!=='freestyle'))test(`${config.id
    const motor=config.motors[0].positionM,rad=config.propDiameterM/2;
    const drone=new DronePhysics(RAPIER,world,config,[0,1,0],{updateSceneQueries:false,simulation:{propDamage:true}});
    drone.armed=true;
+   // Let the motor reach armed idle before striking the obstacle; a freshly
+   // armed, almost stationary blade has a different fracture threshold.
+   for(let i=0;i<24;i++)drone.step(neutral);
+   drone.body.setTranslation({x:0,y:1,z:0},true);
    if(inside){
     world.createCollider(RAPIER.ColliderDesc.cuboid(rad*.07,.008,rad*.07).setTranslation(motor[0]-rad*.55,1+motor[1]-.013,motor[2]));
     drone.body.setLinvel({x:0,y:-5,z:0},true);

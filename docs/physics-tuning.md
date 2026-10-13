@@ -1,5 +1,10 @@
 # Repülési hangolás – 5. konfigurációverzió
 
+2026-10-13-i kiegészítés: a három korábbi konfiguráció most 6-os verziójú,
+külön lapátsérüléssel. A Rift 75 új, 1-es verziójú konfiguráció; akkumulátorral
+44 g, mért lebegési gáza 27,8%, fenntartható utazósebessége 90,2 km/h.
+Ugyanaz a mérőprogram mind a négy gépet futtatja, az eredmény JSON tartalmazza a részleteket.
+
 Az 5. verzió a [részletesebb akkumulátorszimulációt](battery-simulation.md)
 vezeti be. Kikapcsolt akkumulátorszimulációnál a lent mért alaprepülés változatlan.
 

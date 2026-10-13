@@ -11,7 +11,10 @@ megkezdését, valamint a commitot és push-t. Az alábbiak a teljes tervezett k
 követelményei; a megvalósítás és ellenőrzés állapota külön követendő.
 
 Megvalósítási frissítés: elkészült a 0.1-es játszható repülési prototípus,
-a két pályával, három fizikai konfigurációval, öt nyelvvel és multiplayer alappal.
+immár három pályával, négy fizikai konfigurációval, öt nyelvvel és multiplayer alappal.
+2026. október 13-i bővítés: Rift 75, Meteor75 Pro jellegű saját modell és
+külön 1S fizika; Játszótér / Pocket Park, a kis whoopokhoz épített pálya.
+Részletek: [pocket-park-and-rift75.md](pocket-park-and-rift75.md).
 Részletes állapot és ellenőrzések: [prototype.md](prototype.md).
 A teljes első kiadás elfogadási feltételei még nem mind teljesülnek;
 különösen a hardveres rádióteszt és a valódi repülési adatokkal végzett fizikai hangolás hátravan.

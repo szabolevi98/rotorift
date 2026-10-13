@@ -1,7 +1,7 @@
 # Rotorift Showcase – bővíthető drónbemutató
 
 Modellválasztós bemutató a saját, kódból épített Rift X5 freestyle, Rift 65
-tinywhoop és Rift C3 cinewhoop drónnal. Mindhárom modell választható.
+tinywhoop, Rift 75 whoop és Rift C3 cinewhoop drónnal. Mind a négy modell választható.
 Ez külön modellbemutató;
 a játék, a repülési fizika és az irányítás még nem készül ebben a demóban.
 

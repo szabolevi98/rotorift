@@ -31,6 +31,7 @@ const script = [
   read('../shared/visual/drone-colors.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
   read('drone.js'),
   read('whoop65.js'),
+  read('whoop75.js'),
   read('cinewhoop3.js'),
   read('catalog.js'),
   read('viewer.js'),

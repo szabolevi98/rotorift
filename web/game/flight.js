@@ -16,6 +16,7 @@ import { RemoteCollisions } from "./remote-collisions.js";
 import { normalizeSimulation } from "../../shared/simulation/options.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
+import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -81,7 +82,7 @@ export class Flight {
     this.config = config;
     this.map = map;
     this.boundary = new MapBoundary(map);
-    this.camera.far = map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
+    this.camera.far = map.kind === "playground" ? PLAYGROUND_VIEW_DISTANCE : map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
     this.camera.updateProjectionMatrix();
     this.atmosphere = createMapAtmosphere(this.renderer, this.scene, map.kind);
     this.sun.visible = false;

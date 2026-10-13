@@ -312,5 +312,8 @@
   "hud.prop.position.2": "Trasera izquierda",
   "hud.prop.short.2": "TI",
   "hud.prop.position.3": "Trasera derecha",
-  "hud.prop.short.3": "TD"
+  "hud.prop.short.3": "TD",
+  "map.jatszoter": "Parque infantil",
+  "drone.rift-75": "Whoop clase 75 · 1S",
+  "hangar.drone.rift-75": "75 mm"
 }

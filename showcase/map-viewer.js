@@ -9,6 +9,7 @@ import { PARK_VIEW_DISTANCE } from "../web/game/park-terrain.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
 import { PARK_GARDEN, parkSurfaceHeight } from "../shared/world/park-layout.js";
 import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
+import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { validateRoute } from "../shared/race/routes.js";
 import { RouteDraft, normalFromYaw, yawFromNormal } from "../shared/race/editor.js";
 
@@ -39,6 +40,16 @@ const SITE_VIEWS = {
   pump: ["Concrete pump work zone", [67,17,182], [44,6,158]],
   landscape: ["Fence and landscape", [60,85,408], [10,12,292]],
 };
+const PLAYGROUND_VIEWS={
+ overview:['Playground overview',[52,48,62],[0,1,0]],
+ fort:['Climbing fort and slide',[10,6,10],[0,2,-3]],
+ swings:['Swings and timber tunnel',[-25,4,12],[-12,1,-2]],
+ bars:['Monkey-bar flight lane',[19,3,3],[14,1,-7]],
+ sandbox:['Sandbox and shade',[-23,5,22],[-15,1,14]],
+ hut:['Playhouse and picnic table',[23,4,23],[15,1,16]],
+ tunnel:['Crawl-through timber tunnel',[-5,1.2,19],[-5,.7,13]],
+};
+const viewsFor=map=>map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");
@@ -128,7 +139,7 @@ export async function startMapViewer(embeddedCatalog) {
     try{$("#restore-draft").hidden=!localStorage.getItem("rotorift-race-draft-"+map.id);}catch{$("#restore-draft").hidden=true;}
   }
   function setView(name) {
-    const view=(map.kind==="park"?PARK_VIEWS:SITE_VIEWS)[name];if(!view)return;
+    const view=viewsFor(map)[name];if(!view)return;
     camera.position.set(...view[1]);controls.target.set(...view[2]);controls.update();environment.update(view[2]);
   }
   async function selectMap(id,routeId) {
@@ -139,10 +150,10 @@ export async function startMapViewer(embeddedCatalog) {
       map=maps.find(m=>m.id===id)??maps[0];scene=new THREE.Scene();world=new RAPIER.World({x:0,y:-9.81,z:0});
       atmosphere=createMapAtmosphere(renderer,scene,map.kind);
       environment=buildEnvironment(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
-      camera.far=map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
+      camera.far=map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
       shadows=new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
       $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=`${map.size} × ${map.size} m`;
-      const views=map.kind==="park"?PARK_VIEWS:SITE_VIEWS;
+      const views=viewsFor(map);
       $("#view-select").replaceChildren(...Object.entries(views).map(([id,view])=>new Option(view[0],id)));
       $("#route-select").replaceChildren(...map.routes.map(route=>new Option(route.name,route.id)));
       if(map.routes.some(r=>r.id===routeId))$("#route-select").value=routeId;

@@ -147,7 +147,7 @@ for (const config of drones) {
 }
 
 test("full-power cruise converges to category speeds through drag, without a velocity clamp", () => {
-  const bands = { "rift-65": [70, 85], "rift-c3": [110, 130], "rift-x5": [190, 205] };
+  const bands = { "rift-65": [70, 85], "rift-75": [85, 100], "rift-c3": [110, 130], "rift-x5": [190, 205] };
   for (const config of drones) {
     const { world, drone } = fixture(config);
     try {

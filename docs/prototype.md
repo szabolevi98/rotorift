@@ -1,5 +1,11 @@
 # Rotorift 0.1 – első repülési prototípus
 
+## 2026-10-13 – Rift 75 és Játszótér
+
+- Negyedik repülhető drón, saját Meteor75 Pro jellegű geometriával és külön 1S fizikai konfigurációval; 65 → 75 → C3 → X5 sorrendben a játékban és a showcase-ben.
+- Harmadik, 84 × 84 m-es, napos, alacsony átjárókkal kidolgozott játszótéri pálya, külön hétkapus JSON versennyel, öt fordított pályanévvel és bekészített ütközési adattal.
+- A kezdőútról 30% gázon felszáll mindkét kis whoop; az átjárók és a pályán túli csupasz talaj ütközése ellenőrzött. [Részletek](pocket-park-and-rift75.md).
+
 ## 2026-10-13 – Önálló lapátsérülések
 
 - Négy külön propeller, három-három ép/hajlott/csorbult/letört lapáttal; saját tolóerővesztés és rezgés. A teljesen hiányzó lapátokkal a rotor tolóereje nulla.

@@ -60,7 +60,7 @@ run `apache2ctl configtest` after a pull that changes that file as well.
 
 - HTTP redirects to HTTPS; HTTPS `/` returns 200 with a trusted certificate.
 - `/api/status` returns `ok: true` and `database: true`.
-- `/api/catalog` includes three drones, two maps and their JSON race routes.
+- `/api/catalog` includes four drones, three maps and their JSON race routes.
 - `/ws` successfully upgrades over WSS; two clients can create/join a room.
 - GLB models, Three modules, Rapier WASM, languages and `/showcase/` load.
 - `/.git/config` and `/.env` are forbidden, directory listings disabled.

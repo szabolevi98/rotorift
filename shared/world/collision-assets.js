@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-32d49c3a1a06b2cd.rrc",
     "mapVersion": 3,
-    "sourceHash": "f968b40621eb3dd8454b527deef6feb70f6b8badfd50516b978e977c85c3703a",
+    "sourceHash": "1d19081d1e56c03081efa54307aca7cb10b309b113cc6321cadc4a8436b60ca6",
     "records": 3131,
     "rawBytes": 13021396,
     "bytes": 3468571
@@ -11,9 +11,17 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-a292af75d627e85b.rrc",
     "mapVersion": 2,
-    "sourceHash": "f968b40621eb3dd8454b527deef6feb70f6b8badfd50516b978e977c85c3703a",
+    "sourceHash": "1d19081d1e56c03081efa54307aca7cb10b309b113cc6321cadc4a8436b60ca6",
     "records": 3522,
     "rawBytes": 8958156,
     "bytes": 2281397
+  },
+  "jatszoter": {
+    "url": "/assets/collisions/jatszoter-c39c96f1e0e97dae.rrc",
+    "mapVersion": 1,
+    "sourceHash": "1d19081d1e56c03081efa54307aca7cb10b309b113cc6321cadc4a8436b60ca6",
+    "records": 133,
+    "rawBytes": 156012,
+    "bytes": 39332
   }
 };

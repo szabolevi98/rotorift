@@ -57,8 +57,8 @@ for (const config of drones) {
   });
 }
 
-test("category-specific acceleration, sustainable cruise and coasting distinguish the three aircraft", () => {
-  const bands = { "rift-65": [70, 85], "rift-c3": [110, 130], "rift-x5": [190, 205] };
+test("category-specific acceleration, sustainable cruise and coasting distinguish the four aircraft", () => {
+  const bands = { "rift-65": [70, 85], "rift-75": [85, 100], "rift-c3": [110, 130], "rift-x5": [190, 205] };
   const measured = Object.fromEntries(drones.map(c => [c.id, { cruise: measureCruise(c), coast: measureCoast(c) }]));
   for (const c of drones) {
     const { cruise, coast } = measured[c.id], [low, high] = bands[c.id];
