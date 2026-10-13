@@ -318,7 +318,7 @@ async function selectDrone(id) {
     catalog.drones.find((d) => d.id === "rift-x5");
   write("selected-drone", config.id);
   refreshCatalogText();
-  const selected = config, task = loading.begin("loading.model", { name: selected.name });
+  const selected = config, task = loading.begin("loading.model", { name: selected.name }, { overlay: !!preview.model });
   try {
     await paintLoading();
     await preview.select(selected, task.progress);
