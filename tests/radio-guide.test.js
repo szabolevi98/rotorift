@@ -26,3 +26,12 @@ test("endpoint guidance covers all four full ranges and follows the actual calib
   assert.equal(samples[0].mode, "range");
   assert.equal(samples[0].seconds, 6); assert.equal(samples.at(-1).seconds, 0);
 });
+
+test("stick detection demonstrates only the requested direction and starts from neutral", () => {
+  for (const axis of ["yaw", "pitch", "roll", "throttle"]) {
+    const values = Array.from({ length: 33 }, (_, i) => radioGuideTarget(axis, i * 150, null, 0, true).pose[axis]);
+    assert.equal(values[0], 0);
+    assert.equal(Math.min(...values), 0);
+    assert.equal(Math.max(...values), 1);
+  }
+});

@@ -236,9 +236,9 @@
   "radioPreset.edgetx-mobile-model": "RadioMaster · Modèle SIM Android",
   "radioPreset.mode2-gamepad": "Manette · Mode 2",
   "radioPreset.custom": "Personnalisé / sticks détectés",
-  "settings.radioMissing": "Un canal de vol manque. Lancez la détection des sticks. Certains navigateurs Android suppriment des canaux USB ; un modèle SIM Android ou une configuration USB avancée peut être nécessaire.",
+  "settings.radioMissing": "Aucune configuration automatique n’est confirmée pour cette disposition USB. Détecte les manches avec ton modèle radio existant. L’aide Android est nécessaire uniquement si un signal de manche manque réellement.",
   "settings.radioMobileHelp": "RadioMaster sur Android : canal manquant ?",
-  "settings.radioMobileRecipe": "Pour USB Classic, créez un modèle SIM séparé : CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud ; choisissez ici Modèle SIM Android. La duplication conserve gaz/yaw sur Android. Avec USB Advanced, Ail/Ele/Thr/Rud → X/Y/Z/Rz fonctionne aussi avec le profil AETR. Gardez votre modèle de vol réel.",
+  "settings.radioMobileRecipe": "Essaie d’abord la détection des manches avec ton modèle radio existant ; un modèle SIM séparé est généralement inutile. Les signaux USB bruts montrent si l’axe du manche bouge. Si les quatre signaux n’arrivent pas au navigateur et si Advanced USB est disponible, associe Ail/Ele/Thr/Rud à X/Y/Z/Rz. Avec Classic USB, un modèle SIM séparé peut servir de solution : CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud ; sélectionne ici « Modèle Android SIM ». Ne modifie pas les mixages de ton modèle de vol réel pour cela.",
   "stickSetup.start": "Détecter les sticks",
   "stickSetup.startHint": "Commencez gaz au minimum, les autres axes centrés. Quatre mouvements courts détectent canaux et directions.",
   "stickSetup.throttle": "Montez complètement les gaz, puis baissez-les complètement. Ne touchez pas aux interrupteurs.",
@@ -263,5 +263,12 @@
   "online.requesting": "Ouverture du salon…",
   "online.readyHint": "Tous les pilotes doivent être prêts avant que l’hôte puisse démarrer.",
   "online.inProgress": "Vol en cours. Reprenez le vol ou quittez le salon.",
-  "simulation.hostSetupHint": "Ces règles s’appliquent à tous dans le salon. L’hôte peut les modifier dans le lobby avant le départ."
+  "simulation.hostSetupHint": "Ces règles s’appliquent à tous dans le salon. L’hôte peut les modifier dans le lobby avant le départ.",
+  "stickSetup.usbDetails": "Signaux USB bruts",
+  "stickSetup.usbCount": "Le navigateur transmet {count} axes. Ce sont les numéros des axes USB, pas les voies de la radio.",
+  "stickSetup.signalwaiting": "Aucun mouvement d’axe détecté pour cette étape. Déplace lentement le manche indiqué.",
+  "stickSetup.signaldetected": "Mouvement analogique détecté : A{axis} · variation {travel}%. Ramène le manche, puis appuie sur « Mouvement terminé ».",
+  "stickSetup.signalused": "A{axis} correspond à un manche déjà détecté. Déplace uniquement l’axe indiqué maintenant.",
+  "stickSetup.signaldigital": "A{axis} varie, mais seules quelques positions ont été observées. Déplace lentement le manche ; un interrupteur n’est pas un axe analogique.",
+  "stickSetup.signalweak": "Faible variation sur A{axis} ({travel}%). Déplace lentement le manche indiqué jusqu’en butée."
 }

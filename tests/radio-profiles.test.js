@@ -111,6 +111,54 @@ test("a wizard rejects both directions when it cannot infer inversion", () => {
   move(setup, raw, 3, 1); assert.equal(setup.advance(raw), true);
 });
 
+test("reduced radio outputs are detected and scaled without creating another transmitter model", () => {
+  const raw = [0, 0, 0, 0, -0.45, -1], setup = new StickSetup(raw);
+  for (const [index, end] of [[4, 0.45], [2, -0.3], [1, 0.4], [0, 0.25]]) {
+    move(setup, raw, index, end);
+    assert.equal(setup.signal.state, "detected");
+    assert.equal(setup.signal.index, index);
+    assert.equal(setup.advance(raw), true);
+  }
+  const profile = { ...defaultProfile(), axes: setup.axes };
+  raw[4] = 0.45; raw[2] = -0.3; raw[1] = 0.4; raw[0] = 0.25;
+  assert.deepEqual(radioInput(raw, profile), { throttle: 1, yaw: 1, pitch: 1, roll: 1 });
+});
+
+test("live setup diagnostics distinguish absent, binary, reused and weak USB signals", () => {
+  const raw = [0, 0, -1, 0, -1], setup = new StickSetup(raw);
+  assert.equal(setup.signal.state, "waiting");
+  for (const value of [0.005, 0.001, -0.01]) { raw[0] = value; setup.sample(raw); }
+  assert.equal(setup.signal.state, "waiting", "stick noise is not a movement");
+  raw[4] = 1; setup.sample(raw); raw[4] = -1; setup.sample(raw);
+  assert.equal(setup.signal.state, "digital");
+  assert.equal(setup.advance(raw), false);
+  move(setup, raw, 2, 1); assert.equal(setup.advance(raw), true);
+  move(setup, raw, 2, 1); assert.equal(setup.signal.state, "used");
+  assert.equal(setup.advance(raw), false);
+  setup.beginStep(raw);
+  move(setup, raw, 3, 0.15); assert.equal(setup.signal.state, "weak");
+  assert.equal(setup.advance(raw), false);
+});
+
+test("the live guide uses observed USB axes during setup rather than an unverified preset", () => {
+  const raw = [0, 0, 0, 0, -0.5, -1], setup = new StickSetup(raw);
+  move(setup, raw, 4, 0.5); setup.advance(raw);
+  move(setup, raw, 2, -0.3);
+  raw[2] = -0.3; setup.sample(raw);
+  assert.deepEqual(radioInput(raw, { deadzone: 0.015, axes: setup.feedbackAxes }), { throttle: 0, yaw: 1 });
+  assert.equal(setup.axes.yaw, undefined, "live feedback must not commit an incomplete profile");
+  raw[2] = 0;
+  assert.equal(radioInput(raw, { deadzone: 0.015, axes: setup.feedbackAxes }).yaw, 0);
+});
+
+test("noisy switch endpoints cannot imitate a reduced-range analogue stick", () => {
+  const raw = [0, 0, -1, 0, -1], setup = new StickSetup(raw);
+  for (const value of [-0.99, -0.96, -0.94, 0.94, 0.97, 1]) { raw[4] = value; setup.sample(raw); }
+  assert.ok(setup.samples[4].bins.size >= 6, "there are many values, but no intermediate travel");
+  assert.equal(setup.signal.state, "digital");
+  assert.equal(setup.advance(raw), false);
+});
+
 test("invalid stored profiles fall back to the device default", () => {
   assert.equal(restoreRadioProfile(pocket(), { axes: {} }, { axes: null }, "hid").detectedPreset, "edgetx-classic");
 });

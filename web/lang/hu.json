@@ -236,9 +236,9 @@
   "radioPreset.edgetx-mobile-model": "RadioMaster · Android SIM modell",
   "radioPreset.mode2-gamepad": "Kontroller · Mode 2",
   "radioPreset.custom": "Egyéni / felismert botok",
-  "settings.radioMissing": "Hiányzik egy repülési csatorna. Indítsd a botfelismerést. Egyes androidos böngészők elhagyják az USB-csatornákat; Android-kompatibilis SIM modell vagy Advanced USB-kiosztás kellhet.",
+  "settings.radioMissing": "Ehhez az USB-kiosztáshoz nincs igazolt automatikus beállítás. Indítsd a botfelismerést a meglévő rádiómodelleddel. Az Android-súgó csak akkor kell, ha valamelyik bot jele valóban hiányzik.",
   "settings.radioMobileHelp": "RadioMaster Androidon: hiányzik egy csatorna?",
-  "settings.radioMobileRecipe": "Classic USB-hez külön SIM modell: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; itt az „Android SIM modell” profilt válaszd. A gáz/yaw megkettőzése miatt az Android is megtartja őket. Ha van Advanced USB, az Ail/Ele/Thr/Rud → X/Y/Z/Rz kiosztás is működik az AETR profillal. A valódi repüléshez használt modelledet hagyd meg.",
+  "settings.radioMobileRecipe": "Először a meglévő rádiómodelleddel próbáld a botfelismerést; külön SIM modell általában nem szükséges. A nyers USB-jeleknél ellenőrizheted, hogy mozog-e az adott bot tengelye. Ha nem jut el mind a négy botjel a böngészőig, és van Advanced USB, Ail/Ele/Thr/Rud → X/Y/Z/Rz kiosztás használható. Classic USB-nél külön SIM modell lehet kerülőút: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; itt az „Android SIM modell” profilt válaszd. A valódi repülési modelled mixeit ehhez ne írd át.",
   "stickSetup.start": "Botok felismerése",
   "stickSetup.startHint": "Kezdéskor gáz teljesen le, a többi bottengely középen. Négy rövid mozdulatból felismerjük a csatornákat és az irányokat.",
   "stickSetup.throttle": "Emeld teljesen fel a gázt, majd húzd teljesen le. Kapcsolót ne mozgass.",
@@ -263,5 +263,12 @@
   "online.requesting": "Szoba megnyitása…",
   "online.readyHint": "Indítás előtt minden pilótának jeleznie kell, hogy készen áll.",
   "online.inProgress": "A repülés folyamatban van. Folytasd, vagy lépj ki a szobából.",
-  "simulation.hostSetupHint": "Ezek a szoba közös szabályai. Indítás előtt a lobbyban is módosíthatja őket a házigazda."
+  "simulation.hostSetupHint": "Ezek a szoba közös szabályai. Indítás előtt a lobbyban is módosíthatja őket a házigazda.",
+  "stickSetup.usbDetails": "Nyers USB-jelek",
+  "stickSetup.usbCount": "A böngésző {count} tengelyt ad át. A számok USB-tengelyek, nem a rádió csatornaszámai.",
+  "stickSetup.signalwaiting": "Ezen a lépésen még nem látszik tengelyváltozás. Mozgasd lassan a jelzett botot.",
+  "stickSetup.signaldetected": "Analóg mozgás érzékelve: A{axis} · jelváltozás {travel}%. Engedd vissza a botot, majd nyomd meg a „Mozdulat kész” gombot.",
+  "stickSetup.signalused": "Az A{axis} már egy korábban felismert bothoz tartozik. Most csak a jelzett tengelyt mozgasd.",
+  "stickSetup.signaldigital": "Az A{axis} változik, de eddig csak néhány állást láttunk. Mozgasd lassan a botot; a kapcsoló nem analóg tengely.",
+  "stickSetup.signalweak": "Kis jelváltozás látszik az A{axis} tengelyen ({travel}%). Húzd ki teljesen és lassan a jelzett botot."
 }

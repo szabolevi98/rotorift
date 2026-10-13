@@ -242,6 +242,7 @@ h2 {
 #binding-status { color: var(--orange); }
 .radio-warning { color: var(--orange); line-height: 1.5; }
 #stick-setup { margin: 14px 0; padding: 12px; background: #ffffff08; border-left: 2px solid var(--orange); }
+.radio-usb-details { font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .radio-mobile-help { margin: 15px 0; }
 .radio-mobile-help summary { cursor: pointer; }
 #simulation-hud { position: absolute; left: 32px; top: 86px; display: grid; gap: 8px; }

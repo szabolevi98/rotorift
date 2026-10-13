@@ -236,9 +236,9 @@
   "radioPreset.edgetx-mobile-model": "RadioMaster · Modelo SIM Android",
   "radioPreset.mode2-gamepad": "Mando · Mode 2",
   "radioPreset.custom": "Personalizado / sticks detectados",
-  "settings.radioMissing": "Falta un canal de vuelo. Inicia la detección de sticks. Algunos navegadores Android eliminan canales USB; puede hacer falta un modelo SIM Android o una configuración USB avanzada.",
+  "settings.radioMissing": "No hay una asignación automática confirmada para esta disposición USB. Detecta los sticks con tu modelo de emisora actual. La ayuda de Android solo es necesaria si falta realmente una señal del stick.",
   "settings.radioMobileHelp": "RadioMaster en Android: ¿falta un canal?",
-  "settings.radioMobileRecipe": "Para USB Classic, usa un modelo SIM separado: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; selecciona aquí Modelo SIM Android. La duplicación conserva acelerador/yaw en Android. Con USB Advanced, Ail/Ele/Thr/Rud → X/Y/Z/Rz también funciona con AETR. Conserva tu modelo de vuelo real.",
+  "settings.radioMobileRecipe": "Primero prueba la detección de sticks con tu modelo de emisora actual; normalmente no hace falta un modelo SIM separado. Las señales USB muestran si se mueve el eje del stick. Si no llegan las cuatro señales al navegador y tienes Advanced USB, asigna Ail/Ele/Thr/Rud a X/Y/Z/Rz. Con Classic USB, un modelo SIM separado puede servir como alternativa: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; selecciona aquí « Modelo Android SIM ». No cambies las mezclas de tu modelo de vuelo real para hacerlo.",
   "stickSetup.start": "Detectar sticks",
   "stickSetup.startHint": "Empieza con acelerador al mínimo y los demás ejes centrados. Cuatro movimientos cortos detectan canales y sentidos.",
   "stickSetup.throttle": "Sube el acelerador del todo y bájalo del todo. No muevas interruptores.",
@@ -263,5 +263,12 @@
   "online.requesting": "Abriendo sala…",
   "online.readyHint": "Todos los pilotos deben estar listos antes de que el anfitrión pueda iniciar.",
   "online.inProgress": "Vuelo en curso. Continúa o sal de la sala.",
-  "simulation.hostSetupHint": "Estas reglas se aplican a todos en la sala. El anfitrión puede cambiarlas en el lobby antes del inicio."
+  "simulation.hostSetupHint": "Estas reglas se aplican a todos en la sala. El anfitrión puede cambiarlas en el lobby antes del inicio.",
+  "stickSetup.usbDetails": "Señales USB sin procesar",
+  "stickSetup.usbCount": "El navegador entrega {count} ejes. Son números de ejes USB, no canales de la emisora.",
+  "stickSetup.signalwaiting": "Todavía no se detecta movimiento de ejes en este paso. Mueve lentamente el stick indicado.",
+  "stickSetup.signaldetected": "Movimiento analógico detectado: A{axis} · cambio de señal {travel}%. Devuelve el stick y pulsa « Movimiento terminado ».",
+  "stickSetup.signalused": "A{axis} pertenece a un stick ya detectado. Mueve ahora solo el eje indicado.",
+  "stickSetup.signaldigital": "A{axis} cambia, pero solo se han observado unas pocas posiciones. Mueve el stick lentamente; un interruptor no es un eje analógico.",
+  "stickSetup.signalweak": "Cambio pequeño en A{axis} ({travel}%). Mueve lentamente el stick indicado hasta el extremo."
 }

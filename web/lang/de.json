@@ -236,9 +236,9 @@
   "radioPreset.edgetx-mobile-model": "RadioMaster · Android-SIM-Modell",
   "radioPreset.mode2-gamepad": "Controller · Mode 2",
   "radioPreset.custom": "Eigene / erkannte Sticks",
-  "settings.radioMissing": "Ein Flugkanal fehlt. Starte die Stick-Erkennung. Manche Android-Browser verwerfen USB-Kanäle; ein Android-SIM-Modell oder erweitertes USB-Mapping kann nötig sein.",
+  "settings.radioMissing": "Für diese USB-Belegung ist keine automatische Zuordnung bestätigt. Erkenne die Sticks mit deinem vorhandenen Sendermodell. Die Android-Hilfe brauchst du nur, wenn ein Sticksignal tatsächlich fehlt.",
   "settings.radioMobileHelp": "RadioMaster auf Android: fehlende Kanäle?",
-  "settings.radioMobileRecipe": "Für Classic USB ein separates SIM-Modell: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; hier Android-SIM-Modell wählen. So bleiben Gas/Yaw trotz Android-Zuordnung erhalten. Mit Advanced USB funktioniert Ail/Ele/Thr/Rud → X/Y/Z/Rz und das AETR-Profil. Das Modell für echte Flüge beibehalten.",
+  "settings.radioMobileRecipe": "Versuche zuerst die Stick-Erkennung mit deinem vorhandenen Sendermodell; ein separates SIM-Modell ist normalerweise unnötig. Die rohen USB-Signale zeigen, ob sich die Stickachse bewegt. Falls nicht alle vier Sticksignale beim Browser ankommen und Advanced USB verfügbar ist, ordne Ail/Ele/Thr/Rud den Achsen X/Y/Z/Rz zu. Bei Classic USB kann ein separates SIM-Modell helfen: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; wähle hier „Android SIM-Modell“. Ändere dafür nicht die Mischer deines Flugmodells.",
   "stickSetup.start": "Sticks erkennen",
   "stickSetup.startHint": "Zu Beginn Gas ganz unten, andere Stickachsen zentriert. Vier kurze Bewegungen erkennen Kanäle und Richtungen.",
   "stickSetup.throttle": "Gas ganz hoch, dann ganz zurück nach unten. Keine Schalter bewegen.",
@@ -263,5 +263,12 @@
   "online.requesting": "Raum wird geöffnet…",
   "online.readyHint": "Alle Piloten müssen bereit sein, bevor der Gastgeber startet.",
   "online.inProgress": "Flug läuft. Flug fortsetzen oder Raum verlassen.",
-  "simulation.hostSetupHint": "Diese Regeln gelten für alle im Raum. Der Gastgeber kann sie vor dem Start in der Lobby ändern."
+  "simulation.hostSetupHint": "Diese Regeln gelten für alle im Raum. Der Gastgeber kann sie vor dem Start in der Lobby ändern.",
+  "stickSetup.usbDetails": "Rohe USB-Signale",
+  "stickSetup.usbCount": "Der Browser liefert {count} Achsen. Das sind USB-Achsennummern, keine Funkkanäle.",
+  "stickSetup.signalwaiting": "In diesem Schritt wurde noch keine Achsenbewegung erkannt. Bewege den angezeigten Stick langsam.",
+  "stickSetup.signaldetected": "Analoge Bewegung erkannt: A{axis} · Signaländerung {travel}%. Stelle den Stick zurück und drücke „Bewegung fertig“.",
+  "stickSetup.signalused": "A{axis} gehört bereits zu einem erkannten Stick. Bewege jetzt nur die angezeigte Achse.",
+  "stickSetup.signaldigital": "A{axis} ändert sich, bisher aber nur zwischen wenigen Positionen. Bewege den Stick langsam; ein Schalter ist keine analoge Achse.",
+  "stickSetup.signalweak": "Kleine Signaländerung auf A{axis} ({travel}%). Bewege den angezeigten Stick langsam bis zum Anschlag."
 }

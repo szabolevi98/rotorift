@@ -52,18 +52,18 @@ export class RadioGuide {
   render(controller, now) {
     this.controller = controller;
     if (!this.root.offsetParent) return;
-    const guide = radioGuideTarget(this.axis, now - this.started, controller.range, now);
+    const guide = radioGuideTarget(controller.setup?.axis ?? this.axis, now - this.started, controller.range, now, !!controller.setup);
     const connected = !!controller.pad;
-    const labelKey = [document.documentElement.lang, guide.mode, guide.seconds, connected, controller.pad?.id, controller.raw.length].join("|");
+    const labelKey = [document.documentElement.lang, guide.mode, guide.seconds, connected, !!controller.setup, controller.pad?.id, controller.raw.length].join("|");
     if (labelKey !== this.labelKey) {
       this.labelKey = labelKey;
       this.root.dataset.connected = String(connected);
-      this.caption.textContent = this.t("radioGuide." + guide.mode, { pitch: this.t("axis.pitch"), roll: this.t("axis.roll") });
+      this.caption.textContent = this.t((controller.setup ? "stickSetup." : "radioGuide.") + guide.mode, { pitch: this.t("axis.pitch"), roll: this.t("axis.roll") });
       this.timer.textContent = guide.seconds === null ? "" : guide.seconds + " s";
       this.liveLabel.textContent = this.t(connected ? "radioGuide.live" : "radioGuide.noRadio");
       this.canvas.setAttribute("aria-label", this.t("radioGuide.aria"));
       for (const button of this.buttons) {
-        button.disabled = !!controller.range;
+        button.disabled = !!controller.range || !!controller.setup;
         button.setAttribute("aria-pressed", String(button.dataset.radioGuideAxis === guide.mode));
       }
       for (const row of document.querySelectorAll("[data-radio-axis-row]"))
@@ -90,7 +90,10 @@ export class RadioGuide {
       this.camera.updateProjectionMatrix();
     }
     const desired = radioStickPositions(guide.pose);
-    const actual = radioStickPositions(radioInput(controller.raw, controller.profile));
+    const actualPose = controller.setup
+      ? { throttle: 0, yaw: 0, pitch: 0, roll: 0, ...radioInput(controller.raw, { ...controller.profile, axes: controller.setup.feedbackAxes }) }
+      : radioInput(controller.raw, controller.profile);
+    const actual = radioStickPositions(actualPose);
     const leftActive = ["centres", "range", "throttle", "yaw"].includes(guide.mode);
     const rightActive = ["centres", "range", "pitch", "roll"].includes(guide.mode);
     for (let i = 0; i < 2; i++) {
@@ -103,6 +106,7 @@ export class RadioGuide {
       this.arrows[i].forEach((arrow, direction) => {
         const horizontal = direction < 2;
         arrow.visible = guide.mode === "range" || (i ? (horizontal ? guide.mode === "roll" : guide.mode === "pitch") : (horizontal ? guide.mode === "yaw" : guide.mode === "throttle"));
+        if (controller.setup && direction % 2 === 1) arrow.visible = false;
       });
     }
     this.renderer.render(this.scene, this.camera);

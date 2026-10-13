@@ -7,6 +7,13 @@ telefon és a PC eltérő USB-sorrendje nem írja felül egymás kalibrációjá
 
 ## Ajánlott profilok
 
+A meglévő rádiómodell az első választás; külön SIM modell nem általános feltétel.
+A botfelismerő a kisebb (például mix vagy rate miatt csökkentett) analóg kitérést
+is felismeri és végpontokra skálázza. A felismerési lépés élő jelzése megkülönbözteti
+a hiányzó mozgást, kapcsolójelet, már felismert tengelyt és túl kis kitérést.
+A nyers USB-listában az aktuális érték és az adott lépés min/max értéke látszik;
+az A1, A2… számozás böngészős tengely, nem a rádió CH-kiosztása.
+
 - **AETR**: EdgeTX Classic USB, CH1 roll, CH2 pitch, CH3 throttle, CH4 yaw.
   Desktopon a böngészős tengelyek 0, 1, 2, 3. Alapirányok módosíthatók.
 - **Android USB**: az újabb Chromium-bemenet X/Y/Rx/Ry/Z/Rz sorrendjében
@@ -27,7 +34,9 @@ Az Android/Chromium régi ismeretlen-gamepad kezelése a Z és Rx, illetve Ry é
 csatornákat összevonhatja, csak négy tengelyt adva a weboldalnak. Classic AETR
 esetén a Z gázcsatorna elveszhet, a másik bottengelyre pedig AUX kerülhet.
 Ezt a weboldal a már elveszett értékből nem tudja visszaállítani.
-A hiányos automatikus profilt jelezzük, semleges bemenetet adunk és ARM-ot tiltunk.
+A nem igazolt automatikus kiosztást jelezzük, semleges bemenetet adunk és ARM-ot tiltunk.
+A négy böngészős tengely önmagában még nem bizonyít csatornavesztést: egy teljes,
+botfelismeréssel ellenőrzött négytengelyes kiosztás ugyanúgy használható.
 
 Egy külön, **csak szimulátoros** rádiómodell Classic USB-vel is kerülőút lehet:
 

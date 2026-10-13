@@ -236,9 +236,9 @@
   "radioPreset.edgetx-mobile-model": "RadioMaster · Android SIM model",
   "radioPreset.mode2-gamepad": "Gamepad · Mode 2",
   "radioPreset.custom": "Custom / learned sticks",
-  "settings.radioMissing": "A flight channel is missing. Use stick detection. Some Android browsers drop USB channels; an Android-compatible SIM model or Advanced USB mapping may be needed.",
+  "settings.radioMissing": "This USB layout has no verified automatic mapping. Detect the sticks using your existing radio model. Android help is only needed if a stick signal is actually missing.",
   "settings.radioMobileHelp": "RadioMaster on Android: missing channels?",
-  "settings.radioMobileRecipe": "For Classic USB, use a separate SIM model with CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; select “Android SIM model” here. This duplicates throttle/yaw so Android retains them. If Advanced USB is available, X/Y/Z/Rz for Ail/Ele/Thr/Rud also works with the AETR profile. Keep your real-flight model unchanged.",
+  "settings.radioMobileRecipe": "First try stick detection with your existing radio model; a separate SIM model is usually unnecessary. Raw USB signals show whether the stick axis moves. If all four stick signals do not reach the browser and Advanced USB is available, map Ail/Ele/Thr/Rud to X/Y/Z/Rz. With Classic USB a separate SIM model can be a workaround: CH1=Ail, CH2=Ele, CH3=Thr, CH4=Thr, CH5=Rud, CH6=Rud; select “Android SIM model” here. Do not change the mixes of your real-flight model for this.",
   "stickSetup.start": "Detect my sticks",
   "stickSetup.startHint": "Start with throttle fully down and the other stick axes centred. Four short movements find the channels and directions automatically.",
   "stickSetup.throttle": "Raise throttle fully, then lower it fully. Do not touch switches.",
@@ -263,5 +263,12 @@
   "online.requesting": "Opening room…",
   "online.readyHint": "Everyone must be ready before the host can start.",
   "online.inProgress": "Session in progress. Resume your flight or leave the room.",
-  "simulation.hostSetupHint": "These rules apply to everyone in your room. The host can change them in the lobby before starting."
+  "simulation.hostSetupHint": "These rules apply to everyone in your room. The host can change them in the lobby before starting.",
+  "stickSetup.usbDetails": "Raw USB signals",
+  "stickSetup.usbCount": "The browser exposes {count} axes. These are USB axis numbers, not radio channel numbers.",
+  "stickSetup.signalwaiting": "No axis movement has appeared during this step yet. Move the indicated stick slowly.",
+  "stickSetup.signaldetected": "Analogue movement detected: A{axis} · signal change {travel}%. Return the stick, then press “Movement done”.",
+  "stickSetup.signalused": "A{axis} belongs to a previously detected stick. Move only the indicated axis now.",
+  "stickSetup.signaldigital": "A{axis} changes, but only a few positions have appeared so far. Move the stick slowly; a switch is not an analogue axis.",
+  "stickSetup.signalweak": "Small signal change on A{axis} ({travel}%). Move the indicated stick slowly through its full travel."
 }

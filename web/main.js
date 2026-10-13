@@ -624,6 +624,15 @@ function updateInputText() {
     : t(controller.pad ? "input.keyboard" : "input.noRadio");
   $("#input-status").textContent = text;
   $("#radio-name").textContent = controller.pad?.id ?? t("input.noRadio");
+  if (controller.setup) {
+    const signal = controller.setup.signal;
+    $("#stick-setup-signal").textContent = t("stickSetup.signal" + signal.state, { axis: (signal.index ?? 0) + 1, travel: Math.round((signal.travel ?? 0) * 50) });
+    $("#stick-setup-usb").textContent = t("stickSetup.usbCount", { count: controller.raw.length }) + "\n" +
+      controller.raw.map((value, index) => {
+        const sample = controller.setup.samples[index];
+        return `A${index + 1}: ${value.toFixed(3)}   [${sample?.min.toFixed(3)} … ${sample?.max.toFixed(3)}]`;
+      }).join("\n");
+  }
   for (const m of document.querySelectorAll("[data-meter]"))
     m.value = input[m.dataset.meter];
   const active = availableBindings(controller.pad, controller.profile).filter((b) => b.type === "button"
