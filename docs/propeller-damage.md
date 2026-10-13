@@ -31,7 +31,8 @@ A HUD felülnézeti elrendezésben négy háromlapátos ikont mutat, saját áll
 Nem százalékot ír ki. A multiplayer ugyanazt a kapcsolót használja a szoba
 tulajdonosától; a lapátállapotok ellenőrzött 4×3 tömbként jutnak a többi klienshez.
 Ez látvány- és állapotszinkron, nem szerveroldali törésfizika vagy csalásvédelem.
-Újracsatlakozásnál visszaáll a sérülés; reset és új futam ép propellereket ad.
+Reset és új futam ép propellereket ad. Az újracsatlakozás jelenlegi rajthelyre
+visszaállítása szintén új propellereket ad, miközben a futam előrehaladása megmarad.
 
 A drón JSON `simulation.propeller` részében a hajlás, csorbulás és törés
 sebességküszöbei, a forgó lapát becsült csúcssebessége és a védőgyűrű méretei
