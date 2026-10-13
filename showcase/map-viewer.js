@@ -36,6 +36,7 @@ const SITE_VIEWS = {
   earthworks: ["Earthworks and ramps", [282,28,-146], [231,5,-225]],
   hangar: ["Hangar and loading yard", [-101,17,29], [-136,7,-20]],
   plant: ["Concrete batching plant", [112,23,280], [65,7,246]],
+  pump: ["Concrete pump work zone", [67,17,182], [44,6,158]],
   landscape: ["Fence and landscape", [60,85,408], [10,12,292]],
 };
 

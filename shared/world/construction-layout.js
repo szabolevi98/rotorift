@@ -37,12 +37,14 @@ export const CONSTRUCTION_ROADS = [
   { x: 0, z: -276, width: 510, depth: 13 },
   { x: -178, z: 43, width: 148, depth: 12 },
   { x: -136, z: 24, width: 20, depth: 40 },
+  { x: 18.75, z: 156, width: 18.5, depth: 8 },
 ];
 export const CONSTRUCTION_YARDS = [
   { x: 172, z: 175, width: 110, depth: 110, elevation: 1.2 },
   { x: -168, z: 239, width: 84, depth: 66, elevation: 0 },
   { x: 65, z: 246, width: 64, depth: 42, elevation: 0 },
   { x: 66, z: 109, width: 52, depth: 30, elevation: 2 },
+  { x: 44, z: 156, width: 32, depth: 20, elevation: 1.8 },
 ];
 export const CONSTRUCTION_EARTHWORKS = [
   { ...CONSTRUCTION_PIT, id: "west-foundations", elevation: 0 },

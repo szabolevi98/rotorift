@@ -1,6 +1,8 @@
 import * as THREE from "three";
-import { constructionHeight, CONSTRUCTION_ROADS, CONSTRUCTION_YARDS, CONSTRUCTION_ROAD_HEIGHT, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_SPOIL } from "../../shared/world/construction-layout.js";
+import { constructionHeight, CONSTRUCTION_ROAD_HEIGHT, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_SPOIL } from "../../shared/world/construction-layout.js";
 import { buildConstructionLandscape } from "./construction-landscape.js";
+import { makeSurfaceGeometry } from "./surface-geometry.js";
+import { constructionRoads } from "../../shared/world/map-surfaces.js";
 
 export function constructionSoilColor(x, z, exposed = false, deposit = false) {
   const grain = Math.sin(x * 0.16 + Math.cos(z * 0.13)) * Math.sin(z * 0.19);
@@ -40,13 +42,7 @@ export function buildConstructionTerrain(parts) {
 
   // Conforming roads supply collision at their visible surface too.
   // They subdivide at the same two-metre grid, avoiding long floating slabs.
-  for (const p of [...CONSTRUCTION_ROADS, ...CONSTRUCTION_YARDS]) {
-    const geometry = new THREE.PlaneGeometry(p.width, p.depth, Math.ceil(p.width / 2), Math.ceil(p.depth / 2));
-    geometry.rotateX(-Math.PI / 2); geometry.translate(p.x, 0, p.z);
-    const pos = geometry.attributes.position;
-    for (let i = 0; i < pos.count; i++) pos.setY(i, constructionHeight(pos.getX(i), pos.getZ(i)) + CONSTRUCTION_ROAD_HEIGHT);
-    geometry.computeVertexNormals(); parts.ground(geometry, "gravel", true, true).name = "graded-working-road";
-  }
+  parts.ground(makeSurfaceGeometry(constructionRoads, constructionHeight, CONSTRUCTION_ROAD_HEIGHT), "gravel", true, true).name = "graded-working-road";
 }
 
 export function buildEarthworkDetails(parts) {

@@ -144,7 +144,8 @@ export const PARK_PATHS = [
 
 // Rendering, furnishing and vegetation all use the same curved centerlines.
 export function sampleParkPath(points) {
-  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, 0, z)));
+  const closed = points.length > 3 && points[0][0] === points.at(-1)[0] && points[0][1] === points.at(-1)[1];
+  const curve = new THREE.CatmullRomCurve3((closed ? points.slice(0, -1) : points).map(([x, z]) => new THREE.Vector3(x, 0, z)), closed);
   const steps = Math.max(2, Math.ceil(curve.getLength() / 2));
   return Array.from({ length: steps + 1 }, (_, i) => {
     const p = curve.getPoint(i / steps), t = curve.getTangent(i / steps);

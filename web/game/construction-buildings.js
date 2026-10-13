@@ -67,6 +67,31 @@ export function buildConcreteFrames(parts) {
         }
         box([8, 0.34, 5], [b.width / 2 + 2, b.storey - 0.17, b.depth / 2], "concrete");
       }
+      // Work progresses from finished slabs to shuttering and fresh reinforcement.
+      // Restrict this to an outer roof bay; the dive shaft and main bays stay open.
+      const roof = b.levels * b.storey, workX = -b.width / 2 + dx / 2, workZ = -b.depth / 2 + dz / 2;
+      for (const offset of [-2.5, 0, 2.5]) {
+        for (let layer = 0; layer < 3; layer++)
+          box([3.2, 0.18, 1.6], [workX, roof + 0.09 + layer * 0.18, workZ + offset], "wood", false);
+        box([0.11, 0.05, 1.7], [workX - 1, roof + 0.565, workZ + offset], "steel", false);
+        box([0.11, 0.05, 1.7], [workX + 1, roof + 0.565, workZ + offset], "steel", false);
+      }
+      // An unfinished outside column with plywood shutters and tie collars.
+      const columnX = -b.width / 2, columnZ = -b.depth / 2;
+      for (const side of [-1, 1]) {
+        box([0.09, 2.8, 1.05], [columnX + side * 0.53, roof + 1.4, columnZ], "wood");
+        box([1.05, 2.8, 0.09], [columnX, roof + 1.4, columnZ + side * 0.53], "wood");
+        for (const y of [0.5, 1.6, 2.6]) {
+          box([0.13, 0.12, 1.27], [columnX + side * 0.62, roof + y, columnZ], "steel", false);
+          box([1.27, 0.12, 0.13], [columnX, roof + y, columnZ + side * 0.62], "steel", false);
+        }
+      }
+      for (const x of [-0.23, 0.23]) for (const z of [-0.23, 0.23])
+        cylinder(0.04, 3.7, [columnX + x, roof + 1.85, columnZ + z], "rebar", false);
+      // Safety rail only along the occupied roof bay, with open edges elsewhere.
+      for (const x of [-b.width / 2 + 1.3, -b.width / 2 + dx - 1.3])
+        cylinder(0.09, 1.15, [x, roof + 0.575, -b.depth / 2 + 0.4], "ochre");
+      for (const y of [0.55, 1.08]) box([dx - 2.6, 0.08, 0.08], [workX, roof + y, -b.depth / 2 + 0.4], "ochre");
     });
   }
   // A different silhouette: the warehouse has steel portals and no roof/walls.

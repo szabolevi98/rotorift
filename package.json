@@ -9,7 +9,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node --test",
-    "showcase:build": "node showcase/build.mjs"
+    "showcase:build": "node showcase/build.mjs",
+    "maps:build": "node scripts/build-map-surfaces.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -22,6 +23,7 @@
     "ws": "8.18.0"
   },
   "devDependencies": {
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "polygon-clipping": "0.15.7"
   }
 }

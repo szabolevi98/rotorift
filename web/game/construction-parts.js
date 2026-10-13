@@ -73,8 +73,9 @@ export function createConstructionParts(scene, world, RAPIER) {
   pipe.translate(0, 0, -0.5); pipe.rotateX(-Math.PI / 2);
   const geometries = {
     box: new THREE.BoxGeometry(1, 1, 1), cylinder: new THREE.CylinderGeometry(0.5, 0.5, 1, 16),
-    cone: new THREE.ConeGeometry(0.5, 1, 16), sphere: new THREE.SphereGeometry(0.5, 12, 8), pipe,
+    cone: new THREE.ConeGeometry(0.5, 1, 16), sphere: new THREE.IcosahedronGeometry(0.5, 1), pipe,
   };
+  geometries.sphere.computeVertexNormals();
   const batches = new Map(), colliders = [], landmarks = [];
   const regions = new ColliderRegions();
   let anchor = new THREE.Matrix4();

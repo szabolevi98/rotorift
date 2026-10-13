@@ -1,9 +1,11 @@
 import * as THREE from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { makeTreeCrown, makeTreeTrunk, treeCanopyLobes } from "./tree-models.js";
 import { ColliderRegions } from "../../shared/world/collider-regions.js";
 import { buildParkLandmarks } from "./park-landmarks.js";
 import { buildParkCommunity } from "./park-community.js";
 import { appendTerrainVertex, makeParkDistantTerrain } from "./park-terrain.js";
+import { makeSurfaceGeometry } from "./surface-geometry.js";
+import { parkPaving, parkGravel, parkCurbs } from "../../shared/world/map-surfaces.js";
 import {
   PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
   PARK_BENCHES, PARK_GARDEN, sampleParkPath, pathClearance,
@@ -84,27 +86,6 @@ export function makeParkTerrain(cx, cz) {
   return g;
 }
 
-function crownGeometry(pine = false) {
-  const parts = [];
-  if (pine) {
-    const profile = [[0, 0.24], [0.22, 0.26], [0.16, 0.4], [0.205, 0.41],
-      [0.12, 0.57], [0.165, 0.58], [0.085, 0.73], [0.115, 0.74], [0.04, 0.9], [0.06, 0.91], [0, 1.03]];
-    parts.push(new THREE.LatheGeometry(profile.map(([r, y]) => new THREE.Vector2(r, y)), 18));
-  } else {
-    for (const [r, x, y, z] of [[0.25, 0, 0.77, 0], [0.22, -0.13, 0.62, 0.06], [0.22, 0.13, 0.62, -0.05]]) {
-      const g = new THREE.SphereGeometry(r, 16, 12), p = g.attributes.position;
-      for (let i = 0; i < p.count; i++) {
-        const wobble = 1 + Math.sin(p.getX(i) * 31 + p.getZ(i) * 27) * 0.065;
-        p.setXYZ(i, p.getX(i) * wobble, p.getY(i) * 0.85, p.getZ(i) * wobble);
-      }
-      g.translate(x, y, z); g.computeVertexNormals(); parts.push(g);
-    }
-  }
-  const merged = mergeGeometries(parts.map((g) => g.index ? g.toNonIndexed() : g), false);
-  for (const g of parts) g.dispose();
-  return merged;
-}
-
 function clipPolygon(polygon, distance) {
   const result = [];
   for (let i = 0; i < polygon.length; i++) {
@@ -180,8 +161,8 @@ export function buildPark(scene, world, RAPIER, map) {
     materials.add(m); return m;
   };
   const grassMap = groundTexture("grass"), pavingMap = groundTexture("paving"), gravelMap = groundTexture("gravel");
-  const barkMap = treeTexture(true), leafMap = treeTexture();
-  for (const texture of [grassMap, pavingMap, gravelMap, barkMap, leafMap]) if (texture) textures.add(texture);
+  const barkMap = treeTexture(true);
+  for (const texture of [grassMap, pavingMap, gravelMap, barkMap]) if (texture) textures.add(texture);
   const palette = {
     grass: material(0xffffff, { map: grassMap, vertexColors: true }),
     paving: material(0xf0e8d6, { map: pavingMap, side: THREE.DoubleSide }),
@@ -189,13 +170,13 @@ export function buildPark(scene, world, RAPIER, map) {
     curb: material(0xb8b4a6), concrete: material(0xddd8c8), wood: material(0x9c6840),
     cedar: material(0x8a5738), metal: material(0x313e3e), dark: material(0x44544b),
     glass: material(0x97c0c6, { transparent: true, opacity: 0.38, roughness: 0.15, metalness: 0.1, depthWrite: false }),
-    bark: material(0xffffff, { map: barkMap }), leaves: material(0xffffff, { map: leafMap }), pine: material(0xffffff, { map: leafMap }),
-    bush: material(0x6d844c), water: material(0x729e9f, { roughness: 0.22, metalness: 0.3 }),
+    bark: material(0xffffff, { map: barkMap }), leaves: material(0xffffff, { vertexColors: true, flatShading: true }), pine: material(0xffffff, { vertexColors: true, flatShading: true }),
+    bush: material(0x6d844c, { flatShading: true }), water: material(0x729e9f, { roughness: 0.22, metalness: 0.3 }),
     stone: material(0x8b9084), flowers: material(0xd7bb72), tuft: material(0x8b995e),
   };
   const boxGeometry = geometry(new THREE.BoxGeometry(1, 1, 1));
   const cylinderGeometry = geometry(new THREE.CylinderGeometry(1, 1, 1, 12));
-  const planterShrubGeometry = geometry(new THREE.SphereGeometry(1, 14, 10));
+  const planterShrubGeometry = geometry(new THREE.IcosahedronGeometry(1, 1));
   const batches = new Map(), dummy = new THREE.Object3D();
   const collisionRegions = new ColliderRegions();
   function part(size, p, mat, solid = true, angle = 0, shape = "box") {
@@ -261,25 +242,18 @@ export function buildPark(scene, world, RAPIER, map) {
     part([3, 0.18, 0.33], [21, (i + 1) * 0.18, 14 - i * 0.33], palette.concrete);
   bench(-10, 19, Math.PI); bench(10, 19, Math.PI);
   // Curving promenades, gravel trails, and narrow stone edging.
-  for (const [i, path] of PARK_PATHS.entries()) {
-    // Separate crossing surfaces physically; paving stays above gravel.
-    const lift = path.paving ? 0.065 : 0.025 + i * 0.004;
-    const mesh = new THREE.Mesh(geometry(ribbon(path.points, path.width, 0, lift)), path.paving ? palette.paving : palette.gravel);
+  for (const [polygons, mat] of [[parkPaving, palette.paving], [parkGravel, palette.gravel]]) {
+    const mesh = new THREE.Mesh(geometry(makeSurfaceGeometry(polygons, parkSurfaceHeight)), mat);
     mesh.name = "park-path";
     mesh.receiveShadow = true; root.add(mesh);
     world.createCollider(RAPIER.ColliderDesc.trimesh(
       mesh.geometry.attributes.position.array, new Uint32Array(mesh.geometry.index.array),
     ).setFriction(0.9));
-    if (path.width >= 4) for (const side of [-1, 1]) {
-      const curb = new THREE.Mesh(geometry(ribbon(path.points, 0.16, side * (path.width / 2 + 0.08), 0.11 + i * 0.004)), palette.curb);
-      curb.name = "park-curb";
-      curb.receiveShadow = true; root.add(curb);
-    }
   }
+  const curb = new THREE.Mesh(geometry(makeSurfaceGeometry(parkCurbs, parkSurfaceHeight, 0.11)), palette.curb);
+  curb.name = "park-curb"; curb.receiveShadow = true; root.add(curb);
   // West garden pergola, picnic tables, and seats along the main paths.
   const { x: gardenX, z: gardenZ } = PARK_GARDEN;
-  const garden = new THREE.Mesh(geometry(ribbon([[gardenX, gardenZ - 11], [gardenX, gardenZ + 11]], 12)), palette.gravel);
-  garden.name = "garden-terrace"; garden.receiveShadow = true; root.add(garden);
   const pergolaY = parkSurfaceHeight(gardenX, gardenZ);
   for (const x of [gardenX - 4, gardenX + 4]) for (const z of [gardenZ - 8, gardenZ, gardenZ + 8]) {
     const ground = parkSurfaceHeight(x, z), top = pergolaY + 3.25;
@@ -290,9 +264,12 @@ export function buildPark(scene, world, RAPIER, map) {
   for (let z = gardenZ - 10; z < gardenZ + 10; z += 0.75)
     part([10, 0.16, 0.13], [gardenX, pergolaY + 3.37, z], palette.wood);
   for (const { x, z, angle, tx, tz } of PARK_BENCHES) {
-    const bay = new THREE.Mesh(geometry(ribbon([[x - tx * 1.9, z - tz * 1.9], [x + tx * 1.9, z + tz * 1.9]], 2.8)), palette.gravel);
-    bay.name = "bench-bay"; bay.receiveShadow = true; root.add(bay);
     bench(x, z, angle, 0.065);
+    // Street furniture belongs in the seating bay, not on the promenade.
+    const binX = x + tx * 1.45, binZ = z + tz * 1.45, binY = parkSurfaceHeight(binX, binZ) + 0.065;
+    part([0.22, 0.74, 0.22], [binX, binY + 0.37, binZ], palette.metal, true, angle, "cylinder");
+    part([0.25, 0.065, 0.25], [binX, binY + 0.77, binZ], palette.cedar, false, angle, "cylinder");
+    part([0.13, 0.025, 0.13], [binX, binY + 0.815, binZ], palette.dark, false, angle, "cylinder");
   }
   for (const [x, z] of [[gardenX, gardenZ - 4], [gardenX, gardenZ + 4]]) {
     const y = parkSurfaceHeight(x, z) + 0.065;
@@ -407,17 +384,9 @@ export function buildPark(scene, world, RAPIER, map) {
     mesh.receiveShadow = true; mesh.computeBoundingSphere(); root.add(mesh);
   }
 
-  const trunkParts = [new THREE.CylinderGeometry(0.016, 0.032, 0.7, 10).translate(0, 0.35, 0)];
-  for (const [x, y, z] of [[-0.14, 0.65, 0.06], [0.14, 0.65, -0.05], [0, 0.79, 0]]) {
-    const start = new THREE.Vector3(0, 0.38, 0), end = new THREE.Vector3(x, y, z);
-    const branch = new THREE.CylinderGeometry(0.007, 0.015, start.distanceTo(end), 7);
-    branch.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), end.clone().sub(start).normalize()));
-    branch.translate(...start.add(end).multiplyScalar(0.5).toArray()); trunkParts.push(branch);
-  }
-  const treeTrunk = geometry(mergeGeometries(trunkParts.map((g) => g.toNonIndexed()), false));
-  for (const g of trunkParts) g.dispose();
-  const oakCrown = geometry(crownGeometry()), pineCrown = geometry(crownGeometry(true));
-  const bushGeometry = geometry(new THREE.IcosahedronGeometry(1, 2));
+  const treeTrunk = geometry(makeTreeTrunk());
+  const oakCrown = geometry(makeTreeCrown("oak")), birchCrown = geometry(makeTreeCrown("birch")), pineCrown = geometry(makeTreeCrown("pine"));
+  const bushGeometry = geometry(new THREE.IcosahedronGeometry(1, 1));
   const tuftGeometry = geometry(new THREE.BufferGeometry());
   const tuftVertices = [];
   for (let a = 0; a < 3; a++) {
@@ -439,7 +408,7 @@ export function buildPark(scene, world, RAPIER, map) {
     colliderDescs.push(RAPIER.ColliderDesc.trimesh(
       terrainGeometry.attributes.position.array, new Uint32Array(terrainGeometry.index.array),
     ).setFriction(0.9));
-    const objects = { trunk: [], oak: [], pine: [], bush: [], tuft: [] };
+    const objects = { trunk: [], oak: [], birch: [], pine: [], bush: [], tuft: [] };
     const add = (kind, x, y, z, scale, angle, color) => {
       dummy.position.set(x, y, z); dummy.scale.set(...scale); dummy.rotation.set(0, angle, 0); dummy.updateMatrix();
       objects[kind].push({ matrix: dummy.matrix.clone(), color });
@@ -453,14 +422,16 @@ export function buildPark(scene, world, RAPIER, map) {
       const y = parkSurfaceHeight(x, z), angle = rng() * Math.PI * 2;
       const scale = [height * aspect, height, height * aspect];
       add("trunk", x, y, z, scale, angle, birch ? 0xd6d3be : 0x6a5341);
-      add(pine ? "pine" : "oak", x, y, z, scale, angle,
-        pine ? 0x6f8974 : [0xa0b27b, 0x83995d, 0x9aa966, 0x748e61][Math.floor(rng() * 4)]);
+      add(pine ? "pine" : birch ? "birch" : "oak", x, y, z, scale, angle,
+        pine ? 0x557a66 : birch ? 0x95ab67 : [0x8fa969, 0x6f8d50, 0x94a963, 0x648657][Math.floor(rng() * 4)]);
       colliderDescs.push(RAPIER.ColliderDesc.cylinder(height * 0.34, height * aspect * 0.027)
         .setTranslation(x, y + height * 0.34, z));
-      const canopy = pine ? RAPIER.ColliderDesc.cone(height * 0.395, height * aspect * 0.22)
-        .setTranslation(x, y + height * 0.635, z)
-        : RAPIER.ColliderDesc.ball(height * aspect * 0.22).setTranslation(x, y + height * 0.75, z);
-      colliderDescs.push(canopy);
+      if (pine) colliderDescs.push(RAPIER.ColliderDesc.cone(height * 0.4, height * aspect * 0.245).setTranslation(x, y + height * 0.63, z));
+      else for (const [lx, ly, lz, radius] of treeCanopyLobes[birch ? "birch" : "oak"]) {
+        const px = (lx * Math.cos(angle) + lz * Math.sin(angle)) * height * aspect;
+        const pz = (-lx * Math.sin(angle) + lz * Math.cos(angle)) * height * aspect;
+        colliderDescs.push(RAPIER.ColliderDesc.ball(radius * height * Math.min(1, aspect)).setTranslation(x + px, y + ly * height, z + pz));
+      }
     }
     for (let i = 0; i < 16; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;
@@ -477,7 +448,7 @@ export function buildPark(scene, world, RAPIER, map) {
         rng() < 0.04 ? 0xddcd94 : 0xadb77e);
     }
     const types = { trunk: [treeTrunk, palette.bark], oak: [oakCrown, palette.leaves],
-      pine: [pineCrown, palette.pine], bush: [bushGeometry, palette.bush], tuft: [tuftGeometry, palette.tuft] };
+      birch: [birchCrown, palette.leaves], pine: [pineCrown, palette.pine], bush: [bushGeometry, palette.bush], tuft: [tuftGeometry, palette.tuft] };
     let grass;
     for (const [kind, instances] of Object.entries(objects)) {
       if (!instances.length) continue;
@@ -485,7 +456,7 @@ export function buildPark(scene, world, RAPIER, map) {
       for (let i = 0; i < instances.length; i++) {
         mesh.setMatrixAt(i, instances[i].matrix); mesh.setColorAt(i, new THREE.Color(instances[i].color));
       }
-      mesh.castShadow = kind === "trunk" || kind === "oak" || kind === "pine";
+      mesh.castShadow = kind === "trunk" || kind === "oak" || kind === "birch" || kind === "pine";
       mesh.receiveShadow = true; mesh.computeBoundingSphere(); group.add(mesh);
       if (kind === "tuft") grass = mesh;
     }

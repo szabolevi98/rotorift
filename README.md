@@ -36,6 +36,9 @@ ha a felhasználónak erre van jogosultsága. A saját elérés a `.env`-ben ál
 Induláskor elérhetetlen adatbázissal is lehet repülni; online rekord ekkor nem menthető.
 
 Fejlesztés: `npm run dev`. Ellenőrzés: `npm test`.
+Úthálózat vagy munkaterületi elrendezés módosítása után: `npm run maps:build`.
+A burkolatok és szegélyek metszése előre készül el; a játékban nincs poligonműveleti függőség.
+A `npm run showcase:build` ezt automatikusan elvégzi a bemutató csomagolása előtt.
 Az adatbázisteszt külön `rotorift_test_<id>` adatbázist hoz létre és takarít el;
 a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 

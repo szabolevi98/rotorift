@@ -3,6 +3,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { build } from 'esbuild';
 import { loadCatalog } from '../server/catalog.js';
+import { buildMapSurfaces } from '../scripts/build-map-surfaces.mjs';
+
+buildMapSurfaces();
 
 // A klasszikus scriptbe csomagolt könyvtárakkal a kész HTML file:// alatt is fut.
 // Nem kell npm install, hálózat, modulbetöltés vagy külön webszerver.
