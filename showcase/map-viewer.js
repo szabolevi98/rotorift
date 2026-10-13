@@ -44,7 +44,7 @@ const PLAYGROUND_VIEWS={
  overview:['Playground overview',[52,48,62],[0,1,0]],
  fort:['Climbing fort and slide',[10,6,10],[0,2,-3]],
  swings:['Swings and timber tunnel',[-25,4,12],[-12,1,-2]],
- bars:['Monkey-bar flight lane',[19,3,3],[14,1,-7]],
+ bars:['Old-school cube climber',[22,5.8,3],[14,1.9,-7]],
  sandbox:['Sandbox and shade',[-23,5,22],[-15,1,14]],
  hut:['Playhouse and picnic table',[23,4,23],[15,1,16]],
  tunnel:['Crawl-through timber tunnel',[-5,1.2,19],[-5,.7,13]],

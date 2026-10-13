@@ -1,5 +1,5 @@
 {
-  "id":"jatszoter", "version":1, "name":"Játszótér", "kind":"playground", "size":84,
+  "id":"jatszoter", "version":2, "name":"Játszótér", "kind":"playground", "size":84,
   "boundary":{"returnAfterSeconds":600}, "racingEnabled":true, "spawn":[0,0.15,34],
   "routeId":"race_1", "routeVersion":1,
   "gates":[

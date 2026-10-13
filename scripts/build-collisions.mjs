@@ -70,7 +70,9 @@ export async function bakeCollisionRecords(map) {
       const points=[vertex(sourceIndices[i]),vertex(sourceIndices[i+1]),vertex(sourceIndices[i+2])];
       const center=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3);
       const distance=Math.max(Math.abs(center.x),Math.abs(center.z));
-      const tileSize=distance<=512?32:128*2**Math.floor(Math.log2(distance/512));
+      // The compact playground needs finer cells: a 32 m tile would combine
+      // most of its intricate play equipment into one CCD candidate mesh.
+      const tileSize=distance<=512?(map.kind==='playground'?4:32):128*2**Math.floor(Math.log2(distance/512));
       const key=[tileSize,Math.floor(center.x/tileSize),Math.floor(center.y/tileSize),Math.floor(center.z/tileSize),desc.friction].join(":");
       if(!tiles.has(key))tiles.set(key,{vertices:[],indices:[],lookup:new Map(),bounds:new THREE.Box3(),friction:desc.friction});
       const tile=tiles.get(key);
