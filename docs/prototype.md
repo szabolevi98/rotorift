@@ -282,9 +282,19 @@ Hardveres rádióteszt még nem történt.
 - TX15, Pocket és az elérhető DJI vezérlő felismerése, kiosztása és kalibrációja valódi hardveren.
 - A három konfiguráció és az új akkumulátor-, sérülés-, propwash- és szélmodellek hangolása valódi repülési adatok alapján.
 - Pályák látványának és kapus útvonalainak finomítása, pontosabb ütközési geometria és teljesítményprofilozás.
-- Szobába visszatérés kapcsolatvesztés után, futam újraindítása, dedikált eredményképernyő és meccs-életciklus finomítása.
+- A multiplayer életciklus további terheléses és több eszközös ellenőrzése.
 - Mozgásellenőrzés szigorítása, késleltetéses/terheléses tesztek és szükség esetén szerveres visszaszimulálás.
 - Több eszköz és kijelzőméret tesztelése, végleges hangok és megosztási kép.
 
 A fizikai JSON-kben a `tuningStatus: initial-estimate` szándékosan megmarad:
 az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azonos repülési karaktert.
+
+## 2026-10-13 – Multiplayer visszatérés és futameredmények
+
+- Kapcsolatvesztés után a szerver 60 másodpercig fenntartja a pilóta helyét. Ugyanabban a böngészőlapban az újratöltés is visszatér; külön, laponként mentett titkos kulcs azonosítja a kapcsolatot.
+- A pilóta azonosítója, színe, repülési módja és teljesített körei megmaradnak. Az aktuális kör újrakezdődik, a drón a rajthelyre kerül és újra ARM-olni kell. A többiek futama folytatódik.
+- A kapcsolat nélküli drón nem marad ütköző objektum. A házigazda szerepét szükség esetén egy csatlakozott pilóta veszi át. A visszatérés megszakítható; a kifejezett kilépés nem válik automatikus visszalépéssé.
+- A házigazda lezárhat egy futamot, majd ugyanabban a szobában készítheti elő a következőt. Pálya, útvonalpillanatkép, drón és szabályok megmaradnak; minden pilóta új készenlétet jelöl. Minden futam saját azonosítót kap.
+- Külön eredményképernyő: saját helyezés, pilóták, körszám, legjobb kör, összidő és állapot. Az időközben kilépett pilóták sem tűnnek el a futam résztvevői közül; nem teljesített verseny esetén DNF-et kapnak.
+- A futameredmény egyetlen, változtathatatlan pillanatképként kerül mentésre; az ismételt lezárás, visszatérés és új futam nem duplázza az eredményt. A korábbi futam protokoll-2 csomagjait a szerver figyelmen kívül hagyja.
+- A szobák továbbra is a futó Node-folyamatban élnek; a Node újraindítása után a már mentett rekordok/eredmények megmaradnak, de az élő szobákat újra kell létrehozni.

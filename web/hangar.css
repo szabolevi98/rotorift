@@ -129,6 +129,16 @@
 #menu .intro { margin: 8px 0 30px; }
 #menu .intro h1 { font-size: clamp(30px, 4vw, 48px); }
 #menu .intro p { color: var(--muted); }
+.own-result { padding: 18px 22px; margin-bottom: 18px; font-size: 22px; border-left: 3px solid var(--orange) !important; }
+.results-scroll { overflow-x: auto; }
+.results-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.results-table th, .results-table td { padding: 15px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.results-table th { color: var(--muted); font-size: 11px; }
+.results-table .own-pilot { background: #ff664812; }
+.results-table th:first-child, .results-table td:first-child { text-align: center; }
+.results-table .result-finished td:first-child { color: var(--orange); font-weight: 800; }
+#results-status, #reconnect-description { line-height: 1.5; }
+@media (max-width: 650px) { .results-table th, .results-table td { padding: 12px 9px; } .own-result { font-size: 18px; } }
 #menu .settings-grid { gap: 20px; }
 #menu .card { background: #ffffff03; border-color: var(--line); border-radius: 6px; }
 #menu .rates-table input { width: 100% !important; min-width: 0; }

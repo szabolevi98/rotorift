@@ -10,4 +10,4 @@ export function simulationView(context, preferences, room, pilotId) {
       : context === "host" ? "simulation.hostSetupHint" : "simulation.hint",
   };
 }
-export const activeMenuTab = (panel, roomKind) => panel === "lobby" ? roomKind === "hotlap" ? "fly" : "multiplayer" : panel;
+export const activeMenuTab = (panel, roomKind) => ["lobby", "results"].includes(panel) ? roomKind === "hotlap" ? "fly" : "multiplayer" : panel;

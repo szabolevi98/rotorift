@@ -53,6 +53,7 @@ export class Flight {
     await RAPIER.init();
   }
   async load(map, config, rates, mode, color = this.color ?? "coral", simulation, onProgress) {
+    const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
     this.parkShadows?.dispose();
     this.parkShadows = null;
@@ -79,7 +80,9 @@ export class Flight {
     this.remotePlayers = [];
     this.physics.rates = rates;
     this.physics.mode = mode;
-    this.visual = await loadModel(config, { isolateMaterials: true, onProgress });
+    const visual = await loadModel(config, { isolateMaterials: true, onProgress });
+    if (version !== this.loadVersion) { this.removeModel(visual); return false; }
+    this.visual = visual;
     this.setColor(color);
     this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);
@@ -93,6 +96,7 @@ export class Flight {
     this.place(this.current, 1);
     this.parkShadows = new ParkShadows(this.scene, this.camera, this.atmosphere.profile);
     this.active = true;
+    return true;
   }
   setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.visual, this.color); }
   setSimulation(options) {

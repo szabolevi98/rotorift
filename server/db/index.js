@@ -114,12 +114,15 @@ export class Database {
           room.raceId,
           room.map.id,
           JSON.stringify(
-            [...room.players.values()].map((p) => ({
+            (room.results ?? [...room.players.values()]).map((p) => ({
+              id: p.id,
+              place: p.place ?? null,
+              status: p.status ?? (p.finished ? "finished" : "dnf"),
               name: p.name,
               mode: p.mode ?? room.mode,
               simulation: normalizeSimulation(room.simulation),
-              completed: p.lap.completed,
-              bestMs: p.lap.bestMs,
+              completed: p.completed ?? p.lap?.completed ?? 0,
+              bestMs: p.bestMs ?? p.lap?.bestMs ?? null,
               finished: p.finished,
               finishMs: p.finishMs,
             })),

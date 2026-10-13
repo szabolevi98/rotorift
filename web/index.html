@@ -66,6 +66,7 @@
           <div class="sidebar-caption"><strong data-i18n="fly.title"></strong><p data-i18n="hangar.tagline"></p></div>
         </aside>
       <main>
+        <section id="reconnect-banner" class="active-session hidden" role="status"><p id="reconnect-description"></p><button id="cancel-reconnect" class="secondary" data-i18n="online.cancelRecovery"></button></section>
         <section id="active-session" class="active-session hidden" aria-labelledby="active-session-title">
           <div><strong id="active-session-title" data-i18n="menu.activeFlight"></strong><p id="active-session-description"></p></div>
           <div class="button-row"><button id="resume" class="secondary" data-i18n="action.resume"></button><button id="leave-flight" class="text-button" data-i18n="menu.endFlight"></button></div>
@@ -345,7 +346,15 @@
               class="text-button"
               data-i18n="action.leave"
             ></button>
+            <button id="finish-room" class="secondary hidden" data-i18n="online.finishRun"></button>
+            <button id="restart-room" class="primary small hidden" data-i18n="online.nextRun"></button>
           </div>
+        </section>
+        <section id="results-panel" class="panel hidden" aria-labelledby="results-title">
+          <div class="intro"><span id="results-code" class="eyebrow"></span><h1 id="results-title" data-i18n="results.title"></h1><p id="results-description"></p><p id="results-status" role="status"></p></div>
+          <div id="own-result" class="own-result card"></div>
+          <div class="results-scroll card"><table class="results-table"><thead id="results-head"></thead><tbody id="results-body"></tbody></table></div>
+          <div class="button-row"><button id="results-restart" class="primary small" data-i18n="online.nextRun"></button><button id="results-leave" class="secondary" data-i18n="action.leave"></button></div>
         </section>
       </main>
       </div>

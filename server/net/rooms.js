@@ -1,5 +1,6 @@
 import { WebSocketServer } from "ws";
 import { randomUUID, randomBytes } from "node:crypto";
+import { buildResults } from "../../shared/race/results.js";
 import { newLap, advanceLap } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
@@ -8,9 +9,11 @@ import { resolveRoute } from "../../shared/race/routes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
 const MODES = FLIGHT_MODES;
-export function attachRooms(server, catalog, db) {
+export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdownMs = 3000 } = {}) {
   const rooms = new Map(),
     clients = new Set();
+  const resumable = new Map();
+  const forgetResume = p => { resumable.delete(p.resume); resumable.delete(p.previousResume); };
   const wss = new WebSocketServer({ server, path: "/ws", maxPayload: 8192 });
   const send = (p, type, data = {}) => {
     if (p.ws.readyState === 1) p.ws.send(JSON.stringify({ type, ...data }));
@@ -19,6 +22,8 @@ export function attachRooms(server, catalog, db) {
     code: r.code,
     kind: r.kind,
     phase: r.phase,
+    runId: r.raceId,
+    results: r.results ?? buildResults(r.participants?.values() ?? [], r.kind),
     mapId: r.map.id,
     routeId: r.map.routeId,
     route: r.kind === "free" ? null : { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates },
@@ -36,6 +41,8 @@ export function attachRooms(server, catalog, db) {
       mode: p.mode,
       resetId: p.resetId,
       ready: p.ready,
+      connected: p.connected,
+      reconnectUntil: p.reconnectUntil ?? null,
       p: p.pose?.p,
       q: p.pose?.q,
       lap: p.lap,
@@ -49,16 +56,41 @@ export function attachRooms(server, catalog, db) {
     for (const p of r.players.values())
       send(p, "room", { room: data, now: Date.now() });
   };
+  const finish = (r) => {
+    if (r.phase !== "flying" || r.kind === "free") return;
+    r.phase = "finished";
+    for (const p of r.participants.values()) if (!p.finished) { p.abandoned = true; p.lap.invalid = true; }
+    r.results = buildResults(r.participants.values(), r.kind, true);
+    // Capture this run before awaiting the database: a restart must not change
+    // its ID, roster or payload, and only one handler can claim completion.
+    const completed = { ...r, players: new Map([...r.participants].map(([id,p]) => [id, { ...p, lap: { ...p.lap } }])), results: r.results };
+    void Promise.resolve().then(() => db.saveResult(completed)).catch(() => {});
+    broadcast(r);
+  };
+  const maybeFinish = (r) => {
+    if (r.kind === "race" && r.phase === "flying" && r.participants.size &&
+        [...r.participants.values()].every(p => p.finished || p.abandoned)) finish(r);
+  };
+  const transferHost = r => {
+    if (r.players.get(r.host)?.connected) return;
+    const next = [...r.players.values()].find(p => p.connected);
+    if (next) r.host = next.id;
+  };
   const leave = (p) => {
     const r = p.room;
     if (!r) return;
     p.room = null;
+    p.reconnectUntil = null;
+    if (!p.finished) { p.abandoned = true; p.lap.invalid = true; }
+    if (r.participants.has(p.id)) r.participants.set(p.id, { ...p, lap: { ...p.lap }, room: null, ws: null });
     r.players.delete(p.id);
     if (!r.players.size) {
+      maybeFinish(r);
       rooms.delete(r.code);
       return;
     }
-    if (r.host === p.id) r.host = r.players.keys().next().value;
+    if (r.host === p.id) r.host = [...r.players.values()].find(v => v.connected)?.id ?? r.players.keys().next().value;
+    maybeFinish(r);
     broadcast(r);
   };
   const reset = (p, r) => {
@@ -68,6 +100,7 @@ export function attachRooms(server, catalog, db) {
     p.boundaryPaused = false;
     p.lap = newLap();
     p.finished = false;
+    p.abandoned = false;
     p.finishMs = null;
     p.seq = -1;
     p.at = null;
@@ -95,7 +128,7 @@ export function attachRooms(server, catalog, db) {
         mode: r.mode,
       }));
   wss.on("connection", (ws) => {
-    const p = {
+    let p = {
       id: randomUUID(),
       ws,
       room: null,
@@ -107,12 +140,13 @@ export function attachRooms(server, catalog, db) {
       lap: newLap(),
       seq: -1,
       alive: true,
+      connected: true,
       messages: 0,
       windowAt: Date.now(),
     };
     clients.add(p);
-    ws.on("pong", () => (p.alive = true));
-    ws.on("message", async (raw) => {
+    ws.on("pong", () => { if (p.ws === ws) p.alive = true; });
+    const handleMessage = async (raw) => {
       try {
         if (Date.now() - p.windowAt >= 1000) {
           p.windowAt = Date.now();
@@ -125,6 +159,31 @@ export function attachRooms(server, catalog, db) {
           if (p.token || p.connecting) return;
           p.connecting = true;
           try {
+            const previous = typeof m.resume === "string" ? resumable.get(m.resume) : null;
+            const canResume = previous?.room && (previous.connected || previous.reconnectUntil > Date.now())
+              && (!previous.connected || m.resume === previous.resume);
+            if (canResume) {
+              clients.delete(p);
+              const oldSocket = previous.ws;
+              p = previous; p.ws = ws; p.connected = true; p.alive = true; p.reconnectUntil = null;
+              p.messages = 0; p.windowAt = Date.now(); p.protocol = m.protocol === 2 ? 2 : 1;
+              // A duplicated tab must not keep taking over the recovered socket.
+              // Retain the presented key only while disconnected, in case the
+              // new welcome packet itself is lost during an unstable connection.
+              forgetResume(p); p.previousResume = m.resume; p.resume = randomBytes(24).toString("hex");
+              resumable.set(p.previousResume, p); resumable.set(p.resume, p);
+              clients.add(p);
+              if (oldSocket !== ws) oldSocket.terminate();
+              const r = p.room;
+              if (!p.finished && r.phase !== "finished") {
+                const progress = { completed: p.lap.completed, bestMs: p.lap.bestMs, lastMs: p.lap.lastMs };
+                reset(p, r);
+                Object.assign(p.lap, progress);
+                if (r.phase === "lobby") p.ready = false;
+              }
+              send(p, "welcome", { id: p.id, token: p.token, resume: p.resume, resumed: true, now: Date.now(), database: db.available });
+              transferHost(r); broadcast(r); return;
+            }
             const name =
               String(m.name || "Pilot")
                 .trim()
@@ -132,11 +191,17 @@ export function attachRooms(server, catalog, db) {
             p.name = name;
             p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
+            if (ws.readyState !== 1) return;
+            p.protocol = m.protocol === 2 ? 2 : 1;
+            p.resume = randomBytes(24).toString("hex");
+            resumable.set(p.resume, p);
             send(p, "welcome", {
               id: p.id,
               token: p.token,
               now: Date.now(),
               database: db.available,
+              resume: p.resume,
+              resumeRejected: !!m.resume,
             });
           } finally {
             p.connecting = false;
@@ -209,6 +274,7 @@ export function attachRooms(server, catalog, db) {
             phase: "lobby",
             host: p.id,
             players: new Map(),
+            participants: new Map(),
             raceId: randomUUID(),
           };
           rooms.set(code, r);
@@ -266,15 +332,32 @@ export function attachRooms(server, catalog, db) {
           return;
         }
         if (m.type === "start" && r.host === p.id && r.phase === "lobby") {
-          if (![...r.players.values()].every((v) => v.ready)) {
+          if (![...r.players.values()].every((v) => v.ready && v.connected)) {
             send(p, "error", { code: "notReady" });
             return;
           }
-          r.startsAt = Date.now() + 3000;
+          r.raceId = randomUUID(); r.results = null;
+          r.participants = new Map(r.players);
+          r.startsAt = Date.now() + countdownMs;
           r.phase = "countdown";
           for (const v of r.players.values()) reset(v, r);
           broadcast(r);
           return;
+        }
+        if (m.type === "finish" || m.type === "restart") {
+          if (r.host !== p.id) { send(p, "error", { code: "hostOnly" }); return; }
+          if (m.type === "finish") {
+            if (r.kind === "hotlap" && r.phase === "flying")
+              for (const player of r.participants.values()) player.finished = player.lap.bestMs !== null;
+            finish(r); return;
+          }
+          if (r.phase === "lobby") return; // A repeated restart is already satisfied.
+          if (r.phase !== "finished" && !(r.kind === "free" && r.phase === "flying")) {
+            send(p, "error", { code: "finishFirst" }); return;
+          }
+          r.phase = "lobby"; r.startsAt = null; r.raceId = randomUUID(); r.results = null; r.participants = new Map();
+          for (const player of r.players.values()) { player.ready = false; player.mode = r.mode; reset(player, r); }
+          broadcast(r); return;
         }
         if (m.type === "reset" && r.phase === "flying") {
           reset(p, r);
@@ -283,6 +366,7 @@ export function attachRooms(server, catalog, db) {
           return;
         }
         if (m.type !== "state" || r.phase !== "flying" || p.finished) return;
+        if ((p.protocol === 2 || m.runId !== undefined) && m.runId !== r.raceId) return;
         if (
           !Number.isSafeInteger(m.seq) ||
           m.seq <= p.seq ||
@@ -339,6 +423,7 @@ export function attachRooms(server, catalog, db) {
         p.pose = { p: m.p, q: m.q };
         p.at = m.t;
         p.seq = m.seq;
+        const runId = r.raceId;
         for (const e of events)
           if (e.kind === "lap") {
             if (r.kind === "race" && p.lap.completed >= r.laps) {
@@ -348,27 +433,35 @@ export function attachRooms(server, catalog, db) {
             const saved = e.valid
               ? await db.saveLap(p.token, r.map, r.drone, p.mode, e.ms, r.simulation)
               : false;
-            send(p, "lap", { ...e, saved });
+            if (r.raceId === runId) send(p, "lap", { ...e, saved, runId });
           }
-        if (
-          r.kind === "race" &&
-          [...r.players.values()].every((v) => v.finished)
-        ) {
-          r.phase = "finished";
-          await db.saveResult(r);
-          broadcast(r);
-        }
+        if (r.raceId === runId) maybeFinish(r);
       } catch {
         send(p, "error", { code: "requestFailed" });
       }
+    };
+    let queue = Promise.resolve(), pending = 0;
+    ws.on("message", raw => {
+      if (++pending > 64) { ws.close(1008, "Too many pending messages"); pending--; return; }
+      queue = queue.then(() => p.ws === ws && ws.readyState === 1 ? handleMessage(raw) : undefined)
+        .catch(() => {}).finally(() => pending--);
     });
     ws.on("close", () => {
-      leave(p);
+      if (p.ws !== ws) return;
       clients.delete(p);
+      p.connected = false;
+      if (p.room) {
+        p.ready = false; p.reconnectUntil = Date.now() + reconnectMs;
+        if (!p.finished) p.lap.invalid = true;
+        transferHost(p.room); broadcast(p.room);
+      } else forgetResume(p);
     });
     ws.on("error", () => {});
   });
   const timer = setInterval(() => {
+    for (const p of new Set(resumable.values())) if (!p.connected && p.reconnectUntil && p.reconnectUntil <= Date.now()) {
+      leave(p); forgetResume(p);
+    }
     for (const r of rooms.values()) {
       if (r.phase === "countdown" && Date.now() >= r.startsAt)
         r.phase = "flying";

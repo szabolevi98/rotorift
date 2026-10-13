@@ -44,6 +44,8 @@ test("verified one-player sessions keep solo navigation and hide meaningless gho
   assert.equal(activeMenuTab("multiplayer"), "multiplayer");
   assert.equal(activeMenuTab("lobby", "race"), "multiplayer");
   assert.equal(activeMenuTab("lobby", "hotlap"), "fly");
+  assert.equal(activeMenuTab("results", "race"), "multiplayer");
+  assert.equal(activeMenuTab("results", "hotlap"), "fly");
   assert.equal(activeMenuTab("settings", "race"), "settings");
   assert.equal(simulationView("lobby", defaults, { ...room, kind: "hotlap" }, "host").ghost, false);
 });

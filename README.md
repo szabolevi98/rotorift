@@ -118,9 +118,15 @@ külön böngészőprofil szükséges, azonos profil két lapja nem lehet ugyana
 A saját fizika 240 Hz-en fut, az állapotküldés és a szobafrissítés 20 Hz-es.
 A szerver a rajtot, kapukat, köridőket és mozgáskorlátokat ellenőrzi;
 teljes Rapier újraszimulálás és csalásbiztos ranglista még nincs.
-Kapcsolatvesztéskor a repülés megszakad, a kliens újracsatlakozik,
-de a régi szobába és folyamatban lévő futamba még nem tér vissza automatikusan.
-Távoli drónok vizuálisan láthatók; drón–drón ütközés még nincs.
+Kapcsolatvesztés után egy percig automatikusan visszatérhetsz ugyanabba a szobába,
+ugyanazzal a pilótával és teljesített körökkel. A megszakadt kör újrakezdődik,
+a drón a rajthelyen, kikapcsolt motorokkal folytatja. Az újratöltés is működik
+ugyanabban a böngészőlapban. Lejárat után a hely felszabadul; a többiek futama folytatódik.
+A házigazda lezárhat egy futamot, majd ugyanott készítheti elő a következőt;
+új készenlét és külön futamazonosító szükséges. Saját eredményképernyő mutatja
+a helyezést, köröket, legjobb kört, összidőt és a kiesett pilótákat is.
+Az élő szobák Node-újraindítást nem élnek túl; a már mentett rekordok és eredmények igen.
+Drón–drón ütközés a közös ghost mód kikapcsolásával használható.
 
 ## Fizikai konfigurációk
 
@@ -130,9 +136,9 @@ motorválasz (s), légellenállás, repülésvezérlő és akkumulátoradatok.
 A motorok tényleges pozícióban fejtenek ki erőt, a keverő számol a súlyponttal
 és a motorhatárokkal. A látványmodell és a fizikai test külön kezelhető.
 
-A jelenlegi akkumulátormodell állandó névleges feszültséget használ;
-kapacitásfogyás, feszültségesés, propwash, aerodinamikai talajhatás és
-alkatrészsérülés későbbi munka. A kapacitás most leíró adat.
+Opcionális akkumulátorfogyás és alacsony töltöttségnél teljesítménykorlát,
+propellersérülés, propwash és szél már használható; paramétereik drónonként
+konfigurálhatók. Az aerodinamikai talajhatás és további alkatrészsérülések későbbi munka.
 A collider a középtestet és a motor/propeller környékét közelíti;
 nem követi a modell minden apró alkatrészét. A parkban a fatörzsek és a fő
 lombkoronák egyszerűsített ütközési felületet kapnak; az apró levelek és fűszálak

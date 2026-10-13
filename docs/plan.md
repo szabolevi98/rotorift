@@ -14,7 +14,7 @@ Megvalósítási frissítés: elkészült a 0.1-es játszható repülési protot
 a két pályával, három fizikai konfigurációval, öt nyelvvel és multiplayer alappal.
 Részletes állapot és ellenőrzések: [prototype.md](prototype.md).
 A teljes első kiadás elfogadási feltételei még nem mind teljesülnek;
-különösen a hardveres rádióteszt, fizikai hangolás és szobába visszatérés hátravan.
+különösen a hardveres rádióteszt és a valódi repülési adatokkal végzett fizikai hangolás hátravan.
 
 ## 1. Cél és első kiadás
 

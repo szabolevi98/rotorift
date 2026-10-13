@@ -82,6 +82,9 @@ let playing = false,
   lastUi = 0;
 let roomRequest = null, roomRequestTimer, launching = false;
 let flightHelp;
+let resultsShown = null;
+let resultsSignature = "";
+const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) : null;
 const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
@@ -190,7 +193,7 @@ function refreshMenuNavigation() {
   }
 }
 function refreshSessionBanner() {
-  const active = playing && paused && (!room || room.phase !== "lobby");
+  const active = playing && paused && (!room || (["countdown", "flying"].includes(room.phase) && !room.players.find(p=>p.id===network.id)?.finished));
   visible("#active-session", active);
   if (active && flight?.config) $("#active-session-description").textContent =
     `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
@@ -212,6 +215,7 @@ function pause() {
 }
 function resume() {
   if (!playing) return;
+  if (room && (room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished)) { showResults(); return; }
   flightHelp?.setOpen(false);
   void fullscreen?.enterFlight();
   paused = false;
@@ -666,6 +670,11 @@ function refreshRooms() {
 function requestRoom(type, data) {
   if (!network.ready) { notice(t("error.connectFirst")); return; }
   if (roomRequest) return;
+  const pilotName = $("#nickname").value.trim().slice(0,32) || "Pilot";
+  if (network.name !== pilotName) {
+    network.name = pilotName; write("nickname", pilotName);
+    network.send("rename", { name: pilotName });
+  }
   roomRequest = type;
   clearTimeout(roomRequestTimer);
   roomRequestTimer = setTimeout(() => {
@@ -705,7 +714,8 @@ function renderLobby() {
     const row = node("div", "player-row");
     row.append(
       pilotName(p, p.name + (p.id === room.host ? " / " + t("online.host") : "")),
-      node("span", "", p.ready ? t("online.ready") : t("online.notReady")),
+      node("span", "", p.connected === false ? t("online.pilotReconnecting") : room.phase === "lobby" ? t(p.ready ? "online.ready" : "online.notReady")
+        : t(p.finished ? "results.finished" : room.phase === "finished" ? "results.dnf" : "results.racing")),
     );
     $("#lobby-players").append(row);
   }
@@ -714,13 +724,51 @@ function renderLobby() {
   $("#ready").textContent = t(own?.ready ? "online.notReady" : "online.ready");
   $("#ready").disabled = room.phase !== "lobby";
   $("#start-room").disabled =
-    room.phase !== "lobby" || room.host !== network.id || !room.players.every(player => player.ready);
+    room.phase !== "lobby" || room.host !== network.id || !room.players.every(player => player.ready && player.connected !== false);
   visible("#ready", room.phase === "lobby");
   visible("#start-room", room.phase === "lobby" && room.host === network.id);
+  visible("#finish-room", room.phase === "flying" && room.kind !== "free" && room.host === network.id);
+  visible("#restart-room", room.host === network.id && (room.phase === "finished" || (room.kind === "free" && room.phase === "flying")));
   refreshSimulationControls();
 }
+function renderResults() {
+  if (!room) return;
+  const signature = [roomKey(room), room.phase, room.host, network.id, document.documentElement.lang, JSON.stringify(room.results)].join("|");
+  if (signature === resultsSignature) return;
+  resultsSignature = signature;
+  $("#results-code").textContent = room.code + " · " + t("map." + room.mapId);
+  $("#results-description").textContent = [room.route?.name, catalog.drones.find(d=>d.id===room.droneId)?.name].filter(Boolean).join(" · ");
+  $("#results-status").textContent = t(room.phase === "finished" ? "results.complete" : "results.waiting");
+  const head = node("tr");
+  for (const key of ["place", "pilot", "laps", "best", "total", "status"]) {
+    const cell = node("th", "", t("results." + key)); cell.scope = "col"; head.append(cell);
+  }
+  $("#results-head").replaceChildren(head);
+  const rows = room.results ?? [];
+  $("#results-body").replaceChildren();
+  for (const p of rows) {
+    const row = node("tr", "result-" + p.status); row.classList.toggle("own-pilot", p.id === network.id);
+    const pilot = node("td"); pilot.append(pilotName(p));
+    row.append(node("td", "", p.place ?? "—"), pilot, node("td", "", p.completed + (room.kind === "race" ? "/" + room.laps : "")),
+      node("td", "", time(p.bestMs)), node("td", "", room.kind === "race" ? time(p.finishMs) : "—"), node("td", "", t("results." + p.status)));
+    $("#results-body").append(row);
+  }
+  const own = rows.find(p=>p.id===network.id);
+  $("#own-result").textContent = own ? (own.place ? t("results.yourPlace", { place: own.place }) : t("results." + own.status))
+    + " · " + time(room.kind === "hotlap" ? own.bestMs : own.finishMs) : "";
+  $("#results-restart").disabled = room.phase !== "finished" || room.host !== network.id;
+  visible("#results-restart", room.host === network.id);
+}
+function showResults() {
+  if (!room) return;
+  flightHelp?.setOpen(false); void fullscreen?.enterMenu();
+  paused = true; flight.active = false;
+  if (flight.physics) flight.physics.armed = false;
+  flight.mute(); controller.clear();
+  visible("#menu", true); visible("#hud", false); panel("results"); renderResults();
+}
 async function loadRoom(r) {
-  const key = r.code + ":" + r.startsAt;
+  const key = roomKey(r);
   if (loadingRoom === key) return;
   loadingRoom = key;
   void fullscreen?.enterFlight();
@@ -735,8 +783,9 @@ async function loadRoom(r) {
   try {
     const own = r.players.find(p=>p.id===network.id);
     await paintLoading();
-    await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
-    if (!room || room.code !== r.code) {
+    const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
+    if (loaded === false) return;
+    if (roomKey(room) !== key || room.phase === "lobby" || room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished) {
       flight.active = false;
       if (!room) void fullscreen?.enterMenu();
       return;
@@ -766,6 +815,8 @@ async function loadRoom(r) {
 }
 function receive(m) {
   if (m.type === "welcome") {
+    if (m.resumed) { loadingRoom = loadedRoom = null; notice(t("online.restored")); }
+    else if (m.resumeRejected) notice(t("online.recoveryExpired"));
     updateStatus();
     refreshRooms();
   }
@@ -787,6 +838,8 @@ function receive(m) {
     refreshSimulationControls();
     loadingRoom = null;
     loadedRoom = null;
+    resultsShown = null;
+    resultsSignature = "";
     playing = false;
     paused = true;
     flight.active = false;
@@ -804,7 +857,7 @@ function receive(m) {
     controller.clear();
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
   }
-  if (m.type === "lap")
+  if (m.type === "lap" && (!m.runId || m.runId === room?.runId))
     notice(
       m.valid
         ? t(m.saved ? "hud.saved" : "hud.localLap", { time: time(m.ms) })
@@ -819,6 +872,7 @@ function receive(m) {
       room = null;
       refreshSimulationControls();
       playing = false;
+      loadingRoom = loadedRoom = null;
       panel("multiplayer");
     }
     nextLaunch = false;
@@ -829,13 +883,15 @@ function receive(m) {
     const previousCode = room?.code;
     clearRoomRequest();
     room = m.room;
-    if (flight.physics && loadedRoom === room.code + ":" + room.startsAt) {
+    if (flight.physics && loadedRoom === roomKey(room)) {
       if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
       const own = room.players.find(p => p.id === network.id);
       if (own?.mode) { flight.physics.mode = own.mode; $("#flight-mode").value = own.mode; }
-      flight.updateRemotes(room.players, network.id);
+      flight.updateRemotes(room.players.filter(p=>p.connected!==false), network.id);
     }
     renderLobby();
+    const own = room.players.find(p=>p.id===network.id);
+    const resultKey = roomKey(room) + ":" + room.phase;
     if (room.phase === "lobby") {
       if (previousPhase !== "lobby" || previousCode !== room.code) {
         void fullscreen?.enterMenu();
@@ -844,13 +900,16 @@ function receive(m) {
         flight.mute();
         visible("#menu", true); visible("#hud", false); panel("lobby");
       }
-      if (room.kind === "hotlap" && loadingRoom !== room.code) {
-        loadingRoom = room.code;
+      if (room.kind === "hotlap" && own?.ready && loadingRoom !== roomKey(room)) {
+        loadingRoom = roomKey(room);
         network.send("start");
       }
     } else if (room.phase === "countdown" || room.phase === "flying") {
-      loadRoom(room);
-      if (flight.physics && loadedRoom === room.code + ":" + room.startsAt) {
+      if (own?.finished) {
+        renderResults();
+        if (resultsShown !== resultKey) { resultsShown = resultKey; showResults(); }
+      } else loadRoom(room);
+      if (flight.physics && loadedRoom === roomKey(room)) {
         const finished = room.players.find(
           (p) => p.id === network.id,
         )?.finished;
@@ -864,12 +923,16 @@ function receive(m) {
       if (flight.physics) flight.physics.armed = false;
       flight.active = false;
       flight.mute();
-      if (previousPhase !== "finished") notice(t("online.finished"));
+      renderResults();
+      if (resultsShown !== resultKey) { resultsShown = resultKey; showResults(); }
     }
     refreshSessionBanner(); updateStatus();
   }
 }
 function updateStatus() {
+  const recovering = !!network?.resumption && !network.ready && !network.cancelRestore;
+  visible("#reconnect-banner", recovering);
+  if (recovering) $("#reconnect-description").textContent = t("online.recovering", { code: network.resumption.code });
   $("#server-status").textContent = t(
     network?.ready ? "status.online" : "status.offline",
   );
@@ -882,6 +945,7 @@ function updateStatus() {
   renderRooms();
 }
 async function launch() {
+  if (!room) network.cancelRecovery();
   visible("#notice", false);
   if (room) {
     nextLaunch = true;
@@ -916,7 +980,7 @@ async function launch() {
   const task = loading.begin("loading.flight", { name: t("map." + map.id) });
   try {
     await paintLoading();
-    await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress);
+    if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -1190,7 +1254,7 @@ function bindUI() {
   for (const b of document.querySelectorAll("[data-tab]"))
     b.onclick = () => {
       if (b.dataset.tab === "multiplayer") {
-        if (room) { panel("lobby"); return; }
+        if (room) { panel(room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished ? "results" : "lobby"); return; }
         panel("multiplayer");
         refreshRooms();
       } else {
@@ -1271,11 +1335,15 @@ function bindUI() {
       ready: !room.players.find((p) => p.id === network.id)?.ready,
     });
   $("#start-room").onclick = () => {
-    if (room?.phase === "lobby" && room.host === network.id && room.players.every(p => p.ready))
+    if (room?.phase === "lobby" && room.host === network.id && room.players.every(p => p.ready && p.connected !== false))
       void fullscreen?.enterFlight();
     network.send("start");
   };
   $("#leave-room").onclick = () => network.send("leave");
+  $("#results-leave").onclick = () => network.send("leave");
+  for (const id of ["results-restart", "restart-room"]) $("#"+id).onclick = () => network.send("restart");
+  $("#finish-room").onclick = () => network.send("finish");
+  $("#cancel-reconnect").onclick = () => { network.cancelRecovery(); updateStatus(); };
   $("#leave-flight").onclick = endFlight;
   $("#rates-drone").value = config.id;
   $("#rates-drone").onchange = renderRates;
@@ -1347,6 +1415,7 @@ function bindUI() {
     renderKeys();
     renderRooms();
     renderLobby();
+    renderResults();
     updateStatus();
     refreshSessionBanner();
     flightHelp?.update(true);
