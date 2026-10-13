@@ -19,7 +19,7 @@ async function setup(id) {
   return { camera, rig, config };
 }
 
-for (const id of ["rift-65", "rift-c3", "rift-x5"]) {
+for (const id of ["rift-65", "rift-75", "rift-c3", "rift-x5"]) {
   test(`${id}: chase framing stays centered and readable at any flight attitude`, async () => {
     const { camera, rig } = await setup(id);
     rig.setView(true);
@@ -74,4 +74,29 @@ test("view switching applies immediately and restores independent FPV settings",
   assert.equal(camera.fov, 115);
   closeVector(camera.position, fpvPosition);
   assert.ok(camera.quaternion.angleTo(fpvRotation) < 1e-7);
+});
+
+test("chase camera tilt follows settings while preserving centered framing and follow distance",async()=>{
+  const {camera,rig}=await setup("rift-x5");rig.setView("chase");
+  const position=new THREE.Vector3(2,4,-8),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(.4,.6,-.3));
+  rig.update(position,q);rig.setSettings(0,100);
+  const offset=camera.position.clone().sub(rig.modelCenter.clone().applyQuaternion(q).add(position)),rotation=camera.quaternion.clone();
+  rig.setSettings(45,100);
+  const center=rig.modelCenter.clone().applyQuaternion(q).add(position);
+  assert.ok(Math.abs(camera.position.distanceTo(center)-offset.length())<1e-9);
+  assert.ok(Math.abs(camera.quaternion.angleTo(rotation)-Math.PI/4)<1e-7,"tilt is applied to the chase mount, not ignored");
+  camera.updateMatrixWorld(true);closeVector(center.project(camera).setZ(0),new THREE.Vector3());
+  rig.configure(rig.config,new THREE.Group(),()=>0);rig.update(new THREE.Vector3(0,.08,0),new THREE.Quaternion());rig.setSettings(60,100);
+  assert.ok(camera.position.y>=.04,"a tilted chase camera cannot sink through the ground");
+});
+
+test("both FPV views share the optical mount; visible drone mode keeps nearby frame parts within the near plane",async()=>{
+  const {camera,rig,config}=await setup("rift-75"),model=new THREE.Group();
+  model.userData.fpvCameraOffset=[0,.024,-.018];rig.configure(config,model);
+  const position=new THREE.Vector3(2,3,4);rig.update(position,new THREE.Quaternion());
+  rig.setView("fpv-clean");const clean=camera.position.clone(),rotation=camera.quaternion.clone();
+  closeVector(clean,position.clone().add(new THREE.Vector3(...model.userData.fpvCameraOffset)).add(new THREE.Vector3(...config.visualOffsetM)));
+  rig.setView("fpv");assert.equal(rig.chase,false);assert.equal(camera.near,.001);
+  closeVector(camera.position,clean);assert.ok(camera.quaternion.angleTo(rotation)<1e-7);
+  rig.setView("chase");assert.equal(rig.chase,true);assert.equal(camera.near,.012);
 });

@@ -26,9 +26,16 @@ export async function loadModel(config, { isolateMaterials = false, onProgress }
             if (material?.userData.droneColorRole === "base") configureDronePolymer(material);
         });
         scene.updateMatrixWorld(true);
+        // Place FPV just outside the actual optical surface, rather than inside
+        // the camera housing. Metadata survives the static mesh batching below.
+        const lens = scene.getObjectByName('FPV_multicoated_lens') ?? scene.getObjectByName('FPV_multicoated_front_lens') ?? scene.getObjectByName('FPV_coated_lens');
         const batches = new Map(),
           root = new THREE.Group(),
           props = new Map();
+        if (lens) {
+          const forward = new THREE.Vector3(0, -1, 0).applyQuaternion(lens.getWorldQuaternion(new THREE.Quaternion()));
+          root.userData.fpvCameraOffset = lens.getWorldPosition(new THREE.Vector3()).addScaledVector(forward, .001).toArray();
+        }
         scene.traverse((o) => {
           if (!o.isMesh) return;
           let ancestor = o.parent,

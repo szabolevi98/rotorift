@@ -33,8 +33,10 @@ export function makeTreeCrown(kind) {
   }
   return combine(parts);
 }
-export function makeTreeTrunk() {
+export function makeTreeTrunk(kind = 'oak') {
   const parts=[new THREE.CylinderGeometry(.013,.03,.74,7).translate(0,.37,0)];
+  // Conifers have a straight stem; broadleaf limbs protrude from their cones.
+  if(kind==='pine') return parts[0];
   for(const [x,y,z] of [[-.19,.61,.08],[.18,.69,-.05],[-.04,.83,-.13],[.07,.61,.15]]) {
     const start=new THREE.Vector3(0,.32,0),end=new THREE.Vector3(x,y,z);
     const g=new THREE.CylinderGeometry(.005,.012,start.distanceTo(end),6,1,true);

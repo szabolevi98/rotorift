@@ -283,7 +283,7 @@ function action(kind, currentInput = input) {
   }
   if (kind === "hover" && !controller.usingRadio)
     controller.keyboard.throttle = hoverThrottle(flight.config);
-  if (kind === "view") flight.setView(!flight.chase);
+  if (kind === "view") flight.cycleView();
   if (kind === "reset") {
     controller.clear();
     lap = newLap();
@@ -1099,8 +1099,9 @@ function hud() {
   }
   $("#hud-reset").disabled = !!room && room.phase !== "flying";
   $("#hud-reset").setAttribute("aria-label", t("key.reset"));
-  $("#hud-view").setAttribute("aria-label", t("key.view"));
-  $("#hud-view").setAttribute("aria-pressed", String(flight.chase));
+  const viewLabel = t("hud.view." + flight.view);
+  $("#hud-view").textContent = viewLabel + " ↻";
+  $("#hud-view").setAttribute("aria-label", t("key.view") + " · " + viewLabel);
   $("#hud-mode").textContent = flight.physics.mode.toUpperCase() + " ↻";
   $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flight.physics.mode.toUpperCase());
   $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);

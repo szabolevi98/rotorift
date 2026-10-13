@@ -384,7 +384,7 @@ export function buildPark(scene, world, RAPIER, map) {
     mesh.receiveShadow = true; mesh.computeBoundingSphere(); root.add(mesh);
   }
 
-  const treeTrunk = geometry(makeTreeTrunk());
+  const treeTrunk = geometry(makeTreeTrunk()), pineTrunk = geometry(makeTreeTrunk("pine"));
   const oakCrown = geometry(makeTreeCrown("oak")), birchCrown = geometry(makeTreeCrown("birch")), pineCrown = geometry(makeTreeCrown("pine"));
   const bushGeometry = geometry(new THREE.IcosahedronGeometry(1, 1));
   const tuftGeometry = geometry(new THREE.BufferGeometry());
@@ -408,7 +408,7 @@ export function buildPark(scene, world, RAPIER, map) {
     if (world) colliderDescs.push(RAPIER.ColliderDesc.trimesh(
       terrainGeometry.attributes.position.array, new Uint32Array(terrainGeometry.index.array),
     ).setFriction(0.9));
-    const objects = { trunk: [], oak: [], birch: [], pine: [], bush: [], tuft: [] };
+    const objects = { trunk: [], pineTrunk: [], oak: [], birch: [], pine: [], bush: [], tuft: [] };
     const add = (kind, x, y, z, scale, angle, color) => {
       dummy.position.set(x, y, z); dummy.scale.set(...scale); dummy.rotation.set(0, angle, 0); dummy.updateMatrix();
       objects[kind].push({ matrix: dummy.matrix.clone(), color });
@@ -421,7 +421,7 @@ export function buildPark(scene, world, RAPIER, map) {
       const height = (pine ? 10 : birch ? 8 : 7) + rng() * 6, aspect = birch ? 0.68 : 0.95 + rng() * 0.3;
       const y = parkSurfaceHeight(x, z), angle = rng() * Math.PI * 2;
       const scale = [height * aspect, height, height * aspect];
-      add("trunk", x, y, z, scale, angle, birch ? 0xd6d3be : 0x6a5341);
+      add(pine ? "pineTrunk" : "trunk", x, y, z, scale, angle, birch ? 0xd6d3be : 0x6a5341);
       add(pine ? "pine" : birch ? "birch" : "oak", x, y, z, scale, angle,
         pine ? 0x557a66 : birch ? 0x95ab67 : [0x8fa969, 0x6f8d50, 0x94a963, 0x648657][Math.floor(rng() * 4)]);
       if (world) {
@@ -449,7 +449,7 @@ export function buildPark(scene, world, RAPIER, map) {
       add("tuft", x, parkSurfaceHeight(x, z), z, [scale, scale, scale], rng() * 6,
         rng() < 0.04 ? 0xddcd94 : 0xadb77e);
     }
-    const types = { trunk: [treeTrunk, palette.bark], oak: [oakCrown, palette.leaves],
+    const types = { trunk: [treeTrunk, palette.bark], pineTrunk: [pineTrunk, palette.bark], oak: [oakCrown, palette.leaves],
       birch: [birchCrown, palette.leaves], pine: [pineCrown, palette.pine], bush: [bushGeometry, palette.bush], tuft: [tuftGeometry, palette.tuft] };
     let grass;
     for (const [kind, instances] of Object.entries(objects)) {
@@ -458,12 +458,12 @@ export function buildPark(scene, world, RAPIER, map) {
       for (let i = 0; i < instances.length; i++) {
         mesh.setMatrixAt(i, instances[i].matrix); mesh.setColorAt(i, new THREE.Color(instances[i].color));
       }
-      mesh.castShadow = kind === "trunk" || kind === "oak" || kind === "birch" || kind === "pine";
+      mesh.castShadow = kind === "trunk" || kind === "pineTrunk" || kind === "oak" || kind === "birch" || kind === "pine";
       mesh.receiveShadow = true; mesh.computeBoundingSphere(); group.add(mesh);
       if (kind === "tuft") grass = mesh;
     }
     root.add(group);
-    return { group, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz, treeCount: objects.trunk.length };
+    return { group, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz, treeCount: objects.trunk.length + objects.pineTrunk.length };
   }
   function deactivatePhysics(chunk) {
     for (const handle of chunk.colliderHandles) {

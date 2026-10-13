@@ -5,7 +5,7 @@ import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
 import { applyDroneColor, normalizeDroneColor } from "../../shared/visual/drone-colors.js";
 import { DroneTrail } from "./drone-trail.js";
-import { DroneCameraRig } from "./camera-rig.js";
+import { DroneCameraRig, CAMERA_VIEWS } from "./camera-rig.js";
 import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
@@ -48,6 +48,7 @@ export class Flight {
     this.accumulator = 0;
     this.active = false;
     this.chase = false;
+    this.view = "fpv-clean";
     this.remotes = new Map();
     this.sound = null;
     this.remoteVersion = 0;
@@ -96,7 +97,7 @@ export class Flight {
     this.visual = visual;
     this.propVisual = new PropellerVisual(visual,config);
     this.setColor(color);
-    this.cameraRig.configure(config, this.visual);
+    this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z));
     this.scene.add(this.visual);
     this.props = [];
     this.visual.traverse((o) => {
@@ -126,11 +127,13 @@ export class Flight {
     this.place(this.current, 1);
     this.propVisual?.update(this.physics.effects.propellers.blades);
   }
-  setView(chase) {
-    this.chase = chase;
-    if (this.visual) this.visual.visible = chase;
-    this.cameraRig.setView(chase);
+  setView(view) {
+    this.cameraRig.setView(view);
+    this.view = this.cameraRig.view;
+    this.chase = this.cameraRig.chase;
+    if (this.visual) this.visual.visible = this.view !== "fpv-clean";
   }
+  cycleView() { this.setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(this.view) + 1) % CAMERA_VIEWS.length]); }
   setCameraSettings(angle, fov) {
     this.cameraRig.setSettings(angle, fov);
   }
@@ -179,7 +182,7 @@ export class Flight {
       .copy(pos)
       .add(new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q));
     this.visual.quaternion.copy(q);
-    this.visual.visible = this.chase;
+    this.visual.visible = this.view !== "fpv-clean";
     this.cameraRig.update(pos, q);
   }
   async remote(player) {
@@ -264,7 +267,7 @@ export class Flight {
       const tail = new THREE.Vector3(0, 0.015, this.config.motorDiagonalM * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
       r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
-    this.parkShadows?.update({ dynamic: this.chase || this.remotes.size > 0 });
+    this.parkShadows?.update({ dynamic: this.view !== "fpv-clean" || this.remotes.size > 0 });
     this.renderer.render(this.scene, this.camera);
   }
   startSound() {
