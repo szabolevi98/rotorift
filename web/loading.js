@@ -41,7 +41,7 @@ export class LoadingScreen {
     for (const element of this.background) element.inert = true;
     this.title.textContent = this.translate(task.key, task.values);
     this.detail.textContent = task.phase ? this.translate("loading." + task.phase) : "";
-    const known = task.phase === "download" && task.total > 0;
+    const known = ["download", "collisions"].includes(task.phase) && task.total > 0;
     const fraction = known ? Math.min(1, task.loaded / task.total) : null;
     if (known) this.progress.value = fraction;
     else this.progress.removeAttribute("value");

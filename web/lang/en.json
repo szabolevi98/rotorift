@@ -84,6 +84,8 @@
   "loading.flight": "Opening {name}…",
   "loading.download": "Downloading drone model",
   "loading.prepare": "Preparing the 3D model…",
+  "loading.collisions": "Downloading prepared map collisions…",
+  "loading.collisionPrepare": "Preparing map physics…",
   "orientation.rotate": "Rotate your device to landscape.",
   "orientation.hint": "The flight deck works best with a wide view.",
   "fullscreen.enter": "Full screen",

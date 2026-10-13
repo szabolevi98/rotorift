@@ -309,6 +309,12 @@ az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azono
 - Az analóg kép szemcsézettséget, scanline-okat, enyhe színtelítettség-/kontrasztváltozást és vignettát kap. A játék világára kerül, a HUD olvasható marad. Kis, előre kirajzolt SVG zajcsempe és CSS-kompozitálás; nincs extra Three render-target vagy shaderpassz. Csökkentett mozgás beállítás mellett a zaj statikus.
 - Automatikus irány-/yaw-/fliptesztek; böngészőben kapcsolók, újratöltés utáni mentés, tényleges dróndőlés, követőnézet, menü, mobilos fekvő elrendezés és hibamentes konzol ellenőrzött. Mind az öt nyelven fordított beállítások.
 
+## 2026-10-13 – Talaj- és épületközeli fizikai optimalizálás
+
+- Mindkét pályán előre bekészített, tömörített, térben felosztott ütközési geometria. A dobozok összevont háromszöghálók, a kerek alakzatok megőrzik az eredeti geometriát. A kapuk külön maradnak.
+- Kisebb, sebességirányba előretöltő fizikai környezet; változatlan látványbetöltés. Ütközési előkészítés a töltőképernyőn, a ligetben a véges bekészített területen túl fizikai csupasz talaj folytatódik.
+- Mért fizikai részidő épület/átjáró közelében 1,3–1,4 ms helyett 0,15–0,19 ms négy fizikai lépésre. Részletek, reprodukálható böngészős mérés és geometriai ellenőrzések: [collision-performance.md](collision-performance.md).
+
 ## 2026-10-13 – Multiplayer visszatérés és futameredmények
 
 - Kapcsolatvesztés után a szerver 60 másodpercig fenntartja a pilóta helyét. Ugyanabban a böngészőlapban az újratöltés is visszatér; külön, laponként mentett titkos kulcs azonosítja a kapcsolatot.

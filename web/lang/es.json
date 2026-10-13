@@ -84,6 +84,8 @@
   "loading.flight": "Abriendo {name}…",
   "loading.download": "Descargando el modelo del dron",
   "loading.prepare": "Preparando el modelo 3D…",
+  "loading.collisions": "Descargando las colisiones preparadas…",
+  "loading.collisionPrepare": "Preparando la física del mapa…",
   "orientation.rotate": "Gira tu dispositivo a la posición horizontal.",
   "orientation.hint": "Una vista más amplia facilita el vuelo y los controles.",
   "fullscreen.enter": "Pantalla completa",

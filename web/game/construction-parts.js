@@ -88,7 +88,7 @@ export function createConstructionParts(scene, world, RAPIER) {
     const key = `${shape}:${color}:${Math.floor(p.x / 96)}:${Math.floor(p.z / 96)}`;
     if (!batches.has(key)) batches.set(key, { shape, color, matrices: [] });
     batches.get(key).matrices.push(matrix);
-    if (solid) {
+    if (solid && world) {
       let desc;
       if (solid === "mesh") {
         const g = geometries[shape].clone().applyMatrix4(matrix);
@@ -123,7 +123,7 @@ export function createConstructionParts(scene, world, RAPIER) {
   }
   function ground(geometry, color, solid = true, regional = false) {
     const mesh = new THREE.Mesh(geometry, palette[color]); mesh.receiveShadow = true; root.add(mesh);
-    if (solid) {
+    if (solid && world) {
       const collider = world.createCollider(RAPIER.ColliderDesc.trimesh(
       new Float32Array(geometry.attributes.position.array), new Uint32Array(geometry.index.array),
       ).setFriction(0.9));
@@ -150,8 +150,8 @@ export function createConstructionParts(scene, world, RAPIER) {
     root.userData = { landmarks, instances, batches: batches.size, colliders: colliders.length };
     batches.clear();
     return {
-      root, update: (position) => {
-        regions.update(position);
+      root, update: (position, velocity) => {
+        regions.update(position, velocity);
         root.userData.activeColliders = regions.activeCount + colliders.length - regions.entries.size;
       },
       dispose: () => {

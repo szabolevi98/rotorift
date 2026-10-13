@@ -84,6 +84,8 @@
   "loading.flight": "Ouverture de {name}…",
   "loading.download": "Téléchargement du modèle du drone",
   "loading.prepare": "Préparation du modèle 3D…",
+  "loading.collisions": "Téléchargement des collisions préparées…",
+  "loading.collisionPrepare": "Préparation de la physique de la carte…",
   "orientation.rotate": "Tournez votre appareil en mode paysage.",
   "orientation.hint": "Une vue plus large facilite le pilotage et les commandes.",
   "fullscreen.enter": "Plein écran",

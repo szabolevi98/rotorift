@@ -41,8 +41,11 @@ Repülési mérés: `npm run physics:measure`; az eredmény a
 `docs/flight-measurements.json` fájlba kerül. A feltételek, kategóriánkénti
 eredmények és a modell becslési határai: [physics-tuning.md](docs/physics-tuning.md).
 Úthálózat vagy munkaterületi elrendezés módosítása után: `npm run maps:build`.
-A burkolatok és szegélyek metszése előre készül el; a játékban nincs poligonműveleti függőség.
-A `npm run showcase:build` ezt automatikusan elvégzi a bemutató csomagolása előtt.
+A burkolatok/szegélyek metszése és a két pálya ütközési fájlja előre készül el;
+a játékban nincs poligonműveleti függőség. Csak a fizika újrasütése: `npm run collisions:build`.
+Az összevont, térben felosztott ütközési hálók mérését és működését a
+[collision-performance.md](docs/collision-performance.md) írja le.
+A `npm run showcase:build` a burkolatmetszést automatikusan elvégzi a bemutató csomagolása előtt.
 Az adatbázisteszt külön `rotorift_test_<id>` adatbázist hoz létre és takarít el;
 a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 

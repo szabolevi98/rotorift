@@ -149,7 +149,7 @@ test("construction keeps visuals intact while collision work follows the aircraf
   const corner = CONSTRUCTION_BUILDINGS[0];
   const cast = () => world.castRay(new RAPIER.Ray({x:corner.x-corner.width/2-3,y:2,z:corner.z-corner.depth/2},{x:1,y:0,z:0}),4,true);
   assert.equal(cast(),null,"a distant building need not participate in physics");
-  site.update([corner.x,2,corner.z]);world.step();assert.ok(cast(),"nearby columns reactivate before entry");
+  site.update([corner.x-corner.width/2-5,2,corner.z-corner.depth/2]);world.step();assert.ok(cast(),"nearby columns reactivate before entry");
   assert.deepEqual(site.root.children,meshes,"collision activation must never hide or rebuild the visible map");
   site.dispose();world.free();
 });

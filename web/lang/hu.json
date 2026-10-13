@@ -84,6 +84,8 @@
   "loading.flight": "{name} megnyitása…",
   "loading.download": "Drónmodell letöltése",
   "loading.prepare": "3D modell előkészítése…",
+  "loading.collisions": "Bekészített pályaütközések letöltése…",
+  "loading.collisionPrepare": "Pályafizika előkészítése…",
   "orientation.rotate": "Fordítsd el a készüléket fekvő nézetbe!",
   "orientation.hint": "A repüléshez és a kezelőfelülethez szélesebb nézet szükséges.",
   "fullscreen.enter": "Teljes képernyő",

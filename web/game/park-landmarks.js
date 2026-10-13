@@ -114,7 +114,7 @@ export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometr
     rampGeometry.setIndex(side > 0 ? [0, 1, 2, 1, 3, 2] : [0, 2, 1, 1, 2, 3]);
     rampGeometry.computeVertexNormals();
     const ramp = new THREE.Mesh(rampGeometry, palette.wood); ramp.receiveShadow = true; root.add(ramp);
-    world.createCollider(RAPIER.ColliderDesc.trimesh(rampGeometry.attributes.position.array,
+    world?.createCollider(RAPIER.ColliderDesc.trimesh(rampGeometry.attributes.position.array,
       new Uint32Array(rampGeometry.index.array)).setFriction(0.9));
   }
 
@@ -151,7 +151,7 @@ export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometr
   }
   const roof = new THREE.Mesh(geometry(new THREE.ConeGeometry(8, 2, 8)), palette.metal);
   roof.position.set(gx, floor + 5.3, gz); roof.castShadow = roof.receiveShadow = true; root.add(roof);
-  world.createCollider(RAPIER.ColliderDesc.cone(1, 8).setTranslation(gx, floor + 5.3, gz));
+  world?.createCollider(RAPIER.ColliderDesc.cone(1, 8).setTranslation(gx, floor + 5.3, gz));
   const stairEnd = parkSurfaceHeight(gx, gz + 11) + 0.06;
   for (let i = 0; i < 7; i++) {
     const z = gz + 6.5 + (i + 0.5) * 0.65, ground = parkSurfaceHeight(gx, z);

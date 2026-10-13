@@ -14,6 +14,7 @@ import { createMapAtmosphere } from "./map-atmosphere.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "./construction.js";
 import { RemoteCollisions } from "./remote-collisions.js";
 import { normalizeSimulation } from "../../shared/simulation/options.js";
+import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -58,15 +59,23 @@ export class Flight {
     this.parkShadows?.dispose();
     this.parkShadows = null;
     this.environment?.dispose();
+    this.environment = null;
     this.atmosphere?.dispose();
+    this.atmosphere = null;
     this.remoteCollisions?.dispose();
+    this.remoteCollisions = null;
+    this.physics = null;
     this.world?.free();
     this.removeModel(this.visual);
+    this.visual = null;
     for (const o of this.remotes.values()) { this.removeModel(o.model); o.trail.dispose(); }
     this.remotes.clear();
     this.remoteVersion++;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-    this.environment = buildEnvironment(this.scene, this.world, RAPIER, map);
+    const loadWorld = this.world;
+    const bakedCollisions = await loadPrebakedCollisions(RAPIER, loadWorld, map, () => version===this.loadVersion, onProgress);
+    if(version!==this.loadVersion){bakedCollisions?.dispose();return false;}
+    this.environment = buildEnvironment(this.scene, this.world, RAPIER, map, { bakedCollisions });
     this.environment.highlight(0, false);
     this.config = config;
     this.map = map;
@@ -104,6 +113,7 @@ export class Flight {
     this.remoteCollisions?.update(this.remotePlayers ?? [], this.ownId, this.physics.effects.options.ghost);
   }
   reset(position = this.map.spawn) {
+    if (!this.physics || !this.environment) return;
     this.physics.reset(position);
     this.boundary.reset();
     this.environment.update(position);
@@ -121,7 +131,7 @@ export class Flight {
   }
   step(dt, input, update) {
     if (!this.active) return;
-    this.environment.update(this.physics.pose.p);
+    this.environment.update(this.physics.pose.p, this.physics.pose.v);
     this.accumulator += Math.min(dt, 0.1);
     while (this.accumulator >= PHYSICS_DT) {
       this.previous = this.physics.pose;

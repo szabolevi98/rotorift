@@ -91,7 +91,7 @@ export function buildParkCommunity({ root, world, RAPIER, part, palette, geometr
     part([1.8, 1.05, 0.1], [sx, sy + 3.65, sz + side * 13], white);
     const rim = new THREE.Mesh(geometry(new THREE.TorusGeometry(0.225, 0.035, 8, 28)), red);
     rim.rotation.x = Math.PI / 2; rim.position.set(sx, sy + 3.175, hoopZ); root.add(rim);
-    world.createCollider(RAPIER.ColliderDesc.trimesh(rim.geometry.attributes.position.array, new Uint32Array(rim.geometry.index.array))
+    world?.createCollider(RAPIER.ColliderDesc.trimesh(rim.geometry.attributes.position.array, new Uint32Array(rim.geometry.index.array))
       .setRotation({ x: Math.SQRT1_2, y: 0, z: 0, w: Math.SQRT1_2 }).setTranslation(sx, sy + 3.175, hoopZ));
     const z = sz + side * 19;
     for (let x = -12; x <= 12; x += 4) part([0.08, 3, 0.08], [sx + x, sy + 1.6, z], palette.metal);

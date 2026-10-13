@@ -185,7 +185,7 @@ export function buildPark(scene, world, RAPIER, map) {
     if (!batches.has(key)) batches.set(key, { g, mat, instances: [] });
     dummy.position.set(...p); dummy.scale.set(...size); dummy.rotation.set(0, angle, 0); dummy.updateMatrix();
     batches.get(key).instances.push(dummy.matrix.clone());
-    if (solid) {
+    if (solid && world) {
       const desc = shape === "box" ? RAPIER.ColliderDesc.cuboid(...size.map((v) => v / 2))
         : RAPIER.ColliderDesc.cylinder(size[1] / 2, size[0]);
       const collider = world.createCollider(desc.setTranslation(...p).setRotation({ x: 0, y: Math.sin(angle / 2), z: 0, w: Math.cos(angle / 2) }).setFriction(0.85));
@@ -246,7 +246,7 @@ export function buildPark(scene, world, RAPIER, map) {
     const mesh = new THREE.Mesh(geometry(makeSurfaceGeometry(polygons, parkSurfaceHeight)), mat);
     mesh.name = "park-path";
     mesh.receiveShadow = true; root.add(mesh);
-    world.createCollider(RAPIER.ColliderDesc.trimesh(
+    world?.createCollider(RAPIER.ColliderDesc.trimesh(
       mesh.geometry.attributes.position.array, new Uint32Array(mesh.geometry.index.array),
     ).setFriction(0.9));
   }
@@ -405,7 +405,7 @@ export function buildPark(scene, world, RAPIER, map) {
     const group = new THREE.Group(), colliderHandles = [], colliderDescs = [], rng = chunkRandom(cx, cz);
     const terrainGeometry = makeParkTerrain(cx, cz);
     const terrain = new THREE.Mesh(terrainGeometry, palette.grass); terrain.receiveShadow = true; group.add(terrain);
-    colliderDescs.push(RAPIER.ColliderDesc.trimesh(
+    if (world) colliderDescs.push(RAPIER.ColliderDesc.trimesh(
       terrainGeometry.attributes.position.array, new Uint32Array(terrainGeometry.index.array),
     ).setFriction(0.9));
     const objects = { trunk: [], oak: [], birch: [], pine: [], bush: [], tuft: [] };
@@ -424,6 +424,7 @@ export function buildPark(scene, world, RAPIER, map) {
       add("trunk", x, y, z, scale, angle, birch ? 0xd6d3be : 0x6a5341);
       add(pine ? "pine" : birch ? "birch" : "oak", x, y, z, scale, angle,
         pine ? 0x557a66 : birch ? 0x95ab67 : [0x8fa969, 0x6f8d50, 0x94a963, 0x648657][Math.floor(rng() * 4)]);
+      if (world) {
       colliderDescs.push(RAPIER.ColliderDesc.cylinder(height * 0.34, height * aspect * 0.027)
         .setTranslation(x, y + height * 0.34, z));
       if (pine) colliderDescs.push(RAPIER.ColliderDesc.cone(height * 0.4, height * aspect * 0.245).setTranslation(x, y + height * 0.63, z));
@@ -431,6 +432,7 @@ export function buildPark(scene, world, RAPIER, map) {
         const px = (lx * Math.cos(angle) + lz * Math.sin(angle)) * height * aspect;
         const pz = (-lx * Math.sin(angle) + lz * Math.cos(angle)) * height * aspect;
         colliderDescs.push(RAPIER.ColliderDesc.ball(radius * height * Math.min(1, aspect)).setTranslation(x + px, y + ly * height, z + pz));
+      }
       }
     }
     for (let i = 0; i < 16; i++) {
@@ -476,8 +478,8 @@ export function buildPark(scene, world, RAPIER, map) {
     chunk.group.traverse((o) => { if (o.isInstancedMesh) o.dispose(); });
     chunk.terrainGeometry.dispose();
   }
-  function update(position) {
-    collisionRegions.update(position);
+  function update(position, velocity) {
+    collisionRegions.update(position, velocity);
     waterMaterial.uniforms.time.value = performance.now() / 1000;
     landmarks.update(waterMaterial.uniforms.time.value);
     // A resting drone can jitter across a grid edge by fractions of a mm.
@@ -501,7 +503,7 @@ export function buildPark(scene, world, RAPIER, map) {
       const chunk = chunks.get(id);
       const nearby = Math.abs(x - cx) <= 1 && Math.abs(z - cz) <= 1;
       if (chunk.grass) chunk.grass.visible = nearby;
-      if (nearby && !chunk.colliderHandles.length)
+      if (world && nearby && !chunk.colliderHandles.length)
         for (const desc of chunk.colliderDescs) chunk.colliderHandles.push(world.createCollider(desc).handle);
       else if (!nearby && chunk.colliderHandles.length) deactivatePhysics(chunk);
     }

@@ -84,6 +84,8 @@
   "loading.flight": "{name} wird geöffnet…",
   "loading.download": "Drohnenmodell wird heruntergeladen",
   "loading.prepare": "3D-Modell wird vorbereitet…",
+  "loading.collisions": "Vorbereitete Kartenkollisionen werden geladen…",
+  "loading.collisionPrepare": "Kartenphysik wird vorbereitet…",
   "orientation.rotate": "Drehe dein Gerät ins Querformat.",
   "orientation.hint": "Für das Fliegen und die Bedienung brauchst du eine breite Ansicht.",
   "fullscreen.enter": "Vollbild",

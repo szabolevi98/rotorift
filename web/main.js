@@ -794,6 +794,10 @@ async function loadRoom(r) {
   const key = roomKey(r);
   if (loadingRoom === key) return;
   loadingRoom = key;
+  playing = false;
+  paused = true;
+  flight.active = false;
+  flight.mute();
   void fullscreen?.enterFlight();
   const task = loading.begin("loading.flight", { name: t("map." + r.mapId) });
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
@@ -1257,7 +1261,7 @@ function frame(now) {
       notice(t("hud.boundaryReset"));
     }
   }
-  if (playing && room?.phase === "flying" && now - sendAt >= 50) {
+  if (playing && flight.physics && room?.phase === "flying" && now - sendAt >= 50) {
     network.state(
       flight.physics.pose,
       flight.config,
