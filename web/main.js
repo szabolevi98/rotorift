@@ -7,6 +7,7 @@ import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { FlightHelp } from "./game/flight-help.js";
 import { armPrompt } from "./game/arm-prompt.js";
+import { FpvOsd } from "./game/fpv-osd.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
@@ -28,6 +29,7 @@ const $ = (s) => document.querySelector(s),
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
+const fpvOsd = new FpvOsd($("#fpv-horizon"), $("#analog-effect"), $("#game-scene"));
 const fpsLabel = $("#hud-fps");
 let fpsSince = null, fpsFrames = 0;
 function updateFps(now, rendering) {
@@ -109,7 +111,7 @@ const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) : null;
 const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
-  cameraSettings = read("camera", { angle: 20, fov: 100, sound: true });
+  cameraSettings = read("camera", { angle: 20, fov: 100, sound: true, horizon: false, analog: false });
 let droneColor = normalizeDroneColor(read("drone-color", "coral"));
 let simulation = normalizeSimulation(read("simulation", DEFAULT_SIMULATION));
 function createSimulationControls() {
@@ -1277,6 +1279,7 @@ function frame(now) {
     radioGuide.render(controller, now);
   }
   if (playing && !paused) flight.render(dt);
+  fpvOsd.update(playing && !paused && !flight.chase, flight?.cameraRig.quaternion);
   updateFps(now, playing && !paused);
   requestAnimationFrame(frame);
 }
@@ -1422,16 +1425,22 @@ function bindUI() {
     cameraSettings.angle = Number($("#camera-angle").value);
     cameraSettings.fov = Number($("#camera-fov").value);
     cameraSettings.sound = $("#sound").checked;
+    cameraSettings.horizon = $("#fpv-horizon-toggle").checked;
+    cameraSettings.analog = $("#analog-video-toggle").checked;
     $("#angle-output").textContent = cameraSettings.angle + "°";
     $("#fov-output").textContent = cameraSettings.fov + "°";
     flight.setCameraSettings(cameraSettings.angle, cameraSettings.fov);
     flight.soundEnabled = cameraSettings.sound;
+    fpvOsd.setSettings(cameraSettings);
+    $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
     write("camera", cameraSettings);
   }
   $("#camera-angle").value = cameraSettings.angle;
   $("#camera-fov").value = cameraSettings.fov;
   $("#sound").checked = cameraSettings.sound;
-  for (const s of ["#camera-angle", "#camera-fov", "#sound"])
+  $("#fpv-horizon-toggle").checked = cameraSettings.horizon === true;
+  $("#analog-video-toggle").checked = cameraSettings.analog === true;
+  for (const s of ["#camera-angle", "#camera-fov", "#sound", "#fpv-horizon-toggle", "#analog-video-toggle"])
     $(s).oninput = camera;
   camera();
   for (const s of ["#records-route", "#records-drone", "#records-mode"])
@@ -1439,6 +1448,7 @@ function bindUI() {
   $("#records-map").onchange = () => { refreshRecordRoutes(); showRecords(); };
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
+    $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
     refreshColors();
     refreshSimulationControls();
     refreshCatalogText();

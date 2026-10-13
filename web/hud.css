@@ -28,6 +28,17 @@
 #hud .telemetry b { display: block; font-size: 28px; line-height: 1.2; margin: 3px 0; font-weight: 600; }
 #hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
 #hud .crosshair { transform: translate(-50%, -50%); }
+#hud { z-index: 2; }
+.fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(220px, 38vw); transform: translate(-50%, -50%); overflow: visible; pointer-events: none; }
+.horizon-bars path, .horizon-reference { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: square; paint-order: stroke; filter: drop-shadow(0 1px 1px #000); }
+.horizon-reference { stroke-width: 2; }
+#hud:has(#fpv-horizon:not(.hidden)) .crosshair { visibility: hidden; }
+#hud:has(#arm-prompt:not(.hidden)) .fpv-horizon, #hud:has(#flight-help:not(.hidden)) .fpv-horizon { visibility: hidden; }
+#game-scene.analog-video { filter: saturate(.78) contrast(1.06); }
+#analog-effect { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; background: repeating-linear-gradient(0deg, #00000018 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, #00000035 100%); }
+.analog-grain { position: absolute; inset: -128px; background: url('/assets/analog-noise.svg') repeat; opacity: .10; animation: analog-grain .4s steps(4, end) infinite; }
+@keyframes analog-grain { 0% { transform: translate(0, 0); } 25% { transform: translate(41px, 23px); } 50% { transform: translate(-17px, 59px); } 75% { transform: translate(67px, -31px); } }
+@media (prefers-reduced-motion: reduce) { .analog-grain { animation: none; } }
 .arm-prompt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: min(420px, calc(100vw - 48px)); width: max-content; padding: 18px 24px; text-align: center; border: 1px solid #ff997c70; border-radius: 10px; background: #12161beb; text-shadow: none; }
 .arm-prompt strong { display: block; color: #ffd1c4; font-size: 19px; line-height: 1.45; }
 .arm-prompt span { display: block; margin-top: 8px; font-size: 11px; line-height: 1.5; color: #c4ccd6; }

@@ -302,6 +302,13 @@ az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azono
 - Nagy akkumulátorikon az ARM fölött, százalék, csomag-/cellafeszültség, becsült hátralévő idő, sárga LOW BATTERY és piros LAND NOW kártya.
 - Opcionális marad, multiplayerben házigazda által szabályozott. Konfigurációverzió 5; részletes mezők, mérések és korlátok: [battery-simulation.md](battery-simulation.md).
 
+## 2026-10-13 – Opcionális FPV OSD és analóg videó
+
+- Beállítások → FPV kamera alatt két külön, alapból kikapcsolt, megjegyzett személyes kapcsoló. Egyjátékos és multiplayer FPV nézetben is működnek; a követőnézet és a menü tiszta marad.
+- A Betaflight jellegű műhorizont kilenc lépcsőzetes fehér vonalszegmensből, fix oldalsó és középjelölésből áll. A drón interpolált testhelyzetéből származó gravitációvektor alapján követi a pitch/roll dőlést, a yaw-tól és kameraállítástól függetlenül. A 20° pitch / 40° roll műszerkitérés a klasszikus [Betaflight OSD](https://github.com/betaflight/betaflight/blob/4.5.2/src/main/osd/osd_elements.c) megjelenítési tartományához igazodik; saját SVG-megvalósítás.
+- Az analóg kép szemcsézettséget, scanline-okat, enyhe színtelítettség-/kontrasztváltozást és vignettát kap. A játék világára kerül, a HUD olvasható marad. Kis, előre kirajzolt SVG zajcsempe és CSS-kompozitálás; nincs extra Three render-target vagy shaderpassz. Csökkentett mozgás beállítás mellett a zaj statikus.
+- Automatikus irány-/yaw-/fliptesztek; böngészőben kapcsolók, újratöltés utáni mentés, tényleges dróndőlés, követőnézet, menü, mobilos fekvő elrendezés és hibamentes konzol ellenőrzött. Mind az öt nyelven fordított beállítások.
+
 ## 2026-10-13 – Multiplayer visszatérés és futameredmények
 
 - Kapcsolatvesztés után a szerver 60 másodpercig fenntartja a pilóta helyét. Ugyanabban a böngészőlapban az újratöltés is visszatér; külön, laponként mentett titkos kulcs azonosítja a kapcsolatot.

@@ -62,6 +62,8 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
   objektumok és ütközések ettől függetlenül töltődnek be. A látótávolság 12 km.
   Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
 - Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.
+- Beállítások → FPV kamera: külön kapcsolható, mentett Betaflight jellegű műhorizont
+  és analóg videóeffekt. FPV nézetben működnek, egyjátékos és online repülésben is.
 - Helyi szabad repülés és időmérő, elkülönített helyi rekorddal.
 - Online szabad repülés, háromkörös verseny és szerver által követett egyéni időmérő.
 - Öt nyelv: magyar, angol, német, francia, spanyol.

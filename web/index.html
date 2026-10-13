@@ -288,6 +288,9 @@
                 ><span data-i18n="settings.sound"></span
                 ><input id="sound" type="checkbox" checked
               /></label>
+              <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
+              <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
+              <p class="muted" data-i18n="settings.fpvEffectsHint"></p>
             </section>
             <section class="card">
               <h2 data-i18n="settings.keys"></h2>
@@ -368,6 +371,7 @@
         ></a>
       </footer>
     </div>
+    <div id="analog-effect" class="hidden" aria-hidden="true"><div class="analog-grain"></div></div>
     <div id="hud" class="hidden">
       <div class="hud-top">
         <div class="hud-location"><div class="hud-identity"><span class="hud-brand">ROTORIFT.</span><span id="hud-fps">— FPS</span></div><span id="hud-session"></span></div>
@@ -383,6 +387,10 @@
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>
       <div class="crosshair">+</div>
+      <svg id="fpv-horizon" class="fpv-horizon hidden" viewBox="0 0 200 128" role="img" aria-label="Artificial horizon">
+        <g class="horizon-bars"></g>
+        <path class="horizon-reference" d="M18 50v28m0-14h12m152-14v28m0-14h-12M86 64h8l6 5 6-5h8"/>
+      </svg>
       <div id="arm-prompt" class="arm-prompt hidden" role="status" aria-live="polite" aria-atomic="true">
         <strong id="arm-prompt-title"></strong><span id="arm-prompt-detail"></span>
       </div>
