@@ -55,8 +55,8 @@ for(const id of ['rift-65','rift-75'])test(`${id}: flies through the prepared cu
 test('prepared playground retains an open tunnel and low collision workload',async()=>{
  const asset=COLLISION_ASSETS[map.id],raw=gunzipSync(await readFile(new URL('../web'+asset.url,import.meta.url))),records=decodeCollisionData(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),map.id);
  const world=new RAPIER.World({x:0,y:-9.81,z:0}),baked=new PrebakedCollisions(RAPIER,world,map,records);
- // Smaller mesh cells increase the shape count while reducing CCD work per
- // shape. Keep activation local rather than requiring the old 32 m count.
+ // Analytic parts avoid expensive whoop CCD against merged triangle soups.
+ // Keep activation local rather than requiring the old merged shape count.
  try{baked.update([-5,.7,13]);world.step();assert.equal(world.castRay(new RAPIER.Ray({x:-5,y:.68,z:11},{x:0,y:0,z:1}),4,true),null);assert.ok(baked.activeCount<200&&baked.activeCount<records.length/2);assert.ok(asset.bytes<100000);}
  finally{baked.dispose();assert.equal(world.colliders.len(),0);world.free();}
 });

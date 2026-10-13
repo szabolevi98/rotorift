@@ -20,13 +20,13 @@ function output(status){report.textContent=JSON.stringify({variant,physicsMode,o
 await RAPIER.init();const {maps,drones}=await(await fetch('/api/catalog')).json();
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 try {
-for(const id of ['betonudvar','liget']) {
+for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jatszoter']) {
  const map=maps.find(m=>m.id===id),world=new RAPIER.World({x:0,y:-9.81,z:0}),scene=new THREE.Scene();
  const atmosphere=createMapAtmosphere(renderer,scene,map.kind);
  const bakedCollisions=physicsMode==='prepared'?await loadPrebakedCollisions(RAPIER,world,map):null;
  if(physicsMode==='prepared'&&!bakedCollisions)throw Error('Prepared collisions failed to load');
  const environment=buildEnvironment(scene,world,RAPIER,map,{bakedCollisions});environment.highlight(0,false);
- const drone=physicsMode==='none'?null:new DronePhysics(RAPIER,world,drones.find(d=>d.id==='rift-x5'),map.spawn,{updateSceneQueries:false});
+ const drone=physicsMode==='none'?null:new DronePhysics(RAPIER,world,drones.find(d=>d.id===(params.get('drone')??'rift-x5')),map.spawn,{updateSceneQueries:false});
  const input=drone?{roll:0,pitch:0,yaw:0,throttle:hoverThrottle(drone.config)}:null;
  const camera=new THREE.PerspectiveCamera(100,innerWidth/(innerHeight*.7),.012,12000);
  const shadows=variant==='none'?null:new ParkShadows(scene,camera,atmosphere.profile);
@@ -34,6 +34,10 @@ for(const id of ['betonudvar','liget']) {
  if(!shadows){const sun=new THREE.DirectionalLight(atmosphere.profile.sunColor,atmosphere.profile.sunIntensity);sun.position.set(-35,75,25);scene.add(sun);}
  const poses=id==='liget'?[
   ['outside',[0,2,60],[0,3,0]],['passage',[0,2,0],[0,2,-25]],['glass-room',[12,6,0],[12,6,-15]]
+ ]:id==='jatszoter'?[
+  ['outside',[0,3,25],[0,2,-3]],['under-fort',[0,.7,-3],[3.4,1,-3]],
+  ['tower-post',[-3.4,.7,-3],[-3.4,1,0]],['near-ground',[0,.15,-3],[3.4,.4,-3]],
+  ['cube-climber',[14,.7,-7],[14,1,-12]]
  ]:[['entry',[0,2,255],[0,4,-35]],['bay',[-68,2,-30],[-68,2,-60]],['upper-bay',[-60,24,-30],[-60,24,-60]]];
  for(const [name,position,target]of poses){
   if(map.kind==='construction') {
@@ -48,6 +52,10 @@ for(const id of ['betonudvar','liget']) {
    if(variant==='moving') {
     camera.position.set(position[0],position[1],position[2]+i*.25);
     camera.lookAt(target[0],target[1],target[2]+i*.25);
+   }
+   if(drone&&params.has('hold')){
+    drone.body.setTranslation({x:position[0],y:position[1],z:position[2]},true);
+    drone.body.setLinvel({x:0,y:0,z:7},true);
    }
    let start=performance.now();environment.update(drone?drone.pose.p:position,drone?.pose.v);const collisionCost=performance.now()-start;
    start=performance.now();if(drone)for(let step=0;step<4;step++)drone.step(input);const physicsCost=performance.now()-start;

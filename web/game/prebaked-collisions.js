@@ -14,7 +14,7 @@ export class PrebakedCollisions {
         let desc;
         if (r.kind === "mesh") desc = RAPIER.ColliderDesc.trimesh(r.vertices, r.indices, RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES);
         else {
-          desc = r.kind === "ball" ? RAPIER.ColliderDesc.ball(r.radius) : RAPIER.ColliderDesc[r.kind](r.halfHeight,r.radius);
+          desc = r.kind === "cuboid" ? RAPIER.ColliderDesc.cuboid(...r.halfExtents) : r.kind === "ball" ? RAPIER.ColliderDesc.ball(r.radius) : RAPIER.ColliderDesc[r.kind](r.halfHeight,r.radius);
           desc.setTranslation(...r.p).setRotation({x:r.q[0],y:r.q[1],z:r.q[2],w:r.q[3]});
         }
         const collider = world.createCollider(desc.setFriction(r.friction));

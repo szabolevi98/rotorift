@@ -1,7 +1,42 @@
 # Bekészített ütközési geometria és talajközeli teljesítmény
 
 2026. október 13. A Racingben alkalmazott bekészített geometria elve alapján
-a Rotorift is kész ütközési fájlokat tölt a két pályához.
+a Rotorift is kész ütközési fájlokat tölt mindhárom pályához.
+
+## Whoop FPS-esés javítása az akadályok közelében
+
+A 75-ös drónnal a játszótéri vár alatt reprodukálható volt a lassulás:
+egy 240 Hz-es fizikai lépés 19,53 ms, a torony mellett 38,97 ms lett.
+Távolabb ugyanaz a drón 0,51 ms alatt számolódott. A képkockánként esedékes
+több fizikai lépés ezért önmagában felélte a teljes képkockaidőt.
+
+A bake korábban az egyszerű dobozokat is térbeli háromszöghálókba vonta össze.
+A whoop 48 vékony, domború védőívének folyamatos ütközésvizsgálata (CCD)
+ezekkel a hálókkal lett rendkívül drága. Most a gerendák, födémek, burkolatok
+és a játszótér végtelen talaja az eredeti, analitikus dobozalakzat marad.
+Valódi háromszöghálót csak a valóban összetett felületeknél használunk.
+Mindhárom pálya ütközési fájlja újragenerálva; a látvány és a CCD megmarad.
+
+Azonos helyi Node/Rapier mérés (7 m/s, azonos pozíció visszaállítva,
+80 lépés, 11 bemelegítő kihagyva):
+
+| Rift 75 helyzet | Korábbi lépés | Javított lépés |
+| --- | ---: | ---: |
+| Vár alatt, 0,7 m magasság | 19,53 ms | 0,45 ms |
+| Torony mellett, 0,7 m magasság | 38,97 ms | 0,44 ms |
+| Talaj felett, 0,15 m magasság | 20,15 ms | 0,40 ms |
+
+A böngészős ellenőrzésben (GTX 1080 / ANGLE, 1280×504) négy fizikai lépés
+a vár alatt 1,90 ms, a torony mellett 1,66 ms, talajközelben 1,66 ms.
+A külön, GPU-val megvárt rajzolás ezekben a pontokban 0,50–0,57 ms volt.
+A Liget épületében négy lépés 1,44–1,66 ms, a Betonudvar épületszintjein
+2,13 ms volt. Ezek részidők, nem teljes játékbeli FPS-ígéretek.
+
+Reprodukció: `/performance.html?map=jatszoter&physics=prepared&drone=rift-75&hold=1`.
+A `map` és `drone` paraméter más pályát/drónt is enged; a `hold` a mért pontban
+tartja a drónt 7 m/s-os tesztsebességgel. A mérőoldal mentett beállítást nem módosít.
+Új regresszióteszt tiltja az egyszerű játszótéri részek hálóvá alakítását,
+és ellenőrzi a nyitott átjárót, szilárd födémet, oszlopot és külső talajt.
 
 ## Mi változott?
 
@@ -10,13 +45,13 @@ a környező darabokhoz újabb talaj- és faalakzatokat hozott létre repülés 
 Egy épület mellett a 40 m-es fizikai környezet több száz alakzatot tartott aktívan.
 
 Az új build ugyanazokból a procedurális pályaépítőkből összegyűjti a valóban
-szilárd részeket. A dobozfelületek és meglévő háromszöghálók 32 m-es térbeli
+szilárd részeket. Az összetett háromszöghálók 32 m-es térbeli
 részekbe összevont hálók lesznek. Távol a pályától nagyobb részeket használunk.
-A gömbök, hengerek és kúpok pontos analitikus alakzata megmarad: a fa koronája
+A dobozok, gömbök, hengerek és kúpok pontos analitikus alakzata megmarad: a fa koronája
 és a kör alakú részek nem kapnak durvább, szögletes ütközést.
 
 Az eredmény tömörített, tartalomhash-sel elnevezett `.rrc` fájl. A liget kb.
-3,47 MB, az építkezés 2,28 MB letöltés; első alkalommal a töltőképernyő mutatja
+3,42 MB, az építkezés 1,97 MB, a játszótér 19 kB letöltés; első alkalommal a töltőképernyő mutatja
 a letöltést és fizikai előkészítést. Egy böngészőoldalon a már letöltött adatok
 újrahasználhatók. A Wasm alakzatok a repülés előtt elkészülnek; a látványépítő
 ilyen esetben kihagyja a saját ütköző alakzatok létrehozását.
@@ -35,7 +70,7 @@ Régi vagy hibás fájl, illetve hiányzó böngészős kitömörítés esetén 
 a procedurális ütközési geometriát használja. A bekészített változat alapútja
 a gzip kitömörítését támogató böngészőben használható; a fallback a játszhatóságot tartja meg.
 
-## Mért eredmények
+## A korábbi, X5-tel végzett mérés eredményei
 
 Node + tényleges Rapier/DronePhysics, négy 240 Hz-es fizikai lépés egy mintában,
 360 minta, előzetes bemelegítés; a régi 40 m-es, külön alakzatos és az új

@@ -40,9 +40,10 @@ export function decodeCollisionData(buffer, mapId) {
       if (!vertices.every(Number.isFinite) || !indices.every(i=>i<vertices.length/3)) throw Error("Invalid collision triangles");
       return { ...record, vertices, indices };
     }
-    if (!["ball","cylinder","cone"].includes(record.kind) || !vector(record.p) ||
+    if (!["cuboid","ball","cylinder","cone"].includes(record.kind) || !vector(record.p) ||
         !Array.isArray(record.q) || record.q.length !== 4 || !record.q.every(Number.isFinite) ||
-        !Number.isFinite(record.radius) || record.radius <= 0 || (record.kind !== "ball" && !(record.halfHeight > 0))) throw Error("Invalid collision primitive");
+        (record.kind === "cuboid" ? !vector(record.halfExtents) || !record.halfExtents.every(v=>v>0) :
+          !Number.isFinite(record.radius) || record.radius <= 0 || (record.kind !== "ball" && !(record.halfHeight > 0)))) throw Error("Invalid collision primitive");
     return record;
   });
 }

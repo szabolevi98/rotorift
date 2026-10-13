@@ -43,22 +43,22 @@ export async function bakeCollisionRecords(map) {
   const environment = map.kind === "playground" ? buildPlayground(scene,world,RAPIER,map) : map.kind === "park" ? buildPark(scene,world,RAPIER,map) : buildConstruction(scene,world,RAPIER,map);
   if (map.kind === "park") for (const x of [-3,0,2]) for (const z of [-3,0,2]) environment.update([x*128+64,2,z*128+64]);
   const tiles = new Map(), primitives = [];
-  const boxGeometry = new THREE.BoxGeometry(1,1,1);
   for (const desc of descriptors.values()) {
     const shape = desc.shape, p = desc.translation, q = desc.rotation;
-    if (![RAPIER.ShapeType.Cuboid,RAPIER.ShapeType.TriMesh].includes(shape.type)) {
-      const kind = {[RAPIER.ShapeType.Ball]:"ball",[RAPIER.ShapeType.Cylinder]:"cylinder",[RAPIER.ShapeType.Cone]:"cone"}[shape.type];
+    if (shape.type !== RAPIER.ShapeType.TriMesh) {
+      const kind = {[RAPIER.ShapeType.Cuboid]:"cuboid",[RAPIER.ShapeType.Ball]:"ball",[RAPIER.ShapeType.Cylinder]:"cylinder",[RAPIER.ShapeType.Cone]:"cone"}[shape.type];
       if (!kind) throw Error("Unsupported static collider " + shape.type);
-      const r = shape.radius, h = shape.halfHeight ?? r;
-      const bounds = new THREE.Box3(new THREE.Vector3(-r,-h,-r),new THREE.Vector3(r,h,r));
+      const r = shape.radius, h = shape.halfHeight ?? r, extents=shape.halfExtents;
+      const half=extents?new THREE.Vector3(extents.x,extents.y,extents.z):new THREE.Vector3(r,h,r);
+      const bounds = new THREE.Box3(half.clone().negate(),half.clone());
       bounds.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(p.x,p.y,p.z),new THREE.Quaternion(q.x,q.y,q.z,q.w),new THREE.Vector3(1,1,1)));
-      primitives.push({kind,p:[p.x,p.y,p.z],q:[q.x,q.y,q.z,q.w],radius:r,halfHeight:h,
+      // Keep analytic boxes analytic. Turning beams/floors into triangle soups
+      // made CCD against the whoop's thin convex guards extremely expensive.
+      primitives.push({kind,p:[p.x,p.y,p.z],q:[q.x,q.y,q.z,q.w],...(extents?{halfExtents:half.toArray()}:{radius:r,halfHeight:h}),
         min:bounds.min.toArray(),max:bounds.max.toArray(),friction:desc.friction}); continue;
     }
-    const sourceVertices = shape.type === RAPIER.ShapeType.Cuboid ? boxGeometry.attributes.position.array : shape.vertices;
-    const sourceIndices = shape.type === RAPIER.ShapeType.Cuboid ? boxGeometry.index.array : shape.indices;
-    const scale = shape.halfExtents ? new THREE.Vector3(shape.halfExtents.x*2,shape.halfExtents.y*2,shape.halfExtents.z*2) : new THREE.Vector3(1,1,1);
-    const matrix = new THREE.Matrix4().compose(new THREE.Vector3(p.x,p.y,p.z),new THREE.Quaternion(q.x,q.y,q.z,q.w),scale);
+    const sourceVertices = shape.vertices, sourceIndices = shape.indices;
+    const matrix = new THREE.Matrix4().compose(new THREE.Vector3(p.x,p.y,p.z),new THREE.Quaternion(q.x,q.y,q.z,q.w),new THREE.Vector3(1,1,1));
     const vertex = i => new THREE.Vector3(sourceVertices[i*3],sourceVertices[i*3+1],sourceVertices[i*3+2]).applyMatrix4(matrix);
     // The park's finite play area is baked once; bare terrain farther away is
     // generated from the same height function when the pilot leaves it.
@@ -70,8 +70,7 @@ export async function bakeCollisionRecords(map) {
       const points=[vertex(sourceIndices[i]),vertex(sourceIndices[i+1]),vertex(sourceIndices[i+2])];
       const center=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3);
       const distance=Math.max(Math.abs(center.x),Math.abs(center.z));
-      // The compact playground needs finer cells: a 32 m tile would combine
-      // most of its intricate play equipment into one CCD candidate mesh.
+      // Keep any custom playground surfaces in small local mesh cells.
       const tileSize=distance<=512?(map.kind==='playground'?4:32):128*2**Math.floor(Math.log2(distance/512));
       const key=[tileSize,Math.floor(center.x/tileSize),Math.floor(center.y/tileSize),Math.floor(center.z/tileSize),desc.friction].join(":");
       if(!tiles.has(key))tiles.set(key,{vertices:[],indices:[],lookup:new Map(),bounds:new THREE.Box3(),friction:desc.friction});
@@ -84,7 +83,7 @@ export async function bakeCollisionRecords(map) {
       }
     }
   }
-  environment.dispose(); boxGeometry.dispose();
+  environment.dispose();
   return [...[...tiles.entries()].sort(([a],[b])=>a<b?-1:a>b?1:0).map(([,tile])=>({kind:"mesh",vertices:new Float32Array(tile.vertices),indices:new Uint32Array(tile.indices),
     min:tile.bounds.min.toArray(),max:tile.bounds.max.toArray(),friction:tile.friction})), ...primitives];
 }

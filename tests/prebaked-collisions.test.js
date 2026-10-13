@@ -37,6 +37,29 @@ test("collision decoding rejects corrupt, mismatched and out-of-range geometry",
     vertices:new Float32Array([0,0,0]),indices:new Uint32Array([0,4,0])}]);
   assert.throws(()=>decodeCollisionData(invalid.buffer,"test"));
 });
+
+test("baked playground keeps beams, decks and endless ground analytic for whoop CCD",async()=>{
+  const {map,records}=await load("jatszoter");
+  assert.ok(records.every(r=>r.kind!=="mesh"),"Simple playground parts must not be merged into triangle soups");
+  const ground=records.find(r=>r.kind==="cuboid"&&r.halfExtents[0]>100000);
+  assert.ok(ground,"The infinite ground must stay a solid analytic box");
+  const world=new RAPIER.World({x:0,y:-9.81,z:0}),baked=new PrebakedCollisions(RAPIER,world,map,records);
+  try {
+    baked.update([-3.4,.7,-3]);world.step();
+    const ray=(p,d,length)=>world.castRay(new RAPIER.Ray({x:p[0],y:p[1],z:p[2]},{x:d[0],y:d[1],z:d[2]}),length,true);
+    assert.equal(ray([-3.4,.7,-5],[0,0,1],4),null,"Flight space below the tower stays open");
+    assert.ok(ray([-3.4,1.1,-3],[0,1,0],.5),"The deck above the aircraft remains solid");
+    assert.ok(ray([-2.3,.7,-5],[0,0,1],3),"The tower post remains solid");
+    assert.ok(ray([800,5,800],[0,-1,0],6),"Ground outside the fence remains solid");
+  }finally{baked.dispose();world.free();}
+});
+
+test("collision decoding validates analytic box dimensions",()=>{
+  const box={kind:"cuboid",min:[-1,-2,-3],max:[1,2,3],friction:.8,p:[0,0,0],q:[0,0,0,1],halfExtents:[1,2,3]};
+  assert.deepEqual(decodeCollisionData(encodeCollisionData("test",[box]).buffer,"test")[0],box);
+  for(const halfExtents of [[1,0,3],[-1,2,3],[1,2],[1,null,3]])
+    assert.throws(()=>decodeCollisionData(encodeCollisionData("test",[{...box,halfExtents}]).buffer,"test"));
+});
 test("baked construction retains clear roads, shafts, columns and hollow pipe openings",async()=>{
   const {map,records}=await load("betonudvar"),world=new RAPIER.World({x:0,y:-9.81,z:0});
   const baked=new PrebakedCollisions(RAPIER,world,map,records);
@@ -102,6 +125,8 @@ for(const id of ["liget","betonudvar"])test(`${id}: baked local physics lifts at
     for(let i=0;i<480;i++){baked.update(drone.pose.p,drone.pose.v);drone.step({roll:0,pitch:0,yaw:0,throttle:.3});}
     assert.ok(drone.pose.p[1]>start+.8,"30% lifts without an invisible baked ceiling");
     baked.update(id==="liget"?[0,2,0]:[-68,constructionHeight(-68,-30)+2,-30]);
-    assert.ok(baked.activeCount<40,`near a building: ${baked.activeCount} colliders`);
+    const active=baked.colliders.filter(c=>c.isEnabled());
+    assert.ok(active.filter(c=>c.shape.type===RAPIER.ShapeType.TriMesh).length<40,"Complex mesh workload stays local");
+    assert.ok(baked.activeCount<250,`near a building: ${baked.activeCount} analytic and mesh colliders`);
   }finally{drone.dispose();baked.dispose();world.free();}
 });
