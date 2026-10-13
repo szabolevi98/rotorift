@@ -1,4 +1,7 @@
-# Repülési hangolás – 4. konfigurációverzió
+# Repülési hangolás – 5. konfigurációverzió
+
+Az 5. verzió a [részletesebb akkumulátorszimulációt](battery-simulation.md)
+vezeti be. Kikapcsolt akkumulátorszimulációnál a lent mért alaprepülés változatlan.
 
 ## 2026. október 13. – megismételhető repülési mérés
 
@@ -58,7 +61,7 @@ keresztirányú forgást, 120/240 Hz összehasonlítást, valamint a 10 m-es és
 1000 m magas, 4 km-rel eltolt helyzetek azonos reakcióját. Az Angle/Horizon
 35°-ról 0,33–0,37 s alatt kerül 2°-on belül vízszintbe; az Acro megtartja a dőlést.
 
-A drónkonfigurációk 4-es verziót és új hash-t kaptak, hogy a javított fizikával
+A pontossági javításkor a drónkonfigurációk 4-es verziót és új hash-t kaptak, hogy a javított fizikával
 repült körök külön eredménykategóriába kerüljenek. A személyes rate-ek változatlanok.
 
 ### A fizikai becslések támpontjai és határai

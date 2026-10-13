@@ -1,7 +1,7 @@
 {
   "id": "rift-65",
   "name": "Rift 65",
-  "version": 4,
+  "version": 5,
   "category": "tinywhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.026,
@@ -26,7 +26,7 @@
     { "positionM": [-0.02298, -0.004, 0.02298], "direction": -1 },
     { "positionM": [0.02298, -0.004, 0.02298], "direction": 1 }
   ],
-  "battery": { "cells": 1, "nominalVoltage": 3.8, "capacityMah": 300 },
+  "battery": { "cells": 1, "nominalVoltage": 3.8, "capacityMah": 300, "fullCellVoltage": 4.35 },
   "linearDrag": 0.001,
   "quadraticDrag": 0.0025,
   "angularDrag": 0.0000008,
@@ -40,7 +40,7 @@
   "friction": 0.6,
   "restitution": 0.08,
   "simulation": {
-    "battery": {"idleCurrentA":0.08,"maxCurrentA":14,"resistanceOhm":0.035},
+    "battery": {"idleCurrentA":0.08,"maxCurrentA":14,"resistanceOhm":0.035,"linearCurrentFraction":0.82,"polarizationOhm":0.012,"recoverySeconds":2.5,"reserveFraction":0.07},
     "propDamageThresholdMps": 2.5,
     "propDamageScale": 0.25,
     "propwashStrength": 0.16

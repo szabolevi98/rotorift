@@ -1,7 +1,7 @@
 {
   "id": "rift-x5",
   "name": "Rift X5",
-  "version": 4,
+  "version": 5,
   "category": "freestyle",
   "tuningStatus": "initial-estimate",
   "massKg": 0.68,
@@ -26,7 +26,7 @@
     { "positionM": [-0.086, -0.02, 0.076], "direction": -1 },
     { "positionM": [0.086, -0.02, 0.076], "direction": 1 }
   ],
-  "battery": { "cells": 6, "nominalVoltage": 22.8, "capacityMah": 1300 },
+  "battery": { "cells": 6, "nominalVoltage": 22.8, "capacityMah": 1300, "fullCellVoltage": 4.2 },
   "linearDrag": 0.014,
   "quadraticDrag": 0.0135,
   "angularDrag": 0.0001,
@@ -40,7 +40,7 @@
   "friction": 0.7,
   "restitution": 0.12,
   "simulation": {
-    "battery": {"idleCurrentA":0.7,"maxCurrentA":95,"resistanceOhm":0.024},
+    "battery": {"idleCurrentA":0.7,"maxCurrentA":95,"resistanceOhm":0.024,"linearCurrentFraction":0.70,"polarizationOhm":0.010,"recoverySeconds":3,"reserveFraction":0.07},
     "propDamageThresholdMps": 3,
     "propDamageScale": 1,
     "propwashStrength": 0.22

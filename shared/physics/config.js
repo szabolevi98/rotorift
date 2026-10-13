@@ -55,7 +55,8 @@ export function validateDrone(c) {
     !Number.isInteger(c.battery.cells) ||
     c.battery.cells < 1 ||
     !positive(c.battery.nominalVoltage) ||
-    !positive(c.battery.capacityMah)
+    !positive(c.battery.capacityMah) ||
+    !Number.isFinite(c.battery.fullCellVoltage) || c.battery.fullCellVoltage < 4.1 || c.battery.fullCellVoltage > 4.4
   )
     throw Error("Invalid battery");
   for (const k of ["linearDrag", "quadraticDrag", "angularDrag"])
@@ -64,6 +65,11 @@ export function validateDrone(c) {
       !positive(c.simulation.propDamageThresholdMps) || !positive(c.simulation.propDamageScale) ||
       !positive(c.simulation.propwashStrength) || c.simulation.propwashStrength > 0.5)
     throw Error("Invalid simulation tuning");
+  const battery = c.simulation.battery;
+  if (!Number.isFinite(battery.linearCurrentFraction) || battery.linearCurrentFraction < 0 || battery.linearCurrentFraction > 1 ||
+      !positive(battery.polarizationOhm) || !positive(battery.recoverySeconds) ||
+      !Number.isFinite(battery.reserveFraction) || battery.reserveFraction < 0.02 || battery.reserveFraction > 0.2)
+    throw Error("Invalid battery simulation tuning");
   if (
     !Number.isFinite(c.restitution) ||
     c.restitution < 0 ||

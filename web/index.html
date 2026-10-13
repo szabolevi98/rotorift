@@ -389,7 +389,6 @@
       <div id="scoreboard"></div>
       <div class="hud-flight-info">
       <div id="simulation-hud" aria-live="polite">
-        <div id="battery-hud" class="hidden"></div>
         <div id="damage-hud" class="hidden"></div>
         <div id="wind-hud" class="hidden"></div>
       </div>
@@ -397,6 +396,17 @@
       </div>
       <div class="hud-bottom">
         <div class="hud-pilot-controls">
+          <div id="battery-hud" class="battery-card hidden" role="group" aria-label="Battery">
+            <div class="battery-heading"><span data-i18n="hud.batteryLabel"></span><span id="battery-remaining"></span></div>
+            <div class="battery-reading">
+              <div id="battery-gauge" role="progressbar" aria-label="Battery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+                <svg viewBox="0 0 68 42" aria-hidden="true"><rect class="battery-outline" x="3" y="5" width="55" height="32" rx="5"/><rect class="battery-terminal" x="59" y="15" width="5" height="12" rx="2"/><rect id="battery-fill" x="7" y="9" width="47" height="24" rx="2"/></svg>
+              </div>
+              <strong id="battery-percent">100%</strong>
+            </div>
+            <div id="battery-voltage" class="battery-voltage"></div>
+            <div id="battery-warning" role="status" aria-live="polite"></div>
+          </div>
           <div class="hud-control-buttons"><button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button></div>
           <span id="hud-input"></span>
         </div>

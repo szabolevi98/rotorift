@@ -296,6 +296,12 @@ az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azono
 - Javítva a motorerők világkoordinátás átadásának pontosságvesztése: ez a 65-ösön teljes gáznál kis kitérések hullámzását okozta. Helyi erő-/nyomatékösszegzés, változatlan motormodell és szabályozási paraméterek.
 - Konfigurációverzió 4, külön ranglistakategória; személyes rate-ek változatlanok. Mért hover 27,6–28,2%, utazósebesség 78,6 / 120,6 / 196,7 km/h. Feltételek és valós adatokkal nem igazolt becslések: [physics-tuning.md](physics-tuning.md).
 
+## 2026-10-13 – Akkumulátor és nagy repülési kijelző
+
+- Drónonkénti LiPo/LiHV görbe, motorokból becsült áram, mAh-integrálás, terhelési feszültségesés, RC visszaállás és merülés végi teljesítménycsökkenés. Teljesen üres akkumulátor nem ad tovább tolóerőt.
+- Nagy akkumulátorikon az ARM fölött, százalék, csomag-/cellafeszültség, becsült hátralévő idő, sárga LOW BATTERY és piros LAND NOW kártya.
+- Opcionális marad, multiplayerben házigazda által szabályozott. Konfigurációverzió 5; részletes mezők, mérések és korlátok: [battery-simulation.md](battery-simulation.md).
+
 ## 2026-10-13 – Multiplayer visszatérés és futameredmények
 
 - Kapcsolatvesztés után a szerver 60 másodpercig fenntartja a pilóta helyét. Ugyanabban a böngészőlapban az újratöltés is visszatér; külön, laponként mentett titkos kulcs azonosítja a kapcsolatot.

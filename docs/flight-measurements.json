@@ -1,12 +1,12 @@
 {
-  "measuredAt": "2026-10-13T10:09:42.465Z",
+  "measuredAt": "2026-10-13T11:35:14.756Z",
   "stepHz": 240,
   "conditions": "Acro, default Actual Rates, calm air, nominal voltage, battery/damage/propwash disabled; direct stick commands",
   "drones": [
     {
       "id": "rift-65",
-      "configHash": "7d8b1d12154a8b5f",
-      "version": 4,
+      "configHash": "2a41b5af26e3e620",
+      "version": 5,
       "massKg": 0.026,
       "thrustToWeight": 4.861601191876421,
       "hover": {
@@ -432,8 +432,8 @@
     },
     {
       "id": "rift-c3",
-      "configHash": "889202f8a65e2092",
-      "version": 4,
+      "configHash": "5f6523c012b26de0",
+      "version": 5,
       "massKg": 0.31,
       "thrustToWeight": 4.998191443885435,
       "hover": {
@@ -859,8 +859,8 @@
     },
     {
       "id": "rift-x5",
-      "configHash": "c56060be15e0abb9",
-      "version": 4,
+      "configHash": "bae5fa78c36eaf6a",
+      "version": 5,
       "massKg": 0.68,
       "thrustToWeight": 6.895724650716558,
       "hover": {

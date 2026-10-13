@@ -179,6 +179,8 @@
   "wind.strong": "Strong wind",
   "hud.changeMode": "Change flight mode",
   "hud.battery.low": "LOW BATTERY",
+  "hud.battery.cellUnit": "V/cell",
+  "hud.battery.remaining": "≈ {time} left",
   "hud.battery.critical": "LAND NOW · Throttle limited",
   "hud.propDamage": "Propeller damage · {damage}%",
   "error.hostOnly": "Only the host can change simulation options.",

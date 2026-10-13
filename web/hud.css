@@ -40,7 +40,20 @@
 #hud #simulation-hud { gap: 5px; }
 #hud #simulation-hud:not(:has(> div:not(.hidden))) { display: none; }
 #hud #simulation-hud > div { background: #11151bba; border: 1px solid #ffffff18; padding: 8px 10px; font-size: 11px; }
-#hud #battery-hud.critical { background: #551e19df; border-color: #ff826b; font-weight: 700; }
+#hud .battery-card { --battery-color: #a9e4a1; width: min(220px, 100%); box-sizing: border-box; padding: 12px 14px; border: 1px solid #ffffff30; border-left: 3px solid var(--battery-color); border-radius: 9px; background: #11151be6; text-shadow: none; }
+.battery-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; font-size: 10px; color: #c8d0da; }
+#battery-remaining { font-variant-numeric: tabular-nums; }
+.battery-reading { display: flex; align-items: center; gap: 12px; margin: 3px 0; color: var(--battery-color); }
+#battery-gauge { width: 68px; flex: none; line-height: 0; }
+#battery-gauge svg { width: 100%; height: auto; }
+.battery-outline { fill: #ffffff05; stroke: currentColor; stroke-width: 2; }
+.battery-terminal, #battery-fill { fill: currentColor; }
+#battery-percent { font-size: 32px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.battery-voltage { font-size: 11px; color: #c8d0da; font-variant-numeric: tabular-nums; }
+#battery-warning { font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--battery-color); margin-top: 8px; }
+#battery-warning:empty { display: none; }
+#hud #battery-hud.low { --battery-color: #ffda79; border-color: #ffda7966; background: #332918ee; }
+#hud #battery-hud.critical { --battery-color: #ff9c8b; background: #551e19f2; border-color: #ff826b; }
 #hud #race-hud { background: #11151bba; border: 1px solid #ffffff18; border-radius: 7px; padding: 10px 14px; font-size: 12px; }
 #hud #race-hud:empty { display: none; }
 #hud #race-hud b { display: block; font-size: 26px; line-height: 1.4; }
@@ -75,6 +88,10 @@
   #hud .telemetry { padding: 8px 10px; gap: 14px; }
   #hud .telemetry b { font-size: 21px; }
   #hud .telemetry small { font-size: 8px; }
+  #hud .battery-card { width: min(190px, 100%); padding: 8px 10px; }
+  #battery-gauge { width: 54px; }
+  #battery-percent { font-size: 27px; }
+  #battery-warning { font-size: 10px; margin-top: 5px; }
   .arm-prompt { padding: 12px 18px; max-width: min(340px, calc(100vw - 48px)); }
   .arm-prompt strong { font-size: 16px; }
   .hud-flight-info, #hud #scoreboard { top: 68px; }

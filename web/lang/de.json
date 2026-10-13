@@ -179,6 +179,8 @@
   "wind.strong": "Starker Wind",
   "hud.changeMode": "Flugmodus wechseln",
   "hud.battery.low": "LOW BATTERY · Akku schwach",
+  "hud.battery.cellUnit": "V/Zelle",
+  "hud.battery.remaining": "≈ {time} übrig",
   "hud.battery.critical": "LAND NOW · Jetzt landen! Gas begrenzt",
   "hud.propDamage": "Propellerschäden · {damage}%",
   "error.hostOnly": "Nur der Gastgeber kann die Simulationsoptionen ändern.",

@@ -1,35 +1,46 @@
 import { clamp, rotate, inverse } from "./math.js";
-import { hoverThrottle, motorThrustLimit } from "./propulsion.js";
+import { hoverThrottle } from "./propulsion.js";
 import { normalizeSimulation } from "../simulation/options.js";
+import { batteryCurrent, openCircuitCellVoltage } from "./battery.js";
 
 // Initial estimates live in each aircraft config; these effects supplement the
 // normal flight controller rather than modifying its rate settings.
 export class FlightEffects {
   constructor(config, options) {
     this.config = config;
+    // Also tolerate a catalog already loaded by an older running local server.
+    this.fullCellVoltage = config.battery.fullCellVoltage ?? 4.2;
+    this.batteryTuning = { polarizationOhm: config.simulation.battery.resistanceOhm * 0.35,
+      recoverySeconds: 3, reserveFraction: 0.07, ...config.simulation.battery };
     this.options = normalizeSimulation(options);
     this.reset();
   }
   reset() {
     this.time = 0;
-    this.usedMah = 0;
-    this.charge = 1;
-    this.voltage = this.filteredVoltage = this.config.battery.cells * 4.2;
-    this.currentA = 0;
-    this.batteryState = "normal";
-    this.criticalSeconds = 0;
-    this.throttleLimit = 1;
-    this.powerFactor = 1;
+    this.resetBattery();
     this.damage = [0, 0, 0, 0];
     this.lastImpact = [-Infinity, -Infinity, -Infinity, -Infinity];
     this.wash = 0;
   }
+  resetBattery() {
+    this.usedMah = 0;
+    this.charge = 1;
+    this.voltage = this.filteredVoltage = this.config.battery.cells * this.fullCellVoltage;
+    this.currentA = 0;
+    this.averageCurrentA = 0;
+    this.polarizationV = 0;
+    this.emptySeconds = 0;
+    this.lowSeconds = 0;
+    this.remainingSeconds = null;
+    this.batteryState = "normal";
+    this.criticalSeconds = 0;
+    this.throttleLimit = 1;
+    this.powerFactor = 1;
+  }
   setOptions(options) {
     const next = normalizeSimulation(options);
     if (next.battery !== this.options.battery) {
-      this.usedMah = 0; this.charge = 1; this.batteryState = "normal";
-      this.voltage = this.filteredVoltage = this.config.battery.cells * 4.2;
-      this.criticalSeconds = 0; this.powerFactor = 1; this.throttleLimit = 1;
+      this.resetBattery();
     }
     this.options = next;
     if (!next.propDamage) this.damage.fill(0);
@@ -37,22 +48,36 @@ export class FlightEffects {
   }
   update(dt, armed, motorThrust, velocity, quaternion) {
     this.time += dt;
-    const c = this.config, tuning = c.simulation;
+    const c = this.config;
     if (this.options.battery) {
-      const fraction = motorThrust.reduce((sum, force) => sum + (Math.max(0, force) / motorThrustLimit(c)) ** 1.1, 0) / 4;
-      this.currentA = armed ? tuning.battery.idleCurrentA + tuning.battery.maxCurrentA * fraction : 0;
+      const battery = this.batteryTuning;
+      this.currentA = batteryCurrent(c, armed, motorThrust);
       this.usedMah = Math.min(c.battery.capacityMah, this.usedMah + this.currentA * dt / 3.6);
       this.charge = Math.max(0, 1 - this.usedMah / c.battery.capacityMah);
-      const cell = 3.3 + 0.55 * Math.sqrt(this.charge) + 0.35 * this.charge;
-      this.voltage = Math.max(c.battery.cells * 2.8, cell * c.battery.cells - this.currentA * tuning.battery.resistanceOhm);
-      this.filteredVoltage += (this.voltage - this.filteredVoltage) * (1 - Math.exp(-dt / 1.5));
+      const cell = openCircuitCellVoltage(this.charge, this.fullCellVoltage);
+      const resistance = battery.resistanceOhm * (1 + 1.5 * (1 - this.charge) ** 2);
+      // One RC branch stores polarization sag; it decays after load removal.
+      this.polarizationV += (this.currentA * battery.polarizationOhm - this.polarizationV) * (1 - Math.exp(-dt / battery.recoverySeconds));
+      this.voltage = Math.max(c.battery.cells * 2.8, cell * c.battery.cells - this.currentA * resistance - this.polarizationV);
+      this.filteredVoltage += (this.voltage - this.filteredVoltage) * (1 - Math.exp(-dt / 0.6));
       const filteredCell = this.filteredVoltage / c.battery.cells;
-      this.criticalSeconds = filteredCell < 3.15 ? this.criticalSeconds + dt : 0;
-      if (this.charge <= 0.06 || this.criticalSeconds >= 2) this.batteryState = "critical";
-      else if (this.batteryState !== "critical") this.batteryState = this.charge <= 0.2 || filteredCell < 3.5 ? "low" : "normal";
-      this.powerFactor = clamp((this.voltage / c.battery.nominalVoltage) ** 2, 0.45, 1);
-      const hover = hoverThrottle(c) / this.powerFactor ** (1 / c.motor.thrustExponent);
-      this.throttleLimit = this.batteryState === "critical" ? clamp(hover * (0.55 + 0.45 * clamp(this.charge / 0.06, 0, 1)) + 0.04, 0, 1) : 1;
+      this.lowSeconds = armed && filteredCell < 3.5 ? this.lowSeconds + dt : 0;
+      this.criticalSeconds = armed && filteredCell < 3.15 ? this.criticalSeconds + dt : 0;
+      if (this.charge <= battery.reserveFraction || this.criticalSeconds >= 2) this.batteryState = "critical";
+      else if (this.batteryState !== "critical" && (this.charge <= 0.2 || this.lowSeconds >= 1.5)) this.batteryState = "low";
+      // Warnings stay latched until a fresh pack/reset; sag recovery is not charging.
+      const voltagePower = clamp((this.voltage / c.battery.nominalVoltage) ** 2, 0.25, 1.35);
+      this.emptySeconds = this.charge === 0 ? this.emptySeconds + dt : 0;
+      const targetPower = voltagePower * clamp(1 - this.emptySeconds / 2, 0, 1);
+      this.powerFactor += (targetPower - this.powerFactor) * (1 - Math.exp(-dt / 0.05));
+      const hover = hoverThrottle(c) / voltagePower ** (1 / c.motor.thrustExponent);
+      this.throttleLimit = this.batteryState === "critical" ? clamp(hover * (0.78 + 0.27 * clamp(this.charge / battery.reserveFraction, 0, 1)) + 0.015, 0, 0.58) : 1;
+      if (this.emptySeconds >= 2) { this.powerFactor = 0; this.throttleLimit = 0; }
+      if (armed) {
+        if (this.averageCurrentA === 0) this.averageCurrentA = this.currentA;
+        else this.averageCurrentA += (this.currentA - this.averageCurrentA) * (1 - Math.exp(-dt / 5));
+      }
+      this.remainingSeconds = armed && this.averageCurrentA > 0.1 ? Math.max(0, this.charge - battery.reserveFraction) * c.battery.capacityMah * 3.6 / this.averageCurrentA : null;
     }
     const localVelocity = rotate(velocity, inverse(quaternion));
     // Re-entering the rotor wake during a powered, near-vertical descent.
@@ -82,7 +107,8 @@ export class FlightEffects {
     return [speed * gust * Math.cos(direction), speed * 0.035 * Math.sin(t * 1.3 + phase), speed * gust * Math.sin(direction)];
   }
   get telemetry() {
-    return { charge: this.charge, voltage: this.voltage, currentA: this.currentA, usedMah: this.usedMah,
+    return { charge: this.charge, voltage: this.voltage, cellVoltage: this.voltage / this.config.battery.cells,
+      currentA: this.currentA, usedMah: this.usedMah, remainingSeconds: this.remainingSeconds,
       batteryState: this.batteryState, throttleLimit: this.throttleLimit, damage: [...this.damage], wash: this.wash };
   }
 }

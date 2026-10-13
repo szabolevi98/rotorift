@@ -179,6 +179,8 @@
   "wind.strong": "Erős szél",
   "hud.changeMode": "Repülési mód váltása",
   "hud.battery.low": "LOW BATTERY · Alacsony töltöttség",
+  "hud.battery.cellUnit": "V/cella",
+  "hud.battery.remaining": "≈ {time} hátra",
   "hud.battery.critical": "LAND NOW · Szállj le most! Gázkorlátozás",
   "hud.propDamage": "Propellersérülés · {damage}%",
   "error.hostOnly": "Csak a szoba házigazdája állíthatja a szimulációs opciókat.",

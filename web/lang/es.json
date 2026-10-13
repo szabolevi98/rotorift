@@ -228,6 +228,8 @@
   "hud.speed": "Velocidad",
   "hud.altitude": "Altura",
   "hud.batteryLabel": "Batería",
+  "hud.battery.cellUnit": "V/celda",
+  "hud.battery.remaining": "≈ {time} restante",
   "settings.radioPreset": "Perfil de radio",
   "settings.radioRecommend": "Aplicar perfil recomendado",
   "radioPreset.auto": "Detección automática",

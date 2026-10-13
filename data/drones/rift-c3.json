@@ -1,7 +1,7 @@
 {
   "id": "rift-c3",
   "name": "Rift C3",
-  "version": 4,
+  "version": 5,
   "category": "cinewhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.31,
@@ -26,7 +26,7 @@
     { "positionM": [-0.04525, -0.015, 0.04525], "direction": -1 },
     { "positionM": [0.04525, -0.015, 0.04525], "direction": 1 }
   ],
-  "battery": { "cells": 4, "nominalVoltage": 15.2, "capacityMah": 720 },
+  "battery": { "cells": 4, "nominalVoltage": 15.2, "capacityMah": 720, "fullCellVoltage": 4.35 },
   "linearDrag": 0.014,
   "quadraticDrag": 0.012,
   "angularDrag": 0.00006,
@@ -40,7 +40,7 @@
   "friction": 0.7,
   "restitution": 0.06,
   "simulation": {
-    "battery": {"idleCurrentA":0.35,"maxCurrentA":38,"resistanceOhm":0.025},
+    "battery": {"idleCurrentA":0.35,"maxCurrentA":38,"resistanceOhm":0.025,"linearCurrentFraction":0.50,"polarizationOhm":0.012,"recoverySeconds":3,"reserveFraction":0.07},
     "propDamageThresholdMps": 3,
     "propDamageScale": 0.4,
     "propwashStrength": 0.28

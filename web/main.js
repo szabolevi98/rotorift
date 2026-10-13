@@ -1104,8 +1104,17 @@ function hud() {
   $("#throttle").textContent = Math.round(Math.min(input.throttle, flight.physics.effects.throttleLimit) * 100);
   const effects = flight.physics.effects, state = effects.telemetry;
   visible("#battery-hud", effects.options.battery);
-  $("#battery-hud").textContent = `${t("hud.batteryLabel")} · ${state.voltage.toFixed(1)} V · ${Math.round(state.charge * 100)}%` +
-    (state.batteryState !== "normal" ? " · " + t("hud.battery." + state.batteryState) : "");
+  const chargePercent = Math.round(state.charge * 100);
+  $("#battery-percent").textContent = chargePercent + "%";
+  $("#battery-fill").setAttribute("width", (47 * state.charge).toFixed(2));
+  $("#battery-gauge").setAttribute("aria-valuenow", String(chargePercent));
+  $("#battery-gauge").setAttribute("aria-label", t("hud.batteryLabel"));
+  $("#battery-hud").setAttribute("aria-label", t("hud.batteryLabel"));
+  $("#battery-voltage").textContent = `${state.voltage.toFixed(1)} V · ${state.cellVoltage.toFixed(2)} ${t("hud.battery.cellUnit")}`;
+  const remaining = state.remainingSeconds === null ? null : Math.min(5999, Math.ceil(state.remainingSeconds));
+  $("#battery-remaining").textContent = remaining === null ? "" : t("hud.battery.remaining", {time: `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`});
+  const batteryWarning = state.batteryState !== "normal" ? t("hud.battery." + state.batteryState) : "";
+  if ($("#battery-warning").textContent !== batteryWarning) $("#battery-warning").textContent = batteryWarning;
   $("#battery-hud").classList.toggle("low", state.batteryState === "low");
   $("#battery-hud").classList.toggle("critical", state.batteryState === "critical");
   visible("#damage-hud", effects.options.propDamage && Math.max(...state.damage) > 0);

@@ -35,10 +35,10 @@ for (const c of drones) test(`${c.id}: load drains the configured battery, warni
   assert.ok(low && critical);
   assert.equal(effects.charge, 0);
   assert.equal(effects.usedMah, c.battery.capacityMah);
-  const depletedLimit = effects.throttleLimit;
   effects.update(5, false, [0,0,0,0], [0,0,0], q);
   assert.equal(effects.batteryState, "critical", "landing warning cannot disappear when voltage rebounds");
-  assert.ok(depletedLimit < hoverThrottle(c) + 0.04);
+  assert.equal(effects.throttleLimit, 0, "an exhausted pack cannot keep producing thrust");
+  assert.equal(effects.powerFactor, 0);
   effects.reset();
   assert.equal(effects.charge, 1); assert.equal(effects.throttleLimit, 1); assert.equal(effects.batteryState,"normal");
   const disabled = new FlightEffects(c);
