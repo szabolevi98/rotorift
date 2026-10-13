@@ -1,7 +1,7 @@
 {
   "id": "rift-c3",
   "name": "Rift C3",
-  "version": 3,
+  "version": 4,
   "category": "cinewhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.31,

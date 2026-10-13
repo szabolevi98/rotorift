@@ -289,6 +289,13 @@ Hardveres rádióteszt még nem történt.
 A fizikai JSON-kben a `tuningStatus: initial-estimate` szándékosan megmarad:
 az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azonos repülési karaktert.
 
+## 2026-10-13 – Három drón repülési mérése
+
+- Újrafuttatható `npm run physics:measure`: valódi Rapier/game-controller mérés, JSON-jegyzőkönyv dátummal és konfiguráció-hash-sel. Lebegés, gyorsulás, közel szinttartó utazósebesség, roll/pitch/yaw válasz és fékezés, kifutás, Angle/Horizon visszaszintezés.
+- 81 bot/gáz/tengely részpróba, mindkét forgásirány; további 120/240 Hz és távoli koordinátás összehasonlítás. Az új tesztek a normál tesztcsomag részei.
+- Javítva a motorerők világkoordinátás átadásának pontosságvesztése: ez a 65-ösön teljes gáznál kis kitérések hullámzását okozta. Helyi erő-/nyomatékösszegzés, változatlan motormodell és szabályozási paraméterek.
+- Konfigurációverzió 4, külön ranglistakategória; személyes rate-ek változatlanok. Mért hover 27,6–28,2%, utazósebesség 78,6 / 120,6 / 196,7 km/h. Feltételek és valós adatokkal nem igazolt becslések: [physics-tuning.md](physics-tuning.md).
+
 ## 2026-10-13 – Multiplayer visszatérés és futameredmények
 
 - Kapcsolatvesztés után a szerver 60 másodpercig fenntartja a pilóta helyét. Ugyanabban a böngészőlapban az újratöltés is visszatér; külön, laponként mentett titkos kulcs azonosítja a kapcsolatot.

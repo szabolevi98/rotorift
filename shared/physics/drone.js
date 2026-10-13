@@ -167,6 +167,8 @@ export class DronePhysics {
       idle = max * 0.012;
     // Preserve attitude authority when collective throttle reaches a motor limit.
     const targets = mixThrust(this.mixer, demand, max);
+    let totalThrust = 0;
+    const motorTorque = [0, 0, 0];
     for (let i = 0; i < 4; i++) {
       const m = c.motors[i],
         r = m.positionM;
@@ -178,28 +180,17 @@ export class DronePhysics {
       this.motorThrust[i] +=
         (target - this.motorThrust[i]) * (1 - Math.exp(-dt / tau));
       const thrust = this.motorThrust[i] * this.effects.motorEfficiency(i);
-      const f = rotate([0, thrust, 0], q),
-        rp = rotate(r, q),
-        p = b.translation();
-      b.addForceAtPoint(
-        vector(f),
-        { x: p.x + rp[0], y: p.y + rp[1], z: p.z + rp[2] },
-        true,
-      );
-      b.addTorque(
-        vector(
-          rotate(
-            [
-              0,
-              thrust * m.direction * c.motor.yawTorquePerNewtonM,
-              0,
-            ],
-            q,
-          ),
-        ),
-        true,
-      );
+      totalThrust += thrust;
+      // Compute r × F about the centre of mass in local coordinates. Using
+      // world-space motor points loses precision to Rapier's float32 values
+      // far from the origin, causing tinywhoop rate jitter at high throttle.
+      // Sum before handing off to Rapier so balanced motors cancel precisely.
+      motorTorque[0] -= (r[2] - c.centerOfMassM[2]) * thrust;
+      motorTorque[1] += thrust * m.direction * c.motor.yawTorquePerNewtonM;
+      motorTorque[2] += (r[0] - c.centerOfMassM[0]) * thrust;
     }
+    b.addForce(vector(rotate([0, totalThrust, 0], q)), true);
+    b.addTorque(vector(rotate(motorTorque, q)), true);
     const velocity = array(b.linvel()), wind = this.effects.wind(array(b.translation())),
       airVelocity = velocity.map((v, i) => v - wind[i]),
       drag = c.linearDrag + c.quadraticDrag * length(airVelocity);

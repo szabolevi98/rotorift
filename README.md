@@ -4,8 +4,9 @@ Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfi
 Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
 Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
 VPS-telepítés és frissítés: [DEPLOY.md](DEPLOY.md).
-Az első **játszható prototípus** elkészült; a fizikai konfigurációk még kezdeti
-becslések, valódi rádiós és repülési hangolás szükséges.
+Az első **játszható prototípus** elkészült; a három drón alapfizikája automatizált
+repülési méréssel ellenőrzött. A konkrét valós gépekkel való pontos egyezéshez
+repülési logokkal végzett hangolás, a rádiókhoz hardveres kompatibilitási próba szükséges.
 
 ## Indítás
 
@@ -36,6 +37,9 @@ ha a felhasználónak erre van jogosultsága. A saját elérés a `.env`-ben ál
 Induláskor elérhetetlen adatbázissal is lehet repülni; online rekord ekkor nem menthető.
 
 Fejlesztés: `npm run dev`. Ellenőrzés: `npm test`.
+Repülési mérés: `npm run physics:measure`; az eredmény a
+`docs/flight-measurements.json` fájlba kerül. A feltételek, kategóriánkénti
+eredmények és a modell becslési határai: [physics-tuning.md](docs/physics-tuning.md).
 Úthálózat vagy munkaterületi elrendezés módosítása után: `npm run maps:build`.
 A burkolatok és szegélyek metszése előre készül el; a játékban nincs poligonműveleti függőség.
 A `npm run showcase:build` ezt automatikusan elvégzi a bemutató csomagolása előtt.
@@ -64,7 +68,7 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 
 Billentyűzeten a **Space** élesít/kikapcsol, **W/S** növeli/csökkenti a megmaradó
 gázértéket, a **nyilak** döntik a drónt, **A/D** fordítanak.
-**H** becsült lebegési gázt állít (nem magasságtartás), **Shift** nagyobb botkitérést ad.
+**H** becsült lebegési gázt állít (nem magasságtartás), **Shift** finomabb irányításhoz csökkenti a botkitérést.
 **R** reset, **V** kameranézet, **M** helyi repülési mód váltás, **Esc** menü/folytatás.
 Élesítéskor a gáz legyen alacsony. Minden alapbillentyű átállítható a beállításokban.
 

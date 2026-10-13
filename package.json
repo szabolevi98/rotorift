@@ -10,7 +10,8 @@
     "dev": "node --watch server/index.js",
     "test": "node --test",
     "showcase:build": "node showcase/build.mjs",
-    "maps:build": "node scripts/build-map-surfaces.mjs"
+    "maps:build": "node scripts/build-map-surfaces.mjs",
+    "physics:measure": "node scripts/measure-flight.mjs docs/flight-measurements.json"
   },
   "engines": {
     "node": ">=22"

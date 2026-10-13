@@ -1,7 +1,7 @@
 {
   "id": "rift-65",
   "name": "Rift 65",
-  "version": 3,
+  "version": 4,
   "category": "tinywhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.026,
