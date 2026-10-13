@@ -28,6 +28,27 @@ const $ = (s) => document.querySelector(s),
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
+const fpsLabel = $("#hud-fps");
+let fpsSince = null, fpsFrames = 0;
+function updateFps(now, rendering) {
+  if (!rendering || document.hidden) {
+    fpsSince = null;
+    fpsFrames = 0;
+    if (fpsLabel.textContent !== "— FPS") fpsLabel.textContent = "— FPS";
+    return;
+  }
+  if (fpsSince === null) { fpsSince = now; return; }
+  fpsFrames++;
+  const elapsed = now - fpsSince;
+  if (elapsed >= 500) {
+    // Real render cadence, independent of the capped simulation timestep.
+    const label = `${Math.round(fpsFrames * 1000 / elapsed)} FPS`;
+    if (fpsLabel.textContent !== label) fpsLabel.textContent = label;
+    fpsSince = now;
+    fpsFrames = 0;
+  }
+}
+document.addEventListener("visibilitychange", () => updateFps(performance.now(), false));
 let fullscreen, radioGuide;
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
@@ -1247,6 +1268,7 @@ function frame(now) {
     radioGuide.render(controller, now);
   }
   if (playing && !paused) flight.render(dt);
+  updateFps(now, playing && !paused);
   requestAnimationFrame(frame);
 }
 function bindUI() {
