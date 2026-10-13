@@ -99,11 +99,15 @@ function createRift65() {
     for(const end of [-1,1])box(board,.7,.12,.22,materials.silver,'SMD_solder_end',x,11.13,z+end*.5);
   }
   for(const sx of [-1,1])for(const sz of [-1,1]){
+    const gap=[Math.PI/2,7*Math.PI/6,11*Math.PI/6].reduce((best,a)=>-sx*Math.cos(a)-sz*Math.sin(a)>-sx*Math.cos(best)-sz*Math.sin(best)?a:best),ax=Math.cos(gap),az=Math.sin(gap);
     for(let phase=0;phase<3;phase++){
-      const px=sx*(7+phase*1.2),pz=sz*9;
-      box(board,1.05,.15,1.4,materials.gold,'Motor_phase_pad',px,11.07,pz);
-      const solder=mesh(board,new THREE.SphereGeometry(.55,12,8),materials.silver,'Motor_phase_solder',px,11.28,pz);solder.scale.y=.5;
-      tube(board,[[px,11.5,pz],[sx*17,8.5,sz*(13+phase*.8)],[sx*(c-4.5),7.8,sz*c+phase*.65],[sx*c,8.15,sz*c]],.28,materials.black,'Motor_phase_wire');
+      const px=sx*(7+phase*1.2),pz=sz*9,t=(phase-1)*.65,mx=sx*c,mz=sz*c;
+      // Bottom-side pads: descend in the open centre, pass below the moulded
+      // bridges/duct wall, then rise beside the stator above its motor seat.
+      box(board,1.05,.15,1.4,materials.gold,'Motor_phase_pad',px,10.125,pz);
+      const solder=mesh(board,new THREE.SphereGeometry(.55,12,8),materials.silver,'Motor_phase_solder',px,9.92,pz);solder.scale.y=.5;
+      tube(board,[[px,9.65,pz],[px,5.2,pz],[mx+ax*7-az*t,5.2,mz+az*7+ax*t],
+        [mx+ax*5.9-az*t,7.85,mz+az*5.9+ax*t],[mx+ax*3.15-az*t,7.85,mz+az*3.15+ax*t]],.28,materials.black,'Motor_phase_wire');
     }
   }
   // Alsó oldali tápforrasztás: a vezetékek az AIO és a váz között haladnak.

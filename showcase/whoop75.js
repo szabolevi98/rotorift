@@ -29,7 +29,10 @@ function createRift75(){
   for(let k=0;k<3;k++){const a=k*2*Math.PI/3+Math.PI/6,dx=Math.cos(a),dz=Math.sin(a);rod(frame,[x+dx*4.2,7.6,z+dz*4.2],[x+dx*23.8,9.4,z+dz*23.8],.88,materials.frame,'Triangular_motor_support');rod(frame,[x+dx*8,7.8,z+dz*8],[x+Math.cos(a+.17)*23.6,9.4,z+Math.sin(a+.17)*23.6],.6,materials.frame,'Motor_support_brace');screw(frame,x+dx*3.3,8,z+dz*3.3);}
   rod(frame,[sx*13,8,sz*13],[x-sx*16,8,z-sz*16],1.4,materials.frame,'Duct_to_AIO_bridge');
   for(const sign of [-1,1]){const a=Math.atan2(sx,sz)+sign*.5,foot=shape(5.1,10,1.5);foot.holes.push(new THREE.Path(shape(2.6,6.8,.8).getPoints(12)));const m=extrude(frame,foot,1.2,materials.frame,'Paired_landing_loop',x+Math.sin(a)*23.9,4.5,z+Math.cos(a)*23.9);m.rotation.y=a;}
-  for(let i=0;i<3;i++)wire(board,[[sx*(7+i*1.2),11.5,sz*9],[sx*18,8.5,sz*(17+i*.7)],[x,8.9,z]],.32,materials.black,'Motor_phase_wire');
+  const gap=[Math.PI/2,7*Math.PI/6,11*Math.PI/6].reduce((best,a)=>-sx*Math.cos(a)-sz*Math.sin(a)>-sx*Math.cos(best)-sz*Math.sin(best)?a:best),ax=Math.cos(gap),az=Math.sin(gap);
+  for(let i=0;i<3;i++){const px=sx*(7+i*1.2),pz=sz*9,t=(i-1)*.8;wire(board,[[px,9.65,pz],[px,5.6,pz],
+    [x+ax*8-az*t,5.6,z+az*8+ax*t],[x+ax*7.2-az*t,9,z+az*7.2+ax*t],
+    [x+ax*4.7-az*t,9,z+az*4.7+ax*t]],.32,materials.black,'Motor_phase_wire');}
  }
  for(const [x,z]of mounts)ring(frame,2.8,.8,2.8,materials.frame,'AIO_mount_post',x,8,z);
  for(const side of [-1,1]){wire(frame,[[side*13,8,-13],[side*18,8,0],[side*13,8,13]],1.1,materials.frame,'AIO_frame_rail');const loop=shape(16,10,2);loop.holes.push(new THREE.Path(shape(13.1,7.6,1.3).getPoints(12)));extrude(frame,loop,2.4,materials.frame,'580mAh_battery_holder',0,2.3,side*14);for(const sx of [-1,1])rod(frame,[sx*7,6.4,side*14],[sx*13,8,side*13],.8,materials.frame,'Battery_holder_support');}

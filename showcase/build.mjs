@@ -40,6 +40,12 @@ const html = read('template.html')
   .replace('/* DEMO_STYLE */', () => read('style.css'))
   .replace('/* DEMO_SCRIPT */', () => script.replace(/<\/script/gi, '<\\/script'));
 writeFileSync(join(root, 'index.html'), html);
+const studyScript=[three,addon('vendor/OrbitControls.js','OrbitControls'),
+  read('../shared/visual/drone-rendering.js').replace(/^export /gm,''),
+  read('../shared/visual/battery-labels.js').replace(/^export /gm,''),
+  read('../shared/visual/drone-colors.js').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,''),
+  read('whoop65.js'),read('whoop75.js'),read('canopy-studies.js')].join('\n');
+writeFileSync(join(root,'canopy-lab.html'),read('canopy-lab.template.html').replace('/* CANOPY_LAB_SCRIPT */',()=>studyScript.replace(/<\/script/gi,'<\\/script')));
 const catalog = await loadCatalog();
 // The showcase stays English; use the game's dictionary as the name source.
 const english = JSON.parse(read('../web/lang/en.json'));
