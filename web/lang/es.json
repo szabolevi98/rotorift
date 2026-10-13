@@ -1,4 +1,9 @@
 {
+  "pause.title": "Pausa",
+  "pause.solo": "Tu vuelo está en pausa.",
+  "pause.online": "La sesión multijugador sigue en marcha.",
+  "pause.back": "Volver",
+  "pause.exit": "Volver al menú principal",
   "hud.paused": "Vuelo en pausa y dron desarmado.",
   "error.raceUnavailable": "Las contrarrelojes y los checkpoints están pausados en este mapa hasta terminar su diseño. El vuelo libre está disponible.",
   "nav.fly": "Un jugador",

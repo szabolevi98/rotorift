@@ -452,6 +452,18 @@
         </div>
       </div>
     </div>
+    <section id="pause-menu" class="hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title" aria-describedby="pause-note">
+      <div class="pause-shell">
+        <header class="pause-heading"><div><span class="eyebrow">ROTORIFT / FLIGHT</span><h1 id="pause-title"></h1><p id="pause-description"></p></div><button id="pause-back" class="secondary" type="button" data-i18n="pause.back"></button></header>
+        <div id="pause-home"><p id="pause-note"></p><div class="pause-actions">
+          <button id="pause-resume" class="primary" type="button"><span data-i18n="action.resume"></span><kbd>ESC</kbd></button>
+          <button id="pause-reset" class="secondary" type="button" data-i18n="key.reset"></button>
+          <button id="pause-settings" class="secondary" type="button" data-i18n="nav.settings"></button>
+          <button id="pause-exit" class="text-button" type="button" data-i18n="pause.exit"></button>
+        </div></div>
+        <div id="pause-settings-slot"></div>
+      </div>
+    </section>
     <div id="notice" role="status" class="hidden"></div>
     <div id="boot" role="status">
       <div class="loading-card">

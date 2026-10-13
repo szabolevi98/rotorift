@@ -94,6 +94,9 @@ export class Controller {
       this.clear();
       this.action("lostFocus");
     });
+    window.document?.addEventListener("visibilitychange", () => {
+      if (window.document.hidden) { this.clear(); this.action("lostFocus"); }
+    });
   }
   clear() {
     this.pressed.clear();

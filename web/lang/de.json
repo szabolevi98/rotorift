@@ -1,4 +1,9 @@
 {
+  "pause.title": "Pause",
+  "pause.solo": "Dein Flug ist pausiert.",
+  "pause.online": "Die Multiplayer-Sitzung läuft weiter.",
+  "pause.back": "Zurück",
+  "pause.exit": "Zurück zum Hauptmenü",
   "hud.paused": "Flug pausiert, die Drohne ist entschärft.",
   "error.raceUnavailable": "Zeitrennen und Checkpoints sind auf dieser Karte pausiert, bis das Layout fertig ist. Freier Flug ist verfügbar.",
   "nav.fly": "Einzelspieler",

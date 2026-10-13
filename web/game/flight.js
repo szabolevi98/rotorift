@@ -16,6 +16,7 @@ import { RemoteCollisions } from "./remote-collisions.js";
 import { normalizeSimulation } from "../../shared/simulation/options.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
+import { FpvPropellers } from "../../shared/visual/fpv-propellers.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 export class Flight {
   constructor(canvas) {
@@ -96,6 +97,7 @@ export class Flight {
     if (version !== this.loadVersion) { this.removeModel(visual); return false; }
     this.visual = visual;
     this.propVisual = new PropellerVisual(visual,config);
+    this.fpvProps = new FpvPropellers(visual,config,this.propVisual);
     this.setColor(color);
     this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z));
     this.scene.add(this.visual);
@@ -221,7 +223,7 @@ export class Flight {
   }
   removeModel(model) {
     if (!model) return;
-    if(model===this.visual){this.propVisual?.dispose();this.propVisual=null;}
+    if(model===this.visual){this.fpvProps?.dispose();this.fpvProps=null;this.propVisual?.dispose();this.propVisual=null;}
     for(const remote of this.remotes.values())if(remote.model===model)remote.propVisual?.dispose();
     this.scene.remove(model);
     this.parkShadows?.releaseModel(model);
@@ -233,6 +235,7 @@ export class Flight {
     for (const material of materials) material.dispose();
   }
   render(dt) {
+    this.fpvProps?.update(this.view,this.physics.motorThrust);
     const w = innerWidth,
       h = innerHeight;
     if (

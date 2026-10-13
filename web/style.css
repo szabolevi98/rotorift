@@ -893,6 +893,35 @@ footer {
   color: var(--muted);
   font-size: 13px;
 }
+html.pause-menu-open { overflow: hidden; }
+#pause-menu { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 24px; background: #090c126b; color-scheme: dark; overflow-y: auto; }
+.pause-shell { width: min(440px, 100%); max-height: calc(100svh - 48px); overflow-y: auto; background: #14181fed; border: 1px solid #ffffff20; border-radius: 14px; padding: 30px; box-shadow: 0 24px 80px #0006; }
+.pause-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+.pause-heading h1 { font-size: 30px; margin: 12px 0 8px; }
+#pause-description, #pause-note { color: var(--muted); font-size: 12px; line-height: 1.6; }
+#pause-description { margin: 0; }
+#pause-note { margin: 20px 0; }
+.pause-actions { display: grid; gap: 10px; }
+.pause-actions button { min-height: 48px; width: 100%; padding: 14px 18px; border-radius: 7px; text-align: left; }
+.pause-actions .primary { display: flex; align-items: center; justify-content: space-between; background: var(--orange); color: #14181f; font-weight: 750; }
+.pause-actions kbd { padding: 3px 6px; font-size: 10px; border: 1px solid #14181f40; border-radius: 3px; }
+#pause-back, #pause-settings-slot { display: none; }
+.pause-settings-open .pause-shell { width: min(1050px, 100%); }
+.pause-settings-open #pause-home { display: none; }
+.pause-settings-open #pause-back, .pause-settings-open #pause-settings-slot { display: block; }
+#pause-settings-slot { margin-top: 22px; }
+#pause-menu #settings-panel > .intro { display: none; }
+#pause-menu .card { background: #ffffff03; border-color: var(--line); }
+#pause-menu select, #pause-menu input:not([type="checkbox"]):not([type="range"]) { background: #1b1e24; color: var(--ink); border-color: var(--line); }
+#pause-menu option { background: #1b1e24; }
+#pause-menu button:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+@media (max-width: 800px), (max-height: 550px) {
+  #pause-menu { padding: 12px; }
+  .pause-shell { padding: 20px; max-height: calc(100svh - 24px); }
+  .pause-heading h1 { font-size: 24px; margin-top: 8px; }
+  .pause-actions button { min-height: 42px; padding: 11px 14px; }
+  #pause-menu .settings-grid { grid-template-columns: 1fr; }
+}
 #boot img {
   width: 52px;
 }

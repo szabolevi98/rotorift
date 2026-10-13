@@ -1,5 +1,10 @@
 {
   "hud.paused": "Repülés szüneteltetve, a drón kikapcsolt.",
+  "pause.title": "Szünet",
+  "pause.solo": "A repülés szünetel.",
+  "pause.online": "Multiplayerben a játék közben tovább fut.",
+  "pause.back": "Vissza",
+  "pause.exit": "Vissza a főmenübe",
   "error.raceUnavailable": "Az időmérő és a checkpointok ezen a pályán szünetelnek, amíg elkészül a végleges elrendezés. Szabad repülés elérhető.",
   "nav.fly": "Egyjátékos",
   "nav.settings": "Beállítások",

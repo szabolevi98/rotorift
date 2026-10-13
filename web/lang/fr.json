@@ -1,4 +1,9 @@
 {
+  "pause.title": "Pause",
+  "pause.solo": "Votre vol est en pause.",
+  "pause.online": "La session multijoueur continue.",
+  "pause.back": "Retour",
+  "pause.exit": "Retour au menu principal",
   "hud.paused": "Vol en pause, drone désarmé.",
   "error.raceUnavailable": "Les contre-la-montre et les checkpoints sont suspendus sur cette carte jusqu’à la fin de son aménagement. Le vol libre reste disponible.",
   "nav.fly": "Solo",

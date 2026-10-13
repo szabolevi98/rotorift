@@ -11,3 +11,8 @@ export function simulationView(context, preferences, room, pilotId) {
   };
 }
 export const activeMenuTab = (panel, roomKind) => ["lobby", "results"].includes(panel) ? roomKind === "hotlap" ? "fly" : "multiplayer" : panel;
+export function flightSimulationActive(playing, paused, room, pilotId) {
+  if (!playing) return false;
+  if (!room) return !paused;
+  return room.phase === "flying" && !room.players.find(p=>p.id===pilotId)?.finished;
+}

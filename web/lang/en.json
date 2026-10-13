@@ -1,4 +1,9 @@
 {
+  "pause.title": "Paused",
+  "pause.solo": "Your flight is paused.",
+  "pause.online": "The multiplayer session keeps running.",
+  "pause.back": "Back",
+  "pause.exit": "Return to main menu",
   "hud.paused": "Flight paused and the drone disarmed.",
   "error.raceUnavailable": "Time trials and checkpoints are paused on this map until its layout is finished. Free flight is available.",
   "nav.fly": "Singleplayer",

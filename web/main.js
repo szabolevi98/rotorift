@@ -6,6 +6,7 @@ import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { FlightHelp } from "./game/flight-help.js";
+import { PauseMenu } from "./game/pause-menu.js";
 import { armPrompt } from "./game/arm-prompt.js";
 import { FpvOsd } from "./game/fpv-osd.js";
 import { PropellerHud } from "./game/propeller-hud.js";
@@ -14,7 +15,7 @@ import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
 import { RADIO_PRESETS } from "./input/radio-profiles.js";
-import { simulationView, activeMenuTab } from "./menu-state.js";
+import { simulationView, activeMenuTab, flightSimulationActive } from "./menu-state.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
 import { newLap, advanceLap } from "/shared/race/gates.js";
@@ -54,7 +55,8 @@ function updateFps(now, rendering) {
   }
 }
 document.addEventListener("visibilitychange", () => updateFps(performance.now(), false));
-let fullscreen, radioGuide;
+let fullscreen, radioGuide, pauseMenu, pauseRenderNeeded = false;
+window.addEventListener("resize", () => { if (playing && paused) pauseRenderNeeded = true; });
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
   [$("#stick-right-dot"), $("#stick-right-stem")],
@@ -225,24 +227,26 @@ function refreshSessionBanner() {
     `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
 }
 function pause() {
-  if (!playing) return;
+  if (!playing || paused) return;
   flightHelp?.setOpen(false);
   void fullscreen?.enterMenu();
   paused = true;
-  flight.active = false;
+  flight.active = flightSimulationActive(playing, paused, room, network.id);
   flight.physics.armed = false;
   flight.mute();
   lap.invalid = true;
   controller.clear();
-  visible("#menu", true);
-  visible("#hud", false);
-  panel(room ? "lobby" : "fly");
-  notice(t(isTimedSession(session) && canRace(flight.map) ? "hud.interrupted" : "hud.paused"));
+  visible("#menu", false);
+  visible("#hud", true);
+  pauseMenu?.setOpen(true);
+  pauseRenderNeeded = true;
+  refreshSessionBanner();
 }
 function resume() {
   if (!playing) return;
   if (room && (room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished)) { showResults(); return; }
   flightHelp?.setOpen(false);
+  pauseMenu?.setOpen(false);
   void fullscreen?.enterFlight();
   paused = false;
   controller.bindings.reset();
@@ -284,17 +288,16 @@ function action(kind, currentInput = input) {
   if (kind === "hover" && !controller.usingRadio)
     controller.keyboard.throttle = hoverThrottle(flight.config);
   if (kind === "view") flight.cycleView();
-  if (kind === "reset") {
-    controller.clear();
-    lap = newLap();
-    if (room) network.send("reset");
-    else flight.reset();
-  }
+  if (kind === "reset") resetAircraft();
   if (kind === "mode") {
     const next = FLIGHT_MODES[(FLIGHT_MODES.indexOf(flight.physics.mode) + 1) % FLIGHT_MODES.length];
     if (room) { if (room.phase === "flying") network.send("mode", {mode: next}); }
     else { $("#flight-mode").value = next; flight.physics.mode = next; lap.invalid = true; lap.bestMs = lap.lastMs = null; }
   }
+}
+function resetAircraft() {
+  controller.clear(); lap = newLap();
+  if (room) network.send("reset"); else flight.reset();
 }
 function recordKey(
   m = flight.map,
@@ -720,6 +723,7 @@ function createRoom() {
 }
 function endFlight() {
   if (room) { network.send("leave"); return; }
+  pauseMenu?.setOpen(false);
   void fullscreen?.enterMenu();
   playing = false; paused = true; flight.active = false;
   if (flight.physics) flight.physics.armed = false;
@@ -787,6 +791,7 @@ function renderResults() {
 }
 function showResults() {
   if (!room) return;
+  pauseMenu?.setOpen(false);
   flightHelp?.setOpen(false); void fullscreen?.enterMenu();
   paused = true; flight.active = false;
   if (flight.physics) flight.physics.armed = false;
@@ -797,6 +802,7 @@ async function loadRoom(r) {
   const key = roomKey(r);
   if (loadingRoom === key) return;
   loadingRoom = key;
+  pauseMenu?.setOpen(false);
   playing = false;
   paused = true;
   flight.active = false;
@@ -862,6 +868,7 @@ function receive(m) {
     renderRooms();
   }
   if (m.type === "left") {
+    pauseMenu?.setOpen(false);
     const destination = nextLaunch || room?.kind === "hotlap" ? "fly" : "multiplayer";
     clearRoomRequest();
     void fullscreen?.enterMenu();
@@ -904,6 +911,8 @@ function receive(m) {
       room = null;
       refreshSimulationControls();
       playing = false;
+      pauseMenu?.setOpen(false);
+      visible("#menu", true); visible("#hud", false);
       loadingRoom = loadedRoom = null;
       panel("multiplayer");
     }
@@ -926,6 +935,7 @@ function receive(m) {
     const resultKey = roomKey(room) + ":" + room.phase;
     if (room.phase === "lobby") {
       if (previousPhase !== "lobby" || previousCode !== room.code) {
+        pauseMenu?.setOpen(false);
         void fullscreen?.enterMenu();
         playing = false; paused = true; flight.active = false;
         if (flight.physics) flight.physics.armed = false;
@@ -945,7 +955,7 @@ function receive(m) {
         const finished = room.players.find(
           (p) => p.id === network.id,
         )?.finished;
-        flight.active = room.phase === "flying" && !paused && !finished;
+        flight.active = flightSimulationActive(playing, paused, room, network.id);
         if (finished) {
           flight.physics.armed = false;
           flight.mute();
@@ -1092,7 +1102,7 @@ function hud() {
     lowThrottle: input.throttle <= 0.06, binding: armBinding,
     control: armBinding ? bindingLabel(armBinding) : controller.keys.arm === "Space" ? t("hud.spaceKey") : keyName(controller.keys.arm),
   }, t);
-  visible("#arm-prompt", !!prompt);
+  visible("#arm-prompt", !!prompt && !paused);
   if (prompt) for (const field of ["title", "detail"]) {
     const element = $("#arm-prompt-" + field);
     if (element.textContent !== prompt[field]) element.textContent = prompt[field];
@@ -1233,17 +1243,18 @@ function frame(now) {
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
   input = controller.poll(dt);
+  const onlineLive = !!room && flightSimulationActive(playing, paused, room, network.id);
   if (playing && !paused) updateSticks(input);
   if (
     playing &&
-    !paused &&
+    (!paused || onlineLive) &&
     flight.active &&
     (!room ||
       (room.phase === "flying" &&
         !room.players.find((p) => p.id === network.id)?.finished))
   ) {
     flight.physics.effects.windTime = room ? Math.max(0, (network.now - room.startsAt) / 1000) : simTime / 1000;
-    flight.step(dt, input, (previous, current, step) => {
+    flight.step(dt, paused ? {roll:0,pitch:0,yaw:0,throttle:0} : input, (previous, current, step) => {
       const previousTime = simTime;
       simTime += step * 1000;
       if (!room && session === "time" && canRace(flight.map)) {
@@ -1288,9 +1299,10 @@ function frame(now) {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
     radioGuide.render(controller, now);
   }
-  if (playing && !paused) flight.render(dt);
+  if (playing && (!paused || onlineLive || pauseRenderNeeded)) { flight.render(dt); pauseRenderNeeded = false; }
+  pauseMenu?.update();
   fpvOsd.update(playing && !paused && !flight.chase, flight?.cameraRig.quaternion);
-  updateFps(now, playing && !paused);
+  updateFps(now, playing && (!paused || onlineLive));
   requestAnimationFrame(frame);
 }
 function bindUI() {
@@ -1313,6 +1325,15 @@ function bindUI() {
   $("#create-room").onclick = createRoom;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;
+  pauseMenu = new PauseMenu(t, {
+    resume,
+    reset: () => { resetAircraft(); resume(); },
+    leave: endFlight,
+  }, () => ({
+    online: !!room,
+    description: `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : ""),
+    canReset: !room || (room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
+  }));
   flightHelp = new FlightHelp(t, flightHelpContent);
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
   for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"]])
@@ -1440,6 +1461,7 @@ function bindUI() {
     $("#angle-output").textContent = cameraSettings.angle + "°";
     $("#fov-output").textContent = cameraSettings.fov + "°";
     flight.setCameraSettings(cameraSettings.angle, cameraSettings.fov);
+    pauseRenderNeeded = true;
     flight.soundEnabled = cameraSettings.sound;
     fpvOsd.setSettings(cameraSettings);
     $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
@@ -1470,6 +1492,7 @@ function bindUI() {
     updateStatus();
     refreshSessionBanner();
     flightHelp?.update(true);
+    pauseMenu?.update();
     inputSignature = "";
     renderInputUI();
     updateInputText();

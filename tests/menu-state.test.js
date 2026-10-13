@@ -1,9 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activeMenuTab, simulationView } from "../web/menu-state.js";
+import { activeMenuTab, simulationView, flightSimulationActive } from "../web/menu-state.js";
 
 const defaults = { battery: false, propwash: true, wind: "light" };
 const room = { host: "host", phase: "lobby", kind: "race", simulation: { battery: true, propwash: false, wind: "strong", ghost: false } };
+test("ESC stops solo simulation but online flight continues until the race or pilot finishes",()=>{
+  assert.equal(flightSimulationActive(true,true,null,"pilot"),false);
+  assert.equal(flightSimulationActive(true,false,null,"pilot"),true);
+  for(const phase of ["lobby","countdown","flying","finished"])
+    assert.equal(flightSimulationActive(true,true,{phase,players:[{id:"pilot",finished:false}]},"pilot"),phase==="flying");
+  assert.equal(flightSimulationActive(true,true,{phase:"flying",players:[{id:"pilot",finished:true}]},"pilot"),false);
+  assert.equal(flightSimulationActive(false,false,{phase:"flying",players:[]},"pilot"),false);
+});
 
 test("solo and future host setup use personal preferences even while another room exists", () => {
   const solo = simulationView("solo", defaults, room, "guest");
