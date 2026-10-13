@@ -234,6 +234,24 @@ test("multiplayer replicates validated pilot colors and reset epochs without cha
   c.send("create",{mapId:"test-route",droneId:"rift-x5",mode:"angle",kind:"free"});
   const legacy=await c.next(m=>m.type==="room");assert.equal(legacy.room.players[0].color,"coral");
 });
+test("multiplayer shares four discrete propeller states, rejects malformed blades and reset repairs them",async t=>{
+  const {client}=await fixture(t),host=await client('Prop host'),guest=await client('Prop guest'),options={propDamage:true};
+  host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'angle',kind:'free',simulation:options});
+  const room=(await host.next(m=>m.type==='room')).room;guest.send('join',{code:room.code});
+  await host.next(m=>m.type==='room'&&m.room.players.length===2);
+  host.send('ready',{ready:true});guest.send('ready',{ready:true});await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.ready));
+  host.send('start');await guest.next(m=>m.type==='room'&&m.room.phase==='flying');
+  const propellers=[[3,3,3],[1,0,0],[0,2,0],[0,0,0]];
+  await guest.state([.6,1,-.5],{simulationKey:simulationKey(options),propellers});
+  const damaged=await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.propellers?.[0]?.[0]===3);
+  assert.deepEqual(damaged.room.players.find(p=>p.id===guest.id).propellers,propellers);
+  const invalidAt=Date.now();await guest.state([.7,1,-.5],{simulationKey:simulationKey(options),propellers:[[99,0,0],[0,0,0],[0,0,0],[0,0,0]]});
+  const ignored=await host.next(m=>m.type==='room'&&m.now>invalidAt+40);
+  assert.deepEqual(ignored.room.players.find(p=>p.id===guest.id).propellers,propellers);
+  guest.send('reset');
+  const repaired=await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.resetId>damaged.room.players.find(p=>p.id===guest.id).resetId);
+  assert.deepEqual(repaired.room.players.find(p=>p.id===guest.id).propellers,Array.from({length:4},()=>[0,0,0]));
+});
 test("two pilots share a room, host starts a race and both finish three verified laps", async (t) => {
   const { client, db } = await fixture(t),
     a = await client("Pilot A"),

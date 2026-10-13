@@ -2,6 +2,7 @@ import { clamp, rotate, inverse } from "./math.js";
 import { hoverThrottle } from "./propulsion.js";
 import { normalizeSimulation } from "../simulation/options.js";
 import { batteryCurrent, openCircuitCellVoltage } from "./battery.js";
+import { PropellerDamage } from "./propellers.js";
 
 // Initial estimates live in each aircraft config; these effects supplement the
 // normal flight controller rather than modifying its rate settings.
@@ -13,13 +14,13 @@ export class FlightEffects {
     this.batteryTuning = { polarizationOhm: config.simulation.battery.resistanceOhm * 0.35,
       recoverySeconds: 3, reserveFraction: 0.07, ...config.simulation.battery };
     this.options = normalizeSimulation(options);
+    this.propellers = new PropellerDamage(config);
     this.reset();
   }
   reset() {
     this.time = 0;
     this.resetBattery();
-    this.damage = [0, 0, 0, 0];
-    this.lastImpact = [-Infinity, -Infinity, -Infinity, -Infinity];
+    this.propellers.reset();
     this.wash = 0;
   }
   resetBattery() {
@@ -43,7 +44,7 @@ export class FlightEffects {
       this.resetBattery();
     }
     this.options = next;
-    if (!next.propDamage) this.damage.fill(0);
+    if (!next.propDamage) this.propellers.reset();
     if (!next.propwash) this.wash = 0;
   }
   update(dt, armed, motorThrust, velocity, quaternion) {
@@ -86,17 +87,12 @@ export class FlightEffects {
     this.wash += (target - this.wash) * (1 - Math.exp(-dt / 0.08));
   }
   motorEfficiency(index) {
-    const damage = this.options.propDamage ? this.damage[index] : 0;
+    const efficiency = this.options.propDamage ? this.propellers.efficiency(index,this.time) : 1;
     const turbulence = this.wash * this.config.simulation.propwashStrength * (0.55 + 0.45 * Math.sin(this.time * 91 + index * 2.3));
-    const vibration = damage * 0.06 * (0.5 + 0.5 * Math.sin(this.time * 137 + index));
-    return clamp(1 - damage * 0.65 - turbulence - vibration, 0.1, 1);
+    return efficiency * clamp(1 - turbulence, 0.1, 1);
   }
-  impact(index, speed) {
-    if (!this.options.propDamage || this.time - this.lastImpact[index] < 0.2) return;
-    const tuning = this.config.simulation;
-    if (speed <= tuning.propDamageThresholdMps) return;
-    this.lastImpact[index] = this.time;
-    this.damage[index] = clamp(this.damage[index] + (speed - tuning.propDamageThresholdMps) / 12 * tuning.propDamageScale, 0, 1);
+  impact(index, speed, contactAngle, rotating) {
+    if (this.options.propDamage) this.propellers.impact(index,speed,this.time,contactAngle,rotating);
   }
   wind(position) {
     const speed = { calm: 0, light: 2, medium: 5, strong: 9 }[this.options.wind];
@@ -109,6 +105,7 @@ export class FlightEffects {
   get telemetry() {
     return { charge: this.charge, voltage: this.voltage, cellVoltage: this.voltage / this.config.battery.cells,
       currentA: this.currentA, usedMah: this.usedMah, remainingSeconds: this.remainingSeconds,
-      batteryState: this.batteryState, throttleLimit: this.throttleLimit, damage: [...this.damage], wash: this.wash };
+      batteryState: this.batteryState, throttleLimit: this.throttleLimit,
+      propellers: this.propellers.blades.map(blades=>[...blades]), wash: this.wash };
   }
 }

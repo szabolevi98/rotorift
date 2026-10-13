@@ -53,6 +53,8 @@ export async function loadModel(config, { isolateMaterials = false, onProgress }
               g.position.setFromMatrixPosition(prop.matrixWorld);
               g.userData = {
                 propeller: true,
+                phaseOffset:new THREE.Euler().setFromRotationMatrix(new THREE.Matrix4().extractRotation(prop.matrixWorld)).y,
+                motorIndex:config.motors.reduce((best,m,i)=>Math.hypot(g.position.x-m.positionM[0],g.position.z-m.positionM[2])<Math.hypot(g.position.x-config.motors[best].positionM[0],g.position.z-config.motors[best].positionM[2])?i:best,0),
                 direction:
                   (g.position.x * g.position.z >= 0 ? 1 : -1) *
                   (config.category === "cinewhoop" ? -1 : 1),
@@ -62,6 +64,15 @@ export async function loadModel(config, { isolateMaterials = false, onProgress }
             }
             parent = props.get(prop);
             pivot = parent.position;
+            if (/^Twisted_.*blade/.test(o.name)) {
+              const blade = new THREE.Group();
+              // Count blades rather than material batches or source traversal order.
+              blade.userData.bladeIndex = parent.children.filter(child=>child.userData.bladeIndex!==undefined).length;
+              blade.name = `Blade_${blade.userData.bladeIndex}`;
+              parent.add(blade); parent = blade;
+            } else if (/^Blade_root/.test(o.name)) {
+              parent = parent.children.filter(child=>child.userData.bladeIndex!==undefined).at(-1) ?? parent;
+            }
           }
           const source = o.geometry.index
             ? o.geometry.toNonIndexed()

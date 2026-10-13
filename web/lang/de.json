@@ -187,7 +187,7 @@
   "hud.battery.cellUnit": "V/Zelle",
   "hud.battery.remaining": "≈ {time} übrig",
   "hud.battery.critical": "LAND NOW · Jetzt landen! Gas begrenzt",
-  "hud.propDamage": "Propellerschäden · {damage}%",
+  "hud.propDamage": "Propeller",
   "error.hostOnly": "Nur der Gastgeber kann die Simulationsoptionen ändern.",
   "error.rulesLocked": "Raumregeln können nach dem Start nicht geändert werden.",
   "error.invalidSimulation": "Ungültige Simulationseinstellungen.",
@@ -299,5 +299,18 @@
   "results.reconnecting": "Verbindet erneut",
   "results.waiting": "Andere Piloten sind noch im Rennen. Die Ergebnisse werden live aktualisiert.",
   "results.complete": "Der Lauf ist beendet. Der Gastgeber kann im selben Raum einen weiteren Lauf vorbereiten.",
-  "results.yourPlace": "Dein Platz: {place}"
+  "results.yourPlace": "Dein Platz: {place}",
+  "hud.prop.intact": "Intakt",
+  "hud.prop.bent": "Verbogen",
+  "hud.prop.chipped": "Abgesplittert",
+  "hud.prop.broken": "Blatt abgebrochen",
+  "hud.prop.destroyed": "Zerstört",
+  "hud.prop.position.0": "Vorne links",
+  "hud.prop.short.0": "VL",
+  "hud.prop.position.1": "Vorne rechts",
+  "hud.prop.short.1": "VR",
+  "hud.prop.position.2": "Hinten links",
+  "hud.prop.short.2": "HL",
+  "hud.prop.position.3": "Hinten rechts",
+  "hud.prop.short.3": "HR"
 }

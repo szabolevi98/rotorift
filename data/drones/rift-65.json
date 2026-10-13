@@ -1,7 +1,7 @@
 {
   "id": "rift-65",
   "name": "Rift 65",
-  "version": 5,
+  "version": 6,
   "category": "tinywhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.026,
@@ -41,8 +41,7 @@
   "restitution": 0.08,
   "simulation": {
     "battery": {"idleCurrentA":0.08,"maxCurrentA":14,"resistanceOhm":0.035,"linearCurrentFraction":0.82,"polarizationOhm":0.012,"recoverySeconds":2.5,"reserveFraction":0.07},
-    "propDamageThresholdMps": 2.5,
-    "propDamageScale": 0.25,
+    "propeller": {"bendSpeedMps":3,"chipSpeedMps":7,"breakSpeedMps":14,"maxTipSpeedMps":150,"guard":{"innerRadiusFactor":1.04,"outerRadiusFactor":1.1,"halfHeightM":0.0028,"offsetYM":0.0013}},
     "propwashStrength": 0.16
   },
   "model": "/assets/models/rotorift-rift-65.glb"

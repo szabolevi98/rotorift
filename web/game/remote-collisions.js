@@ -1,5 +1,7 @@
 // Remote aircraft are kinematic collision proxies in the local Rapier world.
 // Pose updates come from the shared room; no models or colliders exist in ghost mode.
+import { addAircraftColliders } from "../../shared/physics/aircraft-colliders.js";
+import { validPropellers,propellerCollisionRadius } from "../../shared/physics/propellers.js";
 export class RemoteCollisions {
   constructor(RAPIER, world, config) {
     this.RAPIER = RAPIER; this.world = world; this.config = config; this.bodies = new Map();
@@ -15,16 +17,17 @@ export class RemoteCollisions {
       if (!body) {
         body = this.world.createRigidBody(this.RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(...player.p).setRotation(q));
         this.bodies.set(id, body);
-        const add = desc => this.world.createCollider(desc.setFriction(this.config.friction).setRestitution(this.config.restitution), body);
-        add(this.RAPIER.ColliderDesc.cuboid(...this.config.bodyHalfExtentsM));
-        for (const motor of this.config.motors)
-          add(this.RAPIER.ColliderDesc.cylinder(0.004, this.config.propDiameterM * 0.48).setTranslation(...motor.positionM));
-        body.userData = { resetId: player.resetId };
+        const {propColliders}=addAircraftColliders(this.RAPIER,this.world,body,this.config);
+        body.userData = { resetId: player.resetId,propColliders,radii:[] };
       }
       if (body.userData.resetId !== player.resetId || Math.hypot(body.translation().x - p.x, body.translation().y - p.y, body.translation().z - p.z) > 3) {
         body.setTranslation(p, true); body.setRotation(q, true); body.userData.resetId = player.resetId;
       }
       body.userData.target = { p, q };
+      if(validPropellers(player.propellers))for(const [index,collider]of body.userData.propColliders.entries()){
+        const radius=propellerCollisionRadius(this.config,player.propellers[index]);
+        if(body.userData.radii[index]!==radius){collider.setShape(new this.RAPIER.Cylinder(.0015,radius));body.userData.radii[index]=radius;}
+      }
     }
   }
   step(dt) {

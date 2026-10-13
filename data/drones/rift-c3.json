@@ -1,7 +1,7 @@
 {
   "id": "rift-c3",
   "name": "Rift C3",
-  "version": 5,
+  "version": 6,
   "category": "cinewhoop",
   "tuningStatus": "initial-estimate",
   "massKg": 0.31,
@@ -41,8 +41,7 @@
   "restitution": 0.06,
   "simulation": {
     "battery": {"idleCurrentA":0.35,"maxCurrentA":38,"resistanceOhm":0.025,"linearCurrentFraction":0.50,"polarizationOhm":0.012,"recoverySeconds":3,"reserveFraction":0.07},
-    "propDamageThresholdMps": 3,
-    "propDamageScale": 0.4,
+    "propeller": {"bendSpeedMps":2.5,"chipSpeedMps":6,"breakSpeedMps":12,"maxTipSpeedMps":150,"guard":{"innerRadiusFactor":1.04,"outerRadiusFactor":1.095,"halfHeightM":0.0028,"offsetYM":0}},
     "propwashStrength": 0.28
   },
   "model": "/assets/models/rotorift-rift-c3.glb"

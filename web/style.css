@@ -248,7 +248,17 @@ h2 {
 #simulation-hud { position: absolute; left: 32px; top: 86px; display: grid; gap: 8px; }
 #simulation-hud > div { padding: 7px 10px; border-radius: 4px; background: #0004; }
 #battery-hud.low { color: #ffdb77; }
-#battery-hud.critical, #damage-hud { color: #ff9c8b; }
+#battery-hud.critical { color: #ff9c8b; }
+.propeller-heading { display:block; font-size:10px; opacity:.85; margin-bottom:5px; }
+.propeller-grid { display:grid; grid-template-columns:repeat(2,44px); gap:5px 8px; }
+.propeller-cell { color:#b9edac; display:grid; justify-items:center; font-size:9px; }
+.propeller-cell svg { width:30px; height:30px; fill:currentColor; }
+.propeller-cell[data-state="bent"] { color:#ffdd79; }
+.propeller-cell[data-state="chipped"] { color:#ffae69; }
+.propeller-cell[data-state="broken"], .propeller-cell[data-state="destroyed"] { color:#ff8c80; }
+.propeller-blade[data-state="1"] { transform:skewX(12deg); transform-origin:20px 20px; }
+.propeller-blade[data-state="2"] { transform:scale(.65); transform-origin:20px 20px; }
+.propeller-blade[data-state="3"] { visibility:hidden; }
 .pilot-name { display: inline-flex; align-items: center; gap: 9px; }
 .map-card {
   border-radius: 8px;

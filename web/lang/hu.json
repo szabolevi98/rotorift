@@ -187,7 +187,7 @@
   "hud.battery.cellUnit": "V/cella",
   "hud.battery.remaining": "≈ {time} hátra",
   "hud.battery.critical": "LAND NOW · Szállj le most! Gázkorlátozás",
-  "hud.propDamage": "Propellersérülés · {damage}%",
+  "hud.propDamage": "Propellerek",
   "error.hostOnly": "Csak a szoba házigazdája állíthatja a szimulációs opciókat.",
   "error.rulesLocked": "Indítás után a szobaszabályok már nem módosíthatók.",
   "error.invalidSimulation": "Érvénytelen szimulációs beállítás.",
@@ -299,5 +299,18 @@
   "results.reconnecting": "Újracsatlakozik",
   "results.waiting": "A többi pilóta még versenyben van. Az eredmények élőben frissülnek.",
   "results.complete": "A futam lezárult. A házigazda új futamot készíthet elő ugyanebben a szobában.",
-  "results.yourPlace": "Helyezésed: {place}."
+  "results.yourPlace": "Helyezésed: {place}.",
+  "hud.prop.intact": "Ép",
+  "hud.prop.bent": "Hajlott",
+  "hud.prop.chipped": "Csorbult",
+  "hud.prop.broken": "Letört lapát",
+  "hud.prop.destroyed": "Tönkrement",
+  "hud.prop.position.0": "Bal első",
+  "hud.prop.short.0": "BE",
+  "hud.prop.position.1": "Jobb első",
+  "hud.prop.short.1": "JE",
+  "hud.prop.position.2": "Bal hátsó",
+  "hud.prop.short.2": "BH",
+  "hud.prop.position.3": "Jobb hátsó",
+  "hud.prop.short.3": "JH"
 }

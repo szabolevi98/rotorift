@@ -1,5 +1,11 @@
 # Rotorift 0.1 – első repülési prototípus
 
+## 2026-10-13 – Önálló lapátsérülések
+
+- Négy külön propeller, három-három ép/hajlott/csorbult/letört lapáttal; saját tolóerővesztés és rezgés. A teljesen hiányzó lapátokkal a rotor tolóereje nulla.
+- Valódi ütközési pontokhoz kötött sérülés, fizikai védőgyűrűk a 65/C3 modelleken, sérült GLB lapátok és négy külön HUD ikon. Multiplayer állapotátadás és reset.
+- Küszöbök a 6-os verziójú drónkonfigurációkban; a sérülés anyagvizsgálattal még nem kalibrált becslés. Működés és tesztfeltételek: [propeller-damage.md](propeller-damage.md).
+
 2026. október 12. A teljes kiadás követelményeit a `plan.md` tartalmazza;
       ez a dokumentum a most elkészült és ellenőrzött alapot különíti el a hátralévő munkától.
 

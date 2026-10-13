@@ -187,7 +187,7 @@
   "hud.battery.cellUnit": "V/cell",
   "hud.battery.remaining": "≈ {time} left",
   "hud.battery.critical": "LAND NOW · Throttle limited",
-  "hud.propDamage": "Propeller damage · {damage}%",
+  "hud.propDamage": "Propellers",
   "error.hostOnly": "Only the host can change simulation options.",
   "error.rulesLocked": "Room rules cannot be changed after starting.",
   "error.invalidSimulation": "Invalid simulation settings.",
@@ -299,5 +299,18 @@
   "results.reconnecting": "Reconnecting",
   "results.waiting": "Other pilots are still racing. These results update live.",
   "results.complete": "This run has ended. The host can prepare another run in the same room.",
-  "results.yourPlace": "Your place: {place}"
+  "results.yourPlace": "Your place: {place}",
+  "hud.prop.intact": "Intact",
+  "hud.prop.bent": "Bent",
+  "hud.prop.chipped": "Chipped",
+  "hud.prop.broken": "Blade broken",
+  "hud.prop.destroyed": "Destroyed",
+  "hud.prop.position.0": "Front left",
+  "hud.prop.short.0": "FL",
+  "hud.prop.position.1": "Front right",
+  "hud.prop.short.1": "FR",
+  "hud.prop.position.2": "Rear left",
+  "hud.prop.short.2": "RL",
+  "hud.prop.position.3": "Rear right",
+  "hud.prop.short.3": "RR"
 }

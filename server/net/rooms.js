@@ -8,6 +8,7 @@ import { canRace, withoutRaceRoute } from "../../shared/race/map-modes.js";
 import { resolveRoute } from "../../shared/race/routes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
+import { freshPropellers, validPropellers } from "../../shared/physics/propellers.js";
 const MODES = FLIGHT_MODES;
 export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdownMs = 3000 } = {}) {
   const rooms = new Map(),
@@ -45,6 +46,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       reconnectUntil: p.reconnectUntil ?? null,
       p: p.pose?.p,
       q: p.pose?.q,
+      propellers: p.propellers ?? freshPropellers(),
       lap: p.lap,
       finished: p.finished,
       finishMs: p.finishMs,
@@ -94,6 +96,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     broadcast(r);
   };
   const reset = (p, r) => {
+    p.propellers = freshPropellers();
     p.resetId = (p.resetId ?? 0) + 1;
     p.boundary = new MapBoundary(r.map);
     p.boundaryAt = null;
@@ -394,6 +397,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           p.lap.invalid = true;
           return;
         }
+        if(m.propellers !== undefined && !validPropellers(m.propellers)) return;
         const previous = p.pose?.p,
           dt = p.at === null ? null : (m.t - p.at) / 1000;
         if (dt !== null && dt <= 0) return;
@@ -420,6 +424,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         let events = [];
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);
+        p.propellers = r.simulation.propDamage && validPropellers(m.propellers) ? m.propellers.map(blades=>[...blades]) : freshPropellers();
         p.pose = { p: m.p, q: m.q };
         p.at = m.t;
         p.seq = m.seq;

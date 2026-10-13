@@ -2,6 +2,8 @@ import { actualRate, defaultRates } from "./rates.js";
 import { rotate, inverse, array, vector, clamp, length } from "./math.js";
 import { motorThrustLimit, throttleToThrust } from "./propulsion.js";
 import { FlightEffects } from "./flight-effects.js";
+import { addAircraftColliders } from "./aircraft-colliders.js";
+import { propellerCollisionRadius } from "./propellers.js";
 export const PHYSICS_DT = 1 / 240;
 function mixThrust(mixer, demand, max) {
   const idle = max * 0.012;
@@ -89,27 +91,15 @@ export class DronePhysics {
         { x: 0, y: 0, z: 0, w: 1 },
       );
     this.body = world.createRigidBody(desc);
-    const collider = (d) =>
-      world.createCollider(
-        d
-          .setDensity(0)
-          .setFriction(config.friction)
-          .setRestitution(config.restitution),
-        this.body,
-      );
-    collider(RAPIER.ColliderDesc.cuboid(...config.bodyHalfExtentsM));
-    this.propColliders = config.motors.map(m => collider(
-        RAPIER.ColliderDesc.cylinder(
-          0.004,
-          config.propDiameterM * 0.48,
-        ).setTranslation(...m.positionM),
-      ));
+    Object.assign(this,addAircraftColliders(RAPIER,world,this.body,config));
+    this.propRadii = [];
     this.reset(spawn);
   }
   reset(position) {
     this.armed = false;
     this.motorThrust.fill(0);
     this.previousBodyRates.fill(0);
+    this.previousContactVelocity = [0,0,0];
     this.angularAcceleration.fill(0);
     this.effects.reset();
     this.body.setTranslation(vector(position), true);
@@ -188,7 +178,14 @@ export class DronePhysics {
       motorTorque[0] -= (r[2] - c.centerOfMassM[2]) * thrust;
       motorTorque[1] += thrust * m.direction * c.motor.yawTorquePerNewtonM;
       motorTorque[2] += (r[0] - c.centerOfMassM[0]) * thrust;
+      if(this.effects.options.propDamage){
+        const imbalance=this.effects.propellers.imbalance(i), phase=this.effects.propellers.phase[i];
+        const wobble=this.motorThrust[i]*c.propDiameterM*.025*imbalance;
+        motorTorque[0]+=Math.sin(phase)*wobble;
+        motorTorque[2]+=Math.cos(phase)*wobble;
+      }
     }
+    this.effects.propellers.advance(dt,this.motorThrust,max,c);
     b.addForce(vector(rotate([0, totalThrust, 0], q)), true);
     b.addTorque(vector(rotate(motorTorque, q)), true);
     const velocity = array(b.linvel()), wind = this.effects.wind(array(b.translation())),
@@ -205,6 +202,10 @@ export class DronePhysics {
       true,
     );
     this.world.timestep = dt;
+    for(const [index,prop]of this.propColliders.entries()){
+      const radius=propellerCollisionRadius(c,this.effects.propellers.blades[index]);
+      if(this.propRadii[index]!==radius){prop.setShape(new prop.shape.constructor(.0015,radius));this.propRadii[index]=radius;}
+    }
     if (this.updateSceneQueries) this.world.step();
     else {
       // Rapier 0.14 World.step() also rebuilds the scene-query BVH. Flight
@@ -216,24 +217,35 @@ export class DronePhysics {
         world.islands, world.broadPhase, world.narrowPhase, world.bodies,
         world.colliders, world.impulseJoints, world.multibodyJoints, world.ccdSolver);
     }
-    if (this.armed && this.effects.options.propDamage) {
+    if (this.effects.options.propDamage) {
       for (const [index, prop] of this.propColliders.entries()) {
         this.world.contactPairsWith(prop, other => {
           if (other.parent()?.handle === b.handle) return;
-          this.world.contactPair(prop, other, manifold => {
+          this.world.contactPair(prop, other, (manifold,flipped) => {
             const n = manifold.normal(), normal = [n.x, n.y, n.z];
             const otherVelocity = other.parent()?.linvel() ?? { x: 0, y: 0, z: 0 };
-            const angular = rotate(w, q), offset = rotate(c.motors[index].positionM, q);
+            const contact=flipped?manifold.localContactPoint2(0):manifold.localContactPoint1(0);
+            if(!contact)return;
+            const contactOffset=[contact.x,contact.y,contact.z];
+            const angular = rotate(w, q), offset = rotate(c.motors[index].positionM.map((v,i)=>v+contactOffset[i]-c.centerOfMassM[i]), q);
             const rotational = [angular[1] * offset[2] - angular[2] * offset[1], angular[2] * offset[0] - angular[0] * offset[2], angular[0] * offset[1] - angular[1] * offset[0]];
             const relative = velocity.map((v, i) => v + rotational[i] - [otherVelocity.x, otherVelocity.y, otherVelocity.z][i]);
+            const previousRelative=this.previousContactVelocity.map((v,i)=>v+rotational[i]-[otherVelocity.x,otherVelocity.y,otherVelocity.z][i]);
             let impulse = 0;
             for (let i = 0; i < manifold.numContacts(); i++) impulse += manifold.contactImpulse(i);
-            if (impulse > c.massKg * 0.01)
-              this.effects.impact(index, Math.max(Math.abs(relative.reduce((sum, v, i) => sum + v * normal[i], 0)), impulse / c.massKg));
+            const rotorFraction=Math.sqrt(Math.max(0,this.motorThrust[index]/Math.max(max,1e-9)));
+            const tangent=rotate([-contact.z,0,contact.x],q), radius=Math.hypot(contact.x,contact.z);
+            const cutting=radius>c.propDiameterM*.15 ? Math.abs(tangent.reduce((sum,v,i)=>sum+v*normal[i],0))/radius * this.effects.propellers.tuning.maxTipSpeedMps * rotorFraction * .035 : 0;
+            const speed=Math.max(Math.abs(relative.reduce((sum,v,i)=>sum+v*normal[i],0)),Math.abs(previousRelative.reduce((sum,v,i)=>sum+v*normal[i],0)),impulse/c.massKg,cutting);
+            // CCD can stop motion before the manifold becomes available next
+            // step. Retain that incoming velocity, but ignore speculative gaps.
+            if(impulse>c.massKg*.01 || (manifold.contactDist(0)<=.0005 && speed>this.effects.propellers.tuning.bendSpeedMps))
+              this.effects.impact(index,speed,Math.atan2(-contact.z,contact.x),rotorFraction>.05);
           });
         });
       }
     }
+    this.previousContactVelocity=velocity;
   }
   get pose() {
     return {

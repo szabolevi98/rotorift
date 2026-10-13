@@ -76,12 +76,13 @@ test("real propeller contact damages thrust while safe resting and reset do not"
     world.createCollider(RAPIER.ColliderDesc.cuboid(0.03,1,1).setTranslation(0.25,1,0));
     drone.armed=true;drone.body.setLinvel({x:10,y:0,z:0},true);
     for(let i=0;i<48;i++)drone.step(neutral);
-    assert.ok(Math.max(...drone.effects.damage)>0,"wall impact must damage a rotating propeller");
-    const index=drone.effects.damage.indexOf(Math.max(...drone.effects.damage));
+    const blades=drone.effects.propellers.blades;
+    assert.ok(blades.some(rotor=>rotor.some(state=>state>0)),"wall impact must damage a rotating propeller");
+    const index=blades.findIndex(rotor=>rotor.some(state=>state>0));
     assert.ok(drone.effects.motorEfficiency(index)<1);
-    drone.reset([0,1,0]);assert.deepEqual(drone.effects.damage,[0,0,0,0]);
+    drone.reset([0,1,0]);assert.deepEqual(drone.effects.propellers.blades,Array.from({length:4},()=>[0,0,0]));
     drone.armed=true;for(let i=0;i<48;i++)drone.step(neutral);
-    assert.deepEqual(drone.effects.damage,[0,0,0,0]);
+    assert.deepEqual(drone.effects.propellers.blades,Array.from({length:4},()=>[0,0,0]));
   } finally {world.free();}
 });
 
@@ -111,6 +112,8 @@ test("ghost mode removes actual remote colliders, solid drones collide, and leav
       positions.push(drone.pose.p[0]);
       remote.update([{id:"peer",p:[5,2,0],q,resetId:2}],"self",false);
       assert.equal(remote.bodies.get("peer").translation().x,5,"reset snaps without a sweeping collider");
+      remote.update([{id:"peer",p:[5,2,0],q,resetId:2,propellers:[[3,3,3],[0,0,0],[0,0,0],[0,0,0]]}],"self",false);
+      assert.ok(remote.bodies.get("peer").userData.propColliders[0].shape.radius<config.propDiameterM*.1,"missing remote blades must not keep a full collision disc");
       remote.update([],"self",false);assert.equal(remote.bodies.size,0);
       remote.dispose();assert.equal(world.bodies.len(),1);
     } finally {world.free();}

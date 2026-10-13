@@ -116,7 +116,7 @@ export class Network {
   get now() {
     return Date.now() + this.offset;
   }
-  state(pose, config, mode, interrupted, simulation) {
+  state(pose, config, mode, interrupted, simulation, propellers) {
     this.send("state", {
       ...pose,
       seq: this.seq++,
@@ -126,6 +126,7 @@ export class Network {
       interrupted,
       simulationKey: simulationKey(simulation),
       runId: this.room?.runId,
+      propellers,
     });
   }
 }

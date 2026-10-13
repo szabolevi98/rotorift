@@ -15,6 +15,7 @@ import { CONSTRUCTION_VIEW_DISTANCE } from "./construction.js";
 import { RemoteCollisions } from "./remote-collisions.js";
 import { normalizeSimulation } from "../../shared/simulation/options.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
+import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -92,17 +93,19 @@ export class Flight {
     const visual = await loadModel(config, { isolateMaterials: true, onProgress });
     if (version !== this.loadVersion) { this.removeModel(visual); return false; }
     this.visual = visual;
+    this.propVisual = new PropellerVisual(visual,config);
     this.setColor(color);
     this.cameraRig.configure(config, this.visual);
     this.scene.add(this.visual);
     this.props = [];
     this.visual.traverse((o) => {
-      if (o.userData.propeller) this.props.push(o);
+      if (o.userData.propeller) { this.props.push(o); this.physics.effects.propellers.phase[o.userData.motorIndex]=o.userData.phaseOffset; }
     });
     this.accumulator = 0;
     this.previous = this.physics.pose;
     this.current = this.physics.pose;
     this.place(this.current, 1);
+    this.propVisual.update(this.physics.effects.propellers.blades);
     this.parkShadows = new ParkShadows(this.scene, this.camera, this.atmosphere.profile);
     this.active = true;
     return true;
@@ -120,6 +123,7 @@ export class Flight {
     this.accumulator = 0;
     this.previous = this.current = this.physics.pose;
     this.place(this.current, 1);
+    this.propVisual?.update(this.physics.effects.propellers.blades);
   }
   setView(chase) {
     this.chase = chase;
@@ -142,11 +146,9 @@ export class Flight {
       update(this.previous, this.current, PHYSICS_DT);
     }
     this.place(this.current, this.accumulator / PHYSICS_DT);
+    this.propVisual.update(this.physics.effects.propellers.blades);
     for (const p of this.props)
-      p.rotation.y +=
-        dt *
-        (this.physics.armed ? 180 + input.throttle * 750 : 0) *
-        p.userData.direction;
+      p.rotation.y = this.physics.effects.propellers.phase[p.userData.motorIndex] - p.userData.phaseOffset;
     if (this.sound) {
       const total = this.physics.motorThrust.reduce((a, b) => a + b, 0),
         fraction = total / (4 * this.config.motor.maxThrustN);
@@ -191,6 +193,7 @@ export class Flight {
         return;
       }
       remote.model = model;
+      remote.propVisual = new PropellerVisual(model,this.config);
       applyDroneColor(model, remote.target.color);
       this.scene.add(model);
     } else {
@@ -214,6 +217,8 @@ export class Flight {
   }
   removeModel(model) {
     if (!model) return;
+    if(model===this.visual){this.propVisual?.dispose();this.propVisual=null;}
+    for(const remote of this.remotes.values())if(remote.model===model)remote.propVisual?.dispose();
     this.scene.remove(model);
     this.parkShadows?.releaseModel(model);
     const materials = new Set();
@@ -238,6 +243,7 @@ export class Flight {
     }
     for (const r of this.remotes.values()) {
       if (!r.model) continue;
+      r.propVisual.update(r.target.propellers);
       const q = new THREE.Quaternion(
           r.target.q.x,
           r.target.q.y,

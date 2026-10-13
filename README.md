@@ -45,6 +45,7 @@ A burkolatok/szegélyek metszése és a két pálya ütközési fájlja előre k
 a játékban nincs poligonműveleti függőség. Csak a fizika újrasütése: `npm run collisions:build`.
 Az összevont, térben felosztott ütközési hálók mérését és működését a
 [collision-performance.md](docs/collision-performance.md) írja le.
+Az önálló propeller- és lapátsérülések: [propeller-damage.md](docs/propeller-damage.md).
 A `npm run showcase:build` a burkolatmetszést automatikusan elvégzi a bemutató csomagolása előtt.
 Az adatbázisteszt külön `rotorift_test_<id>` adatbázist hoz létre és takarít el;
 a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.

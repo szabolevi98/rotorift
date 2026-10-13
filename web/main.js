@@ -8,6 +8,8 @@ import { LoadingScreen, paintLoading } from "./loading.js";
 import { FlightHelp } from "./game/flight-help.js";
 import { armPrompt } from "./game/arm-prompt.js";
 import { FpvOsd } from "./game/fpv-osd.js";
+import { PropellerHud } from "./game/propeller-hud.js";
+import { validPropellers } from "/shared/physics/propellers.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
 import { RADIO_ACTIONS, availableBindings, bindingKey, parseBinding } from "./input/action-bindings.js";
@@ -30,6 +32,7 @@ const $ = (s) => document.querySelector(s),
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
 const fpvOsd = new FpvOsd($("#fpv-horizon"), $("#analog-effect"), $("#game-scene"));
+const propellerHud = new PropellerHud($("#damage-hud"),t);
 const fpsLabel = $("#hud-fps");
 let fpsSince = null, fpsFrames = 0;
 function updateFps(now, rendering) {
@@ -820,6 +823,8 @@ async function loadRoom(r) {
     flight.reset(
       room.players.find((p) => p.id === network.id)?.p ?? roomMap.spawn,
     );
+    const restoredProps=room.players.find(p=>p.id===network.id)?.propellers;
+    if(r.simulation.propDamage && validPropellers(restoredProps))flight.physics.effects.propellers.blades=restoredProps.map(blades=>[...blades]);
     lap = newLap();
     playing = true;
     paused = false;
@@ -1123,8 +1128,7 @@ function hud() {
   if ($("#battery-warning").textContent !== batteryWarning) $("#battery-warning").textContent = batteryWarning;
   $("#battery-hud").classList.toggle("low", state.batteryState === "low");
   $("#battery-hud").classList.toggle("critical", state.batteryState === "critical");
-  visible("#damage-hud", effects.options.propDamage && Math.max(...state.damage) > 0);
-  $("#damage-hud").textContent = t("hud.propDamage", {damage: Math.round(Math.max(...state.damage) * 100)});
+  propellerHud.update(effects.options.propDamage,state.propellers);
   visible("#wind-hud", effects.options.wind !== "calm");
   $("#wind-hud").textContent = t("simulation.wind") + " · " + t("wind." + effects.options.wind);
   $("#hud-session").textContent =
@@ -1268,6 +1272,7 @@ function frame(now) {
       flight.physics.mode,
       paused,
       flight.physics.effects.options,
+      flight.physics.effects.propellers.blades,
     );
     sendAt = now;
   }

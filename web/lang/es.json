@@ -185,7 +185,7 @@
   "hud.changeMode": "Cambiar modo de vuelo",
   "hud.battery.low": "LOW BATTERY · Batería baja",
   "hud.battery.critical": "LAND NOW · ¡Aterriza! Acelerador limitado",
-  "hud.propDamage": "Daños en hélices · {damage}%",
+  "hud.propDamage": "Hélices",
   "error.hostOnly": "Solo el anfitrión puede cambiar las opciones de simulación.",
   "error.rulesLocked": "Las reglas de la sala no se pueden cambiar tras empezar.",
   "error.invalidSimulation": "Ajustes de simulación no válidos.",
@@ -299,5 +299,18 @@
   "results.reconnecting": "Reconectando",
   "results.waiting": "Otros pilotos siguen en carrera. Los resultados se actualizan en directo.",
   "results.complete": "La sesión ha terminado. El anfitrión puede preparar otra en la misma sala.",
-  "results.yourPlace": "Tu puesto: {place}"
+  "results.yourPlace": "Tu puesto: {place}",
+  "hud.prop.intact": "Intacta",
+  "hud.prop.bent": "Doblada",
+  "hud.prop.chipped": "Astillada",
+  "hud.prop.broken": "Pala rota",
+  "hud.prop.destroyed": "Destruida",
+  "hud.prop.position.0": "Delantera izquierda",
+  "hud.prop.short.0": "DI",
+  "hud.prop.position.1": "Delantera derecha",
+  "hud.prop.short.1": "DD",
+  "hud.prop.position.2": "Trasera izquierda",
+  "hud.prop.short.2": "TI",
+  "hud.prop.position.3": "Trasera derecha",
+  "hud.prop.short.3": "TD"
 }

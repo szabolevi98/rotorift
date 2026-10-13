@@ -62,9 +62,13 @@ export function validateDrone(c) {
   for (const k of ["linearDrag", "quadraticDrag", "angularDrag"])
     if (!Number.isFinite(c[k]) || c[k] < 0) throw Error("Invalid drag");
   if (!c.simulation?.battery || !["idleCurrentA", "maxCurrentA", "resistanceOhm"].every(k => positive(c.simulation.battery[k])) ||
-      !positive(c.simulation.propDamageThresholdMps) || !positive(c.simulation.propDamageScale) ||
       !positive(c.simulation.propwashStrength) || c.simulation.propwashStrength > 0.5)
     throw Error("Invalid simulation tuning");
+  const prop=c.simulation.propeller;
+  if(!prop || !["bendSpeedMps","chipSpeedMps","breakSpeedMps","maxTipSpeedMps"].every(k=>positive(prop[k])) ||
+    !(prop.bendSpeedMps<prop.chipSpeedMps && prop.chipSpeedMps<prop.breakSpeedMps))throw Error("Invalid propeller tuning");
+  if(prop.guard && (!["innerRadiusFactor","outerRadiusFactor","halfHeightM"].every(k=>positive(prop.guard[k])) ||
+    prop.guard.innerRadiusFactor<=1 || prop.guard.outerRadiusFactor<=prop.guard.innerRadiusFactor || !Number.isFinite(prop.guard.offsetYM)))throw Error("Invalid propeller guard");
   const battery = c.simulation.battery;
   if (!Number.isFinite(battery.linearCurrentFraction) || battery.linearCurrentFraction < 0 || battery.linearCurrentFraction > 1 ||
       !positive(battery.polarizationOhm) || !positive(battery.recoverySeconds) ||
