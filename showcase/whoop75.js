@@ -44,47 +44,76 @@ function createRift75(){
   for(let blade=0;blade<3;blade++){const pos=[],indices=[],steps=24;for(let row=0;row<=steps;row++){const t=row/steps,r=1.8+20.7*t,w=1.4+4.5*Math.sin(Math.PI*t)**.7,pitch=sx*sz*(.62-.36*t),sweep=sx*sz*3*t*t;for(let edge=0;edge<2;edge++)pos.push(r,(edge-.5)*w*pitch,sweep+(edge-.5)*w);if(row<steps){const i=row*2;indices.push(i,i+2,i+1,i+1,i+2,i+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(indices);const a=g.attributes.position;for(let i=0;i<a.count;i++){const r=Math.hypot(a.getX(i),a.getZ(i));if(r>22.5){a.setX(i,a.getX(i)*22.5/r);a.setZ(i,a.getZ(i)*22.5/r);}}g.computeVertexNormals();mesh(prop,g,materials.prop,`Twisted_45mm_blade_${blade+1}`).rotation.y=blade*2*Math.PI/3;}
  }
  const canopy=assembly('75_05_Micro_camera_canopy',[0,27,0]);
- // A thin, curved injection-moulded shell follows the camera angle and tapers
- // towards the antenna. The vent cells are actual holes, with closed edges.
- const hood=new THREE.Group();hood.name='Sculpted_camera_hood';hood.position.set(0,23,-11);hood.rotation.x=28*Math.PI/180;canopy.add(hood);
- const profiles=[[-1.4,7.8,-5.8,13],[1,8.3,-5.9,13.8],[5,8.1,-5.6,13.2],[10,7,-4.1,12.5],[15,5.3,-1.2,9],[20,2.1,1.4,4]];
+ // Photo-led canopy: broad rounded crown, tapered chin and inset camera.
+ // The side wings and rear arch belong to the shell, rather than separate rods.
+ const hood=new THREE.Group();hood.name='Reference_moulded_camera_hood';hood.position.set(0,23,-11);hood.rotation.x=28*Math.PI/180;canopy.add(hood);
+ const crown=new THREE.Path();crown.moveTo(-3,-12);
+ crown.bezierCurveTo(-6.5,-12,-8.3,-5,-9.4,0);crown.bezierCurveTo(-11,4.5,-8.5,7,-5,7.6);
+ crown.quadraticCurveTo(0,8.6,5,7.6);crown.bezierCurveTo(8.5,7,11,4.5,9.4,0);crown.bezierCurveTo(8.3,-5,6.5,-12,3,-12);
+ // [camera-local Z, width scale, underside height, crown height]. The two
+ // side mounting eyes at (+/-18.38,12.1,0) are integrated into row 14.83.
+ const earZ=14.829,earBase=-4.461,earScale=1.08;
+ const profiles=[[-4.7,.80,-12,8.1],[0,1.05,-11.2,10.5],[7,1.14,-8.5,13],[earZ,earScale,earBase,13.5],[21,.88,-1.6,16],[27,.48,2.7,11],[31.06,.28,4.17,5.3]];
  const profileCurve=new THREE.CatmullRomCurve3(profiles.map(([z,w,b,h])=>new THREE.Vector3(w,b,h)),false,'catmullrom',.25);
  const zCurve=new THREE.CatmullRomCurve3(profiles.map(([z])=>new THREE.Vector3(z,0,0)),false,'catmullrom',.25);
- const rows=48,cols=36,positions=[],indices=[],stride=cols+1,layerSize=(rows+1)*stride,kept=[];
- for(let layer=0;layer<2;layer++)for(let i=0;i<=rows;i++){
-  const p=profileCurve.getPoint(i/rows),z=zCurve.getPoint(i/rows).x;
-  for(let j=0;j<=cols;j++){const angle=j*Math.PI/cols;positions.push((p.x-layer*.7)*Math.cos(angle),p.y+(p.z-layer*.7)*Math.sin(angle),z);}
+ const rows=80,cols=64,positions=[],indices=[],stride=cols+1,layerSize=(rows+1)*stride,kept=[];
+ function surface(t,u){const p=profileCurve.getPoint(t),z=zCurve.getPoint(t).x,edge=crown.getPointAt(u),height=(edge.y+12)/20.1;
+  const flare=(18.38-3*earScale)*Math.exp(-(((z-earZ)/2.8)**4));
+  const x=edge.x*p.x+Math.sign(edge.x)*flare*(1-height)**2,y=p.y+(p.z-p.y)*height;
+  const faceBow=.025*x*x+.006*(y-1)**2;
+  return new THREE.Vector3(x,y,z+faceBow*Math.max(0,(3-z)/7.7));
+ }
+ for(let layer=0;layer<2;layer++)for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols,point=surface(t,u);
+  if(layer){const across=surface(t,Math.min(1,u+.001)).sub(surface(t,Math.max(0,u-.001))),along=surface(Math.min(1,t+.001),u).sub(surface(Math.max(0,t-.001),u));point.addScaledVector(along.cross(across).normalize(),-.75);}
+  positions.push(...point.toArray());
  }
  for(let i=0;i<rows;i++){kept[i]=[];const z=zCurve.getPoint((i+.5)/rows).x;
-  for(let j=0;j<cols;j++){const a=(j+.5)*Math.PI/cols;
-   const sideVent=z>3&&z<14&&((a>.20&&a<.70)||(a>Math.PI-.70&&a<Math.PI-.20));
-   const roofVent=a>1.05&&a<2.09&&[[3.5,4.5],[6.2,7.2],[8.9,9.9]].some(([start,end])=>z>start&&z<end);
-   kept[i][j]=!sideVent&&!roofVent;
+  for(let j=0;j<cols;j++){const u=(j+.5)/cols,edge=crown.getPointAt(u),height=(edge.y+12)/20.1,side=Math.abs(edge.x)>4;
+   const cheekWindow=side&&((z-5.1)/3.8)**2+((height-.34)/.17)**2<1;
+   const arch=z>15.1&&z<29.1&&height<.88*Math.sin(Math.PI*(z-15.1)/14)**.65;
+   const smallSideVent=side&&((z-12.9)/1.15)**2+((height-.63)/.065)**2<1;
+   const roofVent=height>.80&&((Math.abs(edge.x)-5.8)/.65)**2+((z-1.0)/1.6)**2<1;
+   const point=surface((i+.5)/rows,u),angle=28*Math.PI/180,wy=23+Math.cos(angle)*point.y-Math.sin(angle)*point.z,wz=-11+Math.sin(angle)*point.y+Math.cos(angle)*point.z;
+   const antennaExit=z>24&&point.x**2+(3*(wy-13)-wz)**2/10<1.7**2;
+   kept[i][j]=!cheekWindow&&!arch&&!smallSideVent&&!roofVent&&!antennaExit;
   }
  }
  const quad=(a,b,c,d)=>indices.push(a,b,c,a,c,d);
+ const border=new Map(),edge=(a,b)=>{if(!border.has(a))border.set(a,new Set());if(!border.has(b))border.set(b,new Set());border.get(a).add(b);border.get(b).add(a);};
  for(let i=0;i<rows;i++)for(let j=0;j<cols;j++)if(kept[i][j]){
   const a=i*stride+j,b=a+stride,c=b+1,d=a+1,k=layerSize;
-  quad(a,d,c,b);quad(a+k,b+k,c+k,d+k);
+  quad(a,b,c,d);quad(a+k,d+k,c+k,b+k);
   if(!kept[i-1]?.[j])quad(a,a+k,d+k,d);
   if(!kept[i+1]?.[j])quad(b,c,c+k,b+k);
   if(!kept[i]?.[j-1])quad(a,b,b+k,a+k);
   if(!kept[i]?.[j+1])quad(d,d+k,c+k,c);
+  if(i>0&&!kept[i-1][j])edge(a,d);
+  if(i<rows-1&&!kept[i+1][j])edge(b,c);
+  if(j>0&&!kept[i][j-1])edge(a,b);
+  if(j<cols-1&&!kept[i][j+1])edge(d,c);
  }
- const shell=new THREE.BufferGeometry();shell.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));shell.setIndex(indices);shell.computeVertexNormals();mesh(hood,shell,materials.canopy,'Curved_canopy_shell_with_open_vents');
- const nose=shape(16.6,15.6,5);nose.holes.push(new THREE.Path(shape(12.4,11.4,3).getPoints(24)));
- const rim=new THREE.ExtrudeGeometry(nose,{depth:.65,bevelEnabled:true,bevelSize:.28,bevelThickness:.2,bevelSegments:3,curveSegments:20});rim.translate(0,.15,-1.8);
- mesh(hood,rim,materials.canopy,'Rounded_camera_protection_rim');
+ // Round the sampled window edges without changing the outer silhouette or
+ // mounting junctions. The inner edge follows, preserving wall thickness.
+ for(let pass=0;pass<4;pass++){const before=positions.slice();for(const [vertex,neighbors]of border)if(neighbors.size===2){const [a,b]=neighbors;for(const layer of [0,layerSize])for(let axis=0;axis<3;axis++){const v=(vertex+layer)*3+axis;positions[v]=before[v]*.5+(before[(a+layer)*3+axis]+before[(b+layer)*3+axis])*.25;}}}
+ const shell=new THREE.BufferGeometry();shell.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));shell.setIndex(indices);shell.computeVertexNormals();mesh(hood,shell,materials.canopy,'Moulded_crown_with_arch_and_cheek_windows');
+ const nose=new THREE.Shape(crown.getPoints(40).map(p=>new THREE.Vector2(p.x*.80,p.y)));nose.quadraticCurveTo(0,-13.2,-2.4,-12);nose.closePath();
+ const aperture=new THREE.Path();aperture.absarc(0,0,4.50,0,Math.PI*2,true);nose.holes.push(aperture);
+ for(const side of [-1,1]){const vent=new THREE.Path(shape(.95,2.3,.35).getPoints(12).map(p=>p.add(new THREE.Vector2(side*4.5,6.2))));nose.holes.push(vent);}
+ const face=new THREE.ExtrudeGeometry(nose,{depth:.85,bevelEnabled:true,bevelSize:.22,bevelThickness:.15,bevelSegments:3,curveSegments:24});face.translate(0,0,-5.55);
+ const facePositions=face.attributes.position,faceNormals=face.attributes.normal;for(let i=0;i<facePositions.count;i++){const x=facePositions.getX(i),y=facePositions.getY(i),nz=faceNormals.getZ(i);facePositions.setZ(i,facePositions.getZ(i)+.025*x*x+.006*(y-1)**2);const normal=new THREE.Vector3(faceNormals.getX(i)-.05*x*nz,faceNormals.getY(i)-.012*(y-1)*nz,nz).normalize();faceNormals.setXYZ(i,normal.x,normal.y,normal.z);}
+ mesh(hood,face,materials.canopy,'Integrated_tapered_camera_nose');
  for(const side of [-1,1]){
-  wire(canopy,[[side*7.7,17.5,-9.2],[side*9.1,14.3,-5],[side*14,12.6,-1.2],[side*18.38,12.1,0]],1,materials.canopy,'Swept_canopy_mount_arm');
-  wire(canopy,[[side*7.2,15.7,-2],[side*9.4,13.2,1],[side*14,12.4,1.1],[side*18.38,12.1,0]],.65,materials.canopy,'Canopy_mount_open_brace');
   ring(canopy,2.8,.85,1.2,materials.canopy,'Canopy_mount_eyelet',side*18.38,12.1,0);screw(canopy,side*18.38,12.7,0);
+  rod(hood,[side*6.2,-2.7,-3.5],[side*5.5,0,0],.7,materials.canopy,'Internal_camera_pivot_bracket');
  }
- wire(canopy,[[0,18,7.8],[0,15.5,12.5],[0,12.7,18.38]],1.15,materials.canopy,'Swept_rear_mount_arm');ring(canopy,2.8,.85,1.2,materials.canopy,'Rear_mount_eyelet',0,12.1,18.38);screw(canopy,0,12.7,18.38);
+ ring(canopy,2.8,.85,1.2,materials.canopy,'Rear_mount_eyelet',0,12.1,18.38);screw(canopy,0,12.7,18.38);
  const oldCradle=camera.getObjectByName('Canopy_front_camera_cradle');oldCradle.geometry.dispose();oldCradle.removeFromParent();
+ for(const name of ['FPV_lens_barrel','FPV_lens_front_bezel'])camera.getObjectByName(name).geometry.scale(1.18,1,1.18);
+ camera.getObjectByName('FPV_multicoated_lens').geometry.scale(1.15,1,1.15);
  camera.position.set(0,23,-11);camera.name='Micro_FPV_camera';canopy.add(camera);wire(canopy,[[4,23,-8],[5.2,18,-5],[6,12.6,2]],.4,materials.black,'Camera_signal_wire');
- rod(canopy,[0,15,7],[0,30,11],1.3,materials.rubber,'VTX_antenna_heatshrink');rod(canopy,[0,29.5,10.9],[0,42,14.2],.3,materials.silver,'VTX_wire_radiator');
- const collar=ring(canopy,2.15,1.35,1.5,materials.canopy,'Moulded_antenna_guide',0,21,8.6);collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,15,4).normalize());
+ rod(canopy,[0,16,9],[0,21.5,25.5],1.3,materials.rubber,'VTX_antenna_heatshrink');rod(canopy,[0,21.3,25],[0,25.4,37.5],.3,materials.silver,'VTX_wire_radiator');
+ const collar=ring(canopy,2.15,1.35,1.5,materials.canopy,'Moulded_antenna_guide',0,18.9,17.7);collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,1,3).normalize());
  const battery=assembly('75_06_1S_580mAh_battery',[0,-16,0]);batteryParts.push(battery);extrude(battery,shape(12.5,6.9,1.3),57,materials.cell,'1S_580mAh_pouch',0,2.3,0);for(const z of [-29.5,29.5])extrude(battery,shape(12.5,6.9,1.3),2,materials.black,'Battery_heatshrink_end',0,2.3,z);
  const cv=document.createElement('canvas');cv.width=256;cv.height=512;const ctx=cv.getContext('2d');ctx.fillStyle='#eaece5';ctx.fillRect(0,0,256,512);ctx.fillStyle='#ff6648';ctx.fillRect(14,16,228,88);ctx.fillStyle='#1d2a2b';ctx.font='bold 36px Arial';ctx.fillText('R / 75',35,74);ctx.font='bold 48px Arial';ctx.fillText('1S',34,190);ctx.font='bold 29px Arial';ctx.fillText('580 mAh',28,248);ctx.font='21px Arial';ctx.fillText('ROTORIFT',30,310);ctx.fillText('3.8 V · LiHV',30,355);const texture=new THREE.CanvasTexture(cv);texture.colorSpace=THREE.SRGBColorSpace;materials.label=new THREE.MeshStandardMaterial({map:texture,roughness:.65});const label=mesh(battery,new THREE.PlaneGeometry(12,54),materials.label,'Battery_label_print',0,5.83,0);label.rotation.x=-Math.PI/2;
  for(const side of [-1,1]){wire(board,[[side*2,9.5,12],[side*5.5,9,18],[side*6,8,27],[side*2.8,6.5,33],[side*1.1,5.5,34]],.65,side<0?materials.black:materials.red,'AIO_BT2_pigtail');wire(battery,[[side*2,2.3,30.5],[side*2.8,2.3,33],[side*2.5,1.3,39],[side*1.1,3,43],[side*1.1,5.5,42],[side*1.1,5.5,40]],.55,side<0?materials.black:materials.red,'Battery_BT2_lead');const g=ring(battery,.8,.53,1.1,materials.rubber,'Pack_cable_exit',side*2,2.3,30.65);g.rotation.x=Math.PI/2;}

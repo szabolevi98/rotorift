@@ -1,13 +1,13 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Rift 75 · Canopy design studies</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Rift 75 · Photo-led canopy</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#eaeae3;color:#263b39;font:15px system-ui,sans-serif}header,footer,main,.toolbar{max-width:1500px;margin:auto}header{padding:32px 28px 16px}a{color:inherit}header a{font-size:12px;letter-spacing:.12em;text-decoration:none}h1{font-size:clamp(29px,4vw,48px);letter-spacing:-.055em;margin:18px 0 8px}header p{max-width:700px;line-height:1.6;color:#61726b}.toolbar{display:flex;gap:8px;align-items:center;padding:8px 28px 22px;flex-wrap:wrap}button{cursor:pointer;border:1px solid #b6c1b4;background:#f7f7f0;border-radius:8px;padding:10px 15px;color:#31423f;font:inherit}button[aria-pressed=true]{background:#31453e;color:white;border-color:#31453e}#framing{margin-left:auto}main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:0 28px}article{border:1px solid #cdd3c5;background:#f4f3ee;border-radius:14px;overflow:hidden}article header{padding:20px 22px 8px}h2{margin:8px 0 6px;font-size:25px;letter-spacing:-.025em}article header p{margin:0;font-size:14px;min-height:65px}.letter{font-size:12px;letter-spacing:.14em;font-weight:700;color:#df6447}canvas{display:block;width:100%;height:370px;touch-action:none}article>p{padding:0 22px 20px;margin:0;font-size:13px;line-height:1.5;color:#607269}footer{padding:28px;color:#607269;font-size:13px}#loading{position:fixed;inset:0;display:grid;place-items:center;background:#f4f3ee;z-index:5;font-size:24px}@media(max-width:800px){main{grid-template-columns:1fr;max-width:650px}canvas{height:370px}article header p{min-height:0}#framing{margin-left:0}}</style></head><body>
-<div id="loading" role="status">Preparing canopy studies…</div>
-<header><a href="./">← ROTORIFT SHOWCASE</a><h1>The 75. Three new directions.</h1><p>Three real 3D canopy studies on the same Rift 75. Drag each view to rotate. These are design proposals; the current flight model stays unchanged.</p></header>
-<nav class="toolbar" aria-label="Camera views"><button data-view="perspective" aria-pressed="true">3D</button><button data-view="front" aria-pressed="false">Front</button><button data-view="side" aria-pressed="false">Side</button><button data-view="top" aria-pressed="false">Top</button><button data-view="rear" aria-pressed="false">Rear</button><button id="framing">Show whole drone</button></nav>
+<div id="loading" role="status">Preparing the reference revision…</div>
+<header><a href="./">← ROTORIFT SHOWCASE</a><h1>The 75. Shaped from the photos.</h1><p>One revised canopy, viewed from three angles. The supplied photos guide the rounded crown, tapered nose, inset camera and large arched cutouts. Drag any view to rotate.</p></header>
+<nav class="toolbar" aria-label="Camera views"><button data-view="compare" aria-pressed="true">Compare angles</button><button data-view="perspective" aria-pressed="false">3D</button><button data-view="front" aria-pressed="false">Front</button><button data-view="side" aria-pressed="false">Side</button><button data-view="top" aria-pressed="false">Top</button><button data-view="rear" aria-pressed="false">Rear</button><button id="framing">Show whole drone</button></nav>
 <main>
-<article><header><span class="letter">A / SHELL</span><h2>Rounded shell</h2><p>A compact, smooth nose around the lens and a rounded body tapering towards the antenna.</p></header><canvas aria-label="A: rounded shell, draggable 3D view"></canvas><p>Enclosed camera · Side cooling slots · Rounded lens opening</p></article>
-<article><header><span class="letter">B / CAGE</span><h2>Open rib cage</h2><p>A light, open structure with slender arches, visible electronics and a separate camera surround.</p></header><canvas aria-label="B: open rib cage, draggable 3D view"></canvas><p>Open sides · Minimal plastic · Air-style structure</p></article>
-<article><header><span class="letter">C / VISOR</span><h2>Low racing visor</h2><p>A low swept roof, a compact camera face and open rear supports, with a small orange accent.</p></header><canvas aria-label="C: low racing visor, draggable 3D view"></canvas><p>Low silhouette · Open rear · Sportier nose</p></article>
-</main><footer>Design study only. All three use the same camera position, frame, motors and battery. No changes to flight physics.</footer><script>/**
+<article><header><span class="letter">01 / FRONT</span><h2>Tapered nose</h2><p>The lens sits inside the white nose. The lower face narrows towards the frame.</p></header><canvas aria-label="Revised Rift 75 front view, drag to rotate"></canvas><p>Inset lens · Curved face · Upper cooling slots</p></article>
+<article><header><span class="letter">02 / SIDE</span><h2>Arched cutouts</h2><p>A broad crown with a cheek window and a large open arch above the electronics.</p></header><canvas aria-label="Revised Rift 75 side view, drag to rotate"></canvas><p>Open rear arch · Integrated mounting wings · Rear-facing antenna</p></article>
+<article><header><span class="letter">03 / PERSPECTIVE</span><h2>Moulded crown</h2><p>A continuous white shell flowing into the side and rear fixing points.</p></header><canvas aria-label="Revised Rift 75 perspective view, drag to rotate"></canvas><p>Rounded shoulders · Thin shell · Original orange frame</p></article>
+</main><footer>The current Rift 75 model, reworked from the supplied photographs. Bottom-side motor wiring is retained. No changes to flight physics.</footer><script>/**
  * @license
  * Copyright 2010-2024 Three.js Authors
  * SPDX-License-Identifier: MIT
@@ -56113,47 +56113,76 @@ function createRift75(){
   for(let blade=0;blade<3;blade++){const pos=[],indices=[],steps=24;for(let row=0;row<=steps;row++){const t=row/steps,r=1.8+20.7*t,w=1.4+4.5*Math.sin(Math.PI*t)**.7,pitch=sx*sz*(.62-.36*t),sweep=sx*sz*3*t*t;for(let edge=0;edge<2;edge++)pos.push(r,(edge-.5)*w*pitch,sweep+(edge-.5)*w);if(row<steps){const i=row*2;indices.push(i,i+2,i+1,i+1,i+2,i+3);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(indices);const a=g.attributes.position;for(let i=0;i<a.count;i++){const r=Math.hypot(a.getX(i),a.getZ(i));if(r>22.5){a.setX(i,a.getX(i)*22.5/r);a.setZ(i,a.getZ(i)*22.5/r);}}g.computeVertexNormals();mesh(prop,g,materials.prop,`Twisted_45mm_blade_${blade+1}`).rotation.y=blade*2*Math.PI/3;}
  }
  const canopy=assembly('75_05_Micro_camera_canopy',[0,27,0]);
- // A thin, curved injection-moulded shell follows the camera angle and tapers
- // towards the antenna. The vent cells are actual holes, with closed edges.
- const hood=new THREE.Group();hood.name='Sculpted_camera_hood';hood.position.set(0,23,-11);hood.rotation.x=28*Math.PI/180;canopy.add(hood);
- const profiles=[[-1.4,7.8,-5.8,13],[1,8.3,-5.9,13.8],[5,8.1,-5.6,13.2],[10,7,-4.1,12.5],[15,5.3,-1.2,9],[20,2.1,1.4,4]];
+ // Photo-led canopy: broad rounded crown, tapered chin and inset camera.
+ // The side wings and rear arch belong to the shell, rather than separate rods.
+ const hood=new THREE.Group();hood.name='Reference_moulded_camera_hood';hood.position.set(0,23,-11);hood.rotation.x=28*Math.PI/180;canopy.add(hood);
+ const crown=new THREE.Path();crown.moveTo(-3,-12);
+ crown.bezierCurveTo(-6.5,-12,-8.3,-5,-9.4,0);crown.bezierCurveTo(-11,4.5,-8.5,7,-5,7.6);
+ crown.quadraticCurveTo(0,8.6,5,7.6);crown.bezierCurveTo(8.5,7,11,4.5,9.4,0);crown.bezierCurveTo(8.3,-5,6.5,-12,3,-12);
+ // [camera-local Z, width scale, underside height, crown height]. The two
+ // side mounting eyes at (+/-18.38,12.1,0) are integrated into row 14.83.
+ const earZ=14.829,earBase=-4.461,earScale=1.08;
+ const profiles=[[-4.7,.80,-12,8.1],[0,1.05,-11.2,10.5],[7,1.14,-8.5,13],[earZ,earScale,earBase,13.5],[21,.88,-1.6,16],[27,.48,2.7,11],[31.06,.28,4.17,5.3]];
  const profileCurve=new THREE.CatmullRomCurve3(profiles.map(([z,w,b,h])=>new THREE.Vector3(w,b,h)),false,'catmullrom',.25);
  const zCurve=new THREE.CatmullRomCurve3(profiles.map(([z])=>new THREE.Vector3(z,0,0)),false,'catmullrom',.25);
- const rows=48,cols=36,positions=[],indices=[],stride=cols+1,layerSize=(rows+1)*stride,kept=[];
- for(let layer=0;layer<2;layer++)for(let i=0;i<=rows;i++){
-  const p=profileCurve.getPoint(i/rows),z=zCurve.getPoint(i/rows).x;
-  for(let j=0;j<=cols;j++){const angle=j*Math.PI/cols;positions.push((p.x-layer*.7)*Math.cos(angle),p.y+(p.z-layer*.7)*Math.sin(angle),z);}
+ const rows=80,cols=64,positions=[],indices=[],stride=cols+1,layerSize=(rows+1)*stride,kept=[];
+ function surface(t,u){const p=profileCurve.getPoint(t),z=zCurve.getPoint(t).x,edge=crown.getPointAt(u),height=(edge.y+12)/20.1;
+  const flare=(18.38-3*earScale)*Math.exp(-(((z-earZ)/2.8)**4));
+  const x=edge.x*p.x+Math.sign(edge.x)*flare*(1-height)**2,y=p.y+(p.z-p.y)*height;
+  const faceBow=.025*x*x+.006*(y-1)**2;
+  return new THREE.Vector3(x,y,z+faceBow*Math.max(0,(3-z)/7.7));
+ }
+ for(let layer=0;layer<2;layer++)for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols,point=surface(t,u);
+  if(layer){const across=surface(t,Math.min(1,u+.001)).sub(surface(t,Math.max(0,u-.001))),along=surface(Math.min(1,t+.001),u).sub(surface(Math.max(0,t-.001),u));point.addScaledVector(along.cross(across).normalize(),-.75);}
+  positions.push(...point.toArray());
  }
  for(let i=0;i<rows;i++){kept[i]=[];const z=zCurve.getPoint((i+.5)/rows).x;
-  for(let j=0;j<cols;j++){const a=(j+.5)*Math.PI/cols;
-   const sideVent=z>3&&z<14&&((a>.20&&a<.70)||(a>Math.PI-.70&&a<Math.PI-.20));
-   const roofVent=a>1.05&&a<2.09&&[[3.5,4.5],[6.2,7.2],[8.9,9.9]].some(([start,end])=>z>start&&z<end);
-   kept[i][j]=!sideVent&&!roofVent;
+  for(let j=0;j<cols;j++){const u=(j+.5)/cols,edge=crown.getPointAt(u),height=(edge.y+12)/20.1,side=Math.abs(edge.x)>4;
+   const cheekWindow=side&&((z-5.1)/3.8)**2+((height-.34)/.17)**2<1;
+   const arch=z>15.1&&z<29.1&&height<.88*Math.sin(Math.PI*(z-15.1)/14)**.65;
+   const smallSideVent=side&&((z-12.9)/1.15)**2+((height-.63)/.065)**2<1;
+   const roofVent=height>.80&&((Math.abs(edge.x)-5.8)/.65)**2+((z-1.0)/1.6)**2<1;
+   const point=surface((i+.5)/rows,u),angle=28*Math.PI/180,wy=23+Math.cos(angle)*point.y-Math.sin(angle)*point.z,wz=-11+Math.sin(angle)*point.y+Math.cos(angle)*point.z;
+   const antennaExit=z>24&&point.x**2+(3*(wy-13)-wz)**2/10<1.7**2;
+   kept[i][j]=!cheekWindow&&!arch&&!smallSideVent&&!roofVent&&!antennaExit;
   }
  }
  const quad=(a,b,c,d)=>indices.push(a,b,c,a,c,d);
+ const border=new Map(),edge=(a,b)=>{if(!border.has(a))border.set(a,new Set());if(!border.has(b))border.set(b,new Set());border.get(a).add(b);border.get(b).add(a);};
  for(let i=0;i<rows;i++)for(let j=0;j<cols;j++)if(kept[i][j]){
   const a=i*stride+j,b=a+stride,c=b+1,d=a+1,k=layerSize;
-  quad(a,d,c,b);quad(a+k,b+k,c+k,d+k);
+  quad(a,b,c,d);quad(a+k,d+k,c+k,b+k);
   if(!kept[i-1]?.[j])quad(a,a+k,d+k,d);
   if(!kept[i+1]?.[j])quad(b,c,c+k,b+k);
   if(!kept[i]?.[j-1])quad(a,b,b+k,a+k);
   if(!kept[i]?.[j+1])quad(d,d+k,c+k,c);
+  if(i>0&&!kept[i-1][j])edge(a,d);
+  if(i<rows-1&&!kept[i+1][j])edge(b,c);
+  if(j>0&&!kept[i][j-1])edge(a,b);
+  if(j<cols-1&&!kept[i][j+1])edge(d,c);
  }
- const shell=new THREE.BufferGeometry();shell.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));shell.setIndex(indices);shell.computeVertexNormals();mesh(hood,shell,materials.canopy,'Curved_canopy_shell_with_open_vents');
- const nose=shape(16.6,15.6,5);nose.holes.push(new THREE.Path(shape(12.4,11.4,3).getPoints(24)));
- const rim=new THREE.ExtrudeGeometry(nose,{depth:.65,bevelEnabled:true,bevelSize:.28,bevelThickness:.2,bevelSegments:3,curveSegments:20});rim.translate(0,.15,-1.8);
- mesh(hood,rim,materials.canopy,'Rounded_camera_protection_rim');
+ // Round the sampled window edges without changing the outer silhouette or
+ // mounting junctions. The inner edge follows, preserving wall thickness.
+ for(let pass=0;pass<4;pass++){const before=positions.slice();for(const [vertex,neighbors]of border)if(neighbors.size===2){const [a,b]=neighbors;for(const layer of [0,layerSize])for(let axis=0;axis<3;axis++){const v=(vertex+layer)*3+axis;positions[v]=before[v]*.5+(before[(a+layer)*3+axis]+before[(b+layer)*3+axis])*.25;}}}
+ const shell=new THREE.BufferGeometry();shell.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));shell.setIndex(indices);shell.computeVertexNormals();mesh(hood,shell,materials.canopy,'Moulded_crown_with_arch_and_cheek_windows');
+ const nose=new THREE.Shape(crown.getPoints(40).map(p=>new THREE.Vector2(p.x*.80,p.y)));nose.quadraticCurveTo(0,-13.2,-2.4,-12);nose.closePath();
+ const aperture=new THREE.Path();aperture.absarc(0,0,4.50,0,Math.PI*2,true);nose.holes.push(aperture);
+ for(const side of [-1,1]){const vent=new THREE.Path(shape(.95,2.3,.35).getPoints(12).map(p=>p.add(new THREE.Vector2(side*4.5,6.2))));nose.holes.push(vent);}
+ const face=new THREE.ExtrudeGeometry(nose,{depth:.85,bevelEnabled:true,bevelSize:.22,bevelThickness:.15,bevelSegments:3,curveSegments:24});face.translate(0,0,-5.55);
+ const facePositions=face.attributes.position,faceNormals=face.attributes.normal;for(let i=0;i<facePositions.count;i++){const x=facePositions.getX(i),y=facePositions.getY(i),nz=faceNormals.getZ(i);facePositions.setZ(i,facePositions.getZ(i)+.025*x*x+.006*(y-1)**2);const normal=new THREE.Vector3(faceNormals.getX(i)-.05*x*nz,faceNormals.getY(i)-.012*(y-1)*nz,nz).normalize();faceNormals.setXYZ(i,normal.x,normal.y,normal.z);}
+ mesh(hood,face,materials.canopy,'Integrated_tapered_camera_nose');
  for(const side of [-1,1]){
-  wire(canopy,[[side*7.7,17.5,-9.2],[side*9.1,14.3,-5],[side*14,12.6,-1.2],[side*18.38,12.1,0]],1,materials.canopy,'Swept_canopy_mount_arm');
-  wire(canopy,[[side*7.2,15.7,-2],[side*9.4,13.2,1],[side*14,12.4,1.1],[side*18.38,12.1,0]],.65,materials.canopy,'Canopy_mount_open_brace');
   ring(canopy,2.8,.85,1.2,materials.canopy,'Canopy_mount_eyelet',side*18.38,12.1,0);screw(canopy,side*18.38,12.7,0);
+  rod(hood,[side*6.2,-2.7,-3.5],[side*5.5,0,0],.7,materials.canopy,'Internal_camera_pivot_bracket');
  }
- wire(canopy,[[0,18,7.8],[0,15.5,12.5],[0,12.7,18.38]],1.15,materials.canopy,'Swept_rear_mount_arm');ring(canopy,2.8,.85,1.2,materials.canopy,'Rear_mount_eyelet',0,12.1,18.38);screw(canopy,0,12.7,18.38);
+ ring(canopy,2.8,.85,1.2,materials.canopy,'Rear_mount_eyelet',0,12.1,18.38);screw(canopy,0,12.7,18.38);
  const oldCradle=camera.getObjectByName('Canopy_front_camera_cradle');oldCradle.geometry.dispose();oldCradle.removeFromParent();
+ for(const name of ['FPV_lens_barrel','FPV_lens_front_bezel'])camera.getObjectByName(name).geometry.scale(1.18,1,1.18);
+ camera.getObjectByName('FPV_multicoated_lens').geometry.scale(1.15,1,1.15);
  camera.position.set(0,23,-11);camera.name='Micro_FPV_camera';canopy.add(camera);wire(canopy,[[4,23,-8],[5.2,18,-5],[6,12.6,2]],.4,materials.black,'Camera_signal_wire');
- rod(canopy,[0,15,7],[0,30,11],1.3,materials.rubber,'VTX_antenna_heatshrink');rod(canopy,[0,29.5,10.9],[0,42,14.2],.3,materials.silver,'VTX_wire_radiator');
- const collar=ring(canopy,2.15,1.35,1.5,materials.canopy,'Moulded_antenna_guide',0,21,8.6);collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,15,4).normalize());
+ rod(canopy,[0,16,9],[0,21.5,25.5],1.3,materials.rubber,'VTX_antenna_heatshrink');rod(canopy,[0,21.3,25],[0,25.4,37.5],.3,materials.silver,'VTX_wire_radiator');
+ const collar=ring(canopy,2.15,1.35,1.5,materials.canopy,'Moulded_antenna_guide',0,18.9,17.7);collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,1,3).normalize());
  const battery=assembly('75_06_1S_580mAh_battery',[0,-16,0]);batteryParts.push(battery);extrude(battery,shape(12.5,6.9,1.3),57,materials.cell,'1S_580mAh_pouch',0,2.3,0);for(const z of [-29.5,29.5])extrude(battery,shape(12.5,6.9,1.3),2,materials.black,'Battery_heatshrink_end',0,2.3,z);
  const cv=document.createElement('canvas');cv.width=256;cv.height=512;const ctx=cv.getContext('2d');ctx.fillStyle='#eaece5';ctx.fillRect(0,0,256,512);ctx.fillStyle='#ff6648';ctx.fillRect(14,16,228,88);ctx.fillStyle='#1d2a2b';ctx.font='bold 36px Arial';ctx.fillText('R / 75',35,74);ctx.font='bold 48px Arial';ctx.fillText('1S',34,190);ctx.font='bold 29px Arial';ctx.fillText('580 mAh',28,248);ctx.font='21px Arial';ctx.fillText('ROTORIFT',30,310);ctx.fillText('3.8 V · LiHV',30,355);const texture=new THREE.CanvasTexture(cv);texture.colorSpace=THREE.SRGBColorSpace;materials.label=new THREE.MeshStandardMaterial({map:texture,roughness:.65});const label=mesh(battery,new THREE.PlaneGeometry(12,54),materials.label,'Battery_label_print',0,5.83,0);label.rotation.x=-Math.PI/2;
  for(const side of [-1,1]){wire(board,[[side*2,9.5,12],[side*5.5,9,18],[side*6,8,27],[side*2.8,6.5,33],[side*1.1,5.5,34]],.65,side<0?materials.black:materials.red,'AIO_BT2_pigtail');wire(battery,[[side*2,2.3,30.5],[side*2.8,2.3,33],[side*2.5,1.3,39],[side*1.1,3,43],[side*1.1,5.5,42],[side*1.1,5.5,40]],.55,side<0?materials.black:materials.red,'Battery_BT2_lead');const g=ring(battery,.8,.53,1.1,materials.rubber,'Pack_cable_exit',side*2,2.3,30.65);g.rotation.x=Math.PI/2;}
@@ -56163,65 +56192,16 @@ function createRift75(){
  return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),setExplode,setWireframe,setColor};
 }
 
-// Design studies only: none of these canopies replaces the flight model yet.
-function createCanopyStudy(kind){
- const model=createRift75(),root=model.root,old=root.getObjectByName('75_05_Micro_camera_canopy'),camera=old.getObjectByName('Micro_FPV_camera');camera.removeFromParent();
- const canopy=new THREE.Group();canopy.name='Canopy_study_'+kind;root.add(canopy);canopy.add(camera);
- for(const name of ['VTX_antenna_heatshrink','VTX_wire_radiator','Moulded_antenna_guide']){const part=old.getObjectByName(name);part.removeFromParent();canopy.add(part);}
- old.removeFromParent();old.traverse(o=>o.geometry?.dispose());
- const white=model.materials.canopy;white.roughness=.35;
- const accent=model.materials.frame;
- function mesh(p,g,m,name,x=0,y=0,z=0){const o=new THREE.Mesh(g,m);o.name=name;o.position.set(x,y,z);o.castShadow=o.receiveShadow=true;p.add(o);return o;}
- function tube(p,points,r,m=white){return mesh(p,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(v=>new THREE.Vector3(...v))),32,r,8,false),m,'Moulded_rib');}
- function ring(p,outer,inner,depth,x,y,z,flat=false){const s=new THREE.Shape();s.absarc(0,0,outer,0,Math.PI*2,false);const hole=new THREE.Path();hole.absarc(0,0,inner,0,Math.PI*2,true);s.holes.push(hole);const g=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:true,bevelSize:.18,bevelThickness:.15,bevelSegments:3,curveSegments:24});g.translate(0,0,-depth/2);if(flat)g.rotateX(-Math.PI/2);return mesh(p,g,white,'Rounded_mount_or_lens_rim',x,y,z);}
- function mounts(){for(const [x,z]of [[18.38,0],[-18.38,0],[0,18.38]]){ring(canopy,2.8,.9,1,x,12.1,z,true);mesh(canopy,new THREE.CylinderGeometry(1.45,1.45,.65,20),model.materials.silver,'Mount_screw',x,13.2,z);}}
- function cameraLocal(){const p=new THREE.Group();p.position.copy(camera.position);p.rotation.copy(camera.rotation);canopy.add(p);return p;}
- mounts();
- if(kind==='shell'){
-  const shellParent=cameraLocal(),profiles=[[-4.25,4.9,4.8,0],[-2,7.2,6.8,0],[2,8.4,7.1,.3],[6.5,8.1,6.5,.8],[12,6.5,5,1.5],[18,3.4,2.9,2.2],[21,1.2,1.1,2.8]];
-  const curve=new THREE.CatmullRomCurve3(profiles.map(([z,w,h,y])=>new THREE.Vector3(w,h,y)),false,'catmullrom',.25),zc=new THREE.CatmullRomCurve3(profiles.map(([z])=>new THREE.Vector3(z,0,0)),false,'catmullrom',.25);
-  const rows=64,cols=48,stride=cols+1,layer=(rows+1)*stride,positions=[],indices=[],kept=[];
-  for(let inside=0;inside<2;inside++)for(let i=0;i<=rows;i++){const p=curve.getPoint(i/rows),z=zc.getPoint(i/rows).x;for(let j=0;j<=cols;j++){const a=j*2*Math.PI/cols;positions.push((p.x-inside*.65)*Math.cos(a),p.z+(p.y-inside*.65)*Math.sin(a),z);}}
-  for(let i=0;i<rows;i++){kept[i]=[];const z=zc.getPoint((i+.5)/rows).x;for(let j=0;j<cols;j++){const a=(j+.5)*2*Math.PI/cols,side=Math.abs(Math.cos(a))>.91;kept[i][j]=!(side&&[[4,5.3],[7,8.3],[10,11.3]].some(([lo,hi])=>z>lo&&z<hi));}}
-  const quad=(a,b,c,d)=>indices.push(a,b,c,a,c,d);
-  for(let i=0;i<rows;i++)for(let j=0;j<cols;j++)if(kept[i][j]){const a=i*stride+j,b=a+stride,c=b+1,d=a+1;quad(a,d,c,b);quad(a+layer,b+layer,c+layer,d+layer);if(!kept[i-1]?.[j])quad(a,a+layer,d+layer,d);if(!kept[i+1]?.[j])quad(b,c,c+layer,b+layer);if(!kept[i]?.[(j+cols-1)%cols])quad(a,b,b+layer,a+layer);if(!kept[i]?.[(j+1)%cols])quad(d,d+layer,c+layer,c);}
-  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();mesh(shellParent,geometry,white,'Organic_round_shell');
-  ring(shellParent,4.9,4.1,.75,0,0,-4.3);
-  for(const s of [-1,1])tube(canopy,[[s*18.38,12.1,0],[s*13,13,-2],[s*9,16,-4],[s*7.6,22,-6.5]],1.05);
-  tube(canopy,[[0,12.1,18.38],[0,15,12],[0,18,7]],1.1);
- }else if(kind==='cage'){
-  const front=cameraLocal(),bezel=ring(front,7.9,6.35,.9,0,0,-1.8);bezel.scale.y=.95;
-  for(const s of [-1,1]){
-   tube(canopy,[[s*18.38,12.1,0],[s*10,13.2,-6],[s*7.4,20,-11],[s*5.7,29,-5],[s*6.8,26,4],[s*7,17,11],[0,12.1,18.38]],.8);
-   tube(canopy,[[s*18.38,12.1,0],[s*11,12.8,6],[s*7,17,11]],.65);
-   tube(canopy,[[s*7,17,-10],[s*6.7,20.5,-11],[s*5.5,23,-11]],.8);
-  }
-  tube(canopy,[[-5.7,29,-5],[-3,30.3,-5],[0,30.7,-5],[3,30.3,-5],[5.7,29,-5]],.8);
-  tube(canopy,[[-6.8,26,4],[0,28,4],[6.8,26,4]],.7);
- }else{
-  const visor=cameraLocal(),face=new THREE.Shape();face.moveTo(-7.5,-3.8);face.lineTo(-7.5,2.7);face.quadraticCurveTo(-6.9,6.9,-3.6,7.2);face.lineTo(3.6,7.2);face.quadraticCurveTo(6.9,6.9,7.5,2.7);face.lineTo(7.5,-3.8);face.quadraticCurveTo(6,-6.5,3,-6.5);face.lineTo(-3,-6.5);face.quadraticCurveTo(-6,-6.5,-7.5,-3.8);
-  const aperture=new THREE.Path();aperture.absellipse(0,0,6.25,5.75,0,Math.PI*2,true);face.holes.push(aperture);
-  const g=new THREE.ExtrudeGeometry(face,{depth:.7,bevelEnabled:true,bevelSize:.2,bevelThickness:.2,bevelSegments:3,curveSegments:24});g.translate(0,0,-1.8);mesh(visor,g,white,'Low_profile_camera_face');
-  const roof=new THREE.Shape();roof.moveTo(-7.2,-2);roof.lineTo(7.2,-2);roof.quadraticCurveTo(9,5,5,13);roof.quadraticCurveTo(0,16,-5,13);roof.quadraticCurveTo(-9,5,-7.2,-2);
-  const vg=new THREE.ExtrudeGeometry(roof,{depth:.8,bevelEnabled:true,bevelSize:.35,bevelThickness:.25,bevelSegments:3,curveSegments:24});vg.rotateX(Math.PI/2);mesh(visor,vg,white,'Swept_low_visor',0,6.2,0);
-  tube(visor,[[-6.5,6.5,3],[0,6.8,4],[6.5,6.5,3]],.35,accent);
-  for(const s of [-1,1]){tube(canopy,[[s*18.38,12.1,0],[s*10,13,-2],[s*7.1,18,-10],[s*6.4,23,-11]],.95);tube(canopy,[[s*10,13,-2],[s*7.2,18,1],[s*5.8,26,1]],.8);}
-  tube(canopy,[[0,12.1,18.38],[0,15,10],[0,24,1]],.85);
- }
- tube(canopy,[[4,23,-8],[5.2,18,-5],[6,12.6,2]],.4,model.materials.black);
- return model;
-}
-
 (() => {
- const scenes=[];let close=true,current='perspective';
- for(const [index,kind]of ['shell','cage','visor'].entries()){
+ const scenes=[];let close=true,current='compare';
+ for(const [index,initialView]of ['front','side','perspective'].entries()){
   const canvas=document.querySelectorAll('canvas')[index],renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.4));configureDroneRenderer(THREE,renderer);renderer.setClearColor('#f4f3ee');
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(35,1,.001,3),controls=new OrbitControls(camera,canvas);controls.enablePan=false;controls.minDistance=.038;controls.maxDistance=.45;
   addDroneReflections(THREE,renderer,scene);scene.add(new THREE.HemisphereLight(0xfaf8e5,0x768367,2.4));const key=new THREE.DirectionalLight(0xfff0d5,3);key.position.set(-.35,.75,-.25);scene.add(key);const fill=new THREE.DirectionalLight(0xe0efff,1);fill.position.set(.3,.2,.3);scene.add(fill);
-  const drone=createCanopyStudy(kind);scene.add(drone.root);
-  const render=()=>renderer.render(scene,camera);controls.addEventListener('change',render);scenes.push({camera,controls,renderer,render,canvas});
+  const drone=createRift75();scene.add(drone.root);
+  const render=()=>renderer.render(scene,camera);controls.addEventListener('change',render);scenes.push({camera,controls,renderer,render,canvas,initialView});
  }
- function reset(){for(const {camera,controls,render}of scenes){const target=close?[0,.022,-.004]:[0,.015,0],distance=close?.085:.29,positions={perspective:[.75,.42,-1],front:[0,.12,-1],side:[1,.12,0],top:[0,1,.001],rear:[.5,.28,1]};controls.target.set(...target);camera.position.copy(controls.target).add(new THREE.Vector3(...positions[current]).normalize().multiplyScalar(distance));controls.update();render();}}
+ function reset(){for(const {camera,controls,render,initialView}of scenes){const target=close?[0,.022,-.004]:[0,.015,0],distance=close?.085:.29,positions={perspective:[.75,.42,-1],front:[0,.12,-1],side:[1,.12,0],top:[0,1,.001],rear:[.5,.28,1]};controls.target.set(...target);camera.position.copy(controls.target).add(new THREE.Vector3(...positions[current==='compare'?initialView:current]).normalize().multiplyScalar(distance));controls.update();render();}}
  new ResizeObserver(()=>{for(const {canvas,renderer,camera,render}of scenes){renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);camera.aspect=canvas.clientWidth/canvas.clientHeight;camera.updateProjectionMatrix();render();}}).observe(document.querySelector('main'));
  for(const button of document.querySelectorAll('[data-view]'))button.addEventListener('click',()=>{current=button.dataset.view;for(const b of document.querySelectorAll('[data-view]'))b.setAttribute('aria-pressed',String(b===button));reset();});
  document.querySelector('#framing').addEventListener('click',e=>{close=!close;e.currentTarget.textContent=close?'Show whole drone':'Canopy close-up';reset();});reset();document.querySelector('#loading').remove();

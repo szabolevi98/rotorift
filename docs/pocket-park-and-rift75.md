@@ -5,8 +5,10 @@ showcase-ben is. Választási sorrend: Rift 65, Rift 75, Rift C3, Rift X5.
 
 ## Drón
 
-Saját narancs váz, fehér fröccsöntött jellegű, íves és hátul elkeskenyedő,
-valódi oldal- és felső szellőzőnyílásokkal tagolt kameraburkolat; háromszög merevítésű motorfelfogatások, páros talpak,
+Saját narancs váz, a beküldött fotók alapján formált fehér kameraburkolat:
+széles, domború felső héj, lefelé keskenyedő orr, belesüllyesztett lencse,
+oldalsó ablakok és nagy hátsó íves kivágások. A burkolatból kifutó oldalsó
+fülek és hátsó láb találkozik a rögzítőcsavarokkal; háromszög merevítésű motorfelfogatások, páros talpak,
 1102-es motorok, háromágú 45 mm propellerek, zöld AIO és külön 1S 580 mAh csomag.
 A kábelek a váz és a canopy alatt futnak; a csatlakozó a cella mögött találkozik.
 A frame/címke a nyolc választható színt követi, a canopy fehér marad.

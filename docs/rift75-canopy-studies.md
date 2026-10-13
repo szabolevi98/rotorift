@@ -1,34 +1,35 @@
-# Rift 75 canopy-változatok
+# Rift 75 – fotók alapján formált canopy
 
-2026-10-13. Három forgatható 3D terv ugyanazon a vázon, azonos kamerapozícióval,
-motorokkal és akkumulátorral. A választásig egyik sem cseréli le a játék canopyját.
+2026-10-13. A felhasználó frontális, felülnézeti és oldalsó Meteor75 Pro
+fotói alapján készült burkolat. A korábbi három formajavaslat helyét ugyanazon
+modell három nézete veszi át a `showcase/canopy-lab.html` oldalon.
 
-A `showcase/canopy-lab.html` önálló, hálózat nélkül is megnyitható összehasonlító
-lap. A közeli nézet és a teljes drón között lehet váltani, illetve elölről,
-oldalról, felülről és hátulról is meg lehet nézni mindegyik formát.
-A generált lapot az `npm run showcase:build` állítja elő a sablonból és a
-`showcase/canopy-studies.js` geometriáiból.
+A kamera körül lefelé keskenyedő, enyhén domború fehér orr van, amely eltakarja
+a fekete, négyszögletes kameraházat. A lencse kör alakú nyílásban ül.
+A szélesebb felső héjból oldalsó rögzítőfülek és hátsó láb futnak ki.
+Valódi oldalsó ablakok, felső szellőzőrések és nagy hátsó íves kivágások
+nyitják meg az elektronikát körülvevő teret. Az antenna hátrafelé áll,
+a két hátsó propeller közötti szabad sávban, külön kivágott hátsó kilépőnyílással.
 
-- **A — Zárt, lekerekített héj.** Kör alakú, keskeny lencsenyílás, sima
-  domború test, oldalanként három szellőzőrés, hátul elkeskenyedő forma.
-  Ezt javasoljuk a 75-ös saját karakterének: jobban elkülönül a 65-ös nyitott
-  canopyjától, a kamera körüli korábbi szögletes keretet is elhagyja.
-- **B — Nyitott bordaváz.** Vékony íves bordák, külön kameragyűrű, két felső
-  keresztmerevítés; jól látható elektronika és nyitott oldalak.
-- **C — Alacsony versenyburkolat.** Rövid, hátrafelé nyúló tető, kompakt
-  kamerakeret, nyitott hátsó rész és kis narancsszínű díszítés.
+A kamerapozíció és a 28 fokos dőlés változatlan. A burkolatnak külső és belső
+felülete, 0,75 mm-es fala és lezárt nyílásszegélyei vannak; a kamerát belső
+billentési támaszok tartják. A váz továbbra is a saját narancsszínű modell.
+Ez saját procedurális geometria a fotók formai referenciájával.
 
-A tervek formaválasztáshoz készültek. Kiválasztás után a burkolat csatlakozásait,
-falvastagságát és a kamera körüli hézagokat külön véglegesítjük.
+A három nézet közeli és teljes drónméretben is megtekinthető, illetve
+külön forgatható. A lap és a showroom az `npm run showcase:build` során
+ugyanabból a `showcase/whoop75.js` modellből készül. A játék GLB-je ennek
+exportja; külön fizikai módosítás nem történt.
 
-## Motorkábelek
+## Megtartott motorkábel-javítás
 
-A 65-ös és a 75-ös összes motorpadja és forrasztása az AIO alsó oldalára került.
+A 65-ös és a 75-ös összes motorpadja és forrasztása az AIO alsó oldalán van.
 A három fázisvezeték a váz alatt fut, majd a három motor-merevítő közötti szabad
-szektorban emelkedik fel a motor állórészéhez. A vezetékek végpontja az alsó
-forrasztással találkozik; nem a PCB-n keresztül indul.
+szektorban emelkedik fel a motor állórészéhez.
 
 A `tests/drone-wiring.test.js` a valódi modellgenerátorok geometriáját ellenőrzi:
-12 motorvezeték/drón, alsó bekötés, létező forrasztópont, kábelközép és a
-kábelvastagság hatoldali mintavétele a vázhoz és annak csavarjaihoz képest.
-A javítás a két showroom- és a két játékbeli GLB-exportban is szerepel.
+12 motorvezeték/drón, alsó bekötés, létező forrasztópont, a kábelközép és
+kábelvastagság mintavétele a vázhoz és annak csavarjaihoz képest. A 75-ös
+optikai tengelyén a lencse látszik, a környező kameraházat a fehér orr takarja.
+Az antenna középvonala és 1,3 mm sugarú keresztmetszete is szabadon áthalad
+a saját nyílásán, a héj és a rögzítőgyűrű érintése nélkül.

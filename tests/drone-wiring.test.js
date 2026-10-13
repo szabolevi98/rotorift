@@ -28,3 +28,19 @@ for(const size of [65,75])test(`${size} whoop: all motor leads connect underneat
   }
  }
 });
+test('Rift 75: the inset lens remains unobstructed and the surrounding camera case is covered',()=>{
+ const model=vm.runInContext('createRift75()',context),root=model.root;root.scale.setScalar(1);root.updateMatrixWorld(true);
+ const camera=root.getObjectByName('Micro_FPV_camera'),canopy=root.getObjectByName('75_05_Micro_camera_canopy'),ray=new THREE.Raycaster();
+ const direction=new THREE.Vector3(0,0,1).transformDirection(camera.matrixWorld);
+ const from=(x,y)=>{ray.set(new THREE.Vector3(x,y,-30).applyMatrix4(camera.matrixWorld),direction);ray.far=40;return ray.intersectObjects(canopy.children,true)[0];};
+ assert.equal(from(0,0)?.object.name,'FPV_multicoated_lens','the optical axis must see the glass, not white plastic');
+ for(const x of [-4.8,4.8])for(const y of [-2.5,2.5])assert.equal(from(x,y)?.object.name,'Integrated_tapered_camera_nose','the black square camera case must sit inside the shell');
+});
+test('Rift 75: the rear-facing antenna passes through its shell opening without clipping',()=>{
+ const model=vm.runInContext('createRift75()',context);model.root.scale.setScalar(1);model.root.updateMatrixWorld(true);
+ const white=[];model.root.getObjectByName('75_05_Micro_camera_canopy').traverse(o=>{if(o.isMesh&&o.material===model.materials.canopy)white.push(o);});
+ const axis=new THREE.Vector3(0,1,3).normalize(),side=new THREE.Vector3(0,3,-1).normalize(),ray=new THREE.Raycaster();ray.far=21;
+ for(const offset of [new THREE.Vector3(),new THREE.Vector3(1.3,0,0),new THREE.Vector3(-1.3,0,0),side.clone().multiplyScalar(1.3),side.clone().multiplyScalar(-1.3)]){
+  ray.set(new THREE.Vector3(0,16,9).add(offset),axis);const hit=ray.intersectObjects(white,false)[0];assert.ok(!hit,`antenna intersects ${hit?.object.name}`);
+ }
+});
