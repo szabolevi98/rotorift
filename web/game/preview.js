@@ -36,17 +36,19 @@ export class Preview {
     sun.shadow.camera.near = 0.01;
     sun.shadow.camera.far = 2;
     sun.shadow.bias = -0.0001;
+    sun.shadow.normalBias = 0.0002;
     this.scene.add(sun);
     const rim = new THREE.DirectionalLight(0xa7dcff, 1.6);
     rim.position.set(0.5, 0.1, 0.4);
     this.scene.add(rim);
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(3, 3),
-      new THREE.ShadowMaterial({ opacity: 0.13 }),
+      new THREE.ShadowMaterial({ opacity: 0.13, depthWrite: false }),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.scene.add(floor);
+    this.floor = floor;
     this.version = 0;
     this.color = "coral";
   }
@@ -61,6 +63,9 @@ export class Preview {
     const size = new THREE.Box3().setFromObject(model),
       center = size.getCenter(new THREE.Vector3()),
       extent = size.getSize(new THREE.Vector3()).length();
+    // Model roots sit at frame level, not at their landing feet. A floor at
+    // Y=0 intersects the arms and produces competing depth values as we orbit.
+    this.floor.position.y = size.min.y - 0.0005;
     this.controls.target.set(center.x, center.y, center.z);
     this.camera.position
       .copy(center)

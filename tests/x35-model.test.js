@@ -38,3 +38,11 @@ test('X35 lens surround and camera mount leave the forward optical axis clear',(
   const ray=new THREE.Raycaster(start,direction,0,100);
   assert.equal(ray.intersectObject(m.root,true).length,0,'the mount cannot obstruct the FPV camera');
 });
+test('X35 arm and motor seat expose only one carbon surface at the former flickering overlap',()=>{
+  const m=model(),carbon=m.root.getObjectByName('X35_01_Carbon_frame').children.filter(o=>o.material===m.materials.carbon),ray=new THREE.Raycaster();
+  for(const prop of m.propellers){
+    const x=prop.group.position.x,z=prop.group.position.z;
+    ray.set(new THREE.Vector3(x-Math.sign(x)*4,1,z-Math.sign(z)*5),new THREE.Vector3(0,-1,0));ray.far=1.01;
+    assert.equal(new Set(ray.intersectObjects(carbon).map(hit=>hit.object)).size,1,'motor seat and arm cannot have competing top faces');
+  }
+});

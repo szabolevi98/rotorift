@@ -41,7 +41,7 @@ function createRiftX35() {
   const motorSet=assembly('X35_03_Brushless_motors',[0,8,0]),electronic=assembly('X35_04_Electronics',[0,12,0]);
   function bladeGeometry(direction){
     const vertices=[],indices=[],rows=22,sides=8;
-    for(let i=0;i<=rows;i++){const t=i/rows,r=6+(44.45-6)*t,a=direction*.23*t*t,chord=(3+5*Math.sin(Math.PI*t))*Math.sqrt(1-t*t)+.3,pitch=direction*(.40-.20*t);
+    for(let i=0;i<=rows;i++){const t=i/rows,r=4.8+(44.45-4.8)*t,a=direction*.23*t*t,chord=(3+5*Math.sin(Math.PI*t))*Math.sqrt(1-t*t)+.3,pitch=direction*(.40-.20*t);
       for(let j=0;j<sides;j++){const theta=j/sides*Math.PI*2,u=Math.cos(theta)*chord*.55,v=Math.sin(theta)*.45;
         vertices.push(r*Math.cos(a)-u*Math.cos(pitch)*Math.sin(a),v+u*Math.sin(pitch),r*Math.sin(a)+u*Math.cos(pitch)*Math.cos(a));}}
     for(let i=0;i<rows;i++)for(let j=0;j<sides;j++){const a=i*sides+j,b=i*sides+(j+1)%sides;indices.push(a,b,a+sides,b,b+sides,a+sides);}
@@ -52,26 +52,31 @@ function createRiftX35() {
   for(let index=0;index<4;index++){
     const [x,z,direction]=motors[index],sx=Math.sign(x),sz=Math.sign(z);
     const armStart=new THREE.Vector3(sx*9,-2,sz*9),armEnd=new THREE.Vector3(x,-2,z),armAxis=armEnd.clone().sub(armStart);
-    const arm=box(frame,12,4,armAxis.length(),materials.carbon,'X35_conventional_carbon_arm',...armStart.clone().add(armEnd).multiplyScalar(.5).toArray());arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),armAxis.normalize());
-    cyl(frame,10,4,materials.carbon,'Motor_mount_pad',x,-2,z,20);
-    cyl(motorSet,8.6,1.6,materials.black,'Motor_base',x,.8,z,20);
-    cyl(motorSet,7.1,7,materials.black,'Motor_stator',x,5.1,z,18);
-    const wallShape=new THREE.Shape();wallShape.absarc(0,0,9.1,0,Math.PI*2,false);wallShape.holes.push(hole(0,0,7.8));
-    const wall=plate(motorSet,wallShape,7,9.8,'1404_motor_bell',materials.black);wall.position.x=x;wall.position.z=z;
-    for(let turn=0;turn<12;turn++){const a=turn/12*Math.PI*2;cyl(motorSet,1.1,2.8,materials.copper,'Motor_copper_winding',x+Math.cos(a)*6.9,10.6,z+Math.sin(a)*6.9,8);}
-    for(let spoke=0;spoke<6;spoke++){const a=spoke/6*Math.PI*2;beam(motorSet,[x,12.3,z],[x+Math.cos(a)*8.5,12.3,z+Math.sin(a)*8.5],1.1,.8,materials.black,'Motor_bell_spoke');}
-    cyl(motorSet,3.2,1.2,materials.silver,'Motor_shaft_shoulder',x,12.9,z);cyl(motorSet,1.5,5,materials.silver,'Motor_shaft',x,15,z,12);
-    const bumper=new THREE.Shape();bumper.absarc(0,0,11.5,0,Math.PI*2,false);bumper.holes.push(hole(0,0,2.1));
+    // The arm and its round motor seat are one solid: separate coplanar top
+    // faces flicker in the rotating menu preview, even without shadow maps.
+    const length=armAxis.length(),padRadius=9.3,joinAngle=Math.acos(6/padRadius),armShape=new THREE.Shape();
+    armShape.moveTo(-6,0);armShape.lineTo(6,0);armShape.lineTo(6,length-Math.sqrt(padRadius*padRadius-36));armShape.absarc(0,length,padRadius,-joinAngle,Math.PI+joinAngle,false);armShape.lineTo(-6,0);armShape.closePath();
+    const armGeometry=geometry(armShape,4);armGeometry.rotateX(-Math.PI/2);
+    const arm=mesh(frame,armGeometry,materials.carbon,'X35_conventional_carbon_arm',...armStart.toArray());arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),armAxis.normalize());
+    cyl(motorSet,7.8,1.6,materials.black,'Motor_base',x,.8,z,20);
+    cyl(motorSet,7,4,materials.black,'Motor_stator',x,4.4,z,18);
+    const wallShape=new THREE.Shape();wallShape.absarc(0,0,8.95,0,Math.PI*2,false);wallShape.holes.push(hole(0,0,7.6));
+    const wall=plate(motorSet,wallShape,6.1,8.2,'1404_motor_bell',materials.black);wall.position.x=x;wall.position.z=z;
+    for(let turn=0;turn<12;turn++){const a=turn/12*Math.PI*2;cyl(motorSet,.9,3.6,materials.copper,'Motor_copper_winding',x+Math.cos(a)*6.6,6,z+Math.sin(a)*6.6,8);}
+    for(let spoke=0;spoke<6;spoke++){const a=spoke/6*Math.PI*2;beam(motorSet,[x,10.4,z],[x+Math.cos(a)*8.3,10.4,z+Math.sin(a)*8.3],1.1,.8,materials.black,'Motor_bell_spoke');}
+    cyl(motorSet,2.7,1.2,materials.silver,'Motor_shaft_shoulder',x,11.3,z);cyl(motorSet,1,6.1,materials.silver,'Motor_shaft',x,13.55,z,12);
+    const bumper=new THREE.Shape();bumper.absarc(0,0,10.6,0,Math.PI*2,false);bumper.holes.push(hole(0,0,2.1));
     for(const dx of [-3,3])for(const dz of [-3,3])bumper.holes.push(hole(dx,dz,1.65));
-    const guardGeometry=softened(bumper,5,.3);guardGeometry.rotateX(-Math.PI/2);
-    mesh(frame,guardGeometry,materials.tpu,'X35_motor_TPU_skid_with_bolt_access',x,-6.5,z);
+    const guardGeometry=softened(bumper,4,.3);guardGeometry.rotateX(-Math.PI/2);
+    mesh(frame,guardGeometry,materials.tpu,'X35_motor_TPU_skid_with_bolt_access',x,-6,z);
     // Only the outboard half rises around the carbon; the inboard motor leads stay exposed.
-    const rim=new THREE.Shape();rim.absarc(0,0,12,-Math.PI/2,Math.PI/2,false);rim.absarc(0,0,10.35,Math.PI/2,-Math.PI/2,true);rim.closePath();
-    const rimGeometry=geometry(rim,5);rimGeometry.rotateX(-Math.PI/2);
-    const lip=mesh(frame,rimGeometry,materials.tpu,'X35_motor_outboard_TPU_wrap',x,-1.5,z);lip.rotation.y=-Math.atan2(z,x);
+    const rim=new THREE.Shape();rim.absarc(0,0,10.9,-Math.PI/2,Math.PI/2,false);rim.absarc(0,0,9.65,Math.PI/2,-Math.PI/2,true);rim.closePath();
+    const rimGeometry=geometry(rim,4.5);rimGeometry.rotateX(-Math.PI/2);
+    const lip=mesh(frame,rimGeometry,materials.tpu,'X35_motor_outboard_TPU_wrap',x,-1.75,z);lip.rotation.y=-Math.atan2(z,x);
     for(const dx of [-3,3])for(const dz of [-3,3])screw(frame,x+dx,-4.35,z+dz,1.05);
     const prop=new THREE.Group();prop.name='Propeller_'+index;prop.position.set(x,15,z);root.add(prop);assemblies.push({group:prop,base:prop.position.clone(),delta:new THREE.Vector3(0,16,0)});propellers.push({group:prop,direction});
-    cyl(prop,3.3,1.7,materials.prop,'Propeller_hub',0,.4,0);cyl(prop,2.6,2,materials.black,'Propeller_locknut',0,2,0,6);
+    cyl(prop,5.3,1.7,materials.prop,'Propeller_T_mount_hub',0,.4,0);
+    for(const boltX of [-4,4])screw(prop,boltX,1.65,0,1.25);
     for(let blade=0;blade<3;blade++){const g=new THREE.Group();g.name='Blade_'+blade;g.rotation.y=blade*2*Math.PI/3;prop.add(g);mesh(g,blades.get(direction),materials.prop,'Twisted_X35_blade_'+blade);}
     for(let lead=0;lead<3;lead++){
       const offset=(lead-1)*1.25,padX=sx*9.3,padZ=sz*(3.5+lead*1.6);

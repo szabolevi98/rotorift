@@ -30,6 +30,19 @@ entries, and a balance connector secured alongside the power leads. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
 the propeller plane. Motor wiring attaches beneath the AIO PCB and clears carbon.
 
+Motor bells have a 17.9 mm outside diameter and a shorter 8.2 mm wall, with a
+4 mm stator and a two-bolt T-mount propeller hub. The skids retain bolt access
+with a narrower, 21.8 mm outboard rim. Each conventional arm and circular motor
+seat form one extruded outline, eliminating the coplanar faces that flickered
+in the rotating hangar preview. The [T-MOTOR F1404 dimensions](https://store.tmotor.com/product/f1404-fpv-motor.html)
+provide the motor size reference; this visual revision preserves rotor positions
+and the existing flight configuration.
+
+The hangar shadow floor follows each selected model's lowest point with
+0.5 mm clearance, rather than intersecting arms at the model origin. It does
+not write to the depth buffer; a small normal shadow bias reduces self-shadow
+acne at this model scale.
+
 The [GEPRC SMART35 manufacturer's specifications](https://geprc.com/product/geprc-smart-35-analog-3-5inch-micro-freestyle-drone/)
 provided a size-class reference: 3.5-inch props, 4S power and 1404 motors. X35
 geometry, 160 mm spacing and all-up mass are Rotorift design choices. Motor thrust,
