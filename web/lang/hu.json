@@ -84,7 +84,7 @@
   "records.unavailable": "Az online rekordok nem elérhetők. A helyi időmérő működik.",
   "footer.flight": "TALÁLD MEG AZ ÍVED",
   "footer.build": "Copyright © {year} szabolevi98",
-  "loading": "Repülőtér megnyitása…",
+  "loading": "Hangár megnyitása…",
   "loading.model": "{name} betöltése…",
   "loading.flight": "{name} megnyitása…",
   "loading.download": "Drónmodell letöltése",
