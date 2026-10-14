@@ -16,9 +16,9 @@
   <main>
     <article><header><span class="letter">A / MINIMAL</span><h2>Twin cheeks</h2><p>Two compact side mounts. The black camera and lens stay exposed, with no orange ring around the lens.</p></header><canvas aria-label="Option A twin-cheek camera mount, drag to rotate"></canvas><p>Open nose · Four frame bolts · Adjustable side pivots</p></article>
     <article><header><span class="letter">B / LOW VISOR</span><h2>Short hood</h2><p>The same small side mounts, with a short TPU roof and two corner protectors on the camera.</p></header><canvas aria-label="Option B short camera hood, drag to rotate"></canvas><p>Open lower face · Upper corner protection · Hood follows camera tilt</p></article>
-    <article><header><span class="letter">C / CORNER GUARD</span><h2>Open bumper</h2><p>A slim, rounded rectangular bumper around the camera body. The circular lens is fully exposed.</p></header><canvas aria-label="Option C rectangular camera bumper, drag to rotate"></canvas><p>Four protected corners · Short side retainers · No oversized lens ring</p></article>
+    <article><header><span class="letter">C / CORNER GUARD · SELECTED</span><h2>Open bumper</h2><p>A slim, rounded rectangular bumper around the camera body. The circular lens is fully exposed.</p></header><canvas aria-label="Option C rectangular camera bumper, drag to rotate"></canvas><p>Four protected corners · Short side retainers · No oversized lens ring</p></article>
   </main>
-  <footer>These are alternatives for review; the game retains its current camera mount until one is selected. All three share the revised plain black omni antenna and its own rear shelf. Close-up views hide the motors and rotors for clarity. The rear view shows the assembled drone.</footer>
+  <footer>Option C is the selected X35 camera mount, used in the game and the main showcase. All three share the revised plain black omni antenna and its own rear shelf. Close-up views hide the motors and rotors for clarity. The rear view shows the assembled drone.</footer>
   <script>/**
  * @license
  * Copyright 2010-2024 Three.js Authors
@@ -55811,7 +55811,7 @@ function applyBatteryLabelColor(root, hex) {
 }
 
 // Compact 3.5-inch freestyle aircraft. Built in mm; front is -Z.
-function createRiftX35({cameraMount='original'}={}) {
+function createRiftX35({cameraMount='cage'}={}) {
   const root=new THREE.Group();root.name='Rotorift_Rift_X35';root.scale.setScalar(.001);
   root.userData={designer:'Rotorift',model:'Rift X35',units:'meters',propDiameterMm:88.9,motorDiagonalMm:160,battery:'4S 650mAh',actionCamera:false};
   const assemblies=[],propellers=[],batteryParts=[],actionParts=[],materials={};

@@ -3,9 +3,11 @@ import {DRONE_SURFACES,configureDronePolymer} from '../shared/visual/drone-rende
 const config=JSON.parse(await readFile(new URL('../data/drones/rift-x35.json',import.meta.url),'utf8'));
 const context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,document:{createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})}});
 vm.runInContext(await readFile(new URL('../showcase/freestyle35.js',import.meta.url),'utf8'),context);
-function model(cameraMount='original'){const m=vm.runInContext(`createRiftX35({cameraMount:'${cameraMount}'})`,context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);return m;}
+function model(cameraMount){const m=vm.runInContext(cameraMount?`createRiftX35({cameraMount:'${cameraMount}'})`:'createRiftX35()',context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);return m;}
 test('X35 is a compact 4S aircraft with no action camera, flat arms and independently exportable tri-blade rotors',()=>{
   const m=model();assert.equal(m.actionParts.length,0);assert.equal(m.propellers.length,4);assert.equal(m.batteryParts.length,1);
+  assert.ok(m.root.getObjectByName('FPV_open_corner_bumper'),'the chosen third camera mount is the default');
+  assert.equal(m.root.getObjectByName('FPV_contoured_lens_surround'),undefined);
   assert.ok(m.triangles<40000,'the new compact aircraft must stay lightweight');
   for(let i=0;i<4;i++){
     const prop=m.propellers[i].group,expected=config.motors[i].positionM;

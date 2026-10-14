@@ -23,8 +23,8 @@ The source is `showcase/freestyle35.js`; the corresponding game asset is
 The battery follows the C3 pack design, with rounded shrink-protected ends,
 cell seams, top and rear labels, and two straps with side buckles through deck
 slots. Motor TPU skids cover the underside with screw access holes and an
-outboard rim that leaves the motor wiring clear. The FPV camera uses curved,
-open side cheeks, two feet secured by four bolts, and a rounded lens surround.
+outboard rim that leaves the motor wiring clear. The FPV camera uses compact
+side cheeks, two feet secured by four bolts, and a rounded rectangular bumper.
 The pack has an XT30 pair with separated wire
 entries, and a balance connector secured alongside the power leads. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
@@ -60,8 +60,8 @@ level modes, frame rates, and positions away from the world origin.
 The [X35 mount lab](../showcase/x35-mount-lab.html) compares three real model
 variants: A / twin cheeks with an exposed camera, B / a short upper visor,
 and C / a rounded rectangular corner bumper. All retain the same camera tilt,
-four lower-frame bolts and side pivots. They are review options; the exported
-game model retains the previous camera mount pending selection.
+four lower-frame bolts and side pivots. Option C is the selected default in
+the main showcase and exported game model; A and B remain comparison options.
 
 The upper carbon deck now has an open camera bay so it does not intersect the
 tilted housing. The rear omni antenna sits behind the XT30 on its own shelf,

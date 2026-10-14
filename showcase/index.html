@@ -60794,7 +60794,7 @@ function createRiftC3() {
 }
 
 // Compact 3.5-inch freestyle aircraft. Built in mm; front is -Z.
-function createRiftX35({cameraMount='original'}={}) {
+function createRiftX35({cameraMount='cage'}={}) {
   const root=new THREE.Group();root.name='Rotorift_Rift_X35';root.scale.setScalar(.001);
   root.userData={designer:'Rotorift',model:'Rift X35',units:'meters',propDiameterMm:88.9,motorDiagonalMm:160,battery:'4S 650mAh',actionCamera:false};
   const assemblies=[],propellers=[],batteryParts=[],actionParts=[],materials={};
