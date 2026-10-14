@@ -11,6 +11,9 @@ A 3D távirányító karjai csatlakoztatott rádiónál a tényleges, kalibrált
 követik, beleértve az invertálást és a botfelismerés közben megtalált tengelyeket.
 Külön mozgó pont nincs. A narancs kiemelés és a nyilak az útmutatást mutatják;
 USB rádió nélkül maguk a karok mutatják be a kiválasztott mozdulatot.
+A négyszögletes tartókeret, a csapágyak és a ház fixek; csak a bot szára és
+feje fordul a gömbcsukló középpontja körül. A teljes botút tesztje a fix
+alkatrészek mozdulatlanságát is ellenőrzi.
 
 A meglévő rádiómodell az első választás; külön SIM modell nem általános feltétel.
 A botfelismerő a kisebb (például mix vagy rate miatt csökkentett) analóg kitérést

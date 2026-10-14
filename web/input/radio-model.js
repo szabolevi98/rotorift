@@ -90,7 +90,7 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
   box(.24, .062, .015, black, 0, .955, .18, .012);
   box(.14, .023, .016, metal, 0, .956, .19, .009);
 
-  const sticks = [], rings = [], arrows = [];
+  const sticks = [], rings = [], arrows = [], gimbalFrames = [];
   const gimbalCenters = [[-.75, .29, .413], [.75, .29, .413]];
   for (const [index, center] of gimbalCenters.entries()) {
     const [x, y, z] = center;
@@ -106,23 +106,27 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
       box(.011, .052, .009, ink, x, y + side * .405, z + .012, .004);
     }
 
-    const pivot = new THREE.Group(); pivot.position.set(x, y, z + .012); pivot.name = index ? "Right_gimbal" : "Left_gimbal"; root.add(pivot);
-    // Open yoke, hinge bearings and a barrel around the ball-jointed shaft.
+    // The square support cage and bearings belong to the radio housing.
+    // Only the ball-jointed shaft and its tip follow the stick input.
+    const frame = new THREE.Group(); frame.position.set(x, y, z + .012); frame.name = index ? "Right_fixed_gimbal_frame" : "Left_fixed_gimbal_frame"; root.add(frame); gimbalFrames.push(frame);
     for (const side of [-1, 1]) {
-      box(.057, .34, .075, darkMetal, side * .28, 0, -.008, .016, pivot);
-      box(.53, .042, .075, metal, 0, side * .17, -.008, .012, pivot);
-      const bearing = cylinder(.044, .05, metal, side * .32, 0, -.018, pivot);
+      box(.057, .34, .075, darkMetal, side * .28, 0, -.008, .016, frame);
+      box(.53, .042, .075, metal, 0, side * .17, -.008, .012, frame);
+      const bearing = cylinder(.044, .05, metal, side * .32, 0, -.018, frame);
       bearing.rotation.y = Math.PI / 2;
     }
-    const barrel = cylinder(.083, .43, black, 0, 0, -.020, pivot);
+    const barrel = cylinder(.083, .43, black, 0, 0, -.020, frame);
     barrel.rotation.y = Math.PI / 2;
-    mesh(new THREE.SphereGeometry(.067, 12, 8), metal, 0, 0, .036, pivot);
-    cylinder(.028, .23, metal, 0, 0, .16, pivot, .037);
-    for (const z of [.094, .117, .140]) ring(.030, .005, darkMetal, 0, 0, z, pivot);
-    cylinder(.069, .074, darkMetal, 0, 0, .305, pivot, .057, 12);
-    ring(.063, .009, accent, 0, 0, .282, pivot);
-    cylinder(.059, .012, metal, 0, 0, .35, pivot, .062, 12);
-    cylinder(.026, .008, black, 0, 0, .361, pivot, .026, 12);
+    // Place the rotation origin at the ball centre, preserving the original
+    // neutral shaft/tip positions relative to the front panel.
+    const pivot = new THREE.Group(); pivot.position.set(x, y, z + .048); pivot.name = index ? "Right_gimbal" : "Left_gimbal"; root.add(pivot);
+    mesh(new THREE.SphereGeometry(.067, 12, 8), metal, 0, 0, 0, pivot);
+    cylinder(.028, .23, metal, 0, 0, .124, pivot, .037).name = index ? "Right_stick_shaft" : "Left_stick_shaft";
+    for (const z of [.058, .081, .104]) ring(.030, .005, darkMetal, 0, 0, z, pivot);
+    cylinder(.069, .074, darkMetal, 0, 0, .269, pivot, .057, 12);
+    ring(.063, .009, accent, 0, 0, .246, pivot);
+    cylinder(.059, .012, metal, 0, 0, .314, pivot, .062, 12);
+    cylinder(.026, .008, black, 0, 0, .325, pivot, .026, 12).name = index ? "Right_stick_tip" : "Left_stick_tip";
     sticks.push(pivot);
 
     const directions = [];
@@ -175,5 +179,5 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
   }
   for (let i = 0; i < 6; i++) box(.075, .031, .022, ink, -.29 + i * .116, -.40, .390, .014);
   root.rotation.set(-.06, -.09, 0);
-  return { root, sticks, rings, arrows, gimbalCenters };
+  return { root, sticks, rings, arrows, gimbalCenters, gimbalFrames };
 }

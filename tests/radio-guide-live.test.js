@@ -55,3 +55,21 @@ test('disconnecting returns the sticks to the instructional animation',()=>{
   near(g.sticks[0].rotation.y,0);near(g.sticks[0].rotation.x,.6);
   near(g.sticks[1].rotation.y,0);near(g.sticks[1].rotation.x,-.6);
 });
+
+test('the square frames, bearings and shell stay fixed throughout full stick travel',()=>{
+  const {g,model}=guide(),c=controller();c.raw=[0,0,0,0];g.render(c,0);model.root.updateMatrixWorld(true);
+  const fixed=[];
+  for(const frame of model.gimbalFrames)frame.traverse(part=>fixed.push({part,matrix:part.matrixWorld.clone()}));
+  for(const name of ['Radio_front_shell','Radio_rear_shell']){
+    const part=model.root.getObjectByName(name);fixed.push({part,matrix:part.matrixWorld.clone()});
+  }
+  const ballCenters=model.sticks.map(stick=>stick.getWorldPosition(new THREE.Vector3()));
+  for(const raw of [[1,0,0,0],[-1,0,0,0],[0,1,0,0],[0,-1,0,0],[0,0,1,0],[0,0,-1,0],[0,0,0,1],[0,0,0,-1],[1,-1,1,1],[-1,1,-1,-1]]){
+    c.raw=raw;g.render(c,500);model.root.updateMatrixWorld(true);
+    for(const {part,matrix} of fixed)assert.deepEqual(part.matrixWorld.elements,matrix.elements,'fixed cage/bearing/shell moved');
+    model.sticks.forEach((stick,i)=>{
+      assert.ok(stick.getWorldPosition(new THREE.Vector3()).distanceTo(ballCenters[i])<1e-12,'ball pivot must remain seated');
+      assert.equal(stick.children.filter(part=>part.geometry?.type==='RoundedBoxGeometry').length,0,'support rails cannot be attached to the moving stick');
+    });
+  }
+});
