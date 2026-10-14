@@ -215,6 +215,9 @@
   #menu main { padding-right: 4vw; padding-left: 4vw; }
   #menu .launch-controls { gap: 36px; }
 }
+@media (min-width: 1151px) and (min-height: 850px) {
+  #menu #fly-panel #preview-scene { height: clamp(420px, 48vh, 560px); }
+}
 @media (max-width: 1050px) {
   .menu-body { grid-template-columns: 152px minmax(0, 1fr); }
   .menu-sidebar { padding: 24px 12px; }
