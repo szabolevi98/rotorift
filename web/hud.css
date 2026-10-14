@@ -4,6 +4,18 @@
 .hud-location { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .hud-identity { display: flex; align-items: center; gap: 12px; }
 #hud-fps { font-size: 10px; font-weight: 600; color: #ffffffb3; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#hud #hud-fps { pointer-events:auto;min-height:28px;padding:4px 6px;border:1px solid #ffffff20;background:#11151b90;border-radius:4px;font-size:10px;font-weight:600;touch-action:manipulation; }
+#hud #hud-fps[aria-expanded="true"] { border-color:#ff997c;color:#ffd1c4; }
+.performance-panel { position:absolute;top:72px;left:var(--hud-edge);width:min(330px,calc(100vw - 32px));max-height:calc(100svh - 172px);overflow-y:auto;pointer-events:auto;z-index:6;padding:12px 14px;background:#12161bf5;border:1px solid #ffffff30;border-radius:9px;text-shadow:none; }
+.performance-heading { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+.performance-heading h2 { font-size:14px;margin:0; }
+#hud .performance-heading button { background:transparent;border:0;color:#fff;font-size:24px;min-width:36px;min-height:36px; }
+.performance-panel p { font-size:10px;line-height:1.5;color:#bac5d2; }
+.performance-panel dl { margin:8px 0; }
+.performance-panel dl div { display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px solid #ffffff14;font-size:11px; }
+.performance-panel dd { margin:0;font-variant-numeric:tabular-nums;white-space:nowrap; }
+#hud .performance-panel .button-row button { background:#29313b;border:1px solid #ffffff30;border-radius:5px;color:#fff;padding:8px;font-size:10px;min-height:36px; }
+@media(max-height:500px) { .performance-panel {top:64px;max-height:calc(100svh - 84px);} }
 #hud .hud-brand { display: block; font-size: 11px; color: #fff9; }
 #hud-session { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #hud .hud-actions { flex: none; gap: 6px; }

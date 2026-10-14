@@ -280,7 +280,7 @@
     <div id="analog-effect" class="hidden" aria-hidden="true"><div class="analog-grain"></div></div>
     <div id="hud" class="hidden">
       <div class="hud-top">
-        <div class="hud-location"><div class="hud-identity"><span class="hud-brand">ROTORIFT.</span><span id="hud-fps">— FPS</span></div><span id="hud-session"></span></div>
+        <div class="hud-location"><div class="hud-identity"><span class="hud-brand">ROTORIFT.</span><button id="hud-fps" type="button" aria-controls="performance-panel" aria-expanded="false">— FPS</button></div><span id="hud-session"></span></div>
         <div class="hud-actions"><button id="hud-reset" type="button" data-i18n="hud.resetAction"></button><button id="hud-view" type="button"></button><button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button><button id="hud-help-button" class="hud-info-button" type="button" aria-controls="flight-help" aria-expanded="false">i</button><button id="menu-button" type="button" data-i18n="nav.menu"></button></div>
       </div>
       <aside id="flight-help" class="flight-help hidden" aria-labelledby="flight-help-title">
@@ -289,6 +289,12 @@
         <p id="flight-help-note"></p>
         <dl id="flight-help-keys"></dl>
         <p class="flight-help-footer" data-i18n="hud.helpLive"></p>
+      </aside>
+      <aside id="performance-panel" class="performance-panel hidden" aria-labelledby="performance-title">
+        <div class="performance-heading"><h2 id="performance-title" data-i18n="perf.title"></h2><button type="button" data-performance-close>×</button></div>
+        <p data-i18n="perf.hint"></p>
+        <dl data-performance-rows></dl>
+        <div class="button-row"><button type="button" data-performance-reset data-i18n="perf.reset"></button><button type="button" data-performance-export data-i18n="perf.export"></button></div>
       </aside>
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>

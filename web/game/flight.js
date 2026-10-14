@@ -19,6 +19,7 @@ import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
 import { FpvPropellers } from "../../shared/visual/fpv-propellers.js";
 import { RotorMotion, RemoteRotorMotion } from "../../shared/visual/rotor-motion.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
+import { advanceFixedSteps } from '../../shared/physics/fixed-step.js';
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -142,17 +143,23 @@ export class Flight {
   setCameraSettings(angle, fov) {
     this.cameraRig.setSettings(angle, fov);
   }
-  step(dt, input, update) {
+  step(dt, input, update, metrics = null) {
     if (!this.active) return;
+    const worldStart = metrics ? performance.now() : 0;
     this.environment.update(this.physics.pose.p, this.physics.pose.v);
-    this.accumulator += Math.min(dt, 0.1);
-    while (this.accumulator >= PHYSICS_DT) {
+    const physicsStart = metrics ? performance.now() : 0;
+    const steps = advanceFixedSteps(this, dt, () => {
       this.previous = this.physics.pose;
       this.remoteCollisions.step(PHYSICS_DT);
       this.physics.step(input);
       this.current = this.physics.pose;
-      this.accumulator -= PHYSICS_DT;
       update(this.previous, this.current, PHYSICS_DT);
+    });
+    if (metrics) {
+      metrics.worldMs = physicsStart - worldStart;
+      metrics.physicsMs = performance.now() - physicsStart;
+      metrics.steps = steps;
+      metrics.droppedMs = Math.max(0, dt - .1) * 1000;
     }
     this.place(this.current, this.accumulator / PHYSICS_DT);
     this.propVisual.update(this.physics.effects.propellers.blades);

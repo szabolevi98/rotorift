@@ -11,6 +11,7 @@ import { armPrompt } from "./game/arm-prompt.js";
 import { FpvOsd } from "./game/fpv-osd.js";
 import { PropellerHud } from "./game/propeller-hud.js";
 import { CameraProfiles, DEFAULT_CAMERA_PROFILE } from './game/camera-profiles.js';
+import { FrameDiagnostics } from './game/frame-diagnostics.js';
 import { validPropellers } from "/shared/physics/propellers.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
@@ -51,12 +52,13 @@ function updateFps(now, rendering) {
     // Real render cadence, independent of the capped simulation timestep.
     const label = `${Math.round(fpsFrames * 1000 / elapsed)} FPS`;
     if (fpsLabel.textContent !== label) fpsLabel.textContent = label;
+    fpsLabel.setAttribute('aria-label',label+' · '+t('perf.open'));
     fpsSince = now;
     fpsFrames = 0;
   }
 }
 document.addEventListener("visibilitychange", () => updateFps(performance.now(), false));
-let fullscreen, radioGuide, pauseMenu, pauseRenderNeeded = false;
+let fullscreen, radioGuide, pauseMenu, diagnostics, pauseRenderNeeded = false;
 window.addEventListener("resize", () => { if (playing && paused) pauseRenderNeeded = true; });
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
@@ -1263,6 +1265,9 @@ function flightHelpContent() {
     note: t(radio ? "hud.helpRadio" : "hud.helpKeyboard"), rows };
 }
 function frame(now) {
+  const frameStart=diagnostics?.open?performance.now():0;
+  const diagnosticSample=playing&&!paused&&!document.hidden?diagnostics?.begin(now):null;
+  if(!diagnosticSample)diagnostics?.idle();
   if (!$("#menu").classList.contains("hidden") && $("#menu").dataset.panel === "multiplayer" && network.ready && !room && !roomRequest && now - roomsRefreshAt > 5000)
     refreshRooms();
   const elapsed = Math.max(0, (now - lastFrame) / 1000);
@@ -1297,7 +1302,8 @@ function frame(now) {
             notice(t("hud.localLap", { time: time(e.ms) }));
           }
       }
-    });
+    }, diagnosticSample);
+    if(diagnosticSample)diagnosticSample.droppedMs=Math.max(0,elapsed-.1)*1000;
     if (!room && flight.boundary.update(flight.physics.pose.p, elapsed)) {
       action("reset");
       notice(t("hud.boundaryReset"));
@@ -1327,13 +1333,23 @@ function frame(now) {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
     radioGuide.render(controller, now);
   }
-  if (playing && (!paused || onlineLive || pauseRenderNeeded)) { flight.render(dt); pauseRenderNeeded = false; }
+  if (playing && (!paused || onlineLive || pauseRenderNeeded)) {
+    const renderStart=diagnosticSample?performance.now():0;
+    if(diagnosticSample)diagnostics.timer.begin(diagnosticSample);
+    try { flight.render(dt); } finally { if(diagnosticSample)diagnostics.timer.end(); }
+    if(diagnosticSample)diagnosticSample.renderMs=performance.now()-renderStart;
+    pauseRenderNeeded = false;
+  }
   pauseMenu?.update();
   fpvOsd.update(playing && !paused && !flight.chase, flight?.cameraRig.quaternion);
   updateFps(now, playing && (!paused || onlineLive));
+  if(diagnosticSample)diagnostics.record(diagnosticSample,performance.now()-frameStart,{
+    map:flight.map.id,drone:flight.config.id,view:flight.view,position:[...flight.physics.pose.p],
+  });
   requestAnimationFrame(frame);
 }
 function bindUI() {
+  diagnostics=new FrameDiagnostics($('#performance-panel'),fpsLabel,flight.renderer,t);
   fullscreen = bindFullscreen(t, notice);
   for (const b of document.querySelectorAll("[data-tab]"))
     b.onclick = () => {
