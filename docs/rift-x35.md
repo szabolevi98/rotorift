@@ -54,3 +54,22 @@ carbon/PCB clearance of all 12 motor leads, receiver antenna clearance, export
 without action-camera parts, and game loading with 12 independently damageable
 blades. The regular flight-envelope tests also cover all axes, throttle levels,
 level modes, frame rates, and positions away from the world origin.
+
+## Camera mount alternatives and rear antenna
+
+The [X35 mount lab](../showcase/x35-mount-lab.html) compares three real model
+variants: A / twin cheeks with an exposed camera, B / a short upper visor,
+and C / a rounded rectangular corner bumper. All retain the same camera tilt,
+four lower-frame bolts and side pivots. They are review options; the exported
+game model retains the previous camera mount pending selection.
+
+The upper carbon deck now has an open camera bay so it does not intersect the
+tilted housing. The rear omni antenna sits behind the XT30 on its own shelf,
+attached to the deck by two bolted feet and diagonal braces. The stem, radome
+and base seam are black, with no colored decoration. The XT30, battery leads,
+balance connector and lower receiver antenna retain their separate positions.
+
+The mount lab renders only on view changes, resizing and dragging. The game
+GLB contains only the current mount, not all three alternatives. Tests verify
+the unobstructed optical axes, open carbon bay, antenna/connector separation,
+rotor alignment and existing underside wiring.

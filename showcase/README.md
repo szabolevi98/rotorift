@@ -174,6 +174,8 @@ rajzolási hívások csökkentése, LOD és egyszerű ütközési geometria kés
 - `drone.js`: a Rift X5 parametrikus modellje és procedurális textúrái.
 - `whoop65.js`: a Rift 65 parametrikus modellje és akkucímkéje.
 - `cinewhoop3.js`: a Rift C3 védőkerete, váza, elektronikája és naked kamerája.
+- `freestyle35.js`: a Rift X35 modellje és választható kameratartó-változatai.
+- `x35-mount-lab.template.html`, `x35-mount-studies.js`: az X35 három kameratartójának összehasonlító nézete; a kész oldal `x35-mount-lab.html`.
 - `catalog.js`: a modellválasztó katalógusa, nevek, státuszok, adatlapok és exportnevek.
 - `viewer.js`: kamera, stúdiófények, kezelőszervek és GLB export.
 - `../shared/visual/drone-rendering.js`: a játék és a demó közös színkezelése,

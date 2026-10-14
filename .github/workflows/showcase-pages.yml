@@ -27,7 +27,7 @@ jobs:
           npm ci
           npm run showcase:build
           mkdir _site
-          cp showcase/index.html showcase/map-viewer.html showcase/map-viewer.css showcase/map-viewer.bundle.js showcase/canopy-lab.html _site/
+          cp showcase/index.html showcase/map-viewer.html showcase/map-viewer.css showcase/map-viewer.bundle.js showcase/canopy-lab.html showcase/x35-mount-lab.html _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

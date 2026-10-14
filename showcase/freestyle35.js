@@ -1,5 +1,5 @@
 // Compact 3.5-inch freestyle aircraft. Built in mm; front is -Z.
-function createRiftX35() {
+function createRiftX35({cameraMount='original'}={}) {
   const root=new THREE.Group();root.name='Rotorift_Rift_X35';root.scale.setScalar(.001);
   root.userData={designer:'Rotorift',model:'Rift X35',units:'meters',propDiameterMm:88.9,motorDiagonalMm:160,battery:'4S 650mAh',actionCamera:false};
   const assemblies=[],propellers=[],batteryParts=[],actionParts=[],materials={};
@@ -31,10 +31,13 @@ function createRiftX35() {
   const lowerShape=shape(36,104,7);lowerShape.holes.push(shape(16,22,4));
   for(const x of [-15,15])for(const z of [-34,34])lowerShape.holes.push(hole(x,-z,1.6));
   plate(frame,lowerShape,0,4,'X35_bottom_plate');
-  const topShape=shape(38,98,6);
+  // An open nose bay leaves room for the tilted camera; the two side rails
+  // retain the front standoff bolts without carbon crossing the camera body.
+  const topShape=new THREE.Shape();
+  topShape.moveTo(-13,49);topShape.lineTo(-13,30);topShape.quadraticCurveTo(-13,28,-11,28);topShape.lineTo(11,28);topShape.quadraticCurveTo(13,28,13,30);topShape.lineTo(13,49);topShape.quadraticCurveTo(19,49,19,43);topShape.lineTo(19,-43);topShape.quadraticCurveTo(19,-49,13,-49);topShape.lineTo(-13,-49);topShape.quadraticCurveTo(-19,-49,-19,-43);topShape.lineTo(-19,43);topShape.quadraticCurveTo(-19,49,-13,49);topShape.closePath();
   for(const x of [-15,15])for(const z of [-34,34])topShape.holes.push(hole(x,-z,1.6));
   for(const x of [-15.8,15.8])for(const z of [-10,20]){const slot=shape(3.2,10,1);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key]){c[key].x+=x;c[key].y-=z;}topShape.holes.push(slot);}
-  for(const z of [-37,37]){const slot=shape(12,8,2);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key])c[key].y-=z;topShape.holes.push(slot);}
+  for(const z of [37]){const slot=shape(12,8,2);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key])c[key].y-=z;topShape.holes.push(slot);}
   plate(upper,topShape,24,2,'X35_slotted_top_plate');
   for(const x of [-15,15])for(const z of [-34,34]){cyl(frame,2.2,21,materials.black,'Frame_standoff',x,12.5,z,8);screw(frame,x,-2.5,z);screw(upper,x,25.4,z);}
   const motors=[[-56.568,-56.568,1],[56.568,-56.568,-1],[-56.568,56.568,-1],[56.568,56.568,1]];
@@ -99,7 +102,7 @@ function createRiftX35() {
   const tray=rounded(electronic,25,1.5,23,2,materials.tpu,'VTX_bolted_TPU_tray',0,2.8,29);
   for(let i=0;i<4;i++)wire(electronic,[[i-2,11,21],[i-2,14,17],[i-2,13,9]],.25,i===0?materials.red:materials.rubber,'VTX_signal_wire');
   const cameraSet=assembly('X35_05_FPV_camera',[0,0,-16]);
-  for(const side of [-1,1]){
+  if(cameraMount==='original')for(const side of [-1,1]){
     const cheek=new THREE.Shape();cheek.moveTo(-11,-14);cheek.lineTo(10,-14);cheek.quadraticCurveTo(12,-14,11,-10);cheek.lineTo(4,3);cheek.quadraticCurveTo(0,9,-5,4);cheek.quadraticCurveTo(-11,-2,-11,-14);
     const opening=new THREE.Path();opening.moveTo(-6,-9);opening.lineTo(5,-9);opening.quadraticCurveTo(6,-9,4,-5);opening.lineTo(1,-3);opening.quadraticCurveTo(-2,-2.5,-4,-4);opening.closePath();cheek.holes.push(opening);cheek.holes.push(hole(0,0,1.4));
     const cheekGeometry=softened(cheek,3,.25);cheekGeometry.rotateY(Math.PI/2);
@@ -109,8 +112,32 @@ function createRiftX35() {
   }
   const camera=new THREE.Group();camera.name='X35_tilted_FPV_camera';camera.position.set(0,18,-42);camera.rotation.x=20*Math.PI/180;cameraSet.add(camera);
   rounded(camera,16,15,18,3,materials.black,'FPV_camera_housing');
-  const surround=new THREE.Shape();surround.moveTo(-8.6,-3);surround.quadraticCurveTo(-8,-8.6,0,-8.6);surround.quadraticCurveTo(8,-8.6,8.6,-3);surround.lineTo(8.6,3);surround.quadraticCurveTo(8,9,0,9);surround.quadraticCurveTo(-8,9,-8.6,3);surround.closePath();surround.holes.push(hole(0,0,6.9));
-  mesh(camera,softened(surround,2,.2),materials.tpu,'FPV_contoured_lens_surround',0,0,-9.5);
+  if(cameraMount==='original'){
+    const surround=new THREE.Shape();surround.moveTo(-8.6,-3);surround.quadraticCurveTo(-8,-8.6,0,-8.6);surround.quadraticCurveTo(8,-8.6,8.6,-3);surround.lineTo(8.6,3);surround.quadraticCurveTo(8,9,0,9);surround.quadraticCurveTo(-8,9,-8.6,3);surround.closePath();surround.holes.push(hole(0,0,6.9));
+    mesh(camera,softened(surround,2,.2),materials.tpu,'FPV_contoured_lens_surround',0,0,-9.5);
+  }else{
+    const cage=cameraMount==='cage',visor=cameraMount==='visor';
+    for(const side of [-1,1]){
+      const cheek=new THREE.Shape();
+      cheek.moveTo(-8,-12);cheek.lineTo(8,-12);cheek.lineTo(6.5,0);
+      cheek.quadraticCurveTo(5.5,5,0,5);cheek.quadraticCurveTo(-5.5,5,-6.5,0);cheek.closePath();
+      cheek.holes.push(hole(0,0,1.4));
+      const vent=shape(7,3,1);for(const c of vent.curves)for(const key of ['v0','v1','v2','v3'])if(c[key])c[key].y-=7;cheek.holes.push(vent);
+      const cheekGeometry=softened(cheek,2.8,.2);cheekGeometry.rotateY(Math.PI/2);
+      mesh(cameraSet,cheekGeometry,materials.tpu,'FPV_'+cameraMount+'_side_mount',side*10.1,18,-42);
+      softBox(cameraSet,5.6,4,20,1,materials.tpu,'Camera_bolted_mount_foot',side*10.8,4,-42);
+      for(const z of [-49,-35])screw(cameraSet,side*11,6.4,z,1.2);
+    }
+    if(visor){
+      softBox(camera,20,2.8,7,1.2,materials.tpu,'FPV_short_upper_visor',0,9,-8.6);
+      for(const side of [-1,1])softBox(camera,2.8,6,5,1,materials.tpu,'FPV_visor_corner',side*9.6,5.8,-8.2);
+    }
+    if(cage){
+      const bumper=shape(20.5,19,3.6);bumper.holes.push(shape(16.9,15.8,2.4));
+      mesh(camera,softened(bumper,3,.2),materials.tpu,'FPV_open_corner_bumper',0,0,-10.1);
+      for(const side of [-1,1])softBox(camera,2.8,9,10,1,materials.tpu,'FPV_bumper_side_retainer',side*9.5,0,-4.7);
+    }
+  }
   cyl(camera,6.4,3,materials.rubber,'FPV_lens_bezel',0,0,-10.5,24).rotation.x=Math.PI/2;
   cyl(camera,4.8,.55,materials.glass,'FPV_coated_lens',0,0,-12.3,32).rotation.x=Math.PI/2;
   cyl(camera,1.0,.1,materials.silver,'FPV_lens_glint',-1.4,1.5,-12.62,12).rotation.x=Math.PI/2;
@@ -153,13 +180,19 @@ function createRiftX35() {
   for(const x of [-7,7]){box(rear,3,5,8,materials.tpu,'ELRS_clamp_support',x,7,57);const clamp=loop(rear,5,5,2.3,2.3,3,materials.tpu,'ELRS_dipole_closed_clamp',x,8,60);clamp.rotation.y=Math.PI/2;}
   const dipole=cyl(rear,1,34,materials.rubber,'ELRS_T_dipole',0,8,60,12);dipole.rotation.z=Math.PI/2;
   wire(rear,[[0,7,45],[0,7,52],[0,8,60]],.5,materials.rubber,'ELRS_antenna_coax');
-  box(rear,10,3,10,materials.tpu,'VTX_antenna_mount_foot',-9,26.5,44);
-  const axis=new THREE.Vector3(0,.92,.39).normalize(),base=new THREE.Vector3(-9,29,46),tip=base.clone().addScaledVector(axis,28);
+  // Separate the antenna behind the XT30 cradle rather than sharing its edge.
+  box(rear,24,3,8,materials.tpu,'VTX_antenna_rear_shelf',0,26.5,53);
+  for(const side of [-1,1]){
+    softBox(rear,7,3,8,1,materials.tpu,'VTX_shelf_bolted_foot',side*15,26.5,44);
+    screw(rear,side*15,28.4,44,1.3);
+    beam(rear,[side*15,26.5,44],[side*10,26.5,53],3,3,materials.tpu,'VTX_shelf_side_brace');
+  }
+  const axis=new THREE.Vector3(0,.94,.34).normalize(),base=new THREE.Vector3(0,29,54),tip=base.clone().addScaledVector(axis,27);
   wire(rear,[base.toArray(),tip.toArray()],.85,materials.rubber,'VTX_straight_antenna_stem');
   const socket=cyl(rear,2.5,6,materials.tpu,'VTX_antenna_root_socket',...base.toArray());socket.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
   const head=cyl(rear,4,9,materials.black,'Compact_omni_radome',...tip.clone().addScaledVector(axis,4).toArray(),20);head.quaternion.copy(socket.quaternion);
-  for(const side of [-1,1])box(rear,.8,5,1,materials.tpu,'Radome_color_accent',-9+side*3.8,tip.y+3,tip.z);
-  wire(rear,[[-6,14,36],[-9,23,40],base.toArray()],.6,materials.rubber,'VTX_antenna_coax');
+  cyl(rear,3,1,materials.black,'Omni_radome_base_seam',...tip.clone().addScaledVector(axis,-.8).toArray(),20).quaternion.copy(socket.quaternion);
+  wire(rear,[[-6,14,36],[-11,18,40],[-11,23,51],[0,27,54],base.toArray()],.6,materials.rubber,'VTX_antenna_coax');
   let meshes=0,triangles=0;const unique=new Set();root.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;unique.add(o.material);}});
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),
     setExplode(value){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,value);},

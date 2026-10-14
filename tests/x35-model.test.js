@@ -3,7 +3,7 @@ import {DRONE_SURFACES,configureDronePolymer} from '../shared/visual/drone-rende
 const config=JSON.parse(await readFile(new URL('../data/drones/rift-x35.json',import.meta.url),'utf8'));
 const context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,document:{createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})}});
 vm.runInContext(await readFile(new URL('../showcase/freestyle35.js',import.meta.url),'utf8'),context);
-function model(){const m=vm.runInContext('createRiftX35()',context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);return m;}
+function model(cameraMount='original'){const m=vm.runInContext(`createRiftX35({cameraMount:'${cameraMount}'})`,context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);return m;}
 test('X35 is a compact 4S aircraft with no action camera, flat arms and independently exportable tri-blade rotors',()=>{
   const m=model();assert.equal(m.actionParts.length,0);assert.equal(m.propellers.length,4);assert.equal(m.batteryParts.length,1);
   assert.ok(m.triangles<40000,'the new compact aircraft must stay lightweight');
@@ -45,4 +45,27 @@ test('X35 arm and motor seat expose only one carbon surface at the former flicke
     ray.set(new THREE.Vector3(x-Math.sign(x)*4,1,z-Math.sign(z)*5),new THREE.Vector3(0,-1,0));ray.far=1.01;
     assert.equal(new Set(ray.intersectObjects(carbon).map(hit=>hit.object)).size,1,'motor seat and arm cannot have competing top faces');
   }
+});
+test('X35 mount alternatives leave the optical axis and carbon nose bay clear',()=>{
+  for(const variant of ['original','cheeks','visor','cage']){
+    const m=model(variant),lens=m.root.getObjectByName('FPV_coated_lens');
+    const direction=new THREE.Vector3(0,-1,0).applyQuaternion(lens.getWorldQuaternion(new THREE.Quaternion()));
+    const ray=new THREE.Raycaster(lens.getWorldPosition(new THREE.Vector3()).addScaledVector(direction,.4),direction,0,100);
+    assert.equal(ray.intersectObject(m.root,true).length,0,variant+' optical axis');
+    for(const x of [-7,0,7])for(const z of [-49,-42,-33]){
+      ray.set(new THREE.Vector3(x,40,z),new THREE.Vector3(0,-1,0));ray.far=30;
+      assert.equal(ray.intersectObject(m.root.getObjectByName('X35_slotted_top_plate')).length,0,variant+' open camera bay');
+    }
+    assert.ok(m.triangles<40000);
+    if(variant==='cheeks')assert.equal(m.root.getObjectByName('FPV_contoured_lens_surround'),undefined);
+    if(variant==='visor')assert.ok(m.root.getObjectByName('FPV_short_upper_visor'));
+    if(variant==='cage')assert.ok(m.root.getObjectByName('FPV_open_corner_bumper'));
+  }
+});
+test('X35 omni antenna is separate from both XT30 halves and has a plain black radome',()=>{
+  const m=model(),antenna=new THREE.Box3().setFromObject(m.root.getObjectByName('VTX_straight_antenna_stem'));
+  for(const name of ['XT30_ESC_half','XT30_battery_half','XT30_retention_collar','JST_XH_4S_balance_plug'])assert.equal(antenna.intersectsBox(new THREE.Box3().setFromObject(m.root.getObjectByName(name))),false,name);
+  assert.equal(m.root.getObjectByName('Radome_color_accent'),undefined);
+  assert.equal(m.root.getObjectByName('Compact_omni_radome').material,m.materials.black);
+  assert.ok(m.root.getObjectByName('VTX_antenna_rear_shelf'));
 });

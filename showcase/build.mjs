@@ -50,6 +50,11 @@ const studyScript=[three,addon('vendor/OrbitControls.js','OrbitControls'),
   read('../shared/visual/drone-colors.js').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,''),
   read('whoop65.js'),read('whoop75.js'),read('canopy-studies.js')].join('\n');
 writeFileSync(join(root,'canopy-lab.html'),read('canopy-lab.template.html').replace('/* CANOPY_LAB_SCRIPT */',()=>studyScript.replace(/<\/script/gi,'<\\/script')));
+const x35StudyScript=[three,addon('vendor/OrbitControls.js','OrbitControls'),
+  read('../shared/visual/drone-rendering.js').replace(/^export /gm,''),
+  read('../shared/visual/battery-labels.js').replace(/^export /gm,''),
+  read('freestyle35.js'),read('x35-mount-studies.js')].join('\n');
+writeFileSync(join(root,'x35-mount-lab.html'),read('x35-mount-lab.template.html').replace('/* X35_LAB_SCRIPT */',()=>x35StudyScript.replace(/<\/script/gi,'<\\/script')));
 // The showcase stays English; use the game's dictionary as the name source.
 const english = JSON.parse(read('../web/lang/en.json'));
 const maps = catalog.maps.map(map => ({ ...map, name: english['map.' + map.id] ?? map.name }));
