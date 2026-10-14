@@ -305,9 +305,11 @@
       <div id="boundary-hud" role="status" class="hidden"></div>
       <div id="turtle-hud" class="hidden" role="status" aria-live="polite"></div>
       <div class="crosshair">+</div>
-      <svg id="fpv-horizon" class="fpv-horizon hidden" viewBox="0 0 200 128" role="img" aria-label="Artificial horizon">
+      <svg id="fpv-horizon" class="fpv-horizon hidden" viewBox="0 0 180 162" role="img" aria-label="Artificial horizon">
+        <g class="horizon-bars-outline"></g>
         <g class="horizon-bars"></g>
-        <path class="horizon-reference" d="M18 50v28m0-14h12m152-14v28m0-14h-12M86 64h8l6 5 6-5h8"/>
+        <path class="horizon-reference-outline"/>
+        <path class="horizon-reference"/>
       </svg>
       <div id="arm-prompt" class="arm-prompt hidden" role="status" aria-live="polite" aria-atomic="true">
         <strong id="arm-prompt-title"></strong><span id="arm-prompt-detail"></span>

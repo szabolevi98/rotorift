@@ -41,11 +41,12 @@
 #hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
 #hud .crosshair { transform: translate(-50%, -50%); }
 #hud { z-index: 2; }
-.fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(220px, 38vw); transform: translate(-50%, -50%); overflow: visible; pointer-events: none; }
+.fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(50vw, 88vh, 960px); transform: translate(-50%, -50%); overflow: visible; pointer-events: none; }
 #turtle-hud { position:absolute;top:22%;left:50%;transform:translateX(-50%);width:min(440px,85vw);padding:12px 16px;background:#241910ed;border:1px solid #ffbe75;border-radius:8px;color:#ffe0ab;text-align:center;font-size:13px;pointer-events:none; }
 #hud #hud-turtle.selected { background:#6a411b; border-color:#ffbe75; color:#ffe0ab; }
-.horizon-bars path, .horizon-reference { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: square; paint-order: stroke; filter: drop-shadow(0 1px 1px #000); }
-.horizon-reference { stroke-width: 2; }
+.horizon-bars path, .horizon-reference, .horizon-bars-outline path, .horizon-reference-outline { fill: none; stroke-linecap: butt; stroke-linejoin: miter; }
+.horizon-bars path, .horizon-reference { stroke: #fff; stroke-width: 1.2; }
+.horizon-bars-outline path, .horizon-reference-outline { stroke: #111; stroke-width: 2.4; }
 #hud:has(#fpv-horizon:not(.hidden)) .crosshair { visibility: hidden; }
 #hud:has(#arm-prompt:not(.hidden)) .fpv-horizon, #hud:has(#flight-help:not(.hidden)) .fpv-horizon { visibility: hidden; }
 #game-scene.analog-video { filter: saturate(.78) contrast(1.06); }
