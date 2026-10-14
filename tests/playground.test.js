@@ -83,3 +83,19 @@ for(const id of ['rift-65','rift-75'])test(`${id}: lands on the spawn path and l
   assert.ok(drone.pose.p[1]>.3);assert.ok(drone.effects.propellers.blades.every(blades=>blades.every(v=>v===0)));
  }finally{environment.dispose();world.free();}
 });
+test('playground foreground uses short terrain triangles and preserves the ground outside the fence',()=>{
+ const environment=buildPlayground(new THREE.Scene(),null,null,map),ray=new THREE.Raycaster();
+ try{
+  const grass=environment.root.getObjectByName('Playground_grass_surface'),g=grass.geometry,p=g.attributes.position,index=g.index;
+  assert.ok(index.count/3<20000,'foreground terrain remains inexpensive');
+  for(let i=0;i<index.count;i+=3){
+    const a=new THREE.Vector3().fromBufferAttribute(p,index.getX(i)),b=new THREE.Vector3().fromBufferAttribute(p,index.getX(i+1)),c=new THREE.Vector3().fromBufferAttribute(p,index.getX(i+2));
+    assert.ok(Math.max(a.distanceTo(b),b.distanceTo(c),c.distanceTo(a))<2.9,'huge triangles cannot cross the FPV camera near the ground');
+  }
+  const outside=environment.root.getObjectByName('Playground_outside_ground');outside.updateMatrixWorld(true);
+  for(const x of [64.1,100,1000,12000,50000]){ray.set(new THREE.Vector3(x,1,0),new THREE.Vector3(0,-1,0));assert.ok(ray.intersectObject(outside).length,'bare ground must continue beyond the fence');}
+  environment.root.updateMatrixWorld(true);
+  ray.set(new THREE.Vector3(0,.15,25),new THREE.Vector3(4,-.15,-2.2).normalize());
+  assert.ok(ray.intersectObject(environment.root.getObjectByName('Playground_walk_step_edges')).length,'a shallow ray must hit the closed walkway step rather than a sky slit');
+ }finally{environment.dispose();}
+});

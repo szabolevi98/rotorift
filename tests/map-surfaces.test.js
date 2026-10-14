@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import clipping from 'polygon-clipping';
-import { surfaceSourceHash as generatedHash, parkPaving, parkGravel, parkCurbs, constructionRoads } from '../shared/world/map-surfaces.js';
+import { surfaceSourceHash as generatedHash, parkPaving, parkGravel, parkCurbs, constructionRoads, playgroundWalk, playgroundGrass } from '../shared/world/map-surfaces.js';
+import { PLAYGROUND_RAISED_FOOTPRINTS } from '../shared/world/playground-layout.js';
 import { surfaceSourceHash } from '../scripts/build-map-surfaces.mjs';
 import { makeSurfaceGeometry } from '../web/game/surface-geometry.js';
 import { parkSurfaceHeight } from '../shared/world/park-layout.js';
@@ -26,6 +27,15 @@ test('generated map surfaces are current, disjoint at junctions and clipped at t
   // or leftover interior edge crossing its centre.
   const crossing=[[[ -8,199],[8,199],[8,211],[-8,211],[-8,199]]];
   assert.deepEqual(clipping.difference(crossing,constructionRoads),[]);
+});
+
+test('playground grass excludes raised floors and the garden walk has no overlapping cap or junction faces',()=>{
+  assert.ok(surfaceArea(clipping.intersection(playgroundGrass,playgroundWalk))<1e-8);
+  for(const [x,z,w,d]of PLAYGROUND_RAISED_FOOTPRINTS){
+    const footprint=[[[x-w/2,z-d/2],[x+w/2,z-d/2],[x+w/2,z+d/2],[x-w/2,z+d/2],[x-w/2,z-d/2]]];
+    assert.ok(surfaceArea(clipping.intersection(playgroundGrass,footprint))<1e-8,'no hidden grass face under the floor');
+  }
+  assert.ok(Math.abs(surfaceArea(playgroundWalk)-surfaceArea(clipping.union(playgroundWalk)))<1e-8,'walk caps and junctions must be triangulated once');
 });
 
 test('union road interiors retain clearance over every underlying terrain triangle',()=>{

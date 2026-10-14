@@ -1,5 +1,27 @@
 # Pályák teljesítményjavítása
 
+## Játszótér talajának villogása — 2026. október 14.
+
+A 262 km széles kirajzolt talajdoboz alacsony FPV-nézetben mélységi és
+vágási hibát okozott: mozgáskor a talaj egyes részein az ég látszott. A
+közeli föld kétméteres háromszögekre, a külső föld külön részletességi
+gyűrűkre váltott. A fű nem kerül a megemelt burkolatok alá. A kerti sétány
+szegmensei és körívei előre összevont felületként készülnek, zárt oldalfalakkal.
+
+Az elkülönített böngészős GPU-próba 0,15–2 m magas, döntött kamerákból,
+0,001 és 0,012 m közeli vágósíkkal 155 268 talajmintát ellenőrzött.
+A korábbi talaj 26 568 mintánál az eget mutatta; az új talaj egyiknél sem.
+A megvilágított összehasonlítás 48 kameraállást vizsgált. Ez helyi
+regressziós mérés, nem minden gépre szóló grafikus garancia.
+
+A mozgó kamerás, előkészített fizikás próba GTX 1080-on, 1280 × 504-es
+renderfelületen 0,48–0,85 ms render/GPU-időt és 0,60–1,25 ms költséget
+mért négy fizikai lépésre. A 880 analitikus játszótéri ütköző és a
+tömörített ütközési fájl változatlan; a renderelés nem teszi nehezebbé a CCD-t.
+27 pálya-, burkolat-, ütközési és versenyútvonal-teszt sikeres.
+
+## Korábbi pályateljesítmény-vizsgálatok
+
 2026. október 12. A Betonudvar és a Liget épületeinek környezetében jelentett
 lassulás után készült összehasonlító mérés és javítás.
 

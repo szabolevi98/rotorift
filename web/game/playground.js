@@ -1,12 +1,10 @@
 import * as THREE from "three";
 import { ColliderRegions } from "../../shared/world/collider-regions.js";
+import { GARDEN_WALK, WALK_SPURS, PLAYGROUND_SAFETY_SURFACES } from "../../shared/world/playground-layout.js";
+import { addPlaygroundGround } from "./playground-ground.js";
 export const PLAYGROUND_VIEW_DISTANCE=12000;
 export const PLAYGROUND_POIS={fort:[0,0,-3],swings:[-15,0,-7],bars:[14,0,-7],sandbox:[-15,0,14],hut:[15,0,16],tunnel:[-5,0,13]};
 // A connected inner walk gives the equipment gardens a deliberate layout.
-const GARDEN_WALK=[];
-for(const [x,z,start]of [[19,-18,-Math.PI/2],[19,18,0],[-19,18,Math.PI/2],[-19,-18,Math.PI]])for(let i=0;i<=8;i++){const a=start+i*Math.PI/16;GARDEN_WALK.push([x+Math.cos(a)*4,z+Math.sin(a)*4]);}
-GARDEN_WALK.push(GARDEN_WALK[0]);
-const WALK_SPURS=[[[0,22],[0,31.5]],[[-23,7],[-8.5,7]],[[8.5,7],[23,7]]];
 function onGardenWalk(x,z){
  for(const points of [GARDEN_WALK,...WALK_SPURS])for(let i=1;i<points.length;i++){
   const [ax,az]=points[i-1],[bx,bz]=points[i],dx=bx-ax,dz=bz-az,t=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz)));
@@ -16,7 +14,7 @@ function onGardenWalk(x,z){
 }
 export function playgroundHeight(x=0,z=0){
  if((Math.abs(Math.abs(x)-30)<=1.5&&Math.abs(z)<=31.5)||(Math.abs(Math.abs(z)-30)<=1.5&&Math.abs(x)<=31.5)||(Math.abs(x)<=1.5&&z>=31.5&&z<=42))return .05;
- for(const [px,pz,w,d]of [[0,-3,17,16],[-15,-7,10,10],[14,-7,7,12],[9,13,6,5]])if(Math.abs(x-px)<=w/2&&Math.abs(z-pz)<=d/2)return .07;
+ for(const [px,pz,w,d]of PLAYGROUND_SAFETY_SURFACES)if(Math.abs(x-px)<=w/2&&Math.abs(z-pz)<=d/2)return .07;
  if(Math.abs(x+15)<=3.25&&Math.abs(z-14)<=2.6)return .18;
  if(Math.abs(x-6)<=1.5&&Math.abs(z-28)<=2.7)return .065;
  if(onGardenWalk(x,z))return .045;
@@ -28,9 +26,9 @@ export function buildPlayground(scene,world,RAPIER,map){
  const materials=Object.fromEntries(Object.entries(palette).map(([name,color])=>[name,new THREE.MeshStandardMaterial({color,roughness:name==='steel'?.6:.88,metalness:name==='steel'?.3:0})]));
  const geometries={box:new THREE.BoxGeometry(1,1,1),cylinder:new THREE.CylinderGeometry(.5,.5,1,12),cone:new THREE.ConeGeometry(.5,1,12),sphere:new THREE.IcosahedronGeometry(.5,1)};
  const batches=new Map(),colliders=[],regions=new ColliderRegions(),landmarks=[];let anchor=new THREE.Matrix4();
- function part(kind,size,p,color,solid=true,rotation=[0,0,0]){
+ function part(kind,size,p,color,solid=true,rotation=[0,0,0],visible=true){
   const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(...rotation)),matrix=anchor.clone().multiply(new THREE.Matrix4().compose(new THREE.Vector3(...p),q,new THREE.Vector3(...size))),key=kind+':'+color;
-  if(!batches.has(key))batches.set(key,{kind,color,matrices:[]});batches.get(key).matrices.push(matrix);
+  if(visible){if(!batches.has(key))batches.set(key,{kind,color,matrices:[]});batches.get(key).matrices.push(matrix);}
   if(!solid||!world)return;
   const pos=new THREE.Vector3(),rot=new THREE.Quaternion(),scale=new THREE.Vector3();matrix.decompose(pos,rot,scale);
   const desc=kind==='box'?RAPIER.ColliderDesc.cuboid(scale.x/2,scale.y/2,scale.z/2):kind==='sphere'?RAPIER.ColliderDesc.ball(scale.x/2):kind==='cone'?RAPIER.ColliderDesc.cone(scale.y/2,scale.x/2):RAPIER.ColliderDesc.cylinder(scale.y/2,scale.x/2);
@@ -45,17 +43,18 @@ export function buildPlayground(scene,world,RAPIER,map){
  function pipe(a,b,diameter,color,solid=true){const av=new THREE.Vector3(...a),bv=new THREE.Vector3(...b),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),bv.clone().sub(av).normalize()),e=new THREE.Euler().setFromQuaternion(q);cylinder(diameter,av.distanceTo(bv),av.add(bv).multiplyScalar(.5).toArray(),color,solid,[e.x,e.y,e.z]);}
  function model(name,p,angle,build){const previous=anchor;anchor=anchor.clone().multiply(new THREE.Matrix4().compose(new THREE.Vector3(...p),new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),angle),new THREE.Vector3(1,1,1)));landmarks.push({name,position:p});try{build();}finally{anchor=previous;}}
  // The same solid bare ground continues past the fence and to the horizon.
- box([262144,.2,262144],[0,-.1,0],'grass');
+ part('box',[262144,.2,262144],[0,-.1,0],'grass',true,[0,0,0],false);
+ const groundGeometries=addPlaygroundGround(root,materials);
  for(const x of [-30,30])box([3,.05,63],[x,.025,0],'paving');
  for(const z of [-30,30])box([57,.05,3],[0,.025,z],'paving');
  box([3,.05,10],[0,.025,37],'paving');
- // Segment ends overlap at their round caps; no exposed gaps or coplanar skins.
+ // Preserve cheap analytic collision slabs; render their pre-unioned footprint.
  for(const points of [GARDEN_WALK,...WALK_SPURS]){
-  for(let i=1;i<points.length;i++){const [ax,az]=points[i-1],[bx,bz]=points[i],dx=bx-ax,dz=bz-az;box([1.8,.045,Math.hypot(dx,dz)],[(ax+bx)/2,.0225,(az+bz)/2],'paving',true,[0,Math.atan2(dx,dz),0]);}
-  for(const [x,z]of points)cylinder(1.8,.045,[x,.0225,z],'paving');
+  for(let i=1;i<points.length;i++){const [ax,az]=points[i-1],[bx,bz]=points[i],dx=bx-ax,dz=bz-az;part('box',[1.8,.045,Math.hypot(dx,dz)],[(ax+bx)/2,.0225,(az+bz)/2],'paving',true,[0,Math.atan2(dx,dz),0],false);}
+  for(const [x,z]of points)part('cylinder',[1.8,.045,1.8],[x,.0225,z],'paving',true,[0,0,0],false);
  }
  // Four distinct safety surfaces. None lies on the perimeter footpath.
- for(const [x,z,w,d,color]of [[0,-3,17,16,'rubber'],[-15,-7,10,10,'coral'],[14,-7,7,12,'blue'],[9,13,6,5,'rubber']])box([w,.07,d],[x,.035,z],color);
+ for(const [x,z,w,d,color]of PLAYGROUND_SAFETY_SURFACES)box([w,.07,d],[x,.035,z],color);
  model('Twin_tower_climbing_fort',PLAYGROUND_POIS.fort,0,()=>{
   for(const [x,y,z,color]of [[-3.4,1.4,0,'coral'],[3.4,2.25,0,'blue']]){
    for(const dx of [-1.1,1.1])for(const dz of [-1.1,1.1])cylinder(.16,y+1.65,[x+dx,(y+1.65)/2,z+dz],'wood');
@@ -175,5 +174,5 @@ export function buildPlayground(scene,world,RAPIER,map){
  }
  root.userData={landmarks,instances,batches:batches.size,colliders:colliders.length};
  const update=(p,v)=>{regions.update(p,v);root.userData.activeColliders=regions.activeCount;};update(map.spawn);
- return {root,heightAt:playgroundHeight,update,dispose(){for(const c of colliders)if(c.isValid())world.removeCollider(c,false);for(const o of root.children)o.dispose?.();for(const g of Object.values(geometries))g.dispose();for(const m of Object.values(materials))m.dispose();regions.clear();scene.remove(root);}};
+ return {root,heightAt:playgroundHeight,update,dispose(){for(const c of colliders)if(c.isValid())world.removeCollider(c,false);for(const o of root.children)o.dispose?.();for(const g of [...Object.values(geometries),...groundGeometries])g.dispose();for(const m of Object.values(materials))m.dispose();regions.clear();scene.remove(root);}};
 }
