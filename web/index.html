@@ -214,8 +214,11 @@
             </section>
             <section class="card">
               <h2 data-i18n="settings.camera"></h2>
+              <label><span data-i18n="fly.aircraft"></span><select id="camera-drone"></select></label>
+              <p class="muted" data-i18n="settings.cameraPerDrone"></p>
               <label><span data-i18n="settings.angle"></span><input id="camera-angle" type="range" min="0" max="60" value="20" /><output id="angle-output">20°</output></label>
               <label><span data-i18n="settings.fov"></span><input id="camera-fov" type="range" min="70" max="140" value="100" /><output id="fov-output">100°</output></label>
+              <div class="button-row"><button id="camera-all" class="secondary small" type="button" data-i18n="settings.all"></button><button id="camera-reset" class="text-button" type="button" data-i18n="action.defaults"></button></div>
               <label><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
               <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
               <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
@@ -289,6 +292,7 @@
       </aside>
       <div id="countdown"></div>
       <div id="boundary-hud" role="status" class="hidden"></div>
+      <div id="turtle-hud" class="hidden" role="status" aria-live="polite"></div>
       <div class="crosshair">+</div>
       <svg id="fpv-horizon" class="fpv-horizon hidden" viewBox="0 0 200 128" role="img" aria-label="Artificial horizon">
         <g class="horizon-bars"></g>
@@ -318,7 +322,7 @@
             <div id="battery-voltage" class="battery-voltage"></div>
             <div id="battery-warning" role="status" aria-live="polite"></div>
           </div>
-          <div class="hud-control-buttons"><button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button></div>
+          <div class="hud-control-buttons"><button id="arm-state" type="button" aria-pressed="false"></button><button id="hud-mode" type="button">ACRO ↻</button><button id="hud-turtle" type="button" aria-pressed="false" data-i18n="key.turtle"></button></div>
           <span id="hud-input"></span>
         </div>
       <div id="stick-hud" role="group" aria-labelledby="stick-title">

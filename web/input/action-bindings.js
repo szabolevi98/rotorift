@@ -1,4 +1,4 @@
-export const RADIO_ACTIONS = ["arm", "reset", "view", "mode", "menu"];
+export const RADIO_ACTIONS = ["arm", "reset", "view", "mode", "turtle", "menu"];
 export const bindingKey = (binding) => binding
   ? `${binding.type}:${binding.index}${binding.type === "axis" ? ":" + binding.direction : ""}`
   : "";
@@ -72,8 +72,8 @@ export class ActionBindings {
       next.set(key, after);
       // Baseline after connection, reset or resume: a held switch never arms.
       if (!enabled || before === undefined || before === after) continue;
-      if (action === "arm" && binding.type === "axis")
-        events.push(after ? "armOn" : "armOff");
+      if (["arm","turtle"].includes(action) && binding.type === "axis")
+        events.push(action+(after?"On":"Off"));
       else if (after) events.push(action);
     }
     this.previous = next;

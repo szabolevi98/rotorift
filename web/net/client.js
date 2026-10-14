@@ -116,7 +116,7 @@ export class Network {
   get now() {
     return Date.now() + this.offset;
   }
-  state(pose, config, mode, interrupted, simulation, propellers, rotorSpeeds) {
+  state(pose, config, mode, interrupted, simulation, propellers, rotorSpeeds, turtleMode=false) {
     this.send("state", {
       ...pose,
       seq: this.seq++,
@@ -128,6 +128,7 @@ export class Network {
       runId: this.room?.runId,
       propellers,
       rotorSpeeds,
+      turtleMode,
     });
   }
 }

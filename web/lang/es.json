@@ -325,5 +325,10 @@
   "drone.rift-75": "Whoop clase 75 · 1S",
   "hangar.drone.rift-75": "75 mm",
   "drone.rift-x35": "3,5″ freestyle · 4S",
-  "hangar.drone.rift-x35": "3,5″"
+  "hangar.drone.rift-x35": "3,5″",
+  "key.turtle": "Modo turtle",
+  "settings.cameraPerDrone": "La inclinación y el campo de visión se guardan por separado para cada dron.",
+  "hud.turtleDisarm": "Desarma antes de cambiar el modo turtle.",
+  "hud.turtleReady": "Modo turtle: gas mínimo → ARM → alabeo o cabeceo. Después: DISARM → Turtle desactivado.",
+  "hud.turtleActive": "Modo turtle · Usa el stick derecho o las flechas para voltear. Después: DISARM → Turtle desactivado."
 }

@@ -23,7 +23,7 @@ export class PropellerDamage {
   advance(dt, commands, maximum, config) {
     if(maximum<=0)return;
     for(let i=0;i<4;i++) this.phase[i] = (this.phase[i] + dt * config.motors[i].direction *
-      this.tuning.maxTipSpeedMps / (config.propDiameterM/2) * Math.sqrt(Math.max(0,commands[i]/maximum))) % (2*Math.PI);
+      this.tuning.maxTipSpeedMps / (config.propDiameterM/2) * Math.sign(commands[i]) * Math.sqrt(Math.abs(commands[i])/maximum)) % (2*Math.PI);
   }
   impact(index, speed, time, contactAngle = 0, rotating = true) {
     if (!Number.isFinite(speed) || speed <= 0 || time-this.lastImpact[index] < 0.055) return;

@@ -18,6 +18,7 @@ export const DEFAULT_KEYS = {
   menu: "Escape",
   view: "KeyV",
   mode: "KeyM",
+  turtle: "KeyT",
   hover: "KeyH",
 };
 // Digital keys emulate gradual stick travel. The radio keeps its calibrated
@@ -84,7 +85,7 @@ export class Controller {
         this.pressed.add(e.code);
         if (!e.repeat) {
           const a = Object.keys(this.keys).find((k) => this.keys[k] === e.code);
-          if (["arm", "reset", "menu", "view", "mode", "hover"].includes(a))
+          if (["arm", "reset", "menu", "view", "mode", "turtle", "hover"].includes(a))
             this.action(a);
         }
       }

@@ -156,11 +156,11 @@ export class Flight {
     }
     this.place(this.current, this.accumulator / PHYSICS_DT);
     this.propVisual.update(this.physics.effects.propellers.blades);
-    this.rotorMotion.update(dt,this.physics.motorThrust,this.config.motor.maxThrustN,this.config.motors,this.physics.armed&&input.throttle>0);
+    this.rotorMotion.update(dt,this.physics.motorThrust,this.config.motor.maxThrustN,this.config.motors,this.physics.armed&&(this.physics.turtleMode||input.throttle>0),this.physics.turtleMode);
     for (const p of this.props)
       p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
     if (this.sound) {
-      const total = this.physics.motorThrust.reduce((a, b) => a + b, 0),
+      const total = this.physics.motorThrust.reduce((a, b) => a + Math.abs(b), 0),
         fraction = total / (4 * this.config.motor.maxThrustN);
       this.sound.osc.frequency.setTargetAtTime(
         100 + fraction * 700,

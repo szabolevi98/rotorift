@@ -325,5 +325,10 @@
   "drone.rift-75": "75-ös whoop · 1S",
   "hangar.drone.rift-75": "75 mm",
   "drone.rift-x35": "3,5″ freestyle · 4S",
-  "hangar.drone.rift-x35": "3,5″"
+  "hangar.drone.rift-x35": "3,5″",
+  "key.turtle": "Turtle mód",
+  "settings.cameraPerDrone": "A kamera dőlésszögét és látószögét drónonként külön mentjük.",
+  "hud.turtleDisarm": "A Turtle mód váltása előtt disarmolj.",
+  "hud.turtleReady": "Turtle mód: gáz le → ARM → roll vagy pitch. Átfordulás után: DISARM → Turtle ki.",
+  "hud.turtleActive": "Turtle mód · A jobb stickkel vagy a nyilakkal fordítsd át. Utána: DISARM → Turtle ki."
 }

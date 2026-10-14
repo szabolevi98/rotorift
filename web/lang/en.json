@@ -325,5 +325,10 @@
   "drone.rift-75": "75 class whoop · 1S",
   "hangar.drone.rift-75": "75 mm",
   "drone.rift-x35": "3.5″ freestyle · 4S",
-  "hangar.drone.rift-x35": "3.5″"
+  "hangar.drone.rift-x35": "3.5″",
+  "key.turtle": "Turtle mode",
+  "settings.cameraPerDrone": "Camera tilt and field of view are saved separately for each drone.",
+  "hud.turtleDisarm": "Disarm before switching turtle mode.",
+  "hud.turtleReady": "Turtle mode: throttle down → ARM → use roll or pitch. After recovery: DISARM → Turtle off.",
+  "hud.turtleActive": "Turtle mode · Use the right stick or arrow keys to flip. After recovery: DISARM → Turtle off."
 }

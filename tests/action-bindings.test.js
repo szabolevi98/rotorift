@@ -7,6 +7,19 @@ const button = (pressed) => ({ pressed, value: pressed ? 1 : 0 });
 const pad = () => ({ id: "USB radio", axes: [0, 0, -1, 0, -1], buttons: [button(false), button(false)] });
 const profile = () => ({ ...defaultProfile(), actions: { arm: { type: "button", index: 0 } } });
 
+test('AUX turtle switch emits explicit on/off, suppresses held-on reconnect, and preserves its binding',t=>{
+  const state=new ActionBindings(),p=pad(),config=profile();
+  config.actions.turtle={type:'axis',index:4,direction:1};
+  p.axes[4]=1;assert.deepEqual(state.sample(p,config,true).events,[]);
+  p.axes[4]=-1;assert.deepEqual(state.sample(p,config,true).events,['turtleOff']);
+  p.axes[4]=1;assert.deepEqual(state.sample(p,config,true).events,['turtleOn']);
+  assert.deepEqual(state.sample(p,config,true).events,[]);
+  const env=environment(t),c=new Controller(()=>{});env.setPads([p]);c.poll(.01);
+  assert.ok(c.bindAction('turtle',config.actions.turtle));
+  const restored=new Controller(()=>{});restored.poll(.01);
+  assert.deepEqual(restored.profile.actions.turtle,config.actions.turtle);
+});
+
 test("held buttons are suppressed on connect/reset; one action per press, no repeats", () => {
   const state = new ActionBindings(), p = pad(), config = profile();
   p.buttons[0] = button(true);

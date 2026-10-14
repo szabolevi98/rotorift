@@ -4,6 +4,7 @@ import { motorThrustLimit, throttleToThrust } from "./propulsion.js";
 import { FlightEffects } from "./flight-effects.js";
 import { addAircraftColliders } from "./aircraft-colliders.js";
 import { propellerCollisionRadius } from "./propellers.js";
+import { turtleThrust } from './turtle.js';
 export const PHYSICS_DT = 1 / 240;
 function mixThrust(mixer, demand, max) {
   const idle = max * 0.012;
@@ -97,6 +98,7 @@ export class DronePhysics {
   }
   reset(position) {
     this.armed = false;
+    this.turtleMode = false;
     this.motorThrust.fill(0);
     this.previousBodyRates.fill(0);
     this.previousContactVelocity = [0,0,0];
@@ -109,12 +111,16 @@ export class DronePhysics {
     this.body.resetForces(true);
     this.body.resetTorques(true);
   }
+  setTurtleMode(enabled){
+    if(this.armed)return false;
+    this.turtleMode=enabled===true;this.motorThrust.fill(0);this.previousBodyRates.fill(0);this.angularAcceleration.fill(0);return true;
+  }
   step(input, dt = PHYSICS_DT) {
     const b = this.body,
       c = this.config,
       q = b.rotation(),
       w = rotate(array(b.angvel()), inverse(q));
-    this.effects.update(dt, this.armed, this.motorThrust, array(b.linvel()), q);
+    this.effects.update(dt, this.armed, this.motorThrust.map(Math.abs), array(b.linvel()), q);
     b.resetForces(true);
     b.resetTorques(true);
     let desired = [
@@ -156,20 +162,20 @@ export class DronePhysics {
     const demand = [4 * base, torques[0], torques[2], torques[1]],
       idle = max * 0.012;
     // Preserve attitude authority when collective throttle reaches a motor limit.
-    const targets = mixThrust(this.mixer, demand, max);
+    const targets = this.turtleMode?turtleThrust(c,input,q,max,w):mixThrust(this.mixer, demand, max);
     let totalThrust = 0;
     const motorTorque = [0, 0, 0];
     for (let i = 0; i < 4; i++) {
       const m = c.motors[i],
         r = m.positionM;
-      const target = this.armed ? clamp(targets[i], idle, max) : 0;
+      const target = this.armed ? this.turtleMode?targets[i]:clamp(targets[i], idle, max) : 0;
       const tau =
-        target > this.motorThrust[i]
+        Math.abs(target) > Math.abs(this.motorThrust[i])
           ? c.motor.riseSeconds
           : c.motor.fallSeconds;
       this.motorThrust[i] +=
         (target - this.motorThrust[i]) * (1 - Math.exp(-dt / tau));
-      const thrust = this.motorThrust[i] * this.effects.motorEfficiency(i);
+      const thrust = (this.turtleMode&&!this.armed?0:this.motorThrust[i]) * this.effects.motorEfficiency(i);
       totalThrust += thrust;
       // Compute r × F about the centre of mass in local coordinates. Using
       // world-space motor points loses precision to Rapier's float32 values
@@ -233,7 +239,7 @@ export class DronePhysics {
             const previousRelative=this.previousContactVelocity.map((v,i)=>v+rotational[i]-[otherVelocity.x,otherVelocity.y,otherVelocity.z][i]);
             let impulse = 0;
             for (let i = 0; i < manifold.numContacts(); i++) impulse += manifold.contactImpulse(i);
-            const rotorFraction=Math.sqrt(Math.max(0,this.motorThrust[index]/Math.max(max,1e-9)));
+            const rotorFraction=Math.sqrt(Math.abs(this.motorThrust[index])/Math.max(max,1e-9));
             const tangent=rotate([-contact.z,0,contact.x],q), radius=Math.hypot(contact.x,contact.z);
             const cutting=radius>c.propDiameterM*.15 ? Math.abs(tangent.reduce((sum,v,i)=>sum+v*normal[i],0))/radius * this.effects.propellers.tuning.maxTipSpeedMps * rotorFraction * .035 : 0;
             const speed=Math.max(Math.abs(relative.reduce((sum,v,i)=>sum+v*normal[i],0)),Math.abs(previousRelative.reduce((sum,v,i)=>sum+v*normal[i],0)),impulse/c.massKg,cutting);

@@ -10,6 +10,7 @@ import { PauseMenu } from "./game/pause-menu.js";
 import { armPrompt } from "./game/arm-prompt.js";
 import { FpvOsd } from "./game/fpv-osd.js";
 import { PropellerHud } from "./game/propeller-hud.js";
+import { CameraProfiles, DEFAULT_CAMERA_PROFILE } from './game/camera-profiles.js';
 import { validPropellers } from "/shared/physics/propellers.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
@@ -117,6 +118,15 @@ const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
   cameraSettings = read("camera", { angle: 20, fov: 100, sound: true, horizon: false, analog: false });
+const cameraProfiles=new CameraProfiles(read('camera-profiles',{}),cameraSettings);
+function applyAircraftCamera(){
+  const profile=cameraProfiles.get(flight?.config?.id??config?.id);flight?.setCameraSettings(profile.angle,profile.fov);
+}
+function renderCameraProfile(id){
+  if(!$('#camera-drone').options.length)return;
+  $('#camera-drone').value=id;const p=cameraProfiles.get(id);
+  $('#camera-angle').value=p.angle;$('#camera-fov').value=p.fov;$('#angle-output').textContent=p.angle+'°';$('#fov-output').textContent=p.fov+'°';
+}
 let droneColor = normalizeDroneColor(read("drone-color", "coral"));
 let simulation = normalizeSimulation(read("simulation", DEFAULT_SIMULATION));
 function createSimulationControls() {
@@ -233,6 +243,7 @@ function pause() {
   paused = true;
   flight.active = flightSimulationActive(playing, paused, room, network.id);
   flight.physics.armed = false;
+  flight.physics.setTurtleMode(false);
   flight.mute();
   lap.invalid = true;
   controller.clear();
@@ -273,6 +284,12 @@ function action(kind, currentInput = input) {
     return;
   }
   if (!playing || paused) return;
+  if(['turtle','turtleOn','turtleOff'].includes(kind)){
+    if(flight.physics.armed){notice(t('hud.turtleDisarm'));return;}
+    if(currentInput.throttle>.06){notice(t('hud.lowThrottle'));return;}
+    if(room&&(room.phase!=='flying'||room.players.find(p=>p.id===network.id)?.finished))return;
+    flight.physics.setTurtleMode(kind==='turtle'?!flight.physics.turtleMode:kind==='turtleOn');flight.rotorMotion.reset();hud();return;
+  }
   if (["arm", "armOn", "armOff"].includes(kind)) {
     const armed = kind === "armOn" || (kind === "arm" && !flight.physics.armed);
     if (armed && controller.usingRadio && !controller.radioReady) { notice(t("settings.radioMissing")); return; }
@@ -285,7 +302,7 @@ function action(kind, currentInput = input) {
     flight.startSound();
     hud();
   }
-  if (kind === "hover" && !controller.usingRadio)
+  if (kind === "hover" && !controller.usingRadio && !flight.physics.turtleMode)
     controller.keyboard.throttle = hoverThrottle(flight.config);
   if (kind === "view") flight.cycleView();
   if (kind === "reset") resetAircraft();
@@ -325,6 +342,7 @@ async function selectDrone(id) {
   try {
     await paintLoading();
     await preview.select(selected, task.progress);
+    if(config===selected)renderCameraProfile(selected.id);
     preview.render();
   } catch (error) {
     if (config === selected && previous) {
@@ -423,7 +441,7 @@ function createCatalogUI() {
       selectDrone(d.id).catch(() => notice(t("error.requestFailed"))),
     );
     $("#drone-picker").append(b);
-    for (const select of ["#rates-drone", "#rates-target", "#records-drone"])
+    for (const select of ["#rates-drone", "#rates-target", "#records-drone", "#camera-drone"])
       $(select).append(new Option(d.name, d.id));
   }
   for (const m of catalog.maps) {
@@ -821,6 +839,8 @@ async function loadRoom(r) {
     await paintLoading();
     const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
     if (loaded === false) return;
+    applyAircraftCamera();
+    renderCameraProfile(roomConfig.id);
     if (roomKey(room) !== key || room.phase === "lobby" || room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished) {
       flight.active = false;
       if (!room) void fullscreen?.enterMenu();
@@ -1023,6 +1043,7 @@ async function launch() {
   try {
     await paintLoading();
     if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
+    applyAircraftCamera();
     lap = newLap();
     simTime = 0;
     playing = true;
@@ -1092,6 +1113,11 @@ function hud() {
   $("#arm-state").setAttribute("aria-pressed", String(flight.physics.armed));
   $("#arm-state").setAttribute("aria-label", t(flight.physics.armed ? "hud.disarmAction" : "hud.armAction"));
   $("#arm-state").disabled = !flight.physics.armed && !!room && (room.phase !== "flying" || own?.finished);
+  $('#hud-turtle').setAttribute('aria-pressed',String(flight.physics.turtleMode));
+  $('#hud-turtle').classList.toggle('selected',flight.physics.turtleMode);
+  $('#hud-turtle').disabled=flight.physics.armed||!!room&&(room.phase!=='flying'||own?.finished);
+  visible('#turtle-hud',flight.physics.turtleMode);
+  $('#turtle-hud').textContent=t(flight.physics.armed?'hud.turtleActive':'hud.turtleReady');
   const configuredArm = controller.profile.actions?.arm;
   const armBinding = controller.usingRadio && configuredArm &&
     availableBindings(controller.pad, controller.profile).some(binding => bindingKey(binding) === bindingKey(configuredArm))
@@ -1102,7 +1128,7 @@ function hud() {
     lowThrottle: input.throttle <= 0.06, binding: armBinding,
     control: armBinding ? bindingLabel(armBinding) : controller.keys.arm === "Space" ? t("hud.spaceKey") : keyName(controller.keys.arm),
   }, t);
-  visible("#arm-prompt", !!prompt && !paused);
+  visible("#arm-prompt", !!prompt && !paused && !flight.physics.turtleMode);
   if (prompt) for (const field of ["title", "detail"]) {
     const element = $("#arm-prompt-" + field);
     if (element.textContent !== prompt[field]) element.textContent = prompt[field];
@@ -1230,7 +1256,7 @@ function flightHelpContent() {
     ...[["throttle", "throttleUp", "throttleDown"], ["pitch", "pitchForward", "pitchBack"],
       ["roll", "rollLeft", "rollRight"], ["yaw", "yawLeft", "yawRight"]]
       .map(([axis, ...actions]) => [t("axis." + axis), actions.map(name)]),
-    ...["arm", "reset", "view", "mode", "hover", "menu"].map(action => [t("key." + action), [name(action)]]),
+    ...["arm", "reset", "view", "mode", "turtle", "hover", "menu"].map(action => [t("key." + action), [name(action)]]),
     [t("hud.fineControl"), ["Shift"]],
   ];
   return { source: t(radio ? "settings.controller" : "input.keyboard"),
@@ -1286,6 +1312,7 @@ function frame(now) {
       flight.physics.effects.options,
       flight.physics.effects.propellers.blades,
       flight.physics.armed && !paused ? flight.rotorMotion.fraction : [0,0,0,0],
+      flight.physics.turtleMode,
     );
     sendAt = now;
   }
@@ -1337,7 +1364,7 @@ function bindUI() {
   }));
   flightHelp = new FlightHelp(t, flightHelpContent);
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
-  for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"]])
+  for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"], ["hud-turtle", "turtle"]])
     $("#" + id).onclick = () => { action(kind); hud(); document.activeElement?.blur(); };
   $("#binding-cancel").onclick = () => {
     controller.bindings.reset(); controller.bindings.result = null; renderInputUI();
@@ -1453,28 +1480,35 @@ function bindUI() {
       $("#calibration-status").textContent = t("settings.saved");
     },
   );
-  function camera() {
-    cameraSettings.angle = Number($("#camera-angle").value);
-    cameraSettings.fov = Number($("#camera-fov").value);
+  function camera(saveProfile=false) {
+    if(saveProfile){
+      cameraProfiles.set($('#camera-drone').value,{angle:Number($('#camera-angle').value),fov:Number($('#camera-fov').value)});
+      write('camera-profiles',cameraProfiles.profiles);
+    }
     cameraSettings.sound = $("#sound").checked;
     cameraSettings.horizon = $("#fpv-horizon-toggle").checked;
     cameraSettings.analog = $("#analog-video-toggle").checked;
-    $("#angle-output").textContent = cameraSettings.angle + "°";
-    $("#fov-output").textContent = cameraSettings.fov + "°";
-    flight.setCameraSettings(cameraSettings.angle, cameraSettings.fov);
+    $('#angle-output').textContent=$('#camera-angle').value+'°';$('#fov-output').textContent=$('#camera-fov').value+'°';
+    applyAircraftCamera();
     pauseRenderNeeded = true;
     flight.soundEnabled = cameraSettings.sound;
     fpvOsd.setSettings(cameraSettings);
     $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
     write("camera", cameraSettings);
   }
-  $("#camera-angle").value = cameraSettings.angle;
-  $("#camera-fov").value = cameraSettings.fov;
+  for(const d of catalog.drones)cameraProfiles.set(d.id,cameraProfiles.get(d.id));
+  write('camera-profiles',cameraProfiles.profiles);renderCameraProfile(config.id);
+  $('#camera-drone').onchange=()=>renderCameraProfile($('#camera-drone').value);
+  $('#camera-all').onclick=()=>{
+    const p=cameraProfiles.get($('#camera-drone').value);for(const d of catalog.drones)cameraProfiles.set(d.id,p);
+    write('camera-profiles',cameraProfiles.profiles);applyAircraftCamera();notice(t('settings.saved'));
+  };
+  $('#camera-reset').onclick=()=>{cameraProfiles.set($('#camera-drone').value,DEFAULT_CAMERA_PROFILE);write('camera-profiles',cameraProfiles.profiles);renderCameraProfile($('#camera-drone').value);applyAircraftCamera();};
   $("#sound").checked = cameraSettings.sound;
   $("#fpv-horizon-toggle").checked = cameraSettings.horizon === true;
   $("#analog-video-toggle").checked = cameraSettings.analog === true;
-  for (const s of ["#camera-angle", "#camera-fov", "#sound", "#fpv-horizon-toggle", "#analog-video-toggle"])
-    $(s).oninput = camera;
+  for(const s of ['#camera-angle','#camera-fov'])$(s).oninput=()=>camera(true);
+  for (const s of ["#sound", "#fpv-horizon-toggle", "#analog-video-toggle"])$(s).oninput=()=>camera();
   camera();
   for (const s of ["#records-route", "#records-drone", "#records-mode"])
     $(s).onchange = showRecords;

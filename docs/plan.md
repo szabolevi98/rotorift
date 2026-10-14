@@ -605,3 +605,13 @@ Ezek a követelményterv elkészítését nem akadályozzák:
   lévő kérés látható. Indítás előtt minden pilóta készenléte szükséges.
 - Globális folytatás/befejezés sáv szüneteltetett repüléshez. Lobbyfrissítés
   nem navigálhatja el a pilótát egy megnyitott beállítási képernyőről.
+
+## 2026-10-14 – Turtle mód és külön kamera minden drónhoz
+
+- Turtle / crash-flip: fordított motorpárral, roll/pitch vezérléssel, valódi
+  fizikai átfordulással; billentyű, HUD gomb és hozzárendelhető rádiós kapcsoló.
+  Disarm szükséges a váltáshoz. Akkumulátor és propellersérülés megmarad,
+  multiplayerben a többi játékos is látja a fordított propellerforgást.
+- Kamera dőlése és látószöge drónonként külön mentve, minden drónra másolással.
+  Régi közös értékek automatikus átvétele, megfelelő profil repüléskor és szobában.
+- Használat, hangolási értékek és ellenőrzések: [turtle-camera.md](turtle-camera.md).

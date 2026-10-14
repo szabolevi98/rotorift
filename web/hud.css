@@ -15,8 +15,8 @@
 #hud .hud-info-button[aria-expanded="true"], #hud #hud-view[aria-pressed="true"] { color: #ffb29e; border-color: #ff6648; }
 #hud .hud-bottom { left: var(--hud-edge); right: max(20px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 20px; }
 #hud .hud-pilot-controls { display: flex; flex-direction: column; align-items: start; gap: 8px; }
-.hud-control-buttons { display: flex; gap: 6px; }
-#hud #arm-state, #hud #hud-mode { min-height: 44px; padding: 8px 12px; border: 1px solid #ffffff30; background: #11151bd9; border-radius: 7px; }
+.hud-control-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+#hud #arm-state, #hud #hud-mode, #hud #hud-turtle { pointer-events: auto; min-height: 44px; padding: 8px 12px; border: 1px solid #ffffff30; background: #11151bd9; border-radius: 7px; }
 #hud #arm-state { min-width: 82px; }
 #hud #arm-state.armed { color: #b6f0a6; border-color: #a3d995; background: #183125d9; }
 #hud-input { color: #ffffffb3; font-size: 10px; }
@@ -30,6 +30,8 @@
 #hud .crosshair { transform: translate(-50%, -50%); }
 #hud { z-index: 2; }
 .fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(220px, 38vw); transform: translate(-50%, -50%); overflow: visible; pointer-events: none; }
+#turtle-hud { position:absolute;top:22%;left:50%;transform:translateX(-50%);width:min(440px,85vw);padding:12px 16px;background:#241910ed;border:1px solid #ffbe75;border-radius:8px;color:#ffe0ab;text-align:center;font-size:13px;pointer-events:none; }
+#hud #hud-turtle.selected { background:#6a411b; border-color:#ffbe75; color:#ffe0ab; }
 .horizon-bars path, .horizon-reference { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: square; paint-order: stroke; filter: drop-shadow(0 1px 1px #000); }
 .horizon-reference { stroke-width: 2; }
 #hud:has(#fpv-horizon:not(.hidden)) .crosshair { visibility: hidden; }
@@ -94,7 +96,7 @@
   #hud #stick-hud { gap: 10px; }
   #hud .stick-display { width: 58px; }
   #hud .stick-label { font-size: 7px; }
-  #hud #arm-state, #hud #hud-mode { padding: 6px 8px; font-size: 10px; }
+  #hud #arm-state, #hud #hud-mode, #hud #hud-turtle { padding: 6px 8px; font-size: 10px; }
   #hud #arm-state { min-width: 64px; }
   #hud .telemetry { padding: 8px 10px; gap: 14px; }
   #hud .telemetry b { font-size: 21px; }
