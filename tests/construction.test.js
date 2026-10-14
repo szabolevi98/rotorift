@@ -4,11 +4,19 @@ import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { buildConstruction, CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
-import { CONSTRUCTION_BUILDINGS, CONSTRUCTION_CRANES, CONSTRUCTION_PIT, CONSTRUCTION_VEHICLES, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_HANGAR, CONSTRUCTION_ROAD_HEIGHT, constructionHeight, constructionSurfaceHeight, floorOpening } from "../shared/world/construction-layout.js";
+import { CONSTRUCTION_BUILDINGS, CONSTRUCTION_CRANES, CONSTRUCTION_PIT, CONSTRUCTION_VEHICLES, CONSTRUCTION_SMALL_DETAILS, CONSTRUCTION_ROADS, CONSTRUCTION_EARTHWORKS, CONSTRUCTION_HANGAR, CONSTRUCTION_ROAD_HEIGHT, constructionHeight, constructionSurfaceHeight, floorOpening } from "../shared/world/construction-layout.js";
 import { DronePhysics } from "../shared/physics/drone.js";
 import { CONSTRUCTION_LANDSCAPE_RINGS } from "../web/game/construction-landscape.js";
 const map = JSON.parse(await readFile(new URL("../data/maps/betonudvar.json", import.meta.url)));
 await RAPIER.init();
+
+test('small construction storage groups stay inside the fence and outside the working roads',()=>{
+  for(const item of CONSTRUCTION_SMALL_DETAILS){
+    assert.ok(Math.abs(item.x)+4<map.size/2&&Math.abs(item.z)+4<map.size/2);
+    for(const road of CONSTRUCTION_ROADS)
+      assert.ok(Math.abs(item.x-road.x)>road.width/2+4||Math.abs(item.z-road.z)>road.depth/2+4,item.id+' blocks a working road');
+  }
+});
 
 test("construction site has open bays/shafts, a clear main road, a real excavation and hollow pipes", () => {
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
@@ -17,7 +25,7 @@ test("construction site has open bays/shafts, a clear main road, a real excavati
     assert.equal(map.size, 600); assert.equal(map.boundary.returnAfterSeconds, 600);
     assert.equal(map.racingEnabled, false); assert.deepEqual(map.gates, []);
     assert.ok(Math.max(...CONSTRUCTION_CRANES.map(c => c.height)) >= 75);
-    assert.equal(CONSTRUCTION_VEHICLES.length, 8);
+    assert.equal(CONSTRUCTION_VEHICLES.length, 9);
     const ray = (p, direction, distance) => world.castRay(new RAPIER.Ray({ x: p[0], y: p[1], z: p[2] }, { x: direction[0], y: direction[1], z: direction[2] }), distance, true);
     assert.equal(ray([0, 1.8, 255], [0, 0, -1], 535), null, "central working road must stay open");
     for (const b of CONSTRUCTION_BUILDINGS) {
@@ -39,7 +47,7 @@ test("construction site has open bays/shafts, a clear main road, a real excavati
     assert.ok(ray([800, 10, 800], [0, -1, 0], 12), "ground continues outside the fence");
     assert.ok(CONSTRUCTION_VIEW_DISTANCE >= 10000);
     assert.ok(site.root.userData.instances > 4000);
-    assert.ok(site.root.userData.batches < 340, "repeated details including new work yards must remain instanced");
+    assert.ok(site.root.userData.batches < 380, "small storage groups reuse regional instancing instead of one draw call per item");
     console.log("construction geometry:", site.root.userData.instances, "parts in", site.root.userData.batches, "batches;", site.root.userData.colliders, "colliders");
   } finally {
     site.dispose(); assert.equal(scene.children.length, 0); assert.equal(world.colliders.len(), 0); world.free();

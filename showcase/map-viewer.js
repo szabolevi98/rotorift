@@ -10,6 +10,7 @@ import { CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
 import { PARK_GARDEN, parkSurfaceHeight } from "../shared/world/park-layout.js";
 import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
+import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
 import { RouteDraft, normalFromYaw, yawFromNormal } from "../shared/race/editor.js";
 
@@ -39,6 +40,8 @@ const SITE_VIEWS = {
   plant: ["Concrete batching plant", [112,23,280], [65,7,246]],
   pump: ["Concrete pump work zone", [67,17,182], [44,6,158]],
   landscape: ["Fence and landscape", [60,85,408], [10,12,292]],
+  deliveries: ["North deliveries and drums", [149,constructionSurfaceHeight(136,-82)+9,-121], [137,constructionSurfaceHeight(136,-82)+1.4,-91]],
+  smallStorage: ["Pallet and formwork storage", [192,constructionSurfaceHeight(185,64)+5,73], [186,constructionSurfaceHeight(185,64)+.6,65]],
 };
 const PLAYGROUND_VIEWS={
  overview:['Playground overview',[52,48,62],[0,1,0]],

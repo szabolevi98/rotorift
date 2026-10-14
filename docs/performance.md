@@ -1,5 +1,20 @@
 # Pályák teljesítményjavítása
 
+## Betonudvar kisebb tárgycsoportjai — 2026. október 14.
+
+Egy északi szállító teherautó és tizenkét kisebb tárolócsoport került az
+üres helyekre: hordók, raklapos anyagok, kábelcsévék és egy nyitott hulladékos
+konténer. A csoportok a kerítésen belül, a munkautakon kívül maradnak; a
+kisebb raklapok és csévék a meglévő talaj lejtéséhez igazodnak.
+A tárgyak a meglévő régiós instancinget és egyszerű analitikus ütközőket
+használják. A Betonudvar verziója 3; az újragenerált ütközési fájl
+8301 alakzatot tartalmaz, és 1 984 573 bájt tömörítve, körülbelül 18 kB-tal
+több a korábbinál. A pályanézőben két új nézet mutatja a tárolóhelyeket.
+Az önálló, mozgó kamerás próba GTX 1080-on, 1280 × 504-es renderfelületen
+2,18–3,37 ms render/GPU-időt és 0,59–1,35 ms költséget mért négy fizikai
+lépésre a bejáratnál és a betonváz két nézetében. Ezek részidők, nem teljes
+képkockaidők vagy minden gépre érvényes FPS-ígéretek.
+
 ## Játszótér talajának villogása — 2026. október 14.
 
 A 262 km széles kirajzolt talajdoboz alacsony FPV-nézetben mélységi és

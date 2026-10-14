@@ -4,6 +4,7 @@ import { buildConstructionVehicles } from "./construction-vehicles.js";
 import { constructionHeight, constructionSurfaceHeight } from "../../shared/world/construction-layout.js";
 import { buildConstructionHangar } from "./construction-hangar.js";
 import { buildConstructionWorkYards } from "./construction-work-yards.js";
+import { buildConstructionSiteDetails } from "./construction-site-details.js";
 
 import { buildConstructionTerrain, buildEarthworkDetails } from "./construction-terrain.js";
 
@@ -26,6 +27,7 @@ export function buildConstruction(scene, world, RAPIER, map) {
   buildConcreteFrames(parts); buildTowerCranes(parts); buildConstructionVehicles(parts);
   buildConstructionHangar(parts);
   buildConstructionWorkYards(parts);
+  buildConstructionSiteDetails(parts);
 
   function container(name, position, color = "blue", angle = 0) {
     model(name, position, angle, () => {

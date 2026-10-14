@@ -26,6 +26,21 @@ export const CONSTRUCTION_VEHICLES = [
   { id: "site-dumper", type: "dumper", x: 144, z: 166, angle: -0.6 },
   { id: "wheel-loader", type: "loader", x: 184, z: 120, angle: 0.8 },
   { id: "tipper-truck", type: "tipper", x: -128, z: 180, angle: 0.4 },
+  { id: "north-delivery-truck", type: "truck", x: 136, z: -82, angle: 0 },
+];
+export const CONSTRUCTION_SMALL_DETAILS = [
+  { id: "central-service-drums", type: "drums", x: -29, z: -113 },
+  { id: "delivery-unloading-drums", type: "drums", x: 141, z: -103 },
+  { id: "west-storage-drums", type: "drums", x: -211, z: 185 },
+  { id: "east-service-drums", type: "drums", x: 253, z: 252 },
+  { id: "north-masonry-pallets", type: "pallets", x: 82, z: -184 },
+  { id: "east-formwork-pallets", type: "pallets", x: 185, z: 64 },
+  { id: "northwest-spare-pallets", type: "pallets", x: -218, z: -254 },
+  { id: "west-spare-pallets", type: "pallets", x: -263, z: 247 },
+  { id: "central-cable-reels", type: "reels", x: 44, z: 6 },
+  { id: "northwest-cable-reels", type: "reels", x: -194, z: -162 },
+  { id: "south-frame-cable-reels", type: "reels", x: -38, z: 126 },
+  { id: "northwest-waste-skip", type: "skip", x: -118, z: -124 },
 ];
 export const CONSTRUCTION_ROADS = [
   { x: 0, z: 0, width: 19, depth: 570 },
