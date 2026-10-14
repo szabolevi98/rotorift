@@ -268,3 +268,7 @@
   #menu .map-label { padding: 15px 10px; }
   #menu .simulation-controls summary { min-height: 44px; display: flex; align-items: center; }
 }
+
+#menu .drone-picker{grid-template-columns:repeat(5,minmax(0,1fr))}
+#menu .drone-card{min-width:0}
+@media(max-width:1050px){#menu .drone-card{padding:8px 6px}#menu .drone-card strong{font-size:13px}}

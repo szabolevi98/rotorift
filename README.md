@@ -6,7 +6,7 @@ Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfi
 Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
 Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
 VPS-telepítés és frissítés: [DEPLOY.md](DEPLOY.md).
-Az első **játszható prototípus** elkészült; a négy drón alapfizikája automatizált
+Az első **játszható prototípus** elkészült; az öt drón alapfizikája automatizált
 repülési méréssel ellenőrzött. A konkrét valós gépekkel való pontos egyezéshez
 repülési logokkal végzett hangolás, a rádiókhoz hardveres kompatibilitási próba szükséges.
 
@@ -54,7 +54,8 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
 
 ## Repülés
 
-- Rift 65: 65 mm, 1S tinywhoop; Rift 75: 75-ös osztály, 80,8 mm motortáv, 1S whoop; Rift C3: 3″, 4S cinewhoop; Rift X5: 5″, 6S freestyle.
+- Rift 65: 65 mm, 1S tinywhoop; Rift 75: 75-ös osztály, 80,8 mm motortáv, 1S whoop; Rift C3: 3″, 4S cinewhoop; Rift X35: 3,5″, 4S freestyle; Rift X5: 5″, 6S freestyle.
+- Az [X35](docs/rift-x35.md) 215 g-os, kompakt karbonvázas gép, felül 4S / 650 mAh akkumulátorral, akciókamera nélkül. Mért szimulációs lebegési gáza 28,6%, közel szinttartó végsebessége 153,6 km/h.
 - Játszótér / Pocket Park: kis, 84 × 84 m-es gyakorlópálya mászóvárral, hintákkal,
   nyújtósorral, fahengerrel és játszóházzal. A 65/75 whoopokhoz épült, választható
   hétkapus versenyútvonallal. Részletek: [pocket-park-and-rift75.md](docs/pocket-park-and-rift75.md).

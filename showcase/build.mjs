@@ -34,6 +34,7 @@ const script = [
   read('whoop65.js'),
   read('whoop75.js'),
   read('cinewhoop3.js'),
+  read('freestyle35.js'),
   read('catalog.js'),
   read('../shared/visual/rotor-motion.js').replace(/^export /gm, ''),
   `const ROTOR_THRUST_EXPONENTS = ${JSON.stringify(Object.fromEntries(catalog.drones.map(c=>[c.id,c.motor.thrustExponent])))};`,

@@ -1,5 +1,11 @@
 # Repülési hangolás – 5. konfigurációverzió
 
+2026-10-14: a [Rift X35](rift-x35.md) saját 1-es konfigurációval csatlakozott:
+215 g, 3,5″ propeller, 160 mm motortáv, 4S / 650 mAh akku, akciókamera nélkül.
+Mért szimulációs hover: 28,63%; szinttartó teljes gázas utazósebesség: 153,58 km/h;
+teljes roll: 0,571 s; 50–25 km/h kifutás: 1,688 s / 16,30 m.
+A mérőprogram és repülési tesztek mind az öt konfigurációt ellenőrzik.
+
 2026-10-13-i kiegészítés: a három korábbi konfiguráció most 6-os verziójú,
 külön lapátsérüléssel. A Rift 75 új, 1-es verziójú konfiguráció; akkumulátorral
 44 g, mért lebegési gáza 27,8%, fenntartható utazósebessége 90,2 km/h.

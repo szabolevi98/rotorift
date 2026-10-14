@@ -323,5 +323,7 @@
   "hud.prop.short.3": "HR",
   "map.jatszoter": "Spielplatz",
   "drone.rift-75": "75er Whoop · 1S",
-  "hangar.drone.rift-75": "75 mm"
+  "hangar.drone.rift-75": "75 mm",
+  "drone.rift-x35": "3,5″ Freestyle · 4S",
+  "hangar.drone.rift-x35": "3,5″"
 }

@@ -1,5 +1,11 @@
 # Rotorift – fejlesztési terv
 
+2026-10-14-i flottabővítés: **Rift X35**, 3,5″ freestyle, 4S / 650 mAh,
+215 g, 160 mm motortáv. Felül akkumulátor, akciókamera és annak tartója nélkül.
+Saját modell és `data/drones/rift-x35.json` fizikai konfiguráció; helyi és online
+repülés, öt nyelv, menthető drónonkénti rate-ek. A választók méret szerinti
+sorrendje: 65, 75, C3, X35, X5. Részletek: [rift-x35.md](rift-x35.md).
+
 Rögzítve: 2026. október 11.
 
 Frissítés: a felhasználó multiplayerre bővítette a tervezett játékot,

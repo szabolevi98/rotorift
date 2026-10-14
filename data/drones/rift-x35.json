@@ -1,0 +1,36 @@
+{
+  "id": "rift-x35",
+  "name": "Rift X35",
+  "version": 1,
+  "category": "freestyle",
+  "tuningStatus": "initial-estimate",
+  "massKg": 0.215,
+  "motorDiagonalM": 0.16,
+  "propDiameterM": 0.0889,
+  "maxSpeedMps": 45,
+  "inertiaKgM2": [0.00028, 0.00048, 0.00028],
+  "centerOfMassM": [0, 0.004, 0.002],
+  "bodyHalfExtentsM": [0.020, 0.038, 0.060],
+  "visualOffsetM": [0, -0.025, 0],
+  "cameraOffsetM": [0, -0.003, -0.054],
+  "motor": { "maxThrustN": 4, "thrustExponent": 1.62, "riseSeconds": 0.022, "fallSeconds": 0.032, "yawTorquePerNewtonM": 0.009 },
+  "motors": [
+    { "positionM": [-0.056568, -0.010, -0.056568], "direction": 1 },
+    { "positionM": [0.056568, -0.010, -0.056568], "direction": -1 },
+    { "positionM": [-0.056568, -0.010, 0.056568], "direction": -1 },
+    { "positionM": [0.056568, -0.010, 0.056568], "direction": 1 }
+  ],
+  "battery": { "cells": 4, "nominalVoltage": 15.2, "capacityMah": 650, "fullCellVoltage": 4.2 },
+  "linearDrag": 0.009,
+  "quadraticDrag": 0.0082,
+  "angularDrag": 0.000025,
+  "controller": { "rateGain": [48,30,48], "rateDamping": [0.8,0.6,0.8], "derivativeFilterSeconds": 0.012, "levelGain": 7, "angleLimitDeg": 50 },
+  "friction": 0.7,
+  "restitution": 0.10,
+  "simulation": {
+    "battery": { "idleCurrentA": 0.35, "maxCurrentA": 42, "resistanceOhm": 0.028, "linearCurrentFraction": 0.55, "polarizationOhm": 0.012, "recoverySeconds": 3, "reserveFraction": 0.07 },
+    "propeller": { "bendSpeedMps": 2.5, "chipSpeedMps": 6, "breakSpeedMps": 12, "maxTipSpeedMps": 140 },
+    "propwashStrength": 0.20
+  },
+  "model": "/assets/models/rotorift-rift-x35.glb"
+}

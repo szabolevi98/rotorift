@@ -97,6 +97,19 @@ async function fixture(t, mapOverrides = {}) {
   return { client, catalog, db };
 }
 
+test("X35 multiplayer rooms pin the new aircraft and accept its own config hash and motor speeds",async t=>{
+  const {client,catalog}=await fixture(t),host=await client('X35 host'),guest=await client('X35 guest');
+  const config=catalog.drones.find(d=>d.id==='rift-x35');
+  host.send('create',{mapId:'test-route',droneId:config.id,mode:'angle',kind:'free'});
+  const created=(await host.next(m=>m.type==='room')).room;assert.equal(created.droneId,'rift-x35');
+  guest.send('join',{code:created.code});const joined=(await guest.next(m=>m.type==='room'&&m.room.players.length===2)).room;assert.equal(joined.droneId,'rift-x35');
+  host.send('ready',{ready:true});guest.send('ready',{ready:true});await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.ready));
+  host.send('start');await guest.next(m=>m.type==='room'&&m.room.phase==='flying');
+  const rotorSpeeds=[.3,.4,.5,.6];await guest.state([.6,1,-.5],{configHash:config.configHash,rotorSpeeds});
+  const received=await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.rotorSpeeds?.[0]===.3);
+  assert.deepEqual(received.room.players.find(p=>p.id===guest.id).rotorSpeeds,rotorSpeeds);
+});
+
 test("a room pins the selected race file, gate order and start position for every pilot", async t => {
   const gates=[{p:[12,2,4],n:[0,0,-1],width:5,height:4},{p:[20,2,4],n:[1,0,0],width:5,height:4}];
   const routes=[{id:"race_1",name:"First race",version:1,spawn:[0,1,-.5],gates},

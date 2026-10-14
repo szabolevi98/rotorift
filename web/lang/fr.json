@@ -323,5 +323,7 @@
   "hud.prop.short.3": "RD",
   "map.jatszoter": "Terrain de jeux",
   "drone.rift-75": "Whoop classe 75 · 1S",
-  "hangar.drone.rift-75": "75 mm"
+  "hangar.drone.rift-75": "75 mm",
+  "drone.rift-x35": "3,5″ freestyle · 4S",
+  "hangar.drone.rift-x35": "3,5″"
 }
