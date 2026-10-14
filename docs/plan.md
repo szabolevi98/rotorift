@@ -615,3 +615,14 @@ Ezek a követelményterv elkészítését nem akadályozzák:
 - Kamera dőlése és látószöge drónonként külön mentve, minden drónra másolással.
   Régi közös értékek automatikus átvétele, megfelelő profil repüléskor és szobában.
 - Használat, hangolási értékek és ellenőrzések: [turtle-camera.md](turtle-camera.md).
+
+## 2026-10-14 – Saját és globális körszellemek
+
+- Helyi személyes legjobb felvétel és szerveren rögzített globális szellemkörök,
+  a Racing rendszerének 20 Hz-es mintavételezési megközelítésével.
+- Időmérőben Nincs / Saját / az adott kategória top 10 rekordja választó;
+  a Rekordok oldalon is kiválasztható felvétel. Első kapunál induló,
+  körönként újrainduló, ütközés nélküli áttetsző drón.
+- Pálya/útvonal/verzió, drón/config, mód és szimulációs opciók külön kategóriák.
+  Régi felvétel nélküli rekordok jelöltek; csak új érvényes körből lesz szellem.
+- Részletek és ellenőrzések: [lap-ghosts.md](lap-ghosts.md).

@@ -8,9 +8,10 @@ import { attachRooms } from "./net/rooms.js";
 import { DEFAULT_SIMULATION, WIND_LEVELS } from "../shared/simulation/options.js";
 import { saveRoute, readRouteBody, localEditorRequest } from "./routes.js";
 import { resolveRoute } from "../shared/race/routes.js";
-export async function createServer() {
+import { raceCategoryKey } from '../shared/race/category.js';
+export async function createServer({database}={}) {
   const catalog = await loadCatalog(),
-    db = new Database();
+    db = database ?? new Database();
   await db.init();
   let network;
   const json = (res, body, status = 200) => {
@@ -44,7 +45,7 @@ export async function createServer() {
         });
       if (req.method === "GET" && url.pathname === "/api/rooms")
         return json(res, { rooms: network.list() });
-      if (req.method === "GET" && url.pathname === "/api/leaderboard") {
+      if (req.method === "GET" && ['/api/leaderboard','/api/ghost'].includes(url.pathname)) {
           const map = resolveRoute(catalog.maps.find(
             (m) => m.id === url.searchParams.get("map"),
           ), url.searchParams.get("route") ?? undefined),
@@ -58,6 +59,12 @@ export async function createServer() {
         if (!/^[01]{4}[0-3]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
         const simulation = { ...DEFAULT_SIMULATION, wind: WIND_LEVELS[Number(key[4])] };
         ["battery", "propDamage", "propwash", "ghost"].forEach((name, i) => simulation[name] = key[i] === "1");
+        if(url.pathname==='/api/ghost'){
+          const id=url.searchParams.get('id');
+          if(!/^[a-f0-9-]{36}$/.test(id??''))return json(res,{error:'Invalid ghost'},400);
+          const ghost=await db.ghost(map,drone,mode,simulation,id);
+          return ghost?json(res,{...ghost,category:raceCategoryKey(map,drone,mode,simulation)}):json(res,{error:'Ghost unavailable'},404);
+        }
         return json(res, await db.leaderboard(map, drone, mode, simulation));
       }
       if (await serveStatic(req, res, url)) return;

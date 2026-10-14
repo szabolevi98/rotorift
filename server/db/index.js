@@ -1,6 +1,7 @@
 import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
 import { normalizeSimulation, simulationKey } from "../../shared/simulation/options.js";
+import { sanitizeGhost } from '../../shared/race/ghost.js';
 export class Database {
   constructor() {
     this.pool = null;
@@ -35,6 +36,9 @@ export class Database {
       await this.pool.query(
         "CREATE TABLE IF NOT EXISTS players (id CHAR(36) PRIMARY KEY, nick VARCHAR(32) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
       );
+      const [publicColumn]=await this.pool.query("SHOW COLUMNS FROM players LIKE 'public_id'");
+      if(!publicColumn.length)await this.pool.query('ALTER TABLE players ADD COLUMN public_id CHAR(36) NULL');
+      await this.pool.query('UPDATE players SET public_id=UUID() WHERE public_id IS NULL');
       await this.pool.query(
         "CREATE TABLE IF NOT EXISTS laps (id CHAR(36) PRIMARY KEY, player_id CHAR(36) NOT NULL, map_id VARCHAR(32) NOT NULL, route_version INT NOT NULL, drone_id VARCHAR(32) NOT NULL, config_hash CHAR(16) NOT NULL, flight_mode VARCHAR(12) NOT NULL, duration_ms DOUBLE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX category (map_id,route_version,drone_id,config_hash,flight_mode), FOREIGN KEY (player_id) REFERENCES players(id))",
       );
@@ -50,6 +54,8 @@ export class Database {
       const [routeIndex] = await this.pool.query("SHOW INDEX FROM laps WHERE Key_name='category_route'");
       if (!routeIndex.length)
         await this.pool.query("CREATE INDEX category_route ON laps(map_id,route_id,route_version,drone_id,config_hash,flight_mode,simulation_key)");
+      const [ghostColumn]=await this.pool.query("SHOW COLUMNS FROM laps LIKE 'ghost_data'");
+      if(!ghostColumn.length)await this.pool.query('ALTER TABLE laps ADD COLUMN ghost_data MEDIUMTEXT NULL');
       this.available = true;
     } catch {
       this.available = false;
@@ -77,16 +83,23 @@ export class Database {
         : randomUUID();
     if (this.available)
       await this.pool.execute(
-        "INSERT INTO players(id,nick) VALUES(?,?) ON DUPLICATE KEY UPDATE nick=VALUES(nick)",
-        [id, nick],
+        "INSERT INTO players(id,nick,public_id) VALUES(?,?,?) ON DUPLICATE KEY UPDATE nick=VALUES(nick)",
+        [id, nick,randomUUID()],
       );
     return id;
   }
-  async saveLap(player, map, drone, mode, ms, simulation) {
+  async saveLap(player, map, drone, mode, ms, simulation, ghost=null) {
     if (!this.available) return false;
     try {
+      let replay=sanitizeGhost(ghost);
+      if(replay&&Math.abs(replay.frames.at(-1)[0]-ms)>2)replay=null;
+      if(replay){
+        const [best]=await this.pool.execute('SELECT MIN(duration_ms) AS ms FROM laps WHERE player_id=? AND map_id=? AND route_id=? AND route_version=? AND drone_id=? AND config_hash=? AND flight_mode=? AND simulation_key=?',
+          [player,map.id,map.routeId??'',map.routeVersion,drone.id,drone.configHash,mode,simulationKey(simulation)]);
+        if(best[0].ms!==null&&ms>best[0].ms)replay=null;
+      }
       await this.pool.execute(
-        "INSERT INTO laps(id,player_id,map_id,route_id,route_version,drone_id,config_hash,flight_mode,duration_ms,simulation_key) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO laps(id,player_id,map_id,route_id,route_version,drone_id,config_hash,flight_mode,duration_ms,simulation_key,ghost_data) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
         [
           randomUUID(),
           player,
@@ -98,6 +111,7 @@ export class Database {
           mode,
           ms,
           simulationKey(simulation),
+          replay?JSON.stringify(replay):null,
         ],
       );
       return true;
@@ -138,12 +152,23 @@ export class Database {
     if (!this.available) return { available: false, entries: [] };
     try {
       const [rows] = await this.pool.execute(
-        "SELECT p.nick AS name, MIN(l.duration_ms) AS ms, MAX(l.created_at) AS date FROM laps l JOIN players p ON p.id=l.player_id WHERE l.map_id=? AND l.route_id=? AND l.route_version=? AND l.drone_id=? AND l.config_hash=? AND l.flight_mode=? AND l.simulation_key=? GROUP BY l.player_id,p.nick ORDER BY ms ASC LIMIT 30",
+        `SELECT p.public_id AS ghostId, ranked.id AS recordId, p.nick AS name, ranked.duration_ms AS ms, ranked.created_at AS date, ranked.hasGhost
+         FROM (SELECT id,player_id,duration_ms,created_at,(ghost_data IS NOT NULL) AS hasGhost,ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY duration_ms ASC,(ghost_data IS NULL) ASC,created_at ASC,id ASC) AS rankInPlayer
+               FROM laps WHERE map_id=? AND route_id=? AND route_version=? AND drone_id=? AND config_hash=? AND flight_mode=? AND simulation_key=?) ranked
+         JOIN players p ON p.id=ranked.player_id WHERE ranked.rankInPlayer=1 ORDER BY ms ASC,date ASC,ghostId ASC LIMIT 30`,
         [map.id, map.routeId ?? "", map.routeVersion, drone.id, drone.configHash, mode, simulationKey(simulation)],
       );
       return { available: true, entries: rows };
     } catch {
       return { available: false, entries: [] };
     }
+  }
+  async ghost(map,drone,mode,simulation,id){
+    if(!this.available)return null;
+    const board=await this.leaderboard(map,drone,mode,simulation);
+    const entry=board.entries.slice(0,10).find(e=>e.ghostId===id&&e.hasGhost);
+    if(!entry)return null;
+    const [rows]=await this.pool.execute('SELECT ghost_data FROM laps WHERE id=?',[entry.recordId]);
+    try{const replay=sanitizeGhost(JSON.parse(rows[0]?.ghost_data??'null'));return replay?{...entry,replay}:null;}catch{return null;}
   }
 }

@@ -41,7 +41,6 @@
       <header>
         <a class="brand" href="/"><img src="/assets/icon.svg" alt="" /><span>ROTORIFT<span class="brand-dot">.</span></span></a>
         <div class="header-end">
-          <button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button>
           <span id="server-status" class="connection"></span><select id="language" aria-label="Language">
             <option value="en">English</option>
             <option value="hu">Magyar</option>
@@ -49,6 +48,7 @@
             <option value="fr">Français</option>
             <option value="es">Español</option>
           </select>
+          <button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button>
         </div>
       </header>
       <div class="menu-body">
@@ -105,6 +105,11 @@
                 <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
                 <label id="local-session-label"><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
                 <label id="host-kind-label" class="hidden"><span class="dock-label" data-i18n="online.roomKind"></span><select id="room-kind"><option value="free" data-i18n="session.free"></option><option value="race" data-i18n="online.raceKind"></option></select></label>
+                <div id="lap-ghost-picker" class="lap-ghost-picker hidden">
+                  <label><span class="dock-label" data-i18n="ghost.title"></span><select id="lap-ghost-choice"></select></label>
+                  <button type="button" class="secondary small" data-i18n="ghost.refresh"></button>
+                  <p class="muted" data-ghost-note></p>
+                </div>
               </div>
               <label id="public-room-row" class="public-room-row hidden"><input type="checkbox" id="public-room" checked /><span data-i18n="online.public"></span></label>
               <div class="launch-row">
@@ -314,6 +319,7 @@
         <div id="wind-hud" class="hidden"></div>
       </div>
       <div id="race-hud"></div>
+      <div id="lap-ghost-hud" class="hidden"></div>
       </div>
       <div class="hud-bottom">
         <div class="hud-pilot-controls">

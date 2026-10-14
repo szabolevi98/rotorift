@@ -348,5 +348,16 @@
   "perf.pending": "Mérés folyamatban…",
   "perf.unavailable": "Nem elérhető",
   "perf.reset": "Mérés törlése",
-  "perf.export": "JSON letöltése"
+  "perf.export": "JSON letöltése",
+  "ghost.title": "Körszellem · top 10",
+  "ghost.off": "Nincs szellem",
+  "ghost.self": "Saját legjobb felvett kör",
+  "ghost.missing": "Még nincs felvétel",
+  "ghost.loading": "Globális top 10 betöltése…",
+  "ghost.hint": "Az első kapunál veled indul. Azonos útvonal, drón, repülési mód és szimulációs opciók.",
+  "ghost.empty": "Ebben a kategóriában még nincs globális rekord. Saját szellemed egy érvényes kör után mentődik.",
+  "ghost.refresh": "Top 10 frissítése",
+  "ghost.unavailable": "A kiválasztott szellem nem elérhető. A repülést elindíthatod.",
+  "ghost.choose": "Szellem kiválasztása",
+  "ghost.hud": "Szellem: {name} · {time}"
 }

@@ -20,6 +20,7 @@ import { FpvPropellers } from "../../shared/visual/fpv-propellers.js";
 import { RotorMotion, RemoteRotorMotion } from "../../shared/visual/rotor-motion.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 import { advanceFixedSteps } from '../../shared/physics/fixed-step.js';
+import { LapGhostPilot } from './lap-ghost.js';
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -63,6 +64,8 @@ export class Flight {
     const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
     this.parkShadows?.dispose();
+    this.ghostVersion=(this.ghostVersion??0)+1;
+    this.lapGhost?.dispose();this.lapGhost=null;
     this.parkShadows = null;
     this.environment?.dispose();
     this.environment = null;
@@ -118,6 +121,15 @@ export class Flight {
     return true;
   }
   setColor(value) { this.color = normalizeDroneColor(value); applyDroneColor(this.visual, this.color); }
+  async setLapGhost(value){
+    const version=this.ghostVersion=(this.ghostVersion??0)+1;
+    this.lapGhost?.dispose();this.lapGhost=null;
+    if(!value)return;
+    // Use cached original geometry, never temporary damaged blades/FPV discs.
+    const source=await loadModel(this.config);
+    if(version!==this.ghostVersion)return;
+    this.lapGhost=new LapGhostPilot(this.scene,source,this.config,value.replay,value.label);
+  }
   setSimulation(options) {
     this.physics?.effects.setOptions(normalizeSimulation(options));
     this.remoteCollisions?.update(this.remotePlayers ?? [], this.ownId, this.physics.effects.options.ghost);
@@ -125,6 +137,7 @@ export class Flight {
   reset(position = this.map.spawn) {
     if (!this.physics || !this.environment) return;
     this.physics.reset(position);
+    this.lapGhost?.update(null);
     this.rotorMotion.reset();
     this.boundary.reset();
     this.environment.update(position);

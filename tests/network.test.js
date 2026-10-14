@@ -352,6 +352,8 @@ test("two pilots share a room, host starts a race and both finish three verified
       const result = await p.next((m) => m.type === "lap");
       assert.equal(result.valid, true);
       assert.equal(result.saved, true);
+      if(lap===0)assert.ok(result.replay?.frames.length>=2,'first verified lap must provide the pilot with its server-recorded ghost');
+      if(result.replay){assert.equal(result.replay.frames[0][0],0);assert.ok(Math.abs(result.replay.frames.at(-1)[0]-result.ms)<=2);}
       assert.ok(result.ms > 0);
     }
   }
@@ -394,6 +396,7 @@ test("online validation rejects replay and config changes, invalidates interrupt
   for (const z of [2.5, 1.5, -0.5, 0.5]) await p.state([0, 1, z]);
   const invalid = await p.next((m) => m.type === "lap");
   assert.equal(invalid.valid, false);
+  assert.equal(invalid.replay,null,'interrupted laps cannot produce ghosts');
   assert.equal(db.laps.length, 0);
   await p.state([0, 1, 1], { interrupted: true });
   await p.next((m) => m.type === "room" && m.room.players[0].lap.invalid);

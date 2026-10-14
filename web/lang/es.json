@@ -348,5 +348,16 @@
   "perf.pending": "Midiendo…",
   "perf.unavailable": "No disponible",
   "perf.reset": "Borrar mediciones",
-  "perf.export": "Descargar JSON"
+  "perf.export": "Descargar JSON",
+  "ghost.title": "Fantasma de vuelta · top 10",
+  "ghost.off": "Sin fantasma",
+  "ghost.self": "Mi mejor vuelta grabada",
+  "ghost.missing": "Todavía sin grabación",
+  "ghost.loading": "Cargando el top 10 global…",
+  "ghost.hint": "Sale contigo en la primera puerta. Mismo recorrido, dron, modo y opciones de simulación.",
+  "ghost.empty": "Aún no hay récords globales en esta categoría. Tu fantasma se guarda tras una vuelta válida.",
+  "ghost.refresh": "Actualizar top 10",
+  "ghost.unavailable": "El fantasma seleccionado no está disponible. Puedes volar igualmente.",
+  "ghost.choose": "Elegir fantasma",
+  "ghost.hud": "Fantasma: {name} · {time}"
 }

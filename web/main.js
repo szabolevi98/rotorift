@@ -12,6 +12,10 @@ import { FpvOsd } from "./game/fpv-osd.js";
 import { PropellerHud } from "./game/propeller-hud.js";
 import { CameraProfiles, DEFAULT_CAMERA_PROFILE } from './game/camera-profiles.js';
 import { FrameDiagnostics } from './game/frame-diagnostics.js';
+import { GhostSelection, savePersonalGhost, ghostKey } from './game/ghost-selection.js';
+import { LapGhostRecorder } from '/shared/race/ghost.js';
+import { raceCategoryKey } from '/shared/race/category.js';
+import { PHYSICS_DT } from '/shared/physics/drone.js';
 import { validPropellers } from "/shared/physics/propellers.js";
 import { bindFullscreen } from "./fullscreen.js";
 import { RadioGuide } from "./input/radio-guide.js";
@@ -113,8 +117,28 @@ let playing = false,
   lastUi = 0;
 let roomRequest = null, roomRequestTimer, launching = false;
 let flightHelp;
+let ghostSelection;
+let lapGhostLoad=0;
+const localGhostRecorder=new LapGhostRecorder();
+function menuGhostContext(){return {map,drone:config,mode:$('#flight-mode').value,simulation};}
+function flightGhostContext(){return {map:flight.map,drone:flight.config,mode:flight.physics.mode,simulation:flight.physics.effects.options};}
+function refreshGhostChoices(){
+  if(ghostSelection&&map&&config)void ghostSelection.refresh(menuGhostContext(),($('#menu').dataset.panel??'fly')==='fly'&&isTimedSession($('#session').value)&&canRace(map));
+}
+async function configureLapGhost(){
+  const generation=++lapGhostLoad;
+  if(!(room?.kind==='hotlap'||!room&&session==='time')){await flight.setLapGhost(null);return;}
+  const version=flight.loadVersion,context=flightGhostContext();
+  try{const value=await ghostSelection.load(context);if(version===flight.loadVersion&&generation===lapGhostLoad)await flight.setLapGhost(value);}
+  catch{if(version===flight.loadVersion&&generation===lapGhostLoad){await flight.setLapGhost(null);notice(t('ghost.unavailable'));}}
+}
+function keepPersonalGhost(ms,replay){
+  const context=flightGhostContext();
+  if(savePersonalGhost(ghostKey(context),ms,replay)&&ghostSelection.choice(context)==='self')void configureLapGhost();
+}
 let resultsShown = null;
 let resultsSignature = "";
+let recordsVersion=0;
 const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) : null;
 const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
@@ -150,9 +174,9 @@ function createSimulationControls() {
         if (context === "lobby" && room) network.send("rules", { simulation: next });
         else {
           simulation = normalizeSimulation(next); write("simulation", simulation);
-          if (playing && !room && context === "solo") { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; }
+          if (playing && !room && context === "solo") { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; localGhostRecorder.clear();void configureLapGhost(); }
         }
-        refreshSimulationControls();
+        refreshSimulationControls();refreshGhostChoices();
       };
       label.append(caption, input); root.append(label);
     }
@@ -312,9 +336,11 @@ function action(kind, currentInput = input) {
     const next = FLIGHT_MODES[(FLIGHT_MODES.indexOf(flight.physics.mode) + 1) % FLIGHT_MODES.length];
     if (room) { if (room.phase === "flying") network.send("mode", {mode: next}); }
     else { $("#flight-mode").value = next; flight.physics.mode = next; lap.invalid = true; lap.bestMs = lap.lastMs = null; }
+    if(!room){localGhostRecorder.clear();void configureLapGhost();}
   }
 }
 function resetAircraft() {
+  localGhostRecorder.clear();
   controller.clear(); lap = newLap();
   if (room) network.send("reset"); else flight.reset();
 }
@@ -324,8 +350,7 @@ function recordKey(
   mode = flight.physics.mode,
   options = flight.physics?.effects.options ?? simulation,
 ) {
-  const key = [m.id, m.routeId, m.routeVersion, c.id, c.configHash, mode].join(":");
-  return simulationKey(options) === simulationKey(DEFAULT_SIMULATION) ? key : key + ":" + simulationKey(options);
+  return raceCategoryKey(m,c,mode,options);
 }
 function saveLocal(ms) {
   const records = read("records", {}),
@@ -346,6 +371,7 @@ async function selectDrone(id) {
     await preview.select(selected, task.progress);
     if(config===selected)renderCameraProfile(selected.id);
     preview.render();
+    refreshGhostChoices();
   } catch (error) {
     if (config === selected && previous) {
       config = previous;
@@ -386,6 +412,7 @@ function updateSessionOptions() {
   visible("#map-mode-note", !enabled);
   refreshSimulationControls();
   refreshMenuNavigation();
+  refreshGhostChoices();
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
@@ -748,6 +775,7 @@ function endFlight() {
   playing = false; paused = true; flight.active = false;
   if (flight.physics) flight.physics.armed = false;
   flight.mute(); controller.clear(); lap.invalid = true;
+  localGhostRecorder.clear();lapGhostLoad++;void flight.setLapGhost(null);
   visible("#hud", false); visible("#menu", true); panel("fly");
 }
 function renderLobby() {
@@ -843,6 +871,7 @@ async function loadRoom(r) {
     if (loaded === false) return;
     applyAircraftCamera();
     renderCameraProfile(roomConfig.id);
+    await configureLapGhost();
     if (roomKey(room) !== key || room.phase === "lobby" || room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished) {
       flight.active = false;
       if (!room) void fullscreen?.enterMenu();
@@ -918,12 +947,14 @@ function receive(m) {
     controller.clear();
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
   }
-  if (m.type === "lap" && (!m.runId || m.runId === room?.runId))
+  if (m.type === "lap" && (!m.runId || m.runId === room?.runId)) {
+    if(m.valid&&m.replay)keepPersonalGhost(m.ms,m.replay);
     notice(
       m.valid
         ? t(m.saved ? "hud.saved" : "hud.localLap", { time: time(m.ms) })
         : t("hud.invalid"),
     );
+  }
   if (m.type === "disconnected") {
     clearRoomRequest();
     flight.updateRemotes([], network.id);
@@ -949,7 +980,7 @@ function receive(m) {
     if (flight.physics && loadedRoom === roomKey(room)) {
       if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
       const own = room.players.find(p => p.id === network.id);
-      if (own?.mode) { flight.physics.mode = own.mode; $("#flight-mode").value = own.mode; }
+      if (own?.mode) { const changed=flight.physics.mode!==own.mode;flight.physics.mode = own.mode; $("#flight-mode").value = own.mode;if(changed)void configureLapGhost(); }
       flight.updateRemotes(room.players.filter(p=>p.connected!==false), network.id);
     }
     renderLobby();
@@ -1046,7 +1077,9 @@ async function launch() {
     await paintLoading();
     if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
     applyAircraftCamera();
+    await configureLapGhost();
     lap = newLap();
+    localGhostRecorder.clear();
     simTime = 0;
     playing = true;
     controller.clear();
@@ -1063,6 +1096,7 @@ async function launch() {
 }
 async function showRecords() {
   if (!catalog) return;
+  const version=++recordsVersion,recordSimulation={...simulation};
   const m = resolveRoute(catalog.maps.find((v) => v.id === $("#records-map").value), $("#records-route").value || undefined),
     c = catalog.drones.find((v) => v.id === $("#records-drone").value),
     mode = $("#records-mode").value,
@@ -1074,17 +1108,18 @@ async function showRecords() {
   }
   root.append(
     node("h2", "", t("records.local")),
-    node("p", "muted", time(read("records", {})[recordKey(m, c, mode, simulation)])),
+    node("p", "muted", time(read("records", {})[recordKey(m, c, mode, recordSimulation)])),
     node("p", "muted", t("simulation.recordsHint")),
   );
   root.append(node("h2", "", t("records.online")));
   try {
     const res = await fetch(
       "/api/leaderboard?" +
-        new URLSearchParams({ map: m.id, route: m.routeId, drone: c.id, mode, simulation: simulationKey(simulation) }),
+        new URLSearchParams({ map: m.id, route: m.routeId, drone: c.id, mode, simulation: simulationKey(recordSimulation) }),
     );
     if (!res.ok) throw Error("Leaderboard unavailable");
     const data = await res.json();
+    if(version!==recordsVersion)return;
     if (!data.available)
       root.append(node("p", "muted", t("records.unavailable")));
     else if (!data.entries.length)
@@ -1098,8 +1133,19 @@ async function showRecords() {
           node("b", "", time(r.ms)),
         );
         root.append(row);
+        if(i<10&&r.hasGhost){
+          const choose=node('button','secondary small',t('ghost.choose'));
+          choose.onclick=async()=>{
+            const context={map:m,drone:c,mode,simulation:recordSimulation};ghostSelection.choose(context,r.ghostId);
+            selectMap(m.id);map=m;write('selected-race-'+m.id,m.routeId);
+            await selectDrone(c.id);$('#flight-mode').value=mode;$('#session').value=network.ready?'online-hotlap':'time';
+            write('solo-session',$('#session').value);panel('fly');refreshCatalogText();
+          };
+          row.append(choose);
+        }else if(i<10)row.append(node('small','muted',t('ghost.missing')));
       });
   } catch {
+    if(version!==recordsVersion)return;
     root.append(node("p", "muted", t("records.unavailable")));
   }
 }
@@ -1108,6 +1154,8 @@ function hud() {
   const p = flight.physics.pose,
     own = room?.players.find((p) => p.id === network.id),
     currentLap = own?.lap ?? lap;
+  visible('#lap-ghost-hud',!!flight.lapGhost?.replay);
+  if(flight.lapGhost?.replay)$('#lap-ghost-hud').textContent=t('ghost.hud',{name:flight.lapGhost.label,time:time(flight.lapGhost.replay.frames.at(-1)[0])});
   $("#arm-state").textContent = t(
     flight.physics.armed ? "hud.disarmAction" : "hud.armAction",
   );
@@ -1289,14 +1337,17 @@ function frame(now) {
       const previousTime = simTime;
       simTime += step * 1000;
       if (!room && session === "time" && canRace(flight.map)) {
-        for (const e of advanceLap(
+        const events=advanceLap(
           lap,
           previous.p,
           current.p,
           previousTime,
           simTime,
           flight.map.gates,
-        ))
+        );
+        const completed=localGhostRecorder.segment(previous,current,previousTime,simTime,events);
+        for(const {event:e,replay}of completed)if(e.valid&&replay)keepPersonalGhost(e.ms,replay);
+        for (const e of events)
           if (e.kind === "lap" && e.valid) {
             saveLocal(e.ms);
             notice(t("hud.localLap", { time: time(e.ms) }));
@@ -1329,6 +1380,11 @@ function frame(now) {
     hud();
   }
   preview.render();
+  if(playing&&flight.lapGhost){
+    const own=room?.players.find(p=>p.id===network.id),started=room?own?.lap.startedAt:lap.startedAt;
+    const elapsed=started===null||started===undefined||!room&&lap.invalid?null:(room?network.now:simTime-PHYSICS_DT*1000+flight.accumulator*1000)-started;
+    flight.lapGhost.update(paused?null:elapsed,flight.physics.pose.p);
+  }
   if (!$("#settings-panel").classList.contains("hidden")) {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
     radioGuide.render(controller, now);
@@ -1349,6 +1405,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function bindUI() {
+  ghostSelection=new GhostSelection($('#lap-ghost-picker'),t,time);
   diagnostics=new FrameDiagnostics($('#performance-panel'),fpsLabel,flight.renderer,t);
   fullscreen = bindFullscreen(t, notice);
   for (const b of document.querySelectorAll("[data-tab]"))
@@ -1402,6 +1459,7 @@ function bindUI() {
     write("solo-session", $("#session").value);
     updateSessionOptions();
   };
+  $('#flight-mode').onchange=refreshGhostChoices;
   $("#room-kind").value = read("room-kind", "free");
   $("#room-kind").onchange = () => { write("room-kind", $("#room-kind").value); updateSessionOptions(); };
   $("#public-room").checked = read("public-room", true);
@@ -1531,6 +1589,7 @@ function bindUI() {
   $("#records-map").onchange = () => { refreshRecordRoutes(); showRecords(); };
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
+    refreshGhostChoices();
     $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
     refreshColors();
     refreshSimulationControls();

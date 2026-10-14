@@ -10,6 +10,7 @@ import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
 import { freshPropellers, validPropellers } from "../../shared/physics/propellers.js";
 import { STOPPED_ROTORS, validRotorSpeeds } from "../../shared/visual/rotor-motion.js";
+import { LapGhostRecorder } from '../../shared/race/ghost.js';
 const MODES = FLIGHT_MODES;
 export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdownMs = 3000 } = {}) {
   const rooms = new Map(),
@@ -108,6 +109,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     p.boundaryAt = null;
     p.boundaryPaused = false;
     p.lap = newLap();
+    p.ghostRecorder=new LapGhostRecorder();
+    p.ghostBestMs=null;
     p.finished = false;
     p.abandoned = false;
     p.finishMs = null;
@@ -332,7 +335,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           broadcast(r); return;
         }
         if (m.type === "mode" && FLIGHT_MODES.includes(m.mode) && r.phase === "flying" && !p.finished) {
-          if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; p.lap.bestMs = p.lap.lastMs = null; }
+          if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; p.lap.bestMs = p.lap.lastMs = null;p.ghostBestMs=null;p.ghostRecorder?.clear(); }
           broadcast(r); return;
         }
         if (m.type === "ready" && r.phase === "lobby") {
@@ -419,6 +422,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           return;
         }
         if (m.interrupted) p.lap.invalid = true;
+        if(m.interrupted||!validTravel)p.ghostRecorder?.clear();
         const boundaryDt = p.boundaryAt === null ? 0 : Math.max(0, (now - p.boundaryAt) / 1000);
         p.boundaryAt = now;
         const activeBoundaryDt = m.interrupted || p.boundaryPaused ? 0 : boundaryDt;
@@ -432,6 +436,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         let events = [];
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);
+        const ghostLaps=validTravel&&r.kind!=='free'?p.ghostRecorder.segment(p.pose,{p:m.p,q:m.q},p.at,m.t,events):[];
         p.propellers = r.simulation.propDamage && validPropellers(m.propellers) ? m.propellers.map(blades=>[...blades]) : freshPropellers();
         p.rotorSpeeds = m.interrupted || m.rotorSpeeds===undefined ? STOPPED_ROTORS : [...m.rotorSpeeds];
         p.turtleMode = !m.interrupted && m.turtleMode===true;
@@ -446,10 +451,13 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               p.finished = true;
               p.finishMs = e.at - r.startsAt;
             }
+            const replay=ghostLaps.find(l=>l.event===e)?.replay??null;
+            const personalReplay=replay&&(p.ghostBestMs===null||e.ms<=p.ghostBestMs)?replay:null;
+            if(e.valid)p.ghostBestMs=Math.min(p.ghostBestMs??Infinity,e.ms);
             const saved = e.valid
-              ? await db.saveLap(p.token, r.map, r.drone, p.mode, e.ms, r.simulation)
+              ? await db.saveLap(p.token, r.map, r.drone, p.mode, e.ms, r.simulation,replay)
               : false;
-            if (r.raceId === runId) send(p, "lap", { ...e, saved, runId });
+            if (r.raceId === runId) send(p, "lap", { ...e, saved, runId, replay:personalReplay });
           }
         if (r.raceId === runId) maybeFinish(r);
       } catch {

@@ -84,6 +84,11 @@
 #menu #preview-scene { position: relative; z-index: 1; height: clamp(290px, 38vh, 420px); touch-action: none; cursor: grab; }
 #menu #preview-scene:active { cursor: grabbing; }
 .preview-hint { position: absolute; right: 0; bottom: 8px; font-size: 11px; color: var(--muted); pointer-events: none; margin: 0; }
+.lap-ghost-picker { grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px 12px;margin-top:10px; }
+.lap-ghost-picker label { min-width:0; }
+.lap-ghost-picker select { width:100%;max-width:100%; }
+.lap-ghost-picker p { grid-column:1 / -1;margin:0;font-size:10px;line-height:1.5; }
+.record-row { flex-wrap:wrap; }
 #menu .launch-controls { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 22px; border-top: 1px solid var(--line); padding: 22px 0 18px; align-items: start; }
 #menu .launch-controls > * { min-width: 0; }
 #menu .dock-label { display: block; font-size: 11px; letter-spacing: .11em; text-transform: uppercase; font-weight: 500; color: var(--muted); margin: 0 0 12px; line-height: 1.4; }

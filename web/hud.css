@@ -81,6 +81,7 @@
 #hud #battery-hud.critical { --battery-color: #ff9c8b; background: #551e19f2; border-color: #ff826b; }
 #hud #race-hud { background: #11151bba; border: 1px solid #ffffff18; border-radius: 7px; padding: 10px 14px; font-size: 12px; }
 #hud #race-hud:empty { display: none; }
+#lap-ghost-hud { background:#132d2bd9;border:1px solid #85ffe45c;border-radius:6px;color:#acffef;padding:8px 10px;font-size:11px; }
 #hud #race-hud b { display: block; font-size: 26px; line-height: 1.4; }
 #hud #scoreboard { top: 84px; right: var(--hud-edge); max-height: calc(100svh - 220px); overflow-y: auto; pointer-events: auto; background: #11151bba; border: 1px solid #ffffff18; }
 #hud #scoreboard .score-row.own-pilot { color: #ffb29e; }

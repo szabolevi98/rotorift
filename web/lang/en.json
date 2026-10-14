@@ -348,5 +348,16 @@
   "perf.pending": "Waiting…",
   "perf.unavailable": "Unavailable",
   "perf.reset": "Clear measurements",
-  "perf.export": "Download JSON"
+  "perf.export": "Download JSON",
+  "ghost.title": "Lap ghost · top 10",
+  "ghost.off": "No ghost",
+  "ghost.self": "My best recorded lap",
+  "ghost.missing": "No recording yet",
+  "ghost.loading": "Loading global top 10…",
+  "ghost.hint": "Starts with you at the first gate. Same route, aircraft, mode and simulation rules.",
+  "ghost.empty": "No global records in this category yet. Your own ghost is saved after a valid lap.",
+  "ghost.refresh": "Refresh top 10",
+  "ghost.unavailable": "The selected ghost is unavailable. You can still fly.",
+  "ghost.choose": "Select ghost",
+  "ghost.hud": "Ghost: {name} · {time}"
 }

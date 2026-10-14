@@ -348,5 +348,16 @@
   "perf.pending": "Messung läuft…",
   "perf.unavailable": "Nicht verfügbar",
   "perf.reset": "Messung löschen",
-  "perf.export": "JSON herunterladen"
+  "perf.export": "JSON herunterladen",
+  "ghost.title": "Rundengeist · Top 10",
+  "ghost.off": "Ohne Geist",
+  "ghost.self": "Meine beste aufgezeichnete Runde",
+  "ghost.missing": "Noch keine Aufnahme",
+  "ghost.loading": "Globale Top 10 werden geladen…",
+  "ghost.hint": "Startet mit dir am ersten Tor. Gleiche Strecke, Drohne, Flugmodus und Simulationseinstellungen.",
+  "ghost.empty": "Noch keine globalen Rekorde in dieser Kategorie. Dein Geist wird nach einer gültigen Runde gespeichert.",
+  "ghost.refresh": "Top 10 aktualisieren",
+  "ghost.unavailable": "Der gewählte Geist ist nicht verfügbar. Du kannst trotzdem fliegen.",
+  "ghost.choose": "Geist auswählen",
+  "ghost.hud": "Geist: {name} · {time}"
 }

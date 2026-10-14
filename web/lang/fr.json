@@ -348,5 +348,16 @@
   "perf.pending": "Mesure en cours…",
   "perf.unavailable": "Indisponible",
   "perf.reset": "Effacer les mesures",
-  "perf.export": "Télécharger JSON"
+  "perf.export": "Télécharger JSON",
+  "ghost.title": "Fantôme de tour · top 10",
+  "ghost.off": "Sans fantôme",
+  "ghost.self": "Mon meilleur tour enregistré",
+  "ghost.missing": "Pas encore enregistré",
+  "ghost.loading": "Chargement du top 10 mondial…",
+  "ghost.hint": "Démarre avec vous à la première porte. Même parcours, drone, mode et options de simulation.",
+  "ghost.empty": "Aucun record mondial dans cette catégorie. Votre fantôme sera enregistré après un tour valide.",
+  "ghost.refresh": "Actualiser le top 10",
+  "ghost.unavailable": "Le fantôme sélectionné est indisponible. Vous pouvez quand même voler.",
+  "ghost.choose": "Choisir le fantôme",
+  "ghost.hud": "Fantôme : {name} · {time}"
 }
