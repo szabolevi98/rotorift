@@ -60802,6 +60802,10 @@ MODEL_CATALOG.sort((a,b)=>['rift-65','rift-75','rift-c3','rift-x5'].indexOf(a.id
 // Render a readable shutter-speed representation instead of sampling real RPM
 // at the display refresh rate (which can make a fast rotor look stopped or
 // reverse). Physics keeps its independent full-speed phase for blade strikes.
+const STOPPED_ROTORS = Object.freeze([0,0,0,0]);
+const validRotorSpeeds = value => Array.isArray(value) && value.length===4 &&
+  value.every(v=>Number.isFinite(v)&&v>=0&&v<=1);
+
 class RotorMotion {
   constructor() { this.reset(); }
   reset() { this.phase = [0,0,0,0]; this.speed = [0,0,0,0]; this.fraction = [0,0,0,0]; }
@@ -60812,6 +60816,19 @@ class RotorMotion {
       this.speed[i] = fraction * 22 * motors[i].direction;
       this.phase[i] = (this.phase[i] + Math.min(dt,.1) * this.speed[i]) % (Math.PI*2);
     }
+  }
+}
+
+class RemoteRotorMotion extends RotorMotion {
+  constructor(model, config) {
+    super(); this.config=config; this.props=[];
+    model.traverse(object=>{if(object.userData.propeller)this.props.push(object);});
+  }
+  updatePlayer(dt, player) {
+    if(this.resetId!==player.resetId) { this.reset(); this.resetId=player.resetId; }
+    const speeds=player.connected!==false && !player.finished && validRotorSpeeds(player.rotorSpeeds) ? player.rotorSpeeds : STOPPED_ROTORS;
+    this.update(dt,speeds.map(v=>v*v),1,this.config.motors,true);
+    for(const prop of this.props)prop.rotation.y=this.phase[prop.userData.motorIndex];
   }
 }
 

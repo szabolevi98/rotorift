@@ -38,6 +38,13 @@ test('cancelling recovery leaves the reserved room after handshake without reope
   message(n.ws,{type:'left'});assert.equal(events.at(-1).type,'resumeCancelled');assert.equal(session.size,0);
 });
 
+test('state serialization carries the four actual rotor speeds beside independent blade damage',t=>{
+  const {network,welcome,message,room}=fixture(t),n=network();n.connect('Pilot');welcome(n);message(n.ws,{type:'room',room});
+  const speeds=[0,.25,.5,1],blades=[[3,3,3],[1,0,0],[0,0,0],[0,0,0]];
+  n.state({p:[0,0,0],v:[0,0,0],q:{x:0,y:0,z:0,w:1}},{configHash:'config'},'acro',false,{},blades,speeds);
+  const sent=n.ws.sent.at(-1);assert.deepEqual(sent.rotorSpeeds,speeds);assert.deepEqual(sent.propellers,blades);assert.equal(sent.runId,room.runId);
+});
+
 test('an explicit leave interrupted by disconnect stays a leave, and rejected recovery clears its credential',t=>{
   const {network,welcome,message,events,room,session}=fixture(t),n=network();n.connect('Pilot');welcome(n);message(n.ws,{type:'room',room});
   n.send('leave');n.ws.readyState=0;n.ws.onclose();n.connect('Pilot');n.ws.onopen();welcome(n,{resumed:true});

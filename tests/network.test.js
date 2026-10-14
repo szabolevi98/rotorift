@@ -75,6 +75,7 @@ async function fixture(t, mapOverrides = {}) {
     const welcome = await next((m) => m.type === "welcome");
     let seq = 0;
     return {
+      ws,
       send,
       next,
       id: welcome.id,
@@ -252,6 +253,37 @@ test("multiplayer shares four discrete propeller states, rejects malformed blade
   const repaired=await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.resetId>damaged.room.players.find(p=>p.id===guest.id).resetId);
   assert.deepEqual(repaired.room.players.find(p=>p.id===guest.id).propellers,Array.from({length:4},()=>[0,0,0]));
 });
+test("remote rotor speeds reach the other pilot and stop for pause, stale state, legacy state, reset and disconnect",async t=>{
+  const {client}=await fixture(t),host=await client('Rotor host'),guest=await client('Rotor guest');
+  const stopped=[0,0,0,0],speeds=[.25,.5,.75,1];
+  const pilot=m=>m.room?.players.find(p=>p.id===guest.id);
+  host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'angle',kind:'free'});
+  const created=(await host.next(m=>m.type==='room')).room;
+  assert.deepEqual(created.players[0].rotorSpeeds,stopped);
+  guest.send('join',{code:created.code});await host.next(m=>m.type==='room'&&m.room.players.length===2);
+  host.send('ready',{ready:true});guest.send('ready',{ready:true});await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.ready));
+  host.send('start');await guest.next(m=>m.type==='room'&&m.room.phase==='flying');
+  const receiveAt=async (x,speed)=>host.next(m=>pilot(m)?.p[0]===x&&pilot(m)?.rotorSpeeds?.every((v,i)=>v===speed[i]));
+  await guest.state([.6,1,-.5],{rotorSpeeds:speeds});await receiveAt(.6,speeds);
+  const badAt=Date.now();await guest.state([.7,1,-.5],{rotorSpeeds:[0,2,0,0]});
+  const rejected=await host.next(m=>m.type==='room'&&m.now>badAt+50);
+  assert.equal(pilot(rejected).p[0],.6,'invalid motor data must reject the entire state');
+  await guest.state([.8,1,-.5],{rotorSpeeds:stopped});await receiveAt(.8,stopped);
+  await guest.state([.9,1,-.5],{rotorSpeeds:speeds,interrupted:true});await receiveAt(.9,stopped);
+  await guest.state([1,1,-.5],{rotorSpeeds:speeds});await receiveAt(1,speeds);
+  await guest.state([1.1,1,-.5]);await receiveAt(1.1,stopped);
+  await guest.state([1.2,1,-.5],{rotorSpeeds:speeds});
+  const moving=await receiveAt(1.2,speeds);
+  const stale=await host.next(m=>m.type==='room'&&m.now>moving.now+650);
+  assert.deepEqual(pilot(stale).rotorSpeeds,stopped,'missing motor updates cannot leave a parked drone spinning');
+  await guest.state([1.3,1,-.5],{rotorSpeeds:speeds});const fresh=await receiveAt(1.3,speeds);
+  guest.send('reset');const reset=await host.next(m=>pilot(m)?.resetId>pilot(fresh).resetId);
+  assert.deepEqual(pilot(reset).rotorSpeeds,stopped);
+  await guest.state([.6,1,-.5],{rotorSpeeds:speeds});await receiveAt(.6,speeds);
+  guest.ws.close();const gone=await host.next(m=>pilot(m)?.connected===false);
+  assert.deepEqual(pilot(gone).rotorSpeeds,stopped);
+});
+
 test("two pilots share a room, host starts a race and both finish three verified laps", async (t) => {
   const { client, db } = await fixture(t),
     a = await client("Pilot A"),

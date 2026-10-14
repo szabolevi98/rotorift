@@ -9,6 +9,7 @@ import { resolveRoute } from "../../shared/race/routes.js";
 import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
 import { freshPropellers, validPropellers } from "../../shared/physics/propellers.js";
+import { STOPPED_ROTORS, validRotorSpeeds } from "../../shared/visual/rotor-motion.js";
 const MODES = FLIGHT_MODES;
 export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdownMs = 3000 } = {}) {
   const rooms = new Map(),
@@ -47,6 +48,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       p: p.pose?.p,
       q: p.pose?.q,
       propellers: p.propellers ?? freshPropellers(),
+      rotorSpeeds: r.phase==="flying" && p.connected && !p.finished && Date.now()-p.rotorsAt<600 ? p.rotorSpeeds : STOPPED_ROTORS,
       lap: p.lap,
       finished: p.finished,
       finishMs: p.finishMs,
@@ -97,6 +99,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   };
   const reset = (p, r) => {
     p.propellers = freshPropellers();
+    p.rotorSpeeds = STOPPED_ROTORS;
+    p.rotorsAt = null;
     p.resetId = (p.resetId ?? 0) + 1;
     p.boundary = new MapBoundary(r.map);
     p.boundaryAt = null;
@@ -398,6 +402,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           return;
         }
         if(m.propellers !== undefined && !validPropellers(m.propellers)) return;
+        if(m.rotorSpeeds !== undefined && !validRotorSpeeds(m.rotorSpeeds)) return;
         const previous = p.pose?.p,
           dt = p.at === null ? null : (m.t - p.at) / 1000;
         if (dt !== null && dt <= 0) return;
@@ -425,6 +430,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);
         p.propellers = r.simulation.propDamage && validPropellers(m.propellers) ? m.propellers.map(blades=>[...blades]) : freshPropellers();
+        p.rotorSpeeds = m.interrupted || m.rotorSpeeds===undefined ? STOPPED_ROTORS : [...m.rotorSpeeds];
+        p.rotorsAt = now;
         p.pose = { p: m.p, q: m.q };
         p.at = m.t;
         p.seq = m.seq;

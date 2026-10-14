@@ -1285,6 +1285,7 @@ function frame(now) {
       paused,
       flight.physics.effects.options,
       flight.physics.effects.propellers.blades,
+      flight.physics.armed && !paused ? flight.rotorMotion.fraction : [0,0,0,0],
     );
     sendAt = now;
   }

@@ -17,7 +17,7 @@ import { normalizeSimulation } from "../../shared/simulation/options.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
 import { FpvPropellers } from "../../shared/visual/fpv-propellers.js";
-import { RotorMotion } from "../../shared/visual/rotor-motion.js";
+import { RotorMotion, RemoteRotorMotion } from "../../shared/visual/rotor-motion.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 export class Flight {
   constructor(canvas) {
@@ -204,6 +204,7 @@ export class Flight {
       }
       remote.model = model;
       remote.propVisual = new PropellerVisual(model,this.config);
+      remote.rotorMotion = new RemoteRotorMotion(model,this.config);
       applyDroneColor(model, remote.target.color);
       this.scene.add(model);
     } else {
@@ -255,6 +256,7 @@ export class Flight {
     for (const r of this.remotes.values()) {
       if (!r.model) continue;
       r.propVisual.update(r.target.propellers);
+      r.rotorMotion.updatePlayer(dt,r.target);
       const q = new THREE.Quaternion(
           r.target.q.x,
           r.target.q.y,
