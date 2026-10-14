@@ -31,3 +31,10 @@ test('X35 motor leads clear the carbon and PCB, while the rear ELRS dipole stays
   const dipole=new THREE.Box3().setFromObject(m.root.getObjectByName('ELRS_T_dipole'));
   assert.ok(dipole.max.y<12,'the receiver antenna must clear the swept rotor surfaces');
 });
+test('X35 lens surround and camera mount leave the forward optical axis clear',()=>{
+  const m=model(),lens=m.root.getObjectByName('FPV_coated_lens');
+  const direction=new THREE.Vector3(0,-1,0).applyQuaternion(lens.getWorldQuaternion(new THREE.Quaternion()));
+  const start=lens.getWorldPosition(new THREE.Vector3()).addScaledVector(direction,.4);
+  const ray=new THREE.Raycaster(start,direction,0,100);
+  assert.equal(ray.intersectObject(m.root,true).length,0,'the mount cannot obstruct the FPV camera');
+});

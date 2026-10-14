@@ -19,6 +19,8 @@ function createRiftX35() {
   const hole=(x,y,r)=>{const h=new THREE.Path();h.absarc(x,y,r,0,Math.PI*2,true);return h;};
   function geometry(s,d){const g=new THREE.ExtrudeGeometry(s,{depth:d,bevelEnabled:false,curveSegments:6});g.translate(0,0,-d/2);return g;}
   function rounded(p,w,h,d,r,m,n,x=0,y=0,z=0){return mesh(p,geometry(shape(w,h,r),d),m,n,x,y,z);}
+  function softened(s,d,b=.35){const g=new THREE.ExtrudeGeometry(s,{depth:d-2*b,bevelEnabled:true,bevelThickness:b,bevelSize:b,bevelSegments:2,curveSegments:6});g.translate(0,0,-(d-2*b)/2);return g;}
+  function softBox(p,w,h,d,r,m,n,x,y,z){return mesh(p,softened(shape(w-.7,h-.7,r),d),m,n,x,y,z);}
   function plate(p,s,y,d,n,m=materials.carbon){const g=geometry(s,d);g.rotateX(-Math.PI/2);return mesh(p,g,m,n,0,y,0);}
   function loop(p,w,h,iw,ih,d,m,n,x,y,z){const s=shape(w,h,2);s.holes.push(shape(iw,ih,1.2));return mesh(p,geometry(s,d),m,n,x,y,z);}
   function wire(p,points,r,m,n){const curve=new THREE.CatmullRomCurve3(points.map(v=>new THREE.Vector3(...v)));return mesh(p,new THREE.TubeGeometry(curve,28,r,5,false),m,n);}
@@ -31,7 +33,7 @@ function createRiftX35() {
   plate(frame,lowerShape,0,4,'X35_bottom_plate');
   const topShape=shape(38,98,6);
   for(const x of [-15,15])for(const z of [-34,34])topShape.holes.push(hole(x,-z,1.6));
-  for(const x of [-15,15]){const slot=shape(3.2,11,1);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key]){c[key].x+=x;c[key].y-=5;}topShape.holes.push(slot);}
+  for(const x of [-15.8,15.8])for(const z of [-10,20]){const slot=shape(3.2,10,1);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key]){c[key].x+=x;c[key].y-=z;}topShape.holes.push(slot);}
   for(const z of [-37,37]){const slot=shape(12,8,2);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key])c[key].y-=z;topShape.holes.push(slot);}
   plate(upper,topShape,24,2,'X35_slotted_top_plate');
   for(const x of [-15,15])for(const z of [-34,34]){cyl(frame,2.2,21,materials.black,'Frame_standoff',x,12.5,z,8);screw(frame,x,-2.5,z);screw(upper,x,25.4,z);}
@@ -59,8 +61,14 @@ function createRiftX35() {
     for(let turn=0;turn<12;turn++){const a=turn/12*Math.PI*2;cyl(motorSet,1.1,2.8,materials.copper,'Motor_copper_winding',x+Math.cos(a)*6.9,10.6,z+Math.sin(a)*6.9,8);}
     for(let spoke=0;spoke<6;spoke++){const a=spoke/6*Math.PI*2;beam(motorSet,[x,12.3,z],[x+Math.cos(a)*8.5,12.3,z+Math.sin(a)*8.5],1.1,.8,materials.black,'Motor_bell_spoke');}
     cyl(motorSet,3.2,1.2,materials.silver,'Motor_shaft_shoulder',x,12.9,z);cyl(motorSet,1.5,5,materials.silver,'Motor_shaft',x,15,z,12);
-    const bumper=new THREE.Shape();bumper.absarc(0,0,10.3,0,Math.PI*2,false);bumper.holes.push(hole(0,0,8.6));
-    const guard=plate(frame,bumper,-5.5,3,'X35_motor_TPU_bumper',materials.tpu);guard.position.x=x;guard.position.z=z;
+    const bumper=new THREE.Shape();bumper.absarc(0,0,11.5,0,Math.PI*2,false);bumper.holes.push(hole(0,0,2.1));
+    for(const dx of [-3,3])for(const dz of [-3,3])bumper.holes.push(hole(dx,dz,1.65));
+    const guardGeometry=softened(bumper,5,.3);guardGeometry.rotateX(-Math.PI/2);
+    mesh(frame,guardGeometry,materials.tpu,'X35_motor_TPU_skid_with_bolt_access',x,-6.5,z);
+    // Only the outboard half rises around the carbon; the inboard motor leads stay exposed.
+    const rim=new THREE.Shape();rim.absarc(0,0,12,-Math.PI/2,Math.PI/2,false);rim.absarc(0,0,10.35,Math.PI/2,-Math.PI/2,true);rim.closePath();
+    const rimGeometry=geometry(rim,5);rimGeometry.rotateX(-Math.PI/2);
+    const lip=mesh(frame,rimGeometry,materials.tpu,'X35_motor_outboard_TPU_wrap',x,-1.5,z);lip.rotation.y=-Math.atan2(z,x);
     for(const dx of [-3,3])for(const dz of [-3,3])screw(frame,x+dx,-4.35,z+dz,1.05);
     const prop=new THREE.Group();prop.name='Propeller_'+index;prop.position.set(x,15,z);root.add(prop);assemblies.push({group:prop,base:prop.position.clone(),delta:new THREE.Vector3(0,16,0)});propellers.push({group:prop,direction});
     cyl(prop,3.3,1.7,materials.prop,'Propeller_hub',0,.4,0);cyl(prop,2.6,2,materials.black,'Propeller_locknut',0,2,0,6);
@@ -86,28 +94,44 @@ function createRiftX35() {
   const tray=rounded(electronic,25,1.5,23,2,materials.tpu,'VTX_bolted_TPU_tray',0,2.8,29);
   for(let i=0;i<4;i++)wire(electronic,[[i-2,11,21],[i-2,14,17],[i-2,13,9]],.25,i===0?materials.red:materials.rubber,'VTX_signal_wire');
   const cameraSet=assembly('X35_05_FPV_camera',[0,0,-16]);
-  for(const side of [-1,1]){box(cameraSet,2.5,16,18,materials.tpu,'FPV_camera_side_cheek',side*10.5,12,-40);box(cameraSet,6,4,20,materials.tpu,'Camera_mount_foot',side*11,4,-40);screw(cameraSet,side*12,6.4,-46,1.2);}
+  for(const side of [-1,1]){
+    const cheek=new THREE.Shape();cheek.moveTo(-11,-14);cheek.lineTo(10,-14);cheek.quadraticCurveTo(12,-14,11,-10);cheek.lineTo(4,3);cheek.quadraticCurveTo(0,9,-5,4);cheek.quadraticCurveTo(-11,-2,-11,-14);
+    const opening=new THREE.Path();opening.moveTo(-6,-9);opening.lineTo(5,-9);opening.quadraticCurveTo(6,-9,4,-5);opening.lineTo(1,-3);opening.quadraticCurveTo(-2,-2.5,-4,-4);opening.closePath();cheek.holes.push(opening);cheek.holes.push(hole(0,0,1.4));
+    const cheekGeometry=softened(cheek,3,.25);cheekGeometry.rotateY(Math.PI/2);
+    mesh(cameraSet,cheekGeometry,materials.tpu,'FPV_sculpted_camera_cheek',side*10.3,18,-42);
+    softBox(cameraSet,6.5,4,23,1.5,materials.tpu,'Camera_bolted_mount_foot',side*10.8,4,-42);
+    for(const z of [-49,-34])screw(cameraSet,side*11,6.4,z,1.2);
+  }
   const camera=new THREE.Group();camera.name='X35_tilted_FPV_camera';camera.position.set(0,18,-42);camera.rotation.x=20*Math.PI/180;cameraSet.add(camera);
-  rounded(camera,16,15,18,3,materials.black,'FPV_camera_housing');loop(camera,23,21,18.5,17.5,2,materials.tpu,'FPV_TPU_front_frame',0,0,-8);
+  rounded(camera,16,15,18,3,materials.black,'FPV_camera_housing');
+  const surround=new THREE.Shape();surround.moveTo(-8.6,-3);surround.quadraticCurveTo(-8,-8.6,0,-8.6);surround.quadraticCurveTo(8,-8.6,8.6,-3);surround.lineTo(8.6,3);surround.quadraticCurveTo(8,9,0,9);surround.quadraticCurveTo(-8,9,-8.6,3);surround.closePath();surround.holes.push(hole(0,0,6.9));
+  mesh(camera,softened(surround,2,.2),materials.tpu,'FPV_contoured_lens_surround',0,0,-9.5);
   cyl(camera,6.4,3,materials.rubber,'FPV_lens_bezel',0,0,-10.5,24).rotation.x=Math.PI/2;
   cyl(camera,4.8,.55,materials.glass,'FPV_coated_lens',0,0,-12.3,32).rotation.x=Math.PI/2;
   cyl(camera,1.0,.1,materials.silver,'FPV_lens_glint',-1.4,1.5,-12.62,12).rotation.x=Math.PI/2;
   for(const side of [-1,1]){const bolt=cyl(cameraSet,2.2,2,materials.silver,'Camera_tilt_pivot',side*12,18,-42,12);bolt.rotation.z=Math.PI/2;}
   wire(cameraSet,[[0,17,-33],[0,13,-25],[0,13,-10]],.65,materials.rubber,'FPV_camera_wire_harness');
   const battery=assembly('X35_06_4S_battery',[0,23,0]);batteryParts.push(battery);
-  rounded(battery,28,32,56,3,materials.battery,'4S_650mAh_pack',0,44,4);
-  for(const z of [-24.2,32.2])rounded(battery,26,29,1.2,2,materials.black,'Battery_heatshrink_endcap',0,44,z);
-  box(battery,28,3,54,materials.rubber,'Battery_anti_slip_pad',0,26.5,4);
-  loop(battery,31,39,28.5,37,10,materials.rubber,'Battery_retention_strap',0,41.5,5);
-  loop(battery,38,8,32,3,2,materials.black,'Strap_buckle',-1,60.4,5);
-  const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=256;const ctx=labelCanvas.getContext('2d');
-  ctx.fillStyle='#ed6446';ctx.fillRect(0,0,512,256);ctx.fillStyle='#172025';ctx.font='bold 70px Arial';ctx.fillText('ROTORIFT',24,86);ctx.font='bold 42px Arial';ctx.fillText('4S / 650 mAh',24,159);ctx.font='24px Arial';ctx.fillText('X35 FREESTYLE PACK',24,218);
-  const labelTexture=new THREE.CanvasTexture(labelCanvas);labelTexture.colorSpace=THREE.SRGBColorSpace;
-  materials.label=new THREE.MeshStandardMaterial({map:labelTexture,roughness:.76});
-  mesh(battery,new THREE.PlaneGeometry(26,28),materials.label,'Battery_label_print',14.1,44,4).rotation.y=Math.PI/2;
-  mesh(battery,new THREE.PlaneGeometry(26,28),materials.label,'Battery_label_print',-14.1,44,4).rotation.y=-Math.PI/2;
-  rounded(battery,12,9,1.2,2,materials.rubber,'Battery_cable_exit_grommet',0,44,33);
-  for(const [x,mat] of [[2,materials.rubber],[6,materials.red]])wire(battery,[[x,44,33.5],[x,44,36],[x,44,40],[x-4,42,47],[x-4,36,54],[x-4,36,51.2]],1.05,mat,'Battery_power_lead');
+  softBox(battery,29,29,53,2.4,materials.battery,'4S_650mAh_pack',0,42.5,4);
+  for(const z of [-23,31])softBox(battery,29,29,2,2.4,materials.rubber,'Battery_heatshrink_endcap',0,42.5,z);
+  box(battery,29,3,51,materials.rubber,'Battery_anti_slip_pad',0,26.5,4);
+  for(const side of [-1,1])for(let cell=1;cell<4;cell++)box(battery,.16,.35,47,materials.edge,'4S_cell_seam',side*14.55,28+cell*7.25,4);
+  for(const z of [-10,20]){
+    const strapShape=shape(33,35,3.7);strapShape.holes.push(shape(29.6,29.6,2.6));
+    mesh(battery,geometry(strapShape,8),materials.rubber,'Woven_4S_battery_strap',0,42.5,z);
+    const buckle=loop(battery,6,9,3.2,5.8,1.4,materials.silver,'Battery_strap_side_buckle',17.25,45,z);buckle.rotation.y=Math.PI/2;
+    box(battery,4,.25,6,materials.tpu,'Battery_strap_brand_tab',-8,60.15,z);
+  }
+  function batteryLabel(line,small,w,h,x,y,z,top){
+    const canvas=document.createElement('canvas');canvas.width=512;canvas.height=160;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#223036';ctx.fillRect(0,0,512,160);ctx.fillStyle='#ff6648';ctx.fillRect(12,14,12,132);ctx.fillStyle='#eef1e8';ctx.font='bold 50px Arial';ctx.fillText(line,42,75);ctx.font='24px Arial';ctx.fillText(small,42,118);
+    const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.MeshStandardMaterial({map:texture,roughness:.58});
+    const label=mesh(battery,new THREE.PlaneGeometry(w,h),mat,'Battery_label_print',x,y,z);if(top)label.rotation.x=-Math.PI/2;
+  }
+  batteryLabel('RIFT / 4S','650 mAh · X35',25,13,0,57.1,5,true);
+  batteryLabel('4S','FLIGHT PACK',23,7,0,50.5,32.1,false);
+  rounded(battery,12,8,1.2,2,materials.rubber,'Battery_cable_exit_grommet',0,40,32.2);
+  for(const [x,mat] of [[2,materials.rubber],[6,materials.red]])wire(battery,[[x,40,32.5],[x,41,35],[x,44,40],[x-4,42,47],[x-4,36,54],[x-4,36,51.2]],1.05,mat,'Battery_power_lead');
   const rear=assembly('X35_07_Rear_connections',[0,0,16]);
   for(const [center,name] of [[42,'XT30_ESC_half'],[48,'XT30_battery_half']]){
     const keyed=new THREE.Shape();keyed.moveTo(-5,-3);keyed.lineTo(5,-3);keyed.lineTo(5,1.4);keyed.lineTo(3.5,3);keyed.lineTo(-3.5,3);keyed.lineTo(-5,1.4);keyed.closePath();
@@ -118,7 +142,7 @@ function createRiftX35() {
   for(const x of [-7,7])box(rear,3,10,9,materials.tpu,'XT30_support_leg',x,29,44);
   for(const x of [-2,2]){cyl(electronic,1.2,.8,materials.gold,'AIO_power_solder_pad',x,9.6,11.5);wire(electronic,[[x,8.8,11.5],[x,8.5,16],[x,10,36],[x,23,40],[x,36,38.8]],1.05,x>0?materials.red:materials.rubber,'ESC_power_pigtail');}
   rounded(battery,7,3,5,.6,materials.white,'JST_XH_4S_balance_plug',14,44,39);
-  for(let i=0;i<5;i++){box(battery,.45,.7,.3,materials.gold,'Balance_contact',11.6+i*1.2,44,36.35);wire(battery,[[-6+i*1.1,41,33],[-6+i*1.1,40,35],[11.6+i*1.2,42,44],[11.6+i*1.2,44,41.8]],.25,i===4?materials.red:materials.rubber,'Balance_lead');}
+  for(let i=0;i<5;i++){box(battery,.45,.7,.3,materials.gold,'Balance_contact',11.6+i*1.2,44,36.35);wire(battery,[[-6+i*1.1,38,32.5],[-6+i*1.1,39,35],[11.6+i*1.2,42,44],[11.6+i*1.2,44,41.8]],.25,i===4?materials.red:materials.rubber,'Balance_lead');}
   loop(battery,21,9,18.5,6.5,2,materials.band,'Balance_plug_elastic_tether',9,44,39);
   box(rear,20,3,11,materials.tpu,'Rear_lower_mount',0,3.5,53);
   for(const x of [-7,7]){box(rear,3,5,8,materials.tpu,'ELRS_clamp_support',x,7,57);const clamp=loop(rear,5,5,2.3,2.3,3,materials.tpu,'ELRS_dipole_closed_clamp',x,8,60);clamp.rotation.y=Math.PI/2;}

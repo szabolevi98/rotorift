@@ -19,8 +19,13 @@ catalog/configuration path.
 | 50–25 km/h coast distance | 16.30 m |
 
 The source is `showcase/freestyle35.js`; the corresponding game asset is
-`web/assets/models/rotorift-rift-x35.glb`. It contains approximately 26k triangles.
-The battery has a strap through deck slots, an XT30 pair with separated wire
+`web/assets/models/rotorift-rift-x35.glb`. It contains approximately 34k triangles.
+The battery follows the C3 pack design, with rounded shrink-protected ends,
+cell seams, top and rear labels, and two straps with side buckles through deck
+slots. Motor TPU skids cover the underside with screw access holes and an
+outboard rim that leaves the motor wiring clear. The FPV camera uses curved,
+open side cheeks, two feet secured by four bolts, and a rounded lens surround.
+The pack has an XT30 pair with separated wire
 entries, and a balance connector secured alongside the power leads. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
 the propeller plane. Motor wiring attaches beneath the AIO PCB and clears carbon.

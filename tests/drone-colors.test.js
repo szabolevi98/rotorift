@@ -22,7 +22,7 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
     tagDroneColorMaterials(root);
     assert.equal(materials.filter(m=>m.userData.droneColorRole==="base").length,1,id+" has one shared color material");
     assert.equal(materials.filter(m=>m.userData.droneColorRole==="detail").length,["65","x35"].includes(id)?0:1);
-    assert.equal(materials.filter(m=>m.userData.droneColorRole==="label").length,["65","x35"].includes(id)?1:2,"battery print only, excluding camera labels");
+    assert.equal(materials.filter(m=>m.userData.droneColorRole==="label").length,id==="65"?1:2,"battery print only, excluding camera labels");
     const original=materials.map(m=>m.color.toArray()),a=root.clone(),b=root.clone();
     isolateModelMaterials(a);isolateModelMaterials(b);
     applyDroneColor(a,"teal");applyDroneColor(b,"violet");
