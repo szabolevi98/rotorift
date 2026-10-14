@@ -3,20 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta
-      name="description"
-      content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation."
-    />
+    <meta name="description" content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation." />
     <meta name="theme-color" content="#101114" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://fpv.levente.net/" />
     <link rel="canonical" href="https://fpv.levente.net/" />
     <meta property="og:title" content="Rotorift · Lightweight Browser FPV Simulator" />
-    <meta
-      property="og:description"
-      content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation."
-    />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:description" content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation." />
+    <meta property="og:image" content="https://fpv.levente.net/assets/rotorift-x5-cover.jpg" />
+    <meta property="og:image:width" content="1734" />
+    <meta property="og:image:height" content="907" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="Orange Rift X5 drone in a dark hangar. Rotorift. FPV. On the go." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://fpv.levente.net/assets/rotorift-x5-cover.jpg" />
+    <meta name="twitter:image:alt" content="Orange Rift X5 drone in a dark hangar. Rotorift. FPV. On the go." />
     <meta name="twitter:title" content="Rotorift · Lightweight Browser FPV Simulator" />
     <meta name="twitter:description" content="Lightweight FPV simulator in your browser. Fly on desktop or phone with a compatible controller. Low-poly worlds, detailed drones. No installation." />
     <title>Rotorift · Lightweight Browser FPV Simulator</title>
@@ -38,15 +39,10 @@
     <canvas id="game-scene" aria-label="3D FPV flight environment"></canvas>
     <div id="menu" inert>
       <header>
-        <a class="brand" href="/"
-          ><img src="/assets/icon.svg" alt="" /><span
-            >ROTORIFT<span class="brand-dot">.</span></span
-          ></a
-        >
+        <a class="brand" href="/"><img src="/assets/icon.svg" alt="" /><span>ROTORIFT<span class="brand-dot">.</span></span></a>
         <div class="header-end">
           <button type="button" class="fullscreen-toggle hidden" data-fullscreen-toggle aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H3V9M15 3H21V9M21 15V21H15M9 21H3V15"/></svg></button>
-          <span id="server-status" class="connection"></span
-          ><select id="language" aria-label="Language">
+          <span id="server-status" class="connection"></span><select id="language" aria-label="Language">
             <option value="en">English</option>
             <option value="hu">Magyar</option>
             <option value="de">Deutsch</option>
@@ -74,26 +70,36 @@
         <section id="fly-panel" class="panel">
           <div id="solo-hangar-slot"><div id="hangar-setup">
           <div class="aircraft-stage">
-            <div class="stage-top"><span data-i18n="hangar.aircraft"></span><span id="model-number">R / X5</span></div>
-            <div class="aircraft-title"><h1 id="selected-name">Rift X5</h1><p id="selected-description"></p></div>
-            <div class="preview-floor"><canvas id="preview-scene" aria-label="Selected drone 3D preview"></canvas></div>
-            <p class="preview-hint" data-i18n="hangar.rotate"></p>
-          </div>
-          <div class="launch-controls">
-            <div class="aircraft-controls">
-              <h2 class="dock-label" data-i18n="hangar.aircraftColor"></h2>
-              <div id="drone-picker" class="drone-picker"></div>
-              <div class="drone-color-control">
-                <span id="drone-color-label" class="visually-hidden" data-i18n="fly.color"></span>
-                <div id="drone-color-picker" role="group" aria-labelledby="drone-color-label"></div>
+            <div class="aircraft-details">
+              <div class="stage-top"><span data-i18n="hangar.aircraft"></span><span id="model-number">R / X5</span></div>
+              <div class="aircraft-title"><h1 id="selected-name">Rift X5</h1><p id="selected-description"></p></div>
+              <div id="drone-specs" class="drone-specs"></div>
+              <div class="aircraft-controls">
+                <h2 class="dock-label" data-i18n="hangar.aircraftColor"></h2>
+                <div id="drone-picker" class="drone-picker"></div>
+                <div class="drone-color-control">
+                  <span id="drone-color-label" class="visually-hidden" data-i18n="fly.color"></span>
+                  <div id="drone-color-picker" role="group" aria-labelledby="drone-color-label"></div>
+                </div>
               </div>
             </div>
+            <div class="aircraft-display">
+              <div class="preview-floor"><canvas id="preview-scene" aria-label="Selected drone 3D preview"></canvas></div>
+              <p class="preview-hint" data-i18n="hangar.rotate"></p>
+            </div>
+          </div>
+          <div class="launch-controls">
             <div class="environment-controls">
               <h2 class="dock-label" data-i18n="fly.environment"></h2>
               <div id="map-picker" class="map-picker"></div>
               <label class="race-row"><span data-i18n="fly.route"></span><select id="race-route" aria-label="Race route"></select></label>
               <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
             </div>
+            <section class="simulation-controls simulation-dock">
+              <h2 class="dock-label" data-i18n="simulation.title"></h2>
+              <div id="flight-simulation"></div>
+              <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
+            </section>
             <div class="departure-controls">
               <div class="session-settings">
                 <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
@@ -105,14 +111,9 @@
                 <button id="launch" class="primary"><span data-i18n="fly.launch"></span><span aria-hidden="true">↗</span></button>
                 <button id="create-room" class="primary hidden" data-i18n="online.createRoom"></button>
               </div>
+              <p class="input-hint" id="input-status"></p>
             </div>
           </div>
-          <section class="simulation-controls simulation-dock">
-            <h2 class="dock-label" data-i18n="simulation.title"></h2>
-            <div id="flight-simulation"></div>
-            <p id="map-mode-note" class="prototype-note hidden" data-i18n="error.raceUnavailable"></p>
-          </section>
-          <div class="hangar-specs"><div id="drone-specs" class="drone-specs"></div><p class="input-hint" id="input-status"></p></div>
           </div></div>
         </section>
         <section id="multiplayer-panel" class="panel hidden">
@@ -127,11 +128,7 @@
             </div>
             <div class="section-title">
               <h2 data-i18n="online.rooms"></h2>
-              <button
-                id="refresh-rooms"
-                class="text-button"
-                data-i18n="action.refresh"
-              ></button>
+              <button id="refresh-rooms" class="text-button" data-i18n="action.refresh"></button>
             </div>
             <p id="rooms-status" class="muted" role="status"></p>
             <div id="rooms-list"></div>
@@ -149,14 +146,9 @@
             <section class="card">
               <h2 data-i18n="settings.controller"></h2>
               <label
-                ><span data-i18n="settings.input"></span
-                ><select id="input-source">
+                ><span data-i18n="settings.input"></span><select id="input-source">
                   <option value="auto" data-i18n="input.auto"></option>
-                  <option
-                    value="keyboard"
-                    data-i18n="input.keyboard"
-                  ></option></select
-              ></label>
+                  <option value="keyboard" data-i18n="input.keyboard"></option></select></label>
               <p id="radio-name" class="muted"></p>
               <label><span data-i18n="settings.radioDevice"></span><select id="radio-device"></select></label>
               <label><span data-i18n="settings.radioPreset"></span><select id="radio-preset"></select></label>
@@ -188,28 +180,11 @@
               </div>
               <div id="axis-settings"></div>
               <div class="button-row">
-                <button
-                  id="calibrate-center"
-                  class="secondary"
-                  data-i18n="settings.center"
-                ></button
-                ><button
-                  id="calibrate-range"
-                  class="secondary"
-                  data-i18n="settings.range"
-                ></button>
+                <button id="calibrate-center" class="secondary" data-i18n="settings.center"></button><button id="calibrate-range" class="secondary" data-i18n="settings.range"></button>
               </div>
               <p id="calibration-status" class="muted"></p>
               <label
-                ><span data-i18n="settings.deadzone"></span
-                ><input
-                  id="deadzone"
-                  type="number"
-                  min="0"
-                  max="0.2"
-                  step="0.005"
-                  value="0.015"
-              /></label>
+                ><span data-i18n="settings.deadzone"></span><input id="deadzone" type="number" min="0" max="0.2" step="0.005" value="0.015" /></label>
               <p class="muted" data-i18n="settings.hardware"></p>
               <h3 data-i18n="settings.actionBindings"></h3>
               <p class="muted" data-i18n="settings.actionBindingsHint"></p>
@@ -221,9 +196,7 @@
             <section class="card">
               <h2>Actual Rates</h2>
               <label
-                ><span data-i18n="fly.aircraft"></span
-                ><select id="rates-drone"></select
-              ></label>
+                ><span data-i18n="fly.aircraft"></span><select id="rates-drone"></select></label>
               <table class="rates-table">
                 <thead>
                   <tr>
@@ -237,57 +210,18 @@
               </table>
               <canvas id="rate-graph" width="420" height="160"></canvas>
               <div class="button-row">
-                <button
-                  id="rates-save"
-                  class="primary small"
-                  data-i18n="action.save"
-                ></button
-                ><button
-                  id="rates-all"
-                  class="secondary"
-                  data-i18n="settings.all"
-                ></button
-                ><button
-                  id="rates-reset"
-                  class="text-button"
-                  data-i18n="action.defaults"
-                ></button>
+                <button id="rates-save" class="primary small" data-i18n="action.save"></button><button id="rates-all" class="secondary" data-i18n="settings.all"></button><button id="rates-reset" class="text-button" data-i18n="action.defaults"></button>
               </div>
               <label
-                ><span data-i18n="settings.copy"></span
-                ><select id="rates-target"></select
-                ><button
-                  id="rates-copy"
-                  class="secondary"
-                  data-i18n="action.copy"
-                ></button
-              ></label>
+                ><span data-i18n="settings.copy"></span><select id="rates-target"></select><button id="rates-copy" class="secondary" data-i18n="action.copy"></button></label>
               <p id="rate-status" class="muted"></p>
             </section>
             <section class="card">
               <h2 data-i18n="settings.camera"></h2>
               <label
-                ><span data-i18n="settings.angle"></span
-                ><input
-                  id="camera-angle"
-                  type="range"
-                  min="0"
-                  max="60"
-                  value="20"
-                /><output id="angle-output">20°</output></label
-              ><label
-                ><span data-i18n="settings.fov"></span
-                ><input
-                  id="camera-fov"
-                  type="range"
-                  min="70"
-                  max="140"
-                  value="100"
-                /><output id="fov-output">100°</output></label
-              ><label
-                ><span data-i18n="settings.sound"></span
-                ><input id="sound" type="checkbox" checked
-              /></label>
+                ><span data-i18n="settings.angle"></span><input id="camera-angle" type="range" min="0" max="60" value="20" /><output id="angle-output">20°</output></label><label
+                ><span data-i18n="settings.fov"></span><input id="camera-fov" type="range" min="70" max="140" value="100" /><output id="fov-output">100°</output></label><label
+                ><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
               <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
               <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
               <p class="muted" data-i18n="settings.fpvEffectsHint"></p>
@@ -306,18 +240,10 @@
             <p data-i18n="records.subtitle"></p>
           </div>
           <div class="records-filters">
-            <select id="records-map"></select
-            ><select id="records-route" aria-label="Race route"></select
-            ><select id="records-drone"></select
-            ><select id="records-mode">
+            <select id="records-map"></select><select id="records-route" aria-label="Race route"></select><select id="records-drone"></select><select id="records-mode">
               <option value="acro">Acro</option>
               <option value="angle">Angle</option>
-              <option value="horizon">Horizon</option></select
-            ><button
-              id="records-refresh"
-              class="secondary"
-              data-i18n="action.refresh"
-            ></button>
+              <option value="horizon">Horizon</option></select><button id="records-refresh" class="secondary" data-i18n="action.refresh"></button>
           </div>
           <div id="records-body" class="card"></div>
         </section>
@@ -334,21 +260,7 @@
             <div id="lobby-simulation"></div>
           </section>
           <div class="button-row">
-            <button
-              id="ready"
-              class="secondary"
-              data-i18n="online.ready"
-            ></button
-            ><button
-              id="start-room"
-              class="primary small"
-              data-i18n="online.start"
-            ></button
-            ><button
-              id="leave-room"
-              class="text-button"
-              data-i18n="action.leave"
-            ></button>
+            <button id="ready" class="secondary" data-i18n="online.ready"></button><button id="start-room" class="primary small" data-i18n="online.start"></button><button id="leave-room" class="text-button" data-i18n="action.leave"></button>
             <button id="finish-room" class="secondary hidden" data-i18n="online.finishRun"></button>
             <button id="restart-room" class="primary small hidden" data-i18n="online.nextRun"></button>
           </div>
@@ -362,9 +274,7 @@
       </main>
       </div>
       <footer>
-        <span>ROTORIFT / <span data-i18n="footer.flight"></span></span
-        ><a href="https://github.com/szabolevi98" target="_blank" rel="noopener" data-i18n="footer.build">Copyright © szabolevi98</a
-        ><a
+        <span>ROTORIFT / <span data-i18n="footer.flight"></span></span><a href="https://github.com/szabolevi98" target="_blank" rel="noopener" data-i18n="footer.build">Copyright © szabolevi98</a><a
           href="https://szabolevi98.github.io/rotorift/"
           target="_blank"
           data-i18n="nav.showcase"

@@ -64,7 +64,7 @@ export class Preview {
     this.controls.target.set(center.x, center.y, center.z);
     this.camera.position
       .copy(center)
-      .add(new THREE.Vector3(extent * 0.62, extent * 0.42, -extent * 0.70));
+      .add(new THREE.Vector3(extent * 0.53, extent * 0.36, -extent * 0.60));
     this.controls.minDistance = extent * 0.5;
     this.controls.maxDistance = extent * 2.5;
     this.controls.update();

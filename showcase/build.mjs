@@ -6,6 +6,7 @@ import { loadCatalog } from '../server/catalog.js';
 import { buildMapSurfaces } from '../scripts/build-map-surfaces.mjs';
 
 buildMapSurfaces();
+const catalog = await loadCatalog();
 
 // A klasszikus scriptbe csomagolt könyvtárakkal a kész HTML file:// alatt is fut.
 // Nem kell npm install, hálózat, modulbetöltés vagy külön webszerver.
@@ -34,6 +35,8 @@ const script = [
   read('whoop75.js'),
   read('cinewhoop3.js'),
   read('catalog.js'),
+  read('../shared/visual/rotor-motion.js').replace(/^export /gm, ''),
+  `const ROTOR_THRUST_EXPONENTS = ${JSON.stringify(Object.fromEntries(catalog.drones.map(c=>[c.id,c.motor.thrustExponent])))};`,
   read('viewer.js'),
 ].join('\n');
 const html = read('template.html')
@@ -46,7 +49,6 @@ const studyScript=[three,addon('vendor/OrbitControls.js','OrbitControls'),
   read('../shared/visual/drone-colors.js').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,''),
   read('whoop65.js'),read('whoop75.js'),read('canopy-studies.js')].join('\n');
 writeFileSync(join(root,'canopy-lab.html'),read('canopy-lab.template.html').replace('/* CANOPY_LAB_SCRIPT */',()=>studyScript.replace(/<\/script/gi,'<\\/script')));
-const catalog = await loadCatalog();
 // The showcase stays English; use the game's dictionary as the name source.
 const english = JSON.parse(read('../web/lang/en.json'));
 const maps = catalog.maps.map(map => ({ ...map, name: english['map.' + map.id] ?? map.name }));

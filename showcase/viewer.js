@@ -52,7 +52,7 @@
   const modelPropRotations=new Map([[currentModel.id,originalPropRotations]]);
   const stats = document.getElementById('mesh-stats');
   stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
-  const state={explode:0,spin:false};
+  const state={explode:0,spin:false,throttle:.5},rotorMotion=new RotorMotion();
   let cameraTransition=null, exporting=false;
   const names={hero:'Perspective',top:'Top view',front:'Front view',side:'Side view',rear:'Rear view'};
   const views={hero:[.32,.255,-.36],top:[0,.57,.0001],front:[0,.105,-.56],side:[.56,.105,0],rear:[.22,.16,.46]};
@@ -130,6 +130,7 @@
       originalPropRotations=modelPropRotations.get(model.id);
       drone.propellers.forEach((prop,index)=>prop.group.rotation.y=originalPropRotations[index]);
       state.explode=0;state.spin=false;controls.autoRotate=false;
+      rotorMotion.reset();document.getElementById('prop-throttle').disabled=true;
       drone.setExplode(0);drone.setWireframe(false);drone.setColor(colors.coral);
       drone.batteryParts.forEach(part=>part.visible=true);drone.actionParts.forEach(part=>part.visible=true);drone.propellers.forEach(prop=>prop.group.visible=true);
       for(const id of ['battery','props'])document.getElementById(id).checked=true;
@@ -155,7 +156,12 @@
   document.getElementById('rotate').addEventListener('change',e=>controls.autoRotate=e.target.checked);
   document.getElementById('spin').addEventListener('change',e=>{
     state.spin=e.target.checked;
+    document.getElementById('prop-throttle').disabled=!state.spin;
     if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation.y=originalPropRotations[i]);
+  });
+  document.getElementById('prop-throttle').addEventListener('input',e=>{
+    state.throttle=Number(e.target.value)/100;
+    document.getElementById('prop-throttle-value').textContent=`${e.target.value}%`;
   });
   document.getElementById('wireframe').addEventListener('change',e=>drone.setWireframe(e.target.checked));
   document.getElementById('explode').addEventListener('input',e=>{
@@ -186,7 +192,7 @@
       const blob=new Blob([result],{type:'model/gltf-binary'}),url=URL.createObjectURL(blob);
       const a=document.createElement('a');a.href=url;a.download=currentModel.filename;document.body.append(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
-      status.textContent=`A modell elcoming soont (${(blob.size/1024/1024).toFixed(2)} MB).`;
+      status.textContent=`Model ready (${(blob.size/1024/1024).toFixed(2)} MB).`;
     }catch(error){status.textContent='Cannot export the model. '+error.message;console.error(error);}
     finally{button.disabled=false;exporting=false;}
   });
@@ -201,7 +207,10 @@
       controls.target.lerpVectors(cameraTransition.startTarget,cameraTransition.target,ease);
       if(t===1)cameraTransition=null;
     }
-    if(state.spin&&!exporting)for(const prop of drone.propellers)prop.group.rotation.y+=dt*16*prop.direction;
+    if(state.spin&&!exporting){
+      rotorMotion.update(dt,Array(4).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
+      drone.propellers.forEach((prop,i)=>prop.group.rotation.y=originalPropRotations[i]+rotorMotion.phase[i]);
+    }
     controls.update(dt);renderer.render(scene,camera);
   });
   canvas.addEventListener('webglcontextlost',event=>{

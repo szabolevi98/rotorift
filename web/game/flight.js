@@ -17,6 +17,7 @@ import { normalizeSimulation } from "../../shared/simulation/options.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 import { PropellerVisual } from "../../shared/visual/propeller-damage.js";
 import { FpvPropellers } from "../../shared/visual/fpv-propellers.js";
+import { RotorMotion } from "../../shared/visual/rotor-motion.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 export class Flight {
   constructor(canvas) {
@@ -98,6 +99,7 @@ export class Flight {
     this.visual = visual;
     this.propVisual = new PropellerVisual(visual,config);
     this.fpvProps = new FpvPropellers(visual,config,this.propVisual);
+    this.rotorMotion = new RotorMotion();
     this.setColor(color);
     this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z));
     this.scene.add(this.visual);
@@ -122,6 +124,7 @@ export class Flight {
   reset(position = this.map.spawn) {
     if (!this.physics || !this.environment) return;
     this.physics.reset(position);
+    this.rotorMotion.reset();
     this.boundary.reset();
     this.environment.update(position);
     this.accumulator = 0;
@@ -153,8 +156,9 @@ export class Flight {
     }
     this.place(this.current, this.accumulator / PHYSICS_DT);
     this.propVisual.update(this.physics.effects.propellers.blades);
+    this.rotorMotion.update(dt,this.physics.motorThrust,this.config.motor.maxThrustN,this.config.motors,this.physics.armed&&input.throttle>0);
     for (const p of this.props)
-      p.rotation.y = this.physics.effects.propellers.phase[p.userData.motorIndex] - p.userData.phaseOffset;
+      p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
     if (this.sound) {
       const total = this.physics.motorThrust.reduce((a, b) => a + b, 0),
         fraction = total / (4 * this.config.motor.maxThrustN);
@@ -235,7 +239,7 @@ export class Flight {
     for (const material of materials) material.dispose();
   }
   render(dt) {
-    this.fpvProps?.update(this.view,this.physics.motorThrust);
+    this.fpvProps?.update(this.view,this.rotorMotion.fraction.map(v=>this.physics.armed?v*v*this.config.motor.maxThrustN:0));
     const w = innerWidth,
       h = innerHeight;
     if (

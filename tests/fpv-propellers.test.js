@@ -30,7 +30,7 @@ test('exposure preserves individual broken blades, rotor losses and restores geo
   const {exposure,entries,model}=fixture();
   entries[0].state=3;for(const e of entries.filter(e=>e.motor===1))e.state=3;
   exposure.update('fpv',[1,1,1,1]);assert.equal(exposure.rotors[1].disc.visible,false);
-  assert.ok(Math.abs(exposure.rotors[0].disc.material.opacity-.08)<1e-9);
+  assert.ok(exposure.rotors[0].disc.material.opacity<exposure.rotors[2].disc.material.opacity);
   exposure.update('fpv-clean',[1,1,1,1]);assert.equal(entries[0].mesh.visible,false);assert.equal(entries[1].mesh.visible,true);
   let geometryFreed=false;exposure.geometry.addEventListener('dispose',()=>geometryFreed=true);
   exposure.dispose();assert.equal(geometryFreed,true);

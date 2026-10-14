@@ -33,7 +33,8 @@ export class FpvPropellers {
       const states=new Map(rotor.entries.map(({entry})=>[entry.blade,entry.state]));
       const remaining=[...states.values()].filter(state=>state!==3).length/3;
       rotor.disc.visible=spinning&&remaining>0;
-      rotor.disc.material.opacity=.12*remaining;
+      const speed=Math.sqrt(Math.max(0,Math.min(1,thrust[rotor.motor]/this.maxThrust)));
+      rotor.disc.material.opacity=(.04+.08*speed)*remaining;
       for(const {entry,castShadow}of rotor.entries) {
         entry.mesh.visible=!spinning&&entry.state!==3;
         entry.mesh.castShadow=spinning?false:castShadow;

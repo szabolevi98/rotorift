@@ -1,5 +1,7 @@
 # Rotorift
 
+![Rotorift · FPV. On the go.](web/assets/rotorift-x5-cover.jpg)
+
 Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfizikával,
 Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
 Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
