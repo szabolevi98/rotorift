@@ -532,7 +532,7 @@ footer {
 #radio-guide-scene { width: 100%; height: 280px; display: block; }
 .radio-guide-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; font-size: 10px; color: var(--muted); line-height: 1.5; padding: 0 0 12px; }
 .radio-guide-legend span:before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--orange); border-radius: 50%; margin-right: 6px; }
-.radio-guide-legend .radio-guide-live:before { background: #73d9d0; }
+.radio-guide-legend .radio-guide-live:before { background: #aab5c2; }
 .radio-guide[data-connected="false"] .radio-guide-live:before { background: #666e78; }
 .radio-guide-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
 .radio-guide-tabs button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: transparent; font-size: 11px; min-height: 34px; }

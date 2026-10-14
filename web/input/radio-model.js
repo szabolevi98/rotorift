@@ -10,7 +10,6 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
   const rubber = finish(0x15191e, .92), black = finish(0x0c1117, .68);
   const metal = finish(0xadb7c3, .29, .8), darkMetal = finish(0x414b56, .35, .55);
   const accent = finish(0xff6648, .44, .2), ink = finish(0xa8b3bf, .65);
-  const cyan = new THREE.MeshBasicMaterial({ color: 0x73d9d0, toneMapped: false, depthTest: false, depthWrite: false });
   const mesh = (geometry, material, x, y, z, parent = root) => {
     const item = new THREE.Mesh(geometry, material); item.position.set(x, y, z); parent.add(item); return item;
   };
@@ -91,7 +90,7 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
   box(.24, .062, .015, black, 0, .955, .18, .012);
   box(.14, .023, .016, metal, 0, .956, .19, .009);
 
-  const sticks = [], rings = [], markers = [], arrows = [];
+  const sticks = [], rings = [], arrows = [];
   const gimbalCenters = [[-.75, .29, .413], [.75, .29, .413]];
   for (const [index, center] of gimbalCenters.entries()) {
     const [x, y, z] = center;
@@ -126,8 +125,6 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
     cylinder(.026, .008, black, 0, 0, .361, pivot, .026, 12);
     sticks.push(pivot);
 
-    const marker = mesh(new THREE.TorusGeometry(.06, .013, 6, 20), cyan, x, y, z + .020);
-    marker.renderOrder = 5; markers.push(marker);
     const directions = [];
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const arrow = new THREE.ArrowHelper(new THREE.Vector3(dx, dy, 0), new THREE.Vector3(x + dx * .49, y + dy * .49, z + .03), .15, 0xff6648, .065, .06);
@@ -178,5 +175,5 @@ export function createRadioModel(createCanvas = () => document.createElement("ca
   }
   for (let i = 0; i < 6; i++) box(.075, .031, .022, ink, -.29 + i * .116, -.40, .390, .014);
   root.rotation.set(-.06, -.09, 0);
-  return { root, sticks, rings, markers, arrows, gimbalCenters, stickTipDistance: .37 };
+  return { root, sticks, rings, arrows, gimbalCenters };
 }

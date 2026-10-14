@@ -42,11 +42,7 @@ export class RadioGuide {
     this.scene.add(model.root);
     this.sticks = model.sticks;
     this.rings = model.rings;
-    this.markers = model.markers;
     this.arrows = model.arrows;
-    this.gimbalCenters = model.gimbalCenters;
-    this.stickTipDistance = model.stickTipDistance;
-    this.markerRotation = new THREE.Euler();
     this.scene.updateMatrixWorld(true);
   }
   render(controller, now) {
@@ -94,15 +90,14 @@ export class RadioGuide {
       ? { throttle: 0, yaw: 0, pitch: 0, roll: 0, ...radioInput(controller.raw, { ...controller.profile, axes: controller.setup.feedbackAxes }) }
       : radioInput(controller.raw, controller.profile);
     const actual = radioStickPositions(actualPose);
+    // A connected radio drives the mechanical gimbals themselves. The arrows
+    // remain the instruction; without a radio the sticks demonstrate it.
+    const displayed = connected ? actual : desired;
     const leftActive = ["centres", "range", "throttle", "yaw"].includes(guide.mode);
     const rightActive = ["centres", "range", "pitch", "roll"].includes(guide.mode);
     for (let i = 0; i < 2; i++) {
-      this.sticks[i].rotation.set(-desired[i][1] * 0.6, desired[i][0] * 0.6, 0);
+      this.sticks[i].rotation.set(-displayed[i][1] * 0.6, displayed[i][0] * 0.6, 0);
       this.rings[i].material.color.setHex((i ? rightActive : leftActive) ? 0xff6648 : 0x9da5b2);
-      this.markers[i].visible = connected;
-      this.markerRotation.set(-actual[i][1] * 0.6, actual[i][0] * 0.6, 0);
-      this.markers[i].position.set(0, 0, this.stickTipDistance)
-        .applyEuler(this.markerRotation).add(this.sticks[i].position);
       this.arrows[i].forEach((arrow, direction) => {
         const horizontal = direction < 2;
         arrow.visible = guide.mode === "range" || (i ? (horizontal ? guide.mode === "roll" : guide.mode === "pitch") : (horizontal ? guide.mode === "yaw" : guide.mode === "throttle"));

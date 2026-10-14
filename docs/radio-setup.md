@@ -7,6 +7,11 @@ telefon és a PC eltérő USB-sorrendje nem írja felül egymás kalibrációjá
 
 ## Ajánlott profilok
 
+A 3D távirányító karjai csatlakoztatott rádiónál a tényleges, kalibrált bemenetet
+követik, beleértve az invertálást és a botfelismerés közben megtalált tengelyeket.
+Külön mozgó pont nincs. A narancs kiemelés és a nyilak az útmutatást mutatják;
+USB rádió nélkül maguk a karok mutatják be a kiválasztott mozdulatot.
+
 A meglévő rádiómodell az első választás; külön SIM modell nem általános feltétel.
 A botfelismerő a kisebb (például mix vagy rate miatt csökkentett) analóg kitérést
 is felismeri és végpontokra skálázza. A felismerési lépés élő jelzése megkülönbözteti
