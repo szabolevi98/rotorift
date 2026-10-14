@@ -145,8 +145,7 @@
           <div class="settings-grid">
             <section class="card">
               <h2 data-i18n="settings.controller"></h2>
-              <label
-                ><span data-i18n="settings.input"></span><select id="input-source">
+              <label><span data-i18n="settings.input"></span><select id="input-source">
                   <option value="auto" data-i18n="input.auto"></option>
                   <option value="keyboard" data-i18n="input.keyboard"></option></select></label>
               <p id="radio-name" class="muted"></p>
@@ -183,8 +182,7 @@
                 <button id="calibrate-center" class="secondary" data-i18n="settings.center"></button><button id="calibrate-range" class="secondary" data-i18n="settings.range"></button>
               </div>
               <p id="calibration-status" class="muted"></p>
-              <label
-                ><span data-i18n="settings.deadzone"></span><input id="deadzone" type="number" min="0" max="0.2" step="0.005" value="0.015" /></label>
+              <label><span data-i18n="settings.deadzone"></span><input id="deadzone" type="number" min="0" max="0.2" step="0.005" value="0.015" /></label>
               <p class="muted" data-i18n="settings.hardware"></p>
               <h3 data-i18n="settings.actionBindings"></h3>
               <p class="muted" data-i18n="settings.actionBindingsHint"></p>
@@ -195,8 +193,7 @@
             </section>
             <section class="card">
               <h2>Actual Rates</h2>
-              <label
-                ><span data-i18n="fly.aircraft"></span><select id="rates-drone"></select></label>
+              <label><span data-i18n="fly.aircraft"></span><select id="rates-drone"></select></label>
               <table class="rates-table">
                 <thead>
                   <tr>
@@ -212,16 +209,14 @@
               <div class="button-row">
                 <button id="rates-save" class="primary small" data-i18n="action.save"></button><button id="rates-all" class="secondary" data-i18n="settings.all"></button><button id="rates-reset" class="text-button" data-i18n="action.defaults"></button>
               </div>
-              <label
-                ><span data-i18n="settings.copy"></span><select id="rates-target"></select><button id="rates-copy" class="secondary" data-i18n="action.copy"></button></label>
+              <label><span data-i18n="settings.copy"></span><select id="rates-target"></select><button id="rates-copy" class="secondary" data-i18n="action.copy"></button></label>
               <p id="rate-status" class="muted"></p>
             </section>
             <section class="card">
               <h2 data-i18n="settings.camera"></h2>
-              <label
-                ><span data-i18n="settings.angle"></span><input id="camera-angle" type="range" min="0" max="60" value="20" /><output id="angle-output">20°</output></label><label
-                ><span data-i18n="settings.fov"></span><input id="camera-fov" type="range" min="70" max="140" value="100" /><output id="fov-output">100°</output></label><label
-                ><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
+              <label><span data-i18n="settings.angle"></span><input id="camera-angle" type="range" min="0" max="60" value="20" /><output id="angle-output">20°</output></label>
+              <label><span data-i18n="settings.fov"></span><input id="camera-fov" type="range" min="70" max="140" value="100" /><output id="fov-output">100°</output></label>
+              <label><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
               <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
               <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
               <p class="muted" data-i18n="settings.fpvEffectsHint"></p>
@@ -274,11 +269,9 @@
       </main>
       </div>
       <footer>
-        <span>ROTORIFT / <span data-i18n="footer.flight"></span></span><a href="https://github.com/szabolevi98" target="_blank" rel="noopener" data-i18n="footer.build">Copyright © szabolevi98</a><a
-          href="https://szabolevi98.github.io/rotorift/"
-          target="_blank"
-          data-i18n="nav.showcase"
-        ></a>
+        <span>ROTORIFT / <span data-i18n="footer.flight"></span></span>
+        <a href="https://github.com/szabolevi98" target="_blank" rel="noopener" data-i18n="footer.build">Copyright © szabolevi98</a>
+        <a href="https://szabolevi98.github.io/rotorift/" target="_blank" data-i18n="nav.showcase"></a>
       </footer>
     </div>
     <div id="analog-effect" class="hidden" aria-hidden="true"><div class="analog-grain"></div></div>
