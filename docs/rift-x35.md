@@ -26,7 +26,8 @@ slots. Motor TPU skids cover the underside with screw access holes and an
 outboard rim that leaves the motor wiring clear. The FPV camera uses compact
 side cheeks, two feet secured by four bolts, and a rounded rectangular bumper.
 The pack has an XT30 pair with separated wire
-entries, and a balance connector secured alongside the power leads. The rear
+entries, and a balance connector resting on the power leads, secured with a
+thin black band and a small cushion. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
 the propeller plane. Motor wiring attaches beneath the AIO PCB and clears carbon.
 

@@ -11,7 +11,7 @@ function createRiftX35({cameraMount='cage'}={}) {
   materials.pcb=new THREE.MeshStandardMaterial(DRONE_SURFACES.pcb);materials.glass=new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens);
   materials.prop=new THREE.MeshPhysicalMaterial({color:'#263e3b',transparent:true,opacity:.9,roughness:.3,clearcoat:.6,depthWrite:false,side:THREE.DoubleSide});
   materials.red=standard('#c74332',.7);materials.white=standard('#deded4',.65);materials.yellow=standard('#efbb26',.7);
-  materials.battery=standard('#293439',.58,.16);materials.band=standard('#b59971',.92);
+  materials.battery=standard('#293439',.58,.16);
   function mesh(parent,geometry,material,name,x=0,y=0,z=0){const o=new THREE.Mesh(geometry,material);o.name=name;o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
   const box=(p,w,h,d,m,n,x=0,y=0,z=0)=>mesh(p,new THREE.BoxGeometry(w,h,d),m,n,x,y,z);
   const cyl=(p,r,h,m,n,x=0,y=0,z=0,segments=16)=>mesh(p,new THREE.CylinderGeometry(r,r,h,segments),m,n,x,y,z);
@@ -173,9 +173,13 @@ function createRiftX35({cameraMount='cage'}={}) {
   loop(rear,14,10,11,7,2,materials.tpu,'XT30_retention_collar',0,36,46);
   for(const x of [-7,7])box(rear,3,10,9,materials.tpu,'XT30_support_leg',x,29,44);
   for(const x of [-2,2]){cyl(electronic,1.2,.8,materials.gold,'AIO_power_solder_pad',x,9.6,11.5);wire(electronic,[[x,8.8,11.5],[x,8.5,16],[x,10,36],[x,23,40],[x,36,38.8]],1.05,x>0?materials.red:materials.rubber,'ESC_power_pigtail');}
-  rounded(battery,7,3,5,.6,materials.white,'JST_XH_4S_balance_plug',14,44,39);
-  for(let i=0;i<5;i++){box(battery,.45,.7,.3,materials.gold,'Balance_contact',11.6+i*1.2,44,36.35);wire(battery,[[-6+i*1.1,38,32.5],[-6+i*1.1,39,35],[11.6+i*1.2,42,44],[11.6+i*1.2,44,41.8]],.25,i===4?materials.red:materials.rubber,'Balance_lead');}
-  loop(battery,21,9,18.5,6.5,2,materials.band,'Balance_plug_elastic_tether',9,44,39);
+  // Rest the plug directly on the power-lead pair so a small black band
+  // can retain it, instead of spanning a large empty gap beside the pack.
+  rounded(battery,7,3,5,.6,materials.white,'JST_XH_4S_balance_plug',4,47,40);
+  for(let i=0;i<5;i++){box(battery,.45,.7,.3,materials.gold,'Balance_contact',1.6+i*1.2,47,37.35);wire(battery,[[-6+i*1.1,38,32.5],[-6+i*1.1,39,35],[1.6+i*1.2,45.6,45.2],[1.6+i*1.2,47,42.8]],.25,i===4?materials.red:materials.rubber,'Balance_lead');}
+  rounded(battery,6.6,.5,2.5,.2,materials.rubber,'Balance_plug_power_lead_cushion',4,45.27,40);
+  const balanceBand=shape(8.4,6.6,2);balanceBand.holes.push(shape(7.4,5.6,1.4));
+  mesh(battery,geometry(balanceBand,1),materials.rubber,'Balance_plug_black_retaining_band',4,45.7,40);
   box(rear,20,3,11,materials.tpu,'Rear_lower_mount',0,3.5,53);
   for(const x of [-7,7]){box(rear,3,5,8,materials.tpu,'ELRS_clamp_support',x,7,57);const clamp=loop(rear,5,5,2.3,2.3,3,materials.tpu,'ELRS_dipole_closed_clamp',x,8,60);clamp.rotation.y=Math.PI/2;}
   const dipole=cyl(rear,1,34,materials.rubber,'ELRS_T_dipole',0,8,60,12);dipole.rotation.z=Math.PI/2;
