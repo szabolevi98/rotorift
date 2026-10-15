@@ -109,7 +109,7 @@ function createRiftX35({cameraMount='cage'}={}) {
   // Four discrete analog VTX leads: regulated power, ground, video and control.
   // Each tinned end lands on its own exposed pad, outside the heatsink/MCU.
   for(const [i,name,mat]of [[0,'5V',materials.red],[1,'GND',materials.rubber],[2,'VIDEO',materials.yellow],[3,'CONTROL',materials.white]]){
-    const x=(i-1.5)*3.6;
+    const x=(i-1.5)*2.2;
     for(const [prefix,z,pcbTop]of [['FC',11,11.1],['VTX',21.9,10.65]]){
       box(electronic,1.8,.18,1.8,materials.gold,prefix+'_VTX_'+name+'_pad',x,pcbTop+.09,z);
       const solder=mesh(electronic,new THREE.SphereGeometry(1,8,5),materials.silver,prefix+'_VTX_'+name+'_solder',x,pcbTop+.32,z);
@@ -117,7 +117,8 @@ function createRiftX35({cameraMount='cage'}={}) {
       const end=prefix==='FC'?[x,12.0,12.2]:[x,11.65,20.9];
       wire(electronic,[end,[x,pcbTop+.6,z],[x,pcbTop+.32,z]],.12,materials.silver,prefix+'_VTX_'+name+'_tinned_end',6);
     }
-    wire(electronic,[[x,12,12.2],[x,13.5,14.5],[x,13.5,18.3],[x,11.65,20.9]],.25,mat,'VTX_'+name+'_wire');
+    const bundleX=(i-1.5);
+    wire(electronic,[[x,12,12.2],[bundleX,13.5,14.5],[bundleX,13.5,18.3],[x,11.65,20.9]],.25,mat,'VTX_'+name+'_wire');
   }
   const cameraSet=assembly('X35_05_FPV_camera',[0,0,-16]);
   if(cameraMount==='original')for(const side of [-1,1]){
