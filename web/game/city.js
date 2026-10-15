@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createConstructionParts } from './construction-parts.js';
 import { makeCityGroundGeometry } from './city-ground.js';
+import { buildCityDetails } from './city-details.js';
 import { CITY_SIZE,CITY_STREETS,CITY_BLOCK_CENTERS,CITY_BUILDINGS,CITY_HERO,CITY_GARAGE,CITY_PLAZA,CITY_SKYWALK,citySurfaceHeight } from '../../shared/world/city-layout.js';
 
 export const CITY_VIEW_DISTANCE = 12000;
@@ -205,6 +206,8 @@ export function buildCity(scene,world,RAPIER,map) {
     cylinder(.14,5.4,[x+side*14,2.88,z+14],'steel');box([.5,1.6,.45],[x+side*14,4.4,z+14],'rubber');
     for(const [dy,color]of [[-.45,'signal'],[0,'ochre'],[.45,'red']])cylinder(.25,.04,[x+side*14,4.4+dy,z+13.75],color,false,[Math.PI/2,0,0]);
   }
+  buildCityDetails(p);
+
   // Low, permeable boundary markers; bare grass continues beyond the district.
   for(const side of [-1,1])for(let along=-294;along<=294;along+=6){
     if(CITY_STREETS.some(road=>Math.abs(along-road)<14))continue;

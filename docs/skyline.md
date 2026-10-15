@@ -7,9 +7,16 @@ a 48 m-high open-sided skywalk, a five-level garage with alternating ramps,
 a planted civic square, rooftop water tanks/HVAC, fire escapes, parked taxis,
 delivery vans, a bus, pedestrian crossings, lamps and traffic signals.
 
+The 22 paired-building blocks have four variations of furnished service alleys:
+recycling bins, delivery crates/pallets, utility cabinets and planted corners,
+with small ground-level air conditioners or stored pallets along the walls.
+Sidewalk setbacks add benches, planters, bicycle stands and litter bins. The
+central eight metres of each alley stay clear, as do streets and the landmark
+plazas; all furnishings stay inside the district boundary.
+
 The map starts as freestyle only. Its persistent ID/code is `skyline`, its
 kind is `city`, and all five dictionaries provide `map.skyline`. A future race
-JSON belongs in `data/maps/skyline/`. The standalone map viewer includes nine
+JSON belongs in `data/maps/skyline/`. The standalone map viewer includes eleven
 inspection angles and the existing route editor.
 
 Opaque procedural facade textures supply all window grids. Facade UVs are
@@ -17,10 +24,10 @@ sampled in world metres to keep floor/window scale consistent across towers.
 There are no transparent window layers, fabricated accessible interiors or
 per-window meshes. The street, podium and garage have real openings.
 
-About 5,800 visible low-poly instances share fewer than 60 geometry/material
+The visible low-poly instances share fewer than 60 geometry/material
 batches. The construction parts helper retains its default spatial batching
 for existing maps; Skyline explicitly combines its compact district batches.
-Around 2,800 analytic collision records bake to a 50 kB compressed asset. Local
+Around 3,100 analytic collision records bake to a 56 kB compressed asset. Local
 activation, velocity lookahead and CCD use the existing simulator pipeline.
 One unbroken analytic floor extends far beyond the district boundary. Its
 visible surface is tiled asphalt inside the 600 m square and bare green grass
@@ -36,7 +43,8 @@ use it, with normal depth testing against aircraft and scenery.
 
 Source and baked Rapier tests verify the long avenues, open podium, skywalk,
 garage bays, matching floor heights, walls, outer floor, local collider budget,
-and an X5 settling and lifting at spawn. Network tests check city room creation,
+all furnished alley corridors, solid detail props, and an X5 settling and lifting
+at spawn. Network tests check city room creation,
 joining, and spawn agreement. Catalog and five-language checks cover the map.
 
 The existing `/performance.html?map=skyline&physics=prepared&hold=1` benchmark

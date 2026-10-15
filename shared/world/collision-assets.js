@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-b177aba5394f7e16.rrc",
     "mapVersion": 3,
-    "sourceHash": "cf1b89f0466d3ffae5cf40bbd159144b0a6f538e240b6555487eaae66ecd60cc",
+    "sourceHash": "5eafea705000d9b5b6d5732ca9d91e041adad6497566a24c650126789108bc22",
     "records": 3927,
     "rawBytes": 13016256,
     "bytes": 3436905
@@ -11,7 +11,7 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-fd8ee403c725c2a9.rrc",
     "mapVersion": 3,
-    "sourceHash": "cf1b89f0466d3ffae5cf40bbd159144b0a6f538e240b6555487eaae66ecd60cc",
+    "sourceHash": "5eafea705000d9b5b6d5732ca9d91e041adad6497566a24c650126789108bc22",
     "records": 8301,
     "rawBytes": 8824468,
     "bytes": 1984573
@@ -19,17 +19,17 @@ export const COLLISION_ASSETS = {
   "jatszoter": {
     "url": "/assets/collisions/jatszoter-acb789a99b3c2c5e.rrc",
     "mapVersion": 2,
-    "sourceHash": "cf1b89f0466d3ffae5cf40bbd159144b0a6f538e240b6555487eaae66ecd60cc",
+    "sourceHash": "5eafea705000d9b5b6d5732ca9d91e041adad6497566a24c650126789108bc22",
     "records": 880,
     "rawBytes": 170156,
     "bytes": 18910
   },
   "skyline": {
-    "url": "/assets/collisions/skyline-41f11fa9f0a34127.rrc",
+    "url": "/assets/collisions/skyline-3957faed5384b38d.rrc",
     "mapVersion": 1,
-    "sourceHash": "cf1b89f0466d3ffae5cf40bbd159144b0a6f538e240b6555487eaae66ecd60cc",
-    "records": 2786,
-    "rawBytes": 562532,
-    "bytes": 50663
+    "sourceHash": "5eafea705000d9b5b6d5732ca9d91e041adad6497566a24c650126789108bc22",
+    "records": 3115,
+    "rawBytes": 623464,
+    "bytes": 55720
   }
 };

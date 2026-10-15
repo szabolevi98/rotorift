@@ -65,6 +65,8 @@ const CITY_VIEWS={
   garage:['Open parking garage',[-53,29,186],[-120,10,120]],
   plaza:['Civic square and fountain',[65,48,178],[0,5,120]],
   alleys:['Brick alleys and fire escapes',[240,13,300],[240,16,220]],
+  service:['Service alley and deliveries',[242,3,280],[240,1.2,240]],
+  pocket:['Street benches and planters',[-180,14,-180],[-240,1,-199]],
 };
 const viewsFor=map=>map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 

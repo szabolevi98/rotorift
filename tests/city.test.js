@@ -5,6 +5,7 @@ import {gunzipSync} from 'node:zlib';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {buildCity} from '../web/game/city.js';
+import {CITY_DETAIL_COURTS} from '../web/game/city-details.js';
 import {CITY_BUILDINGS,citySurfaceHeight} from '../shared/world/city-layout.js';
 import {COLLISION_ASSETS} from '../shared/world/collision-assets.js';
 import {decodeCollisionData} from '../shared/world/collision-data.js';
@@ -22,6 +23,9 @@ test('Skyline has street-aligned blocks, deliberate landmarks and a bounded low-
     assert.equal(citySurfaceHeight(0,120),.18);
     assert.ok(city.root.userData.batches<60,'thousands of details share material/geometry instance batches');
     assert.ok(city.root.userData.landmarks.some(p=>p.name==='Five_level_open_parking_garage'));
+    assert.equal(CITY_DETAIL_COURTS.length,22);
+    for(const name of ['Service_alley_','Street_pocket_'])assert.equal(city.root.userData.landmarks.filter(p=>p.name.startsWith(name)).length,22);
+    for(const name of ['Recycling_dumpster','Delivery_pallet','Utility_cabinet','Bicycle_stands','Sidewalk_bench'])assert.ok(city.root.userData.landmarks.some(p=>p.name===name));
     let triangles=0;city.root.traverse(o=>{if(o.isMesh)triangles+=((o.geometry.index?.count??o.geometry.attributes.position.count)/3)*(o.count??1);});
     assert.ok(triangles<400000,`district triangles: ${triangles}`);
     const facades=city.root.children.filter(o=>o.material?.map&&o.material.customProgramCacheKey?.()==='rotorift-city-facade-v1');
@@ -65,6 +69,11 @@ for(const baked of [false,true])test(`${baked?'baked':'source'} Skyline: avenues
     assert.equal(ray([0,5,-70],[0,0,-1],100),null,'tower podium');
     assert.equal(ray([0,49.8,-8],[0,0,1],16),null,'open sides of elevated skywalk');
     assert.equal(ray([-144,2.6,162],[0,0,-1],84),null,'ground-level garage bay');
+    for(const {x,z}of CITY_DETAIL_COURTS)for(const offset of [-3,0,3]){
+      assert.equal(ray([x+offset,1.4,z-40],[0,0,1],80),null,`alley corridor stays open at ${x},${z} offset ${offset}`);
+    }
+    const dumpster=ray([-240+5.65,4,-240+19],[0,-1,0],5);
+    assert.ok(dumpster&&4-dumpster.timeOfImpact>1.2,'new alley props have solid collision');
     const skywalk=ray([0,50,0],[0,-1,0],4);assert.ok(skywalk&&Math.abs(50-skywalk.timeOfImpact-48.18)<.001);
     assert.ok(ray([70,20,-120],[1,0,0],30),'opaque tower facade must be solid');
     const ground=ray([800,4,800],[0,-1,0],6);assert.ok(ground&&Math.abs(4-ground.timeOfImpact)<.001);
