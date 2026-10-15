@@ -25,13 +25,15 @@ test("catalog contains five valid drone models and four maps with explicit race 
   const park = maps.find((m) => m.id === "liget");
   assert.equal(canRace(park), true);
   assert.equal(park.routeId, "race_1");
-  assert.equal(park.routes.length, 1);
+  assert.equal(park.routes.length, 3);
   assert.ok(park.gates.length >= 4);
   const construction = maps.find((m) => m.id === "betonudvar");
   assert.equal(canRace(construction), true);
-  assert.equal(construction.routes.length, 1);
+  assert.equal(construction.routes.length, 3);
   assert.ok(construction.gates.length >= 4);
-  assert.equal(canRace(maps.find(m=>m.id==='skyline')),false,'Skyline starts as a freestyle district');
+  assert.equal(maps.find(m=>m.id==='jatszoter').routes.length,1);
+  assert.equal(maps.find(m=>m.id==='skyline').routes.length,3);
+  assert.equal(canRace(maps.find(m=>m.id==='skyline')),true);
   assert.throws(() => validateMap({ ...park, gates: [], racingEnabled: true }));
   const bad = structuredClone(maps[0]);
   bad.gates = [{ p: [0, 2, 0], n: [0, 0, 2], width: 4, height: 3 }];

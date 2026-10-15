@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {gateBasis} from '../../shared/race/gates.js';
 
 const ACTIVE=0xa7ff55,IDLE=0x65ffe2,SELECTED=0xff9b52;
 export function gateFrameParts(gate){
@@ -8,7 +9,9 @@ export function gateFrameParts(gate){
 }
 
 export function createNeonGate(gate,index,{selected=false,active=false}={}){
-  const group=new THREE.Group();group.name=`Neon_gate_${index+1}`;group.position.set(...gate.p);group.rotation.y=Math.atan2(gate.n[0],gate.n[2]);
+  const group=new THREE.Group();group.name=`Neon_gate_${index+1}`;group.position.set(...gate.p);
+  const {right,up}=gateBasis(gate.n);
+  group.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...right),new THREE.Vector3(...up),new THREE.Vector3(...gate.n)));
   const w=gate.width/2,h=gate.height/2,r=Math.min(.28,w*.13,h*.13), path=new THREE.CurvePath();
   const v=(x,y)=>new THREE.Vector3(x,y,0),line=(a,b)=>path.add(new THREE.LineCurve3(v(...a),v(...b))),corner=(a,b,c)=>path.add(new THREE.QuadraticBezierCurve3(v(...a),v(...b),v(...c)));
   line([-w+r,-h],[w-r,-h]);corner([w-r,-h],[w,-h],[w,-h+r]);line([w,-h+r],[w,h-r]);corner([w,h-r],[w,h],[w-r,h]);

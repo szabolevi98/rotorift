@@ -8,7 +8,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import { loadCatalog } from "../server/catalog.js";
 import { loadRoutes, saveRoute, localEditorRequest, readRouteBody } from "../server/routes.js";
 import { resolveRoute, validateRoute } from "../shared/race/routes.js";
-import { RouteDraft, normalFromYaw } from "../shared/race/editor.js";
+import { RouteDraft, normalFromYaw, normalFromAngles, yawFromNormal, tiltFromNormal } from "../shared/race/editor.js";
 import { gateCrossing } from "../shared/race/gates.js";
 import { buildPark } from "../web/game/park.js";
 import { buildConstruction } from "../web/game/construction.js";
@@ -26,6 +26,18 @@ test("race edits, order changes and undo/redo survive JSON without modifying the
   draft.redo();assert.deepEqual(draft.route.gates[1].p,[8,9,12]);
   assert.deepEqual(validateRoute(JSON.parse(JSON.stringify(draft.export())),map),draft.export());
   assert.throws(()=>draft.setGate(1,{width:0}));
+});
+test("editor preserves tilted and downward-facing gates through JSON and undo",()=>{
+  const map=catalog.maps.find(m=>m.id==='betonudvar'),draft=new RouteDraft(map,map.routes[1]);
+  for(const tilt of [-90,-45,35,90]){
+    const n=normalFromAngles(40,tilt);draft.setGate(1,{n});
+    assert.ok(Math.abs(tiltFromNormal(n)-tilt)<1e-6);
+    if(Math.abs(tilt)<90)assert.ok(Math.abs(yawFromNormal(n)-40)<1e-6);
+    assert.deepEqual(validateRoute(JSON.parse(JSON.stringify(draft.export())),map).gates[1].n,n);
+    draft.undo();assert.deepEqual(draft.route,map.routes[1]);
+  }
+  assert.throws(()=>draft.setGate(1,{n:[0,0,0]}),/Invalid gate/);
+  assert.throws(()=>draft.setGate(1,{n:[0,-2,0]}),/Invalid gate/);
 });
 
 test("race storage discovers multiple files, bumps changed versions and rejects invalid writes", async t => {
@@ -62,8 +74,8 @@ test("all demo races have clear gate apertures and the correct flying direction"
     const environment=(map.kind==="city"?buildCity:map.kind==="playground"?buildPlayground:map.kind==="park"?buildPark:buildConstruction)(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
     try {
       for(let i=0;i<map.gates.length;i++) {
-        const gate=map.gates[i],previous=map.gates[(i+map.gates.length-1)%map.gates.length];
-        assert.ok(gateCrossing(previous.p,gate.p.map((v,j)=>v+gate.n[j]*.5),gate)!==null,`${map.id}: gate ${i+1} must accept arrival`);
+        const gate=map.gates[i];
+        assert.ok(gateCrossing(gate.p.map((v,j)=>v-gate.n[j]*.5),gate.p.map((v,j)=>v+gate.n[j]*.5),gate)!==null,`${map.id}: gate ${i+1} must accept arrival`);
         environment.update(gate.p);world.step();const right=[-gate.n[2],0,gate.n[0]];
         for(const offset of [-gate.width*.35,0,gate.width*.35]) {
           const p=gate.p.map((v,j)=>v+right[j]*offset-gate.n[j]*1.5);

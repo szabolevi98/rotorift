@@ -37,8 +37,10 @@ export function planRaceGuide(gates,clear,options={}) {
   return gates.map((gate,i)=>{
     const next=gates[(i+1)%gates.length], lead=Math.min(2,gate.width*.4,next.width*.4);
     const exit=offset(gate,lead),entry=offset(next,-lead);
-    if(!clear(gate.p,exit)||!clear(entry,next.p))throw Error(`Gate ${i+1} or ${(i+1)%gates.length+1} has a blocked approach.`);
-    return roundGuideCorners([gate.p,...findGuidePath(exit,entry,clear,options),next.p],clear).map(p=>p.map(v=>Number(v.toFixed(3))));
+    if(!clear(gate.p,exit))throw Error(`Gate ${i+1} has a blocked exit at ${gate.p}.`);
+    if(!clear(entry,next.p))throw Error(`Gate ${(i+1)%gates.length+1} has a blocked entry at ${next.p}.`);
+    try{return roundGuideCorners([gate.p,...findGuidePath(exit,entry,clear,options),next.p],clear).map(p=>p.map(v=>Number(v.toFixed(3))));}
+    catch(error){throw Error(`Guide leg ${i+1} → ${(i+1)%gates.length+1}: ${error.message}`);}
   });
 }
 

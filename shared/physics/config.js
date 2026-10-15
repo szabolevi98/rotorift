@@ -116,7 +116,6 @@ export function validateMap(m) {
       !vec(g.p) ||
       !vec(g.n) ||
       Math.abs(Math.hypot(...g.n) - 1) > 1e-5 ||
-      Math.abs(g.n[1]) > 1e-5 ||
       !Number.isFinite(g.width) ||
       g.width <= 0.2 ||
       !Number.isFinite(g.height) ||

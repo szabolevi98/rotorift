@@ -14,10 +14,11 @@ Sidewalk setbacks add benches, planters, bicycle stands and litter bins. The
 central eight metres of each alley stay clear, as do streets and the landmark
 plazas; all furnishings stay inside the district boundary.
 
-The map starts as freestyle only. Its persistent ID/code is `skyline`, its
-kind is `city`, and all five dictionaries provide `map.skyline`. A future race
-JSON belongs in `data/maps/skyline/`. The standalone map viewer includes eleven
-inspection angles and the existing route editor.
+Its persistent ID/code is `skyline`, its kind is `city`, and all five dictionaries
+provide `map.skyline`. Three race JSON files in `data/maps/skyline/` offer the
+1.92 km Canyon Express street loop, the 1.30 km Garage to Skywalk route and the
+1.65 km Rooftop Descent high-altitude course. Freestyle keeps the district free
+of gates. The standalone map viewer includes inspection angles and the route editor.
 
 Opaque procedural facade textures supply all window grids. Facade UVs are
 sampled in world metres to keep floor/window scale consistent across towers.

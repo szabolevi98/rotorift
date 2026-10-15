@@ -82,7 +82,7 @@ is 28.6%, with a near-level top speed of 153.6 km/h.
   and a central tower reaching 244 m. Fly through its open podium, elevated skywalk,
   five-level parking garage and alleys. Rooftop water tanks, equipment, fire escapes,
   parked vehicles, street furniture and a fountain square complete the district.
-  Skyline currently offers freestyle; routes can be added in the race editor.
+  Three race routes explore the street canyons, garage, skywalk and rooftops.
 
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
@@ -252,7 +252,8 @@ on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 The game itself requires a separate Node server.
 
 Choose **Maps & races → Edit gates**. Click terrain or floors to place a gate,
-then move or rotate selected gates with the gizmo or numeric controls. Gate 1 is
+then move or rotate selected gates with the gizmo or numeric controls. **Tilt**
+turns a gate out of the vertical plane; use −90° for a downward dive. Gate 1 is
 start/finish; arrows indicate the crossing direction. Use **Earlier/Later**,
 **Undo/Redo** and the start-position controls to arrange the race.
 
@@ -264,15 +265,33 @@ same-origin localhost; reload the game afterward. **Download JSON** and
 map folder to make them available in the game.
 
 Routes contain `id`, `name`, `version`, `spawn` and ordered `gates`. Gate position
-`p` uses absolute metres, `n` is a horizontal unit direction, and `width`/`height`
+`p` uses absolute metres, `n` is a 3D unit crossing direction, and `width`/`height`
 are metres. Spawn X/Z are world coordinates; spawn Y is ground clearance.
 Increase the version when editing JSON manually. The editor and project-saving
 endpoint detect changes and update versions. Multiplayer rooms retain their
 chosen route snapshot even if the underlying file is edited later.
 
-Three demo races ship: **Park Flow** (6 gates, including the pavilion passage),
-**Concrete Circuit** (10 gates), and **Pocket Circuit** (7 gates). Each includes
-elevated floating gates. Free flight hides the gates and their guide.
+Ten race routes ship. Lengths follow the saved guide, including the return to
+the start/finish gate:
+
+| Map | Route | Length | Gates | Main features |
+| --- | --- | --- | --- | --- |
+| Grove | Grove Grand Tour | 2.27 km | 28 | Pavilion passage, lakes and woodland perimeter |
+| Grove | Twin Lakes Flow | 1.74 km | 28 | Under the footbridge, over the jetty and through the boathouse |
+| Grove | Pavilion Peaks | 1.86 km | 27 | Covered arcade, upper pavilion gallery and a short outdoor dive |
+| Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
+| Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
+| Construction Yard | Cranes & Twin Shafts | 1.75 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |
+| Skyline | Canyon Express | 1.92 km | 29 | Fast street-grid loop and service alley |
+| Skyline | Garage to Skywalk | 1.30 km | 25 | Garage interior, 48 m skywalk and tower alleys |
+| Skyline | Rooftop Descent | 1.65 km | 24 | High-altitude climb and a dive onto the garage roof |
+| Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
+
+Floating gates can face horizontally as well as vertically. Dive gates require
+downward passage through their full opening; passing upward does not count.
+All courses have collision-checked frames, approaches and guide segments. Each
+completed saved guide is also checked against the ordered lap timer. Free flight
+hides gates and guides. Route versions separate records for changed courses.
 
 Races use rounded neon frames. The next gate and its approach line glow lime;
 other gates and guide legs are dim cyan. Scenery normally occludes them. The guide
@@ -288,6 +307,11 @@ editor reports it. Guide generation runs during authoring, not in flight.
 
 After map changes, rebuild collisions, run `node scripts/build-race-guides.mjs`
 and rebuild the showcase.
+
+`node scripts/author-races.mjs` rebuilds the nine long authored courses from their
+landmark-based designs, checks gate clearance and regenerates their guides. It
+leaves the Playground circuit and custom race files alone. This command replaces
+manual edits to those nine shipped route files; use a new race ID for custom work.
 
 For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and
 `map-viewer.bundle.js` together. Copy `web/assets/collisions/` to

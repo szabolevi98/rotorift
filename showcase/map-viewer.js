@@ -12,7 +12,7 @@ import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
-import { RouteDraft, normalFromYaw, yawFromNormal } from "../shared/race/editor.js";
+import { RouteDraft, normalFromYaw, normalFromAngles, yawFromNormal, tiltFromNormal } from "../shared/race/editor.js";
 import {createNeonGate,createRaceGuide} from '../web/game/race-course.js';
 import {generateRaceGuide} from '../web/game/route-guide-planner.js';
 import {PrebakedCollisions} from '../web/game/prebaked-collisions.js';
@@ -38,6 +38,7 @@ const SITE_VIEWS = {
   overview: ["Construction overview", [410,390,470], [0,15,0]],
   frames: ["Open concrete frames", [14,42,58], [-55,22,-35]],
   cranes: ["Tower cranes", [-122,81,30], [-75,63,-70]],
+  shaft: ["Tower A dive shaft", [-69,58,-35], [-69,7,-35]],
   machines: ["Construction vehicles", [-119,10,70], [-142,2,101]],
   pit: ["Foundations and excavation", [-123,31,135], [-178,-1,100]],
   storage: ["Materials and pipes", [132,14,219], [170,2,187]],
@@ -65,7 +66,7 @@ const CITY_VIEWS={
   avenue:['Avenue and crown tower',[60,9,250],[60,9,-120]],
   crown:['Crown tower and open podium',[112,96,-32],[0,112,-120]],
   podium:['Fly-through podium',[35,6,-58],[0,5,-120]],
-  skywalk:['High-level skywalk',[31,61,62],[0,49,0]],
+  skywalk:['High-level skywalk',[3,51,35],[0,49.8,0]],
   rooftops:['Water tanks and rooftop lines',[285,84,190],[240,54,240]],
   garage:['Open parking garage',[-53,29,186],[-120,10,120]],
   plaza:['Civic square and fountain',[65,48,178],[0,5,120]],
@@ -123,6 +124,7 @@ export async function startMapViewer(embeddedCatalog) {
       const field = (id,value) => { if(document.activeElement!==$(id))$(id).value=value; };
       for (const [index, axis] of ["x","y","z"].entries()) field("#gate-"+axis,Number(gate.p[index].toFixed(3)));
       field("#gate-yaw",Number(yawFromNormal(gate.n).toFixed(1)));
+      field("#gate-tilt",Number(tiltFromNormal(gate.n).toFixed(1)));
       field("#gate-width",gate.width);field("#gate-height",gate.height);
     }
     $("#undo").disabled = !draft.undoStack.length; $("#redo").disabled = !draft.redoStack.length;
@@ -222,14 +224,14 @@ export async function startMapViewer(embeddedCatalog) {
   transform.addEventListener("dragging-changed",event=>{dragging=event.value;controls.enabled=!event.value;if(event.value)draft.checkpoint();else if(draft&&!rebuilding)changed();});
   transform.addEventListener("objectChange",()=>{
     if(rebuilding||selected<0||!gateGroups[selected])return;
-    const object=gateGroups[selected];attempt(()=>{draft.setGate(selected,{p:object.position.toArray(),n:normalFromYaw(object.rotation.y*180/Math.PI)},false);updateFields();});
+    const object=gateGroups[selected];attempt(()=>{draft.setGate(selected,{p:object.position.toArray(),n:new THREE.Vector3(0,0,1).applyQuaternion(object.quaternion).normalize().toArray()},false);updateFields();});
   });
-  function transformMode(mode){transform.setMode(mode);transform.showX=mode==="translate";transform.showY=true;transform.showZ=mode==="translate";$("#translate").setAttribute("aria-pressed",String(mode==="translate"));$("#rotate").setAttribute("aria-pressed",String(mode==="rotate"));}
+  function transformMode(mode){transform.setMode(mode);transform.setSpace(mode==='rotate'?'local':'world');transform.showX=true;transform.showY=true;transform.showZ=mode==="translate";$("#translate").setAttribute("aria-pressed",String(mode==="translate"));$("#rotate").setAttribute("aria-pressed",String(mode==="rotate"));}
   $("#translate").onclick=()=>transformMode("translate");$("#rotate").onclick=()=>transformMode("rotate");
-  for(const id of ["x","y","z","yaw","width","height"])$("#gate-"+id).oninput=()=>attempt(()=>{
+  for(const id of ["x","y","z","yaw","tilt","width","height"])$("#gate-"+id).oninput=()=>attempt(()=>{
     if($("#gate-"+id).value==="")return;
     const gate=draft.route.gates[selected],value=Number($("#gate-"+id).value);if(!Number.isFinite(value))throw Error("Enter a valid number.");
-    const change=id==="yaw"?{n:normalFromYaw(value)}:["width","height"].includes(id)?{[id]:value}:{p:gate.p.map((v,i)=>i===["x","y","z"].indexOf(id)?value:v)};
+    const change=["yaw","tilt"].includes(id)?{n:normalFromAngles(id==='yaw'?value:yawFromNormal(gate.n),id==='tilt'?Math.max(-90,Math.min(90,value)):tiltFromNormal(gate.n))}:["width","height"].includes(id)?{[id]:value}:{p:gate.p.map((v,i)=>i===["x","y","z"].indexOf(id)?value:v)};
     draft.setGate(selected,change);changed();
   });
   $("#ground-gate").onclick=()=>attempt(()=>{const g=draft.route.gates[selected];draft.setGate(selected,{p:[g.p[0],environment.heightAt(g.p[0],g.p[2])+g.height/2+.08,g.p[2]]});changed();});

@@ -1,7 +1,12 @@
 import { validateRoute } from "./routes.js";
 import { validateMap } from "../physics/config.js";
-export const normalFromYaw = degrees => [Math.sin(degrees * Math.PI / 180), 0, Math.cos(degrees * Math.PI / 180)];
+export const normalFromAngles = (degrees,tilt=0) => {
+  const yaw=degrees*Math.PI/180,pitch=tilt*Math.PI/180;
+  return [Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch)];
+};
+export const normalFromYaw = degrees => normalFromAngles(degrees);
 export const yawFromNormal = normal => Math.atan2(normal[0], normal[2]) * 180 / Math.PI;
+export const tiltFromNormal = normal => Math.asin(Math.max(-1,Math.min(1,normal[1])))*180/Math.PI;
 
 export class RouteDraft {
   constructor(map, route) {

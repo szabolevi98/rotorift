@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
 import RAPIER from '@dimforge/rapier3d-compat';
+import * as THREE from 'three';
 import {loadCatalog} from '../server/catalog.js';
 import {findGuidePath} from '../shared/race/guide.js';
 import {validateRoute,resolveRoute} from '../shared/race/routes.js';
@@ -12,6 +13,7 @@ import {decodeCollisionData} from '../shared/world/collision-data.js';
 import {PrebakedCollisions} from '../web/game/prebaked-collisions.js';
 import {makeGuideClearance} from '../web/game/route-guide-planner.js';
 import {createNeonGate,createRaceGuide,gateFrameParts} from '../web/game/race-course.js';
+import {gateBasis,gateCrossing,newLap,advanceLap} from '../shared/race/gates.js';
 await RAPIER.init();
 const catalog=await loadCatalog();
 
@@ -49,9 +51,43 @@ test('saved demo neon guides clear baked scenery along every segment, including 
       for(const route of map.routes){
         assert.equal(route.guide.length,route.gates.length);
         assert.ok(Math.max(...route.gates.map(g=>g.p[1]))-Math.min(...route.gates.map(g=>g.p[1]))>1);
+        let length=0;
+        const lap=newLap();let clock=0;
+        const start=route.gates[0],before=start.p.map((v,i)=>v-start.n[i]*2);
+        advanceLap(lap,before,start.p,clock,clock+=100,route.gates);
+        assert.equal(lap.next,1,`${map.id}/${route.id}: start must trigger`);
+        for(const points of route.guide)for(let i=1;i<points.length;i++){
+          length+=Math.hypot(...points[i].map((v,j)=>v-points[i-1][j]));
+          advanceLap(lap,points[i-1],points[i],clock,clock+=100,route.gates);
+        }
+        assert.equal(lap.completed,1,`${map.id}/${route.id}: following the saved line must complete a lap`);
+        if(map.kind!=='playground'){
+          assert.ok(length>1250,`${map.id}/${route.id}: full-length course`);
+          assert.ok(route.gates.length>=20);
+          for(const [i,g]of route.gates.entries()){
+            const {right,up}=gateBasis(g.n),q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...right),new THREE.Vector3(...up),new THREE.Vector3(...g.n)));
+            const hit=world.castShape({x:g.p[0]-g.n[0]*2,y:g.p[1]-g.n[1]*2,z:g.p[2]-g.n[2]*2},q,
+              {x:g.n[0]*4,y:g.n[1]*4,z:g.n[2]*4},new RAPIER.Cuboid(g.width/2+.07,g.height/2+.07,.07),0,1,true);
+            assert.equal(hit,null,`${map.id}/${route.id} gate ${i+1}: entire frame and approach must clear scenery`);
+            assert.notEqual(gateCrossing(g.p.map((v,j)=>v-g.n[j]),g.p.map((v,j)=>v+g.n[j]),g),null);
+          }
+        }
         for(const [leg,points]of route.guide.entries())for(let i=1;i<points.length;i++)assert.ok(clear(points[i-1],points[i]),`${map.id} leg ${leg+1}, segment ${i}`);
       }
     }finally{collision.dispose();world.free();}
+  }
+});
+test('construction dive courses descend the open shafts and horizontal gate meshes match their crossing plane',()=>{
+  const map=catalog.maps.find(m=>m.id==='betonudvar');
+  for(const route of map.routes.slice(1)){
+    const dives=route.gates.filter(g=>g.n[1]<-.99);assert.ok(dives.length>=3);
+    for(const gate of dives){
+      const group=createNeonGate(gate,0);
+      const forward=new THREE.Vector3(0,0,1).applyQuaternion(group.quaternion);
+      assert.ok(forward.distanceTo(new THREE.Vector3(...gate.n))<1e-6);
+      assert.ok(Math.abs(gateCrossing(gate.p.map((v,i)=>v+(i===1?3:0)),gate.p.map((v,i)=>v-(i===1?3:0)),gate)-.5)<1e-9);
+      group.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
+    }
   }
 });
 
