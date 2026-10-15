@@ -12,7 +12,8 @@ export class PrebakedCollisions {
     try {
       for (const r of records) {
         let desc;
-        if (r.kind === "mesh") desc = RAPIER.ColliderDesc.trimesh(r.vertices, r.indices, RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES);
+        if(r.kind==='heightfield')desc=RAPIER.ColliderDesc.heightfield(r.nrows,r.ncols,r.heights,{x:r.scale[0],y:r.scale[1],z:r.scale[2]},RAPIER.HeightFieldFlags.FIX_INTERNAL_EDGES).setTranslation(...r.p);
+        else if (r.kind === "mesh") desc = RAPIER.ColliderDesc.trimesh(r.vertices, r.indices, RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES);
         else {
           desc = r.kind === "cuboid" ? RAPIER.ColliderDesc.cuboid(...r.halfExtents) : r.kind === "ball" ? RAPIER.ColliderDesc.ball(r.radius) : RAPIER.ColliderDesc[r.kind](r.halfHeight,r.radius);
           desc.setTranslation(...r.p).setRotation({x:r.q[0],y:r.q[1],z:r.q[2],w:r.q[3]});

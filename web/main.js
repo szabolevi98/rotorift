@@ -1410,9 +1410,13 @@ function frame(now) {
   pauseMenu?.update();
   fpvOsd.update(playing && !paused && !flight.chase, flight?.cameraRig.quaternion);
   updateFps(now, playing && (!paused || onlineLive));
-  if(diagnosticSample)diagnostics.record(diagnosticSample,performance.now()-frameStart,{
-    map:flight.map.id,drone:flight.config.id,view:flight.view,position:[...flight.physics.pose.p],
-  });
+  if(diagnosticSample){
+    const pose=flight.physics.pose;
+    diagnostics.record(diagnosticSample,performance.now()-frameStart,{
+      map:flight.map.id,drone:flight.config.id,view:flight.view,position:[...pose.p],
+      velocity:[...pose.v],rotation:{...pose.q},angularVelocity:[...pose.w],totalColliders:flight.world.colliders.len(),
+    });
+  }
   requestAnimationFrame(frame);
 }
 function bindUI() {

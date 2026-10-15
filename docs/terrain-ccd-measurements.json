@@ -1,0 +1,144 @@
+{
+  "physicsHz": 240,
+  "drone": "rift-65",
+  "ccd": true,
+  "controlledVelocity": [
+    0.3,
+    3.5,
+    7.5
+  ],
+  "results": [
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        1,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 7.15,
+      "p95StepMs": 8.651
+    },
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        2,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 6.326,
+      "p95StepMs": 7.489
+    },
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        3.5255,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 6.338,
+      "p95StepMs": 8.607
+    },
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        3.8755,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 4.66,
+      "p95StepMs": 4.871
+    },
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        4.239,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 4.634,
+      "p95StepMs": 5.567
+    },
+    {
+      "representation": "mesh",
+      "position": [
+        43.698,
+        4.614,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.195,
+      "p95StepMs": 0.313
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        1,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.529,
+      "p95StepMs": 0.75
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        2,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.275,
+      "p95StepMs": 0.367
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        3.5255,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.224,
+      "p95StepMs": 0.356
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        3.8755,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.212,
+      "p95StepMs": 0.286
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        4.239,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.222,
+      "p95StepMs": 0.253
+    },
+    {
+      "representation": "heightfield",
+      "position": [
+        43.698,
+        4.614,
+        22.115
+      ],
+      "activeColliders": 9,
+      "medianStepMs": 0.178,
+      "p95StepMs": 0.261
+    }
+  ]
+}

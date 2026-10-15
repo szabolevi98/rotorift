@@ -2,6 +2,10 @@ const MAGIC = 0x31435252; // RRC1, little endian
 export function encodeCollisionData(mapId, records) {
   let payloadSize = 0;
   const header = { format: 1, mapId, records: records.map(record => {
+    if(record.kind==='heightfield'){
+      const {heights,...metadata}=record,entry={...metadata,offset:payloadSize,heights:heights.length};
+      payloadSize+=heights.byteLength;return entry;
+    }
     if (record.kind !== "mesh") return record;
     const { vertices, indices, ...metadata } = record;
     const entry = { ...metadata, offset: payloadSize, vertices: vertices.length, indices: indices.length };
@@ -12,8 +16,8 @@ export function encodeCollisionData(mapId, records) {
   const bytes = new Uint8Array(start + payloadSize), view = new DataView(bytes.buffer);
   view.setUint32(0, MAGIC, true); view.setUint32(4, json.length, true); bytes.set(json, 8);
   let offset = start;
-  for (const record of records) if (record.kind === "mesh") {
-    for (const array of [record.vertices, record.indices]) {
+  for (const record of records) if (record.kind === "mesh"||record.kind==='heightfield') {
+    for (const array of record.kind==='heightfield'?[record.heights]:[record.vertices, record.indices]) {
       bytes.set(new Uint8Array(array.buffer, array.byteOffset, array.byteLength), offset); offset += array.byteLength;
     }
   }
@@ -31,6 +35,15 @@ export function decodeCollisionData(buffer, mapId) {
   return header.records.map(record => {
     if (!vector(record.min) || !vector(record.max) || record.min.some((v,i) => v > record.max[i]) ||
         !Number.isFinite(record.friction) || record.friction < 0) throw Error("Invalid collision bounds");
+    if(record.kind==='heightfield'){
+      if(!vector(record.p)||!vector(record.scale)||!record.scale.every(v=>v>0)||
+        ![record.nrows,record.ncols].every(v=>Number.isInteger(v)&&v>0&&v<=128)||
+        record.heights!==(record.nrows+1)*(record.ncols+1)||!Number.isSafeInteger(record.offset)||record.offset<0||record.offset%4||
+        start+record.offset+record.heights*4>buffer.byteLength)throw Error('Invalid collision heightfield');
+      const heights=new Float32Array(buffer,start+record.offset,record.heights);
+      if(!heights.every(Number.isFinite))throw Error('Invalid collision heights');
+      return {...record,heights};
+    }
     if (record.kind === "mesh") {
       if (![record.offset,record.vertices,record.indices].every(v=>Number.isSafeInteger(v)&&v>=0) || record.offset % 4 ||
           !record.vertices || record.vertices % 3 || !record.indices || record.indices % 3 ||

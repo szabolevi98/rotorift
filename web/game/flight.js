@@ -178,12 +178,15 @@ export class Flight {
     const worldStart = metrics ? performance.now() : 0;
     this.environment.update(this.physics.pose.p, this.physics.pose.v);
     const physicsStart = metrics ? performance.now() : 0;
+    if(metrics)metrics.maxPhysicsStepMs=0;
     const steps = advanceFixedSteps(this, dt, () => {
+      const stepStart=metrics?performance.now():0;
       this.previous = this.physics.pose;
       this.remoteCollisions.step(PHYSICS_DT);
       this.physics.step(input);
       this.current = this.physics.pose;
       update(this.previous, this.current, PHYSICS_DT);
+      if(metrics)metrics.maxPhysicsStepMs=Math.max(metrics.maxPhysicsStepMs,performance.now()-stepStart);
     });
     if (metrics) {
       metrics.worldMs = physicsStart - worldStart;

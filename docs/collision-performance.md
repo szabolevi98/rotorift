@@ -107,3 +107,42 @@ A geometriai tesztek ellenőrzik a nyitott épületszinteket/födémaknákat, os
 csövek belsejét, a központi parkátjárót, talajmagasságot, pályán túli talajt,
 30%-os gázzal felszállást és 60 m/s-os oszlopütközést CCD-vel. A sebességfüggő
 aktiválás irányváltáskor, mozdulatlan helyzetből is ellenőrzött.
+
+## Rift 65: terep miatti CCD-tüske (2026-10-15)
+
+A beküldött diagnosztika a ligetben, a `[43.698, 3.876, 22.115]` környékén
+133 ms-os képkockát mért: ebből 122 ms a fizika, 24 bepótolt 240 Hz-es lépéssel.
+A GPU közben 6–10 ms körül maradt. A rögzítés már az akadás közben kezdődik,
+így egy korábbi háttérterhelés szerepe ebből nem állapítható meg.
+
+Az akadást külső terhelés nélkül is elő lehetett idézni. A 32 m-es, lejtős
+talajháló AABB-ja olyan üres légteret is lefedett, amely több méterrel a helyi
+felszín felett van. A Rapier 0.14 folyamatos ütközésvizsgálata (CCD) ebben
+költséges háromszögháló-vizsgálatot végzett. A háló ideiglenes kikapcsolásával
+a tüske megszűnt; a védőkeretek és propellerek külön kikapcsolása nem oldotta meg.
+
+A sütő a teljes, szabályos rácsokat most natív `heightfield` alakzatként menti.
+A magasságok, a háromszögátlók, a fizikai felszín és az ütközési elemszám
+megmaradnak. Lyukas, szabálytalan, többszintes vagy eltérő átlójú hálót nem
+alakítunk át. Az útburkolatok és az összetett geometria szükség szerint
+háromszögháló marad; az analitikus alkatrészek változatlanok.
+
+Az összehasonlítást a `node scripts/measure-terrain-ccd.mjs` futtatja:
+ugyanaz a rács, azonos Rift 65, bekapcsolt CCD, 9 aktív statikus elem,
+rögzített pozíció/forgás és vezérelt `[0.3,3.5,7.5]` m/s sebesség. Az utóbbi
+kontrollált reprodukciós bemenet; a régi napló nem tartalmazta a pontos forgást
+vagy sebességet. A mentett helyi mérés: `docs/terrain-ccd-measurements.json`.
+
+| Magasság a mérőpontban | Háló: medián/lépés | Heightfield: medián/lépés |
+| --- | ---: | ---: |
+| 1 m | 7,150 ms | 0,529 ms |
+| 2 m | 6,326 ms | 0,275 ms |
+| 3,526 m | 6,338 ms | 0,224 ms |
+| 3,876 m | 4,660 ms | 0,212 ms |
+| 4,239 m | 4,634 ms | 0,222 ms |
+
+Ez a fizika részideje, nem általános FPS-ígéret. A 240 Hz-es lépésköz és
+a monitorfrissítéstől független időzítés megmarad. A böngészős mérőoldal
+`terrain-hotspot` és `terrain-low` pozíciói is ezt a környéket vizsgálják.
+A diagnosztika most már sebességet, forgást, szögsebességet és a legdrágább
+egyetlen fizikai lépést is exportálja a későbbi akadások elkülönítéséhez.

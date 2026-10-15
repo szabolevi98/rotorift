@@ -24,6 +24,38 @@ export async function collisionSourceHash() {
   return hash.digest("hex");
 }
 
+// Preserve the terrain triangles, but store complete regular grids as native
+// heightfields. CCD can query nearby grid cells instead of scanning a mesh BVH
+// whose AABB includes metres of empty air above the local ground.
+export function meshToHeightfield(record){
+  if(record.kind!=='mesh'||record.indices.length<96)return record;
+  const xs=[...new Set(Array.from(record.vertices).filter((_,i)=>i%3===0))].sort((a,b)=>a-b);
+  const zs=[...new Set(Array.from(record.vertices).filter((_,i)=>i%3===2))].sort((a,b)=>a-b);
+  const nx=xs.length,nz=zs.length;
+  if(nx<2||nz<2||nx>129||nz>129||record.indices.length!==(nx-1)*(nz-1)*6)return record;
+  const regular=axis=>axis.every((v,i)=>!i||Math.abs(v-axis[0]-i*(axis[1]-axis[0]))<.0001);
+  if(!regular(xs)||!regular(zs))return record;
+  const xi=new Map(xs.map((v,i)=>[v,i])),zi=new Map(zs.map((v,i)=>[v,i])),heights=new Float32Array(nx*nz).fill(NaN),grid=[];
+  for(let i=0;i<record.vertices.length;i+=3){
+    const x=xi.get(record.vertices[i]),z=zi.get(record.vertices[i+2]),at=x*nz+z,y=record.vertices[i+1];
+    if(Number.isFinite(heights[at])&&heights[at]!==y)return record;
+    heights[at]=y;grid.push([x,z]);
+  }
+  if(!heights.every(Number.isFinite))return record;
+  const triangles=new Set();
+  for(let i=0;i<record.indices.length;i+=3){
+    const p=Array.from(record.indices.subarray(i,i+3),index=>grid[index]);
+    const x=Math.min(...p.map(v=>v[0])),z=Math.min(...p.map(v=>v[1]));
+    if(p.some(v=>v[0]-x>1||v[1]-z>1))return record;
+    const corners=p.map(v=>v[0]-x+2*(v[1]-z)).sort().join('');
+    if(!['012','123'].includes(corners)||(p[1][0]-p[0][0])*(p[2][1]-p[0][1])-(p[1][1]-p[0][1])*(p[2][0]-p[0][0])>=0)return record;
+    const key=[x,z,corners].join(':');if(triangles.has(key))return record;triangles.add(key);
+  }
+  return {kind:'heightfield',nrows:nz-1,ncols:nx-1,heights,
+    scale:[xs.at(-1)-xs[0],1,zs.at(-1)-zs[0]],p:[(xs[0]+xs.at(-1))/2,0,(zs[0]+zs.at(-1))/2],
+    min:record.min,max:record.max,friction:record.friction};
+}
+
 export async function bakeCollisionRecords(map) {
   const descriptors = new Map(), live = new Map(); let nextId = 0;
   // Collect descriptors from the same procedural builders without constructing
@@ -94,7 +126,7 @@ export async function buildCollisions() {
   const sourceHash = await collisionSourceHash(), manifest = {};
   for (const id of ["liget","betonudvar","jatszoter","skyline"]) {
     const map = JSON.parse(await readFile(new URL(`../data/maps/${id}.json`,import.meta.url)));
-    const records = await bakeCollisionRecords(map), bytes = encodeCollisionData(id,records), compressed = gzipSync(bytes,{level:9});
+    const records = (await bakeCollisionRecords(map)).map(record=>meshToHeightfield(record)), bytes = encodeCollisionData(id,records), compressed = gzipSync(bytes,{level:9});
     const hash=createHash("sha256").update(compressed).digest("hex").slice(0,16), filename=`${id}-${hash}.rrc`;
     await writeFile(new URL(filename,dir),compressed);
     manifest[id]={url:`/assets/collisions/${filename}`,mapVersion:map.version,sourceHash,records:records.length,rawBytes:bytes.length,bytes:compressed.length};
