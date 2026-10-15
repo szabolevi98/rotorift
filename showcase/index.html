@@ -60057,39 +60057,34 @@ function createRiftX5() {
   return { root, assemblies, propellers, batteryParts, actionParts, materials, meshes, triangles:Math.round(triangles), setExplode, setWireframe, setColor };
 }
 
-// One atlas/material serves all four printed faces of the small pouch packs.
-// Side printing stays visible while the battery is inside its frame cradle.
+// A compact print on the two broad pouch faces; the narrow sides stay bare.
 function addWhoopBatteryPrint(battery,{model,capacity,width,height,centerY,radius,length}) {
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
-  const ctx=canvas.getContext('2d');
-  ctx.fillStyle='#e9eae3';ctx.fillRect(0,0,512,512);
-  ctx.fillStyle='#ff6648';ctx.fillRect(12,16,232,90);
-  ctx.fillStyle='#17262a';ctx.font='bold 36px Arial';ctx.fillText(`R / ${model}`,30,76);
-  ctx.font='bold 72px Arial';ctx.fillText('1S',30,202);
-  ctx.font='bold 34px Arial';ctx.fillText(`${capacity} mAh`,28,266);
-  ctx.font='bold 22px Arial';ctx.fillText('ROTORIFT',30,332);
-  ctx.font='20px Arial';ctx.fillText('3.8 V · LiHV',30,372);
-  ctx.fillStyle='#ff6648';ctx.fillRect(16,422,224,7);
-  ctx.fillStyle='#17262a';ctx.font='16px Arial';ctx.fillText('SINGLE CELL',30,468);
-  // Compact, horizontal side panel occupies the upper-right atlas quarter.
-  ctx.fillStyle='#ff6648';ctx.fillRect(256,0,256,128);
-  ctx.fillStyle='#17262a';ctx.font='bold 31px Arial';ctx.fillText(`1S · ${capacity} mAh`,270,53);
-  ctx.font='bold 20px Arial';ctx.fillText('ROTORIFT / LiHV',270,97);
+  const printWidth=width-2*radius-.25,printLength=Math.min(length,printWidth*3.4);
+  const canvas=document.createElement('canvas');
+  // Match the physical label aspect so the lettering keeps its proportions.
+  canvas.width=1024;canvas.height=Math.round(canvas.width*printWidth/printLength);
+  const ctx=canvas.getContext('2d'),h=canvas.height;
+  ctx.fillStyle='#e9eae3';ctx.fillRect(0,0,canvas.width,h);
+  ctx.fillStyle='#ff6648';ctx.fillRect(12,12,188,h-24);
+  ctx.fillStyle='#17262a';ctx.font='bold 68px Arial';ctx.fillText('R',53,h*.41);ctx.fillText(String(model),53,h*.77);
+  ctx.font='bold 28px Arial';ctx.fillText('LiHV POWER',242,h*.17);
+  ctx.font='bold 128px Arial';ctx.fillText('1S',236,h*.59);
+  ctx.font='bold 92px Arial';ctx.fillText(`${capacity} mAh`,454,h*.59);
+  ctx.font='bold 37px Arial';ctx.fillText('ROTORIFT',242,h*.83);
+  ctx.font='34px Arial';ctx.fillText('3.8 V · LiHV',708,h*.83);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
   const material=new THREE.MeshStandardMaterial({map:texture,roughness:.65});
-  function panel(name,w,h,x,y,rx,ry,side=false) {
-    const geometry=new THREE.PlaneGeometry(w,h),uv=geometry.attributes.uv;
-    for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*.5+(side?.5:0),side?.75+uv.getY(i)*.25:uv.getY(i));
-    const print=new THREE.Mesh(geometry,material);print.name=`Battery_label_print_${name}`;
-    print.position.set(x,y,0);print.rotation.set(rx,ry,0);print.receiveShadow=true;battery.add(print);
+  for(const side of [-1,1]) {
+    const geometry=new THREE.PlaneGeometry(printWidth,printLength),uv=geometry.attributes.uv;
+    // The print runs along the pack, rather than across its narrow width.
+    for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getY(i),1-uv.getX(i));
+    const print=new THREE.Mesh(geometry,material);
+    print.name=`Battery_label_print_${side<0?'bottom':'top'}`;
+    print.position.set(0,centerY+side*(height/2+.07),0);print.rotation.x=-side*Math.PI/2;
+    print.receiveShadow=true;battery.add(print);
   }
-  // Keep the paper on the flat faces, clear of the rounded pouch shoulders.
-  panel('top',width-2*radius-.25,length,0,centerY+height/2+.07,-Math.PI/2,0);
-  panel('bottom',width-2*radius-.25,length,0,centerY-height/2-.07,Math.PI/2,0);
-  for(const side of [-1,1])panel(side<0?'left':'right',length,height-2*radius-.25,side*(width/2+.07),centerY,0,side*Math.PI/2,true);
   return material;
 }
-
 // Saját Air65-jellegű vizuális modell. Milliméterben épül, előre: -Z.
 function createRift65() {
   const root = new THREE.Group(); root.name = 'Rotorift_Rift_65'; root.scale.setScalar(.001);
