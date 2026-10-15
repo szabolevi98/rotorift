@@ -71,3 +71,53 @@ test('X35 omni antenna is separate from both XT30 halves and has a plain black r
   assert.equal(m.root.getObjectByName('Compact_omni_radome').material,m.materials.black);
   assert.ok(m.root.getObjectByName('VTX_antenna_rear_shelf'));
 });
+
+test('X35 camera power, ground and video end inside solder fillets on exposed FC pads',()=>{
+  const m=model(),pcb=new THREE.Box3().setFromObject(m.root.getObjectByName('X35_35A_AIO_PCB'));
+  for(const name of ['5V','GND','VIDEO']){
+    const pad=new THREE.Box3().setFromObject(m.root.getObjectByName('Camera_'+name+'_solder_pad'));
+    const fillet=new THREE.Box3().setFromObject(m.root.getObjectByName('Camera_'+name+'_solder_fillet'));
+    const core=m.root.getObjectByName('FPV_camera_'+name+'_exposed_core');
+    assert.ok(Math.abs(pad.min.y-pcb.max.y)<1e-5,'pad must sit on the PCB surface');
+    assert.ok(pad.min.x>pcb.min.x&&pad.max.x<pcb.max.x&&pad.min.z>pcb.min.z&&pad.max.z<pcb.max.z);
+    assert.ok(pad.intersectsBox(fillet),'solder must touch the gold pad');
+    assert.ok(fillet.containsPoint(core.localToWorld(core.geometry.parameters.path.getPoint(1))),'conductor must terminate inside the solder');
+    const insulation=m.root.getObjectByName('FPV_camera_'+name+'_wire');
+    assert.ok(insulation.geometry.parameters.path.getPoint(1).distanceTo(core.geometry.parameters.path.getPoint(0))<1e-6);
+    const ray=new THREE.Raycaster();
+    for(const wire of [insulation,core]){
+      const points=wire.geometry.parameters.path.getPoints(60);
+      for(let i=1;i<points.length;i++){
+        const delta=points[i].clone().sub(points[i-1]);ray.set(points[i-1],delta.clone().normalize());ray.far=delta.length();
+        assert.equal(ray.intersectObject(m.root.getObjectByName('X35_35A_AIO_PCB')).length,0,'camera wiring cannot pass through the board');
+      }
+    }
+  }
+});
+
+test('X35 rounded 3.5-inch paddles clear the frame throughout their full swept volume',()=>{
+  const m=model(),parts=[];
+  for(const a of m.assemblies)if(!a.group.name.startsWith('Propeller_'))a.group.traverse(o=>{if(o.isMesh)parts.push(o);});
+  for(const {group:prop}of m.propellers){
+    const blade=prop.getObjectByName('Twisted_X35_blade_0'),p=blade.geometry.attributes.position;
+    let low=Infinity,high=-Infinity,maxChord=0;
+    for(let row=0;row<23;row++){
+      const points=Array.from({length:8},(_,j)=>new THREE.Vector3().fromBufferAttribute(p,row*8+j));
+      for(const point of points){low=Math.min(low,point.y+prop.position.y);high=Math.max(high,point.y+prop.position.y);}
+      maxChord=Math.max(maxChord,points[0].distanceTo(points[4]));
+    }
+    assert.ok(maxChord>11&&maxChord<12.1,'a 3520-style paddle must not look like a narrow needle');
+    const hub=new THREE.Box3().setFromObject(prop.getObjectByName('Propeller_T_mount_hub'));
+    assert.ok(Math.abs(hub.max.y-hub.min.y-4.7)<1e-5,'the T-mount hub has actual thickness');
+    for(const part of parts){
+      const vertices=part.geometry.attributes.position;
+      for(let i=0;i<vertices.count;i++){
+        const point=new THREE.Vector3().fromBufferAttribute(vertices,i).applyMatrix4(part.matrixWorld);
+        if(point.y<low-.3||point.y>high+.3)continue;
+        const radius=Math.hypot(point.x-prop.position.x,point.z-prop.position.z);
+        if(radius<6)continue; // Own shaft inside the drilled propeller hub.
+        assert.ok(radius>44.45+.5,part.name+' intrudes into the rotating blade envelope');
+      }
+    }
+  }
+});

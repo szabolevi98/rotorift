@@ -60824,26 +60824,30 @@ function createRiftX35({cameraMount='cage'}={}) {
   function assembly(name,delta){const group=new THREE.Group();group.name=name;root.add(group);assemblies.push({group,base:group.position.clone(),delta:new THREE.Vector3(...delta)});return group;}
   const frame=assembly('X35_01_Carbon_frame',[0,-12,0]),upper=assembly('X35_02_Upper_deck',[0,18,0]);
   const lowerShape=shape(36,104,7);lowerShape.holes.push(shape(16,22,4));
-  for(const x of [-15,15])for(const z of [-34,34])lowerShape.holes.push(hole(x,-z,1.6));
+  for(const x of [-15,15])for(const z of [-29,29])lowerShape.holes.push(hole(x,-z,1.6));
   plate(frame,lowerShape,0,4,'X35_bottom_plate');
   // An open nose bay leaves room for the tilted camera; the two side rails
   // retain the front standoff bolts without carbon crossing the camera body.
   const topShape=new THREE.Shape();
   topShape.moveTo(-13,49);topShape.lineTo(-13,30);topShape.quadraticCurveTo(-13,28,-11,28);topShape.lineTo(11,28);topShape.quadraticCurveTo(13,28,13,30);topShape.lineTo(13,49);topShape.quadraticCurveTo(19,49,19,43);topShape.lineTo(19,-43);topShape.quadraticCurveTo(19,-49,13,-49);topShape.lineTo(-13,-49);topShape.quadraticCurveTo(-19,-49,-19,-43);topShape.lineTo(-19,43);topShape.quadraticCurveTo(-19,49,-13,49);topShape.closePath();
-  for(const x of [-15,15])for(const z of [-34,34])topShape.holes.push(hole(x,-z,1.6));
+  for(const x of [-15,15])for(const z of [-29,29])topShape.holes.push(hole(x,-z,1.6));
   for(const x of [-15.8,15.8])for(const z of [-10,20]){const slot=shape(3.2,10,1);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key]){c[key].x+=x;c[key].y-=z;}topShape.holes.push(slot);}
   for(const z of [37]){const slot=shape(12,8,2);for(const c of slot.curves)for(const key of ['v0','v1','v2','v3'])if(c[key])c[key].y-=z;topShape.holes.push(slot);}
   plate(upper,topShape,24,2,'X35_slotted_top_plate');
-  for(const x of [-15,15])for(const z of [-34,34]){cyl(frame,2.2,21,materials.black,'Frame_standoff',x,12.5,z,8);screw(frame,x,-2.5,z);screw(upper,x,25.4,z);}
+  for(const x of [-15,15])for(const z of [-29,29]){cyl(frame,2.2,21,materials.black,'Frame_standoff',x,12.5,z,8);screw(frame,x,-2.5,z);screw(upper,x,25.4,z);}
   const motors=[[-56.568,-56.568,1],[56.568,-56.568,-1],[-56.568,56.568,-1],[56.568,56.568,1]];
   const motorSet=assembly('X35_03_Brushless_motors',[0,8,0]),electronic=assembly('X35_04_Electronics',[0,12,0]);
   function bladeGeometry(direction){
     const vertices=[],indices=[],rows=22,sides=8;
-    for(let i=0;i<=rows;i++){const t=i/rows,r=4.8+(44.45-4.8)*t,a=direction*.23*t*t,chord=(3+5*Math.sin(Math.PI*t))*Math.sqrt(1-t*t)+.3,pitch=direction*(.40-.20*t);
-      for(let j=0;j<sides;j++){const theta=j/sides*Math.PI*2,u=Math.cos(theta)*chord*.55,v=Math.sin(theta)*.45;
+    // Broad 3.5×2-style paddle with a rounded tip, tapered airfoil thickness
+    // and decreasing pitch angle along the radius, rather than a needle tip.
+    for(let i=0;i<=rows;i++){const t=i/rows,r=4.8+(44.45-4.8)*t,a=direction*.23*t*t;
+      const chord=Math.max(.14,(4+7.7*Math.pow(Math.sin(Math.PI*t),.85))*Math.min(1,Math.sqrt((1-t)/.10)));
+      const pitch=direction*Math.atan(50.8/(2*Math.PI*Math.max(r,14))),thickness=.65*(1-t)+.13;
+      for(let j=0;j<sides;j++){const theta=j/sides*Math.PI*2,u=Math.cos(theta)*chord*.5,v=Math.sin(theta)*thickness+chord*.035*Math.sin(theta)**2;
         vertices.push(r*Math.cos(a)-u*Math.cos(pitch)*Math.sin(a),v+u*Math.sin(pitch),r*Math.sin(a)+u*Math.cos(pitch)*Math.cos(a));}}
-    for(let i=0;i<rows;i++)for(let j=0;j<sides;j++){const a=i*sides+j,b=i*sides+(j+1)%sides;indices.push(a,b,a+sides,b,b+sides,a+sides);}
-    for(let j=1;j<sides-1;j++){indices.push(0,j+1,j);const end=rows*sides;indices.push(end,end+j,end+j+1);}
+    for(let i=0;i<rows;i++)for(let j=0;j<sides;j++){const a=i*sides+j,b=i*sides+(j+1)%sides;indices.push(a,a+sides,b,b,a+sides,b+sides);}
+    for(let j=1;j<sides-1;j++){indices.push(0,j,j+1);const end=rows*sides;indices.push(end,end+j+1,end+j);}
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return g;
   }
   const blades=new Map([[1,bladeGeometry(1)],[-1,bladeGeometry(-1)]]);
@@ -60873,8 +60877,10 @@ function createRiftX35({cameraMount='cage'}={}) {
     const lip=mesh(frame,rimGeometry,materials.tpu,'X35_motor_outboard_TPU_wrap',x,-1.75,z);lip.rotation.y=-Math.atan2(z,x);
     for(const dx of [-3,3])for(const dz of [-3,3])screw(frame,x+dx,-4.35,z+dz,1.05);
     const prop=new THREE.Group();prop.name='Propeller_'+index;prop.position.set(x,15,z);root.add(prop);assemblies.push({group:prop,base:prop.position.clone(),delta:new THREE.Vector3(0,16,0)});propellers.push({group:prop,direction});
-    cyl(prop,5.3,1.7,materials.prop,'Propeller_T_mount_hub',0,.4,0);
-    for(const boltX of [-4,4])screw(prop,boltX,1.65,0,1.25);
+    const hub=new THREE.Shape();hub.absarc(0,0,5.1,0,Math.PI*2,false);hub.holes.push(hole(0,0,1.05));
+    for(const boltX of [-2.5,2.5])hub.holes.push(hole(boltX,0,.85));
+    plate(prop,hub,-.75,4.7,'Propeller_T_mount_hub',materials.prop);
+    for(const boltX of [-2.5,2.5])screw(prop,boltX,1.95,0,.95);
     for(let blade=0;blade<3;blade++){const g=new THREE.Group();g.name='Blade_'+blade;g.rotation.y=blade*2*Math.PI/3;prop.add(g);mesh(g,blades.get(direction),materials.prop,'Twisted_X35_blade_'+blade);}
     for(let lead=0;lead<3;lead++){
       const offset=(lead-1)*1.25,padX=sx*9.3,padZ=sz*(3.5+lead*1.6);
@@ -60937,7 +60943,15 @@ function createRiftX35({cameraMount='cage'}={}) {
   cyl(camera,4.8,.55,materials.glass,'FPV_coated_lens',0,0,-12.3,32).rotation.x=Math.PI/2;
   cyl(camera,1.0,.1,materials.silver,'FPV_lens_glint',-1.4,1.5,-12.62,12).rotation.x=Math.PI/2;
   for(const side of [-1,1]){const bolt=cyl(cameraSet,2.2,2,materials.silver,'Camera_tilt_pivot',side*12,18,-42,12);bolt.rotation.z=Math.PI/2;}
-  wire(cameraSet,[[0,17,-33],[0,13,-25],[0,13,-10]],.65,materials.rubber,'FPV_camera_wire_harness');
+  box(camera,5.2,2.5,1.4,materials.rubber,'FPV_camera_rear_wire_socket',0,-1,9.5);
+  for(const [i,name,mat] of [[0,'5V',materials.red],[1,'GND',materials.rubber],[2,'VIDEO',materials.yellow]]){
+    const x=(i-1)*3,padZ=-11;
+    rounded(electronic,1.8,.18,2.8,.35,materials.gold,'Camera_'+name+'_solder_pad',x,11.19,padZ);
+    const fillet=mesh(electronic,new THREE.SphereGeometry(1,10,6),materials.silver,'Camera_'+name+'_solder_fillet',x,11.42,-10.8);fillet.scale.set(.72,.32,.85);
+    const start=new THREE.Vector3((i-1)*1.25,-1,10).applyQuaternion(camera.quaternion).add(camera.position);
+    wire(cameraSet,[start.toArray(),[(i-1)*1.6,13.6,-29],[x,13,-20],[x,12.5,-15.8],[x,11.95,-12.7]],.28,mat,'FPV_camera_'+name+'_wire');
+    wire(cameraSet,[[x,11.95,-12.7],[x,11.8,-12.1],[x,11.5,-10.8]],.13,materials.silver,'FPV_camera_'+name+'_exposed_core');
+  }
   const battery=assembly('X35_06_4S_battery',[0,23,0]);batteryParts.push(battery);
   softBox(battery,29,29,53,2.4,materials.battery,'4S_650mAh_pack',0,42.5,4);
   for(const z of [-23,31])softBox(battery,29,29,2,2.4,materials.rubber,'Battery_heatshrink_endcap',0,42.5,z);

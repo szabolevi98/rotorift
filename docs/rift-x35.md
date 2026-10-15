@@ -19,7 +19,7 @@ catalog/configuration path.
 | 50–25 km/h coast distance | 16.30 m |
 
 The source is `showcase/freestyle35.js`; the corresponding game asset is
-`web/assets/models/rotorift-rift-x35.glb`. It contains approximately 34k triangles.
+`web/assets/models/rotorift-rift-x35.glb`. It contains approximately 38k triangles.
 The battery follows the C3 pack design, with rounded shrink-protected ends,
 cell seams, top and rear labels, and two straps with side buckles through deck
 slots. Motor TPU skids cover the underside with screw access holes and an
@@ -30,6 +30,20 @@ entries, and a balance connector resting on the power leads, secured with a
 thin black band and a small cushion. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
 the propeller plane. Motor wiring attaches beneath the AIO PCB and clears carbon.
+
+The camera now has three separate insulated leads (5V, ground and video), a rear
+camera socket, short exposed conductor tips and silver solder fillets on three
+gold pads at the front edge of the AIO. The pads sit on the actual PCB surface;
+the wires clear the PCB and land inside the fillets.
+
+The 88.9 mm props use broader, rounded paddle blades with tapered airfoil
+thickness and a decreasing local pitch angle. Shape references are the
+[HQProp T3.5×2×3 manufacturer photos and hub dimensions](https://www.hqprop.com/hqprop-t35x2x3grey-2cw2ccw-poly-carbonate-p0316.html)
+and the [Gemfan 3520 manufacturer specifications](https://www.gemfanhobby.com/3520-hurricane-pc-3-blade-t-mount.html).
+The own-design blades reach approximately 11.7 mm chord, with a 4.7 mm thick
+drilled T-mount hub. Frame standoffs and their plate holes move from Z ±34 mm
+to ±29 mm, increasing the small clearance beside the swept rotor discs.
+Motor positions, prop diameter and flight configuration are preserved.
 
 Motor bells have a 17.9 mm outside diameter and a shorter 8.2 mm wall, with a
 4 mm stator and a two-bolt T-mount propeller hub. The skids retain bolt access
