@@ -13,6 +13,7 @@ import { gateCrossing } from "../shared/race/gates.js";
 import { buildPark } from "../web/game/park.js";
 import { buildConstruction } from "../web/game/construction.js";
 import { buildPlayground } from "../web/game/playground.js";
+import { buildCity } from "../web/game/city.js";
 const catalog = await loadCatalog();
 await RAPIER.init();
 
@@ -55,10 +56,10 @@ test("project saving requires same-origin loopback and decodes split UTF-8", asy
   await assert.rejects(()=>readRouteBody({async *[Symbol.asyncIterator](){yield Buffer.alloc(256*1024+1);}}));
 });
 
-test("all three demo races have clear gate apertures and the correct flying direction", () => {
+test("all demo races have clear gate apertures and the correct flying direction", () => {
   for(const map of catalog.maps) {
     const world=new RAPIER.World({x:0,y:-9.81,z:0}),scene=new THREE.Scene();
-    const environment=(map.kind==="playground"?buildPlayground:map.kind==="park"?buildPark:buildConstruction)(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
+    const environment=(map.kind==="city"?buildCity:map.kind==="playground"?buildPlayground:map.kind==="park"?buildPark:buildConstruction)(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
     try {
       for(let i=0;i<map.gates.length;i++) {
         const gate=map.gates[i],previous=map.gates[(i+map.gates.length-1)%map.gates.length];

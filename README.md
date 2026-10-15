@@ -72,6 +72,12 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
   Külön, fokozatosan egyszerűsödő távoli domborzat tölti ki a horizontot; a közeli
   objektumok és ütközések ettől függetlenül töltődnek be. A látótávolság 12 km.
   Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
+- Skyline: 600 × 600 méteres városrész alacsonyabb téglaházakkal, lépcsőzetes
+  felhőkarcolókkal és egy 244 méterig nyúló központi toronnyal. A torony alatti
+  nyitott csarnok, az emeleti összekötő, az öt szintes parkolóház és a sikátorok
+  átrepülhetők. Tetőkön víztartályok, gépészeti berendezések és tűzlépcsők;
+  az utcákon álló taxik, furgonok, busz és központi szökőkutas tér található.
+  Egyelőre szabad repülésre készül; versenyútvonal a pályaszerkesztőben adható hozzá.
 - Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.
 - Beállítások → FPV kamera: külön kapcsolható, mentett pontozott műhorizont
   és analóg videóeffekt zajjal, színelmosódással, rövid sorcsúszásokkal. FPV nézetben

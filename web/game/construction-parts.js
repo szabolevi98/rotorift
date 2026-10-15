@@ -26,7 +26,7 @@ export function constructionTexture(kind) {
   return texture;
 }
 
-export function createConstructionParts(scene, world, RAPIER) {
+export function createConstructionParts(scene, world, RAPIER, { batchSize = 96 } = {}) {
   const root = new THREE.Group(); root.name = "Betonudvar_construction_site"; scene.add(root);
   const palette = {
     concrete: new THREE.MeshStandardMaterial({ color: 0xb4b0a4, roughness: 0.95, map: constructionTexture("concrete") }),
@@ -85,7 +85,7 @@ export function createConstructionParts(scene, world, RAPIER) {
     const matrix = new THREE.Matrix4().compose(new THREE.Vector3(...position), quaternion(rotation), new THREE.Vector3(...size));
     matrix.premultiply(anchor);
     const p = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3(); matrix.decompose(p, q, scale);
-    const key = `${shape}:${color}:${Math.floor(p.x / 96)}:${Math.floor(p.z / 96)}`;
+    const key = `${shape}:${color}:${Math.floor(p.x / batchSize)}:${Math.floor(p.z / batchSize)}`;
     if (!batches.has(key)) batches.set(key, { shape, color, matrices: [] });
     batches.get(key).matrices.push(matrix);
     if (solid && world) {

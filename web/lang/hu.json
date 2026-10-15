@@ -363,5 +363,6 @@
   "map.audience.micro": "Mikrodrónoknak",
   "map.audience.standard": "Közepes és nagy drónoknak",
   "picker.search": "Keresés…",
-  "picker.empty": "Nincs találat"
+  "picker.empty": "Nincs találat",
+  "map.skyline": "Skyline"
 }

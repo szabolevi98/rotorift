@@ -4,6 +4,7 @@ const legacy = {
   liget: { code: 'grove', order: 0, droneClass: 'standard' },
   betonudvar: { code: 'construction-yard', order: 1, droneClass: 'standard' },
   jatszoter: { code: 'playground', order: 2, droneClass: 'micro' },
+  skyline: { code: 'skyline', order: 3, droneClass: 'standard' },
 };
 export function mapPresentation(value) {
   const map = typeof value === 'string' ? { id: value } : value;

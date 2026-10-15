@@ -97,6 +97,20 @@ async function fixture(t, mapOverrides = {}) {
   return { client, catalog, db };
 }
 
+test('Skyline supports shared freestyle rooms with its own district spawn and stable map ID',async t=>{
+  const skyline=(await loadCatalog()).maps.find(m=>m.id==='skyline');
+  const {client}=await fixture(t,skyline),host=await client('City host'),guest=await client('City guest');
+  host.send('create',{mapId:'skyline',droneId:'rift-x35',mode:'acro',kind:'free'});
+  const room=(await host.next(m=>m.type==='room')).room;
+  assert.equal(room.mapId,'skyline');assert.equal(room.kind,'free');assert.deepEqual(room.players[0].p,skyline.spawn);
+  guest.send('join',{code:room.code});
+  const joined=(await guest.next(m=>m.type==='room'&&m.room.players.length===2)).room;
+  assert.equal(joined.mapId,'skyline');
+  const guestSpawn=joined.players.find(p=>p.id===guest.id).p;
+  assert.deepEqual(guestSpawn.slice(1),skyline.spawn.slice(1));
+  assert.ok(guestSpawn[0]>skyline.spawn[0]&&guestSpawn[0]<skyline.spawn[0]+5,'pilots get separate slots on the same clear avenue');
+});
+
 test("X35 multiplayer rooms pin the new aircraft and accept its own config hash and motor speeds",async t=>{
   const {client,catalog}=await fixture(t),host=await client('X35 host'),guest=await client('X35 guest');
   const config=catalog.drones.find(d=>d.id==='rift-x35');

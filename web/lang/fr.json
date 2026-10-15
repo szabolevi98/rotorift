@@ -363,5 +363,6 @@
   "map.audience.micro": "Pour les microdrones",
   "map.audience.standard": "Pour les drones moyens et grands",
   "picker.search": "Rechercher…",
-  "picker.empty": "Aucun résultat"
+  "picker.empty": "Aucun résultat",
+  "map.skyline": "Skyline"
 }

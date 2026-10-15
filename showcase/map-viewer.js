@@ -55,7 +55,18 @@ const PLAYGROUND_VIEWS={
  hut:['Playhouse and picnic table',[23,4,23],[15,1,16]],
  tunnel:['Crawl-through timber tunnel',[-5,1.2,19],[-5,.7,13]],
 };
-const viewsFor=map=>map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
+const CITY_VIEWS={
+  overview:['Skyline district',[455,390,480],[0,60,0]],
+  avenue:['Avenue and crown tower',[60,9,250],[60,9,-120]],
+  crown:['Crown tower and open podium',[112,96,-32],[0,112,-120]],
+  podium:['Fly-through podium',[35,6,-58],[0,5,-120]],
+  skywalk:['High-level skywalk',[31,61,62],[0,49,0]],
+  rooftops:['Water tanks and rooftop lines',[285,84,190],[240,54,240]],
+  garage:['Open parking garage',[-53,29,186],[-120,10,120]],
+  plaza:['Civic square and fountain',[65,48,178],[0,5,120]],
+  alleys:['Brick alleys and fire escapes',[240,13,300],[240,16,220]],
+};
+const viewsFor=map=>map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");

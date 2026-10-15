@@ -5,6 +5,8 @@ export const MAP_WEATHER = {
     skyLight: 0xe6f2ff, groundLight: 0x7c8763, hemisphereIntensity: 2.4, environmentIntensity: 0.65, shadowRadius: 1 },
   construction: { horizon: 0xb5bcc4, zenith: 0x667381, fogDensity: 0.00055, sunIntensity: 0.65, sunColor: 0xdde5ef,
     skyLight: 0xd5dfe9, groundLight: 0x887968, hemisphereIntensity: 3, environmentIntensity: 0.85, shadowRadius: 3 },
+  city: { horizon: 0xcbd7df, zenith: 0x5484b0, fogDensity: 0.00048, sunIntensity: 2.3, sunColor: 0xffeed6,
+    skyLight: 0xdce9f4, groundLight: 0x737979, hemisphereIntensity: 2.3, environmentIntensity: 0.65, shadowRadius: 1.5 },
 };
 
 const pixels = new Map();

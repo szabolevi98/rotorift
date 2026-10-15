@@ -3,6 +3,7 @@ import { buildPark } from "./park.js";
 import { parkSurfaceHeight } from "/shared/world/park-layout.js";
 import { buildConstruction } from "./construction.js";
 import { buildPlayground } from "./playground.js";
+import { buildCity } from "./city.js";
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
   const root = new THREE.Group();
   scene.add(root);
@@ -15,12 +16,13 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       );
     return materials.get(color);
   };
-  let park, construction, playground;
+  let park, construction, playground, city;
   const staticWorld = bakedCollisions ? null : world;
   if (map.kind === "park") park = buildPark(scene, staticWorld, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
   else if(map.kind==="playground")playground=buildPlayground(scene,staticWorld,RAPIER,map);
+  else if(map.kind==="city")city=buildCity(scene,staticWorld,RAPIER,map);
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
-  const environment=park??construction??playground;
+  const environment=park??construction??playground??city;
   const gateMeshes = [], gateGroups = [], gateColliders = [];
   let gatesEnabled = true;
   map.gates.forEach((gate, i) => {
@@ -112,6 +114,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       park?.dispose();
       construction?.dispose();
       playground?.dispose();
+      city?.dispose();
       bakedCollisions?.dispose();
       root.traverse((o) => {
         if (o.isMesh) {

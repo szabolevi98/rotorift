@@ -24,7 +24,7 @@ test("sunny and overcast skies are seamless reusable textures with distinct ligh
       for(let y=0;y<height;y+=7)for(let channel=0;channel<3;channel++)
         assert.ok(Math.abs(data[(y*width)*4+channel]-data[(y*width+width-1)*4+channel])<20,"sky wraps without a cubemap seam");
     }
-    for(const kind of ["park","construction"]) {
+    for(const kind of ["park","construction","city"]) {
       const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(100,16/9,.012,12000);
       const shadows=new ParkShadows(scene,camera,MAP_WEATHER[kind]);
       for(const light of shadows.csm.lights) {

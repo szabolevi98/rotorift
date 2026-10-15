@@ -4,12 +4,12 @@ import { readFile, stat } from "node:fs/promises";
 import { loadCatalog } from "../server/catalog.js";
 import { validateDrone, validateMap } from "../shared/physics/config.js";
 import { canRace } from "../shared/race/map-modes.js";
-test("catalog contains five valid drone models and three maps with explicit race availability", async () => {
+test("catalog contains five valid drone models and four maps with explicit race availability", async () => {
   const { drones, maps } = await loadCatalog();
   assert.equal(drones.length, 5);
-  assert.equal(maps.length, 3);
-  assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter']);
-  assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground']);
+  assert.equal(maps.length, 4);
+  assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter','skyline']);
+  assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground','skyline']);
   assert.equal(new Set(drones.map((d) => d.configHash)).size, 5);
   assert.deepEqual(drones.map(d=>d.id),["rift-65","rift-75","rift-c3","rift-x35","rift-x5"]);
   for (const c of drones) {
@@ -28,6 +28,7 @@ test("catalog contains five valid drone models and three maps with explicit race
   assert.equal(canRace(construction), true);
   assert.equal(construction.routes.length, 1);
   assert.ok(construction.gates.length >= 4);
+  assert.equal(canRace(maps.find(m=>m.id==='skyline')),false,'Skyline starts as a freestyle district');
   assert.throws(() => validateMap({ ...park, gates: [], racingEnabled: true }));
   const bad = structuredClone(maps[0]);
   bad.gates = [{ p: [0, 2, 0], n: [0, 0, 2], width: 4, height: 3 }];

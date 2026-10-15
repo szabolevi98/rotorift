@@ -20,7 +20,7 @@ function output(status){report.textContent=JSON.stringify({variant,physicsMode,o
 await RAPIER.init();const {maps,drones}=await(await fetch('/api/catalog')).json();
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 try {
-for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jatszoter']) {
+for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jatszoter','skyline']) {
  const map=maps.find(m=>m.id===id),world=new RAPIER.World({x:0,y:-9.81,z:0}),scene=new THREE.Scene();
  const atmosphere=createMapAtmosphere(renderer,scene,map.kind);
  const bakedCollisions=physicsMode==='prepared'?await loadPrebakedCollisions(RAPIER,world,map):null;
@@ -32,7 +32,11 @@ for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jat
  const shadows=variant==='none'?null:new ParkShadows(scene,camera,atmosphere.profile);
  if(original&&shadows)for(const light of shadows.csm.lights)light.shadow.autoUpdate=true;
  if(!shadows){const sun=new THREE.DirectionalLight(atmosphere.profile.sunColor,atmosphere.profile.sunIntensity);sun.position.set(-35,75,25);scene.add(sun);}
- const poses=id==='liget'?[
+ const poses=id==='skyline'?[
+  ['avenue',[60,2,250],[60,4,0]],['podium',[0,5,-120],[0,5,-155]],
+  ['skywalk',[0,49.8,0],[0,49.8,15]],['garage',[-144,2.6,145],[-144,2.6,100]],
+  ['facade-close',[6.4,25,0],[6.4,25,-15]]
+ ]:id==='liget'?[
   ['outside',[0,2,60],[0,3,0]],['passage',[0,2,0],[0,2,-25]],['glass-room',[12,6,0],[12,6,-15]]
  ]:id==='jatszoter'?[
   ['outside',[0,3,25],[0,2,-3]],['under-fort',[0,.7,-3],[3.4,1,-3]],
