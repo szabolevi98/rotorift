@@ -73,9 +73,11 @@ function createRift65() {
     for(let k=0;k<3;k++){
       const a=k*2*Math.PI/3+Math.PI/6,dx=Math.cos(a),dz=Math.sin(a);
       rod(frame,[x+dx*3.5,6.8,z+dz*3.5],[x+dx*16.5,7.15,z+dz*16.5],.62,materials.frame,'Duct_radial_support');
-      const bx=x+dx*3.3,bz=z+dz*3.3;
+      // Keep the whole screw inside the stator base, not on its outer edge.
+      const bx=x+dx*2.65,bz=z+dz*2.65;
       cyl(frame,.55,.55,1.9,materials.silver,'Motor_mount_bolt',bx,7.25,bz,12);
       cyl(frame,.85,.85,.3,materials.silver,'Motor_mount_bolt_head',bx,6.1,bz,12);
+      box(frame,.7,.025,.16,materials.black,'Motor_mount_bolt_slot',bx,5.945,bz);
     }
     const nearX=x-sx*11.6,nearZ=z-sz*11.6;
     rod(frame,[sx*mount,7.2,sz*mount],[nearX,7.2,nearZ],1.1,materials.frame,'Duct_to_board_junction');

@@ -55909,9 +55909,11 @@ function createRift65() {
     for(let k=0;k<3;k++){
       const a=k*2*Math.PI/3+Math.PI/6,dx=Math.cos(a),dz=Math.sin(a);
       rod(frame,[x+dx*3.5,6.8,z+dz*3.5],[x+dx*16.5,7.15,z+dz*16.5],.62,materials.frame,'Duct_radial_support');
-      const bx=x+dx*3.3,bz=z+dz*3.3;
+      // Keep the whole screw inside the stator base, not on its outer edge.
+      const bx=x+dx*2.65,bz=z+dz*2.65;
       cyl(frame,.55,.55,1.9,materials.silver,'Motor_mount_bolt',bx,7.25,bz,12);
       cyl(frame,.85,.85,.3,materials.silver,'Motor_mount_bolt_head',bx,6.1,bz,12);
+      box(frame,.7,.025,.16,materials.black,'Motor_mount_bolt_slot',bx,5.945,bz);
     }
     const nearX=x-sx*11.6,nearZ=z-sz*11.6;
     rod(frame,[sx*mount,7.2,sz*mount],[nearX,7.2,nearZ],1.1,materials.frame,'Duct_to_board_junction');
@@ -56124,8 +56126,17 @@ function createRift75(){
  footShape.lineTo(-2.85,4.1);footShape.quadraticCurveTo(-3.05,5,-2.5,5);footShape.closePath();
  const footGeometry=new THREE.ExtrudeGeometry(footShape,{depth:1.5,bevelEnabled:true,bevelSize:.18,bevelThickness:.18,bevelSegments:2,curveSegments:12});footGeometry.translate(0,0,-.75);
  for(const sx of [-1,1])for(const sz of [-1,1]){
-  const x=sx*c,z=sz*c;ring(frame,24.35,23.2,6.2,materials.frame,'Duct_thin_wall',x,12,z);ring(frame,24.55,23.1,.75,materials.frame,'Duct_upper_rolled_lip',x,15.45,z);ring(frame,5.6,.9,1.3,materials.frame,'1102_triangular_motor_seat',x,7.6,z);
-  for(let k=0;k<3;k++){const a=k*2*Math.PI/3+Math.PI/6,dx=Math.cos(a),dz=Math.sin(a);rod(frame,[x+dx*4.2,7.6,z+dz*4.2],[x+dx*23.8,9.4,z+dz*23.8],.88,materials.frame,'Triangular_motor_support');rod(frame,[x+dx*8,7.8,z+dz*8],[x+Math.cos(a+.17)*23.6,9.4,z+Math.sin(a+.17)*23.6],.6,materials.frame,'Motor_support_brace');screw(frame,x+dx*3.3,8,z+dz*3.3);}
+  const x=sx*c,z=sz*c;ring(frame,24.35,23.2,6.2,materials.frame,'Duct_thin_wall',x,12,z);ring(frame,24.55,23.1,.75,materials.frame,'Duct_upper_rolled_lip',x,15.45,z);ring(frame,5.6,.9,1.5,materials.frame,'1102_triangular_motor_seat',x,7.6,z);
+  for(let k=0;k<3;k++){
+   const a=k*2*Math.PI/3+Math.PI/6,dx=Math.cos(a),dz=Math.sin(a);
+   rod(frame,[x+dx*4.2,7.6,z+dz*4.2],[x+dx*23.8,9.4,z+dz*23.8],.88,materials.frame,'Triangular_motor_support');
+   rod(frame,[x+dx*8,7.8,z+dz*8],[x+Math.cos(a+.17)*23.6,9.4,z+Math.sin(a+.17)*23.6],.6,materials.frame,'Motor_support_brace');
+   // Motor bolts enter from below; only their shallow heads remain exposed.
+   const bx=x+dx*3.3,bz=z+dz*3.3;
+   cyl(frame,.6,2.3,materials.silver,'Motor_mount_bolt',bx,8,bz,12);
+   cyl(frame,1,.35,materials.silver,'Motor_mount_bolt_head',bx,6.675,bz,16);
+   box(frame,.85,.025,.2,materials.black,'Motor_mount_bolt_slot',bx,6.495,bz);
+  }
   rod(frame,[sx*13,8,sz*13],[x-sx*16,8,z-sz*16],1.4,materials.frame,'Duct_to_AIO_bridge');
   for(const sign of [-1,1]){const a=Math.atan2(sx,sz)+sign*.5,m=mesh(frame,footGeometry,materials.frame,'Paired_solid_landing_tab',x+Math.sin(a)*23.9,4.5,z+Math.cos(a)*23.9);m.rotation.y=a;}
   const gap=[Math.PI/2,7*Math.PI/6,11*Math.PI/6].reduce((best,a)=>-sx*Math.cos(a)-sz*Math.sin(a)>-sx*Math.cos(best)-sz*Math.sin(best)?a:best),ax=Math.cos(gap),az=Math.sin(gap);

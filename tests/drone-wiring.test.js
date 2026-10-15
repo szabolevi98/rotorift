@@ -34,6 +34,36 @@ test('X5 camera has three separate conductors seated in connector cavities and b
  assert.equal(colors.size,3,'power, ground and video remain distinguishable');
  assert.equal(m.root.getObjectByName('FPV_camera_cable'),undefined,'remove the old single thick cable');
 });
+for(const size of [65,75])test(`${size} whoop: motor bolts fit inside their stator bases with only shallow heads below the seats`,()=>{
+ const model=vm.runInContext(`createRift${size}()`,context),root=model.root;
+ root.scale.setScalar(1);root.updateMatrixWorld(true);
+ const frame=root.children.find(o=>/^\d+_01_/.test(o.name));
+ const seats=frame.children.filter(o=>/Motor_three_screw_seat|1102_triangular_motor_seat/.test(o.name));
+ const bolts=frame.children.filter(o=>/^(Motor_mount_bolt|M1_4_mount_screw)$/.test(o.name));
+ const heads=frame.children.filter(o=>/^(Motor_mount_bolt_head|Mount_screw_head)$/.test(o.name));
+ const bases=[];root.traverse(o=>{if(/stator_base$/.test(o.name))bases.push(o);});
+ assert.equal(seats.length,4);assert.equal(bolts.length,12);assert.equal(heads.length,12);
+ for(const bolt of bolts){
+  const seat=seats.reduce((a,b)=>a.position.distanceToSquared(bolt.position)<b.position.distanceToSquared(bolt.position)?a:b);
+  const seatBounds=new THREE.Box3().setFromObject(seat),center=seat.getWorldPosition(new THREE.Vector3());
+  const base=bases.find(o=>{const p=o.getWorldPosition(new THREE.Vector3());return Math.hypot(p.x-center.x,p.z-center.z)<.01;});
+  assert.ok(base,'each bolt belongs to a real motor');
+  const baseBounds=new THREE.Box3().setFromObject(base),boltBounds=new THREE.Box3().setFromObject(bolt);
+  assert.ok(boltBounds.min.y>=seatBounds.min.y-.01,'the threaded shaft must not hang below the seat');
+  assert.ok(boltBounds.max.y>=baseBounds.min.y&&boltBounds.max.y<=baseBounds.max.y,'the shaft ends inside the stator base');
+  const positions=bolt.geometry.attributes.position;
+  for(let i=0;i<positions.count;i++){
+   const p=bolt.localToWorld(new THREE.Vector3().fromBufferAttribute(positions,i));
+   assert.ok(Math.hypot(p.x-center.x,p.z-center.z)<=Math.min(base.geometry.parameters.radiusTop,base.geometry.parameters.radiusBottom)+.01,'the shaft must not protrude sideways from the motor');
+  }
+  const head=heads.find(o=>Math.hypot(o.position.x-bolt.position.x,o.position.z-bolt.position.z)<.01);
+  assert.ok(head);const headBounds=new THREE.Box3().setFromObject(head);
+  assert.ok(Math.abs(headBounds.max.y-seatBounds.min.y)<.01,'head touches the underside of its seat');
+  assert.ok(seatBounds.min.y-headBounds.min.y<=.4,'only a low-profile head projects below the frame');
+  assert.ok(Math.hypot(head.position.x-center.x,head.position.z-center.z)+head.geometry.parameters.radiusTop<=seat.geometry.parameters.shapes.curves[0].xRadius,'head stays inside the motor seat');
+ }
+});
+
 for(const size of [65,75])test(`${size} whoop: all motor leads connect underneath the PCB and clear the moulded frame`,()=>{
  const model=vm.runInContext(`createRift${size}()`,context),root=model.root;root.scale.setScalar(1);root.updateMatrixWorld(true);
  const frame=root.children.find(o=>/^\d+_01_/.test(o.name)),board=root.children.find(o=>/AIO/.test(o.name)),wires=board.children.filter(o=>o.name==='Motor_phase_wire'),pads=board.children.filter(o=>o.name==='Motor_phase_pad');
