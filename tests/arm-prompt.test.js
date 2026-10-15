@@ -27,3 +27,16 @@ test("lowering throttle comes before the ARM shortcut when throttle is too high"
     title: "hud.lowThrottle", detail: "hud.pressToArm:Space",
   });
 });
+
+test('automatic arming explains the throttle gesture and still prioritizes missing radio setup', () => {
+  const auto = { ...keyboard, autoArm: true, throttleControl: 'W' };
+  assert.deepEqual(armPrompt(auto, t), { title: 'hud.autoArmOn', detail: 'hud.autoArmKeyboard:W' });
+  assert.equal(armPrompt({ ...auto, mobile: true }, t).detail, 'hud.autoArmTouch');
+  const radio = { ...auto, radio: true, radioReady: true };
+  assert.equal(armPrompt(radio, t).detail, 'hud.autoArmLower');
+  assert.equal(armPrompt({ ...radio, autoArmReady: true }, t).detail, 'hud.autoArmRaise');
+  assert.equal(armPrompt({ ...radio, radioReady: false }, t).title, 'hud.armRadioUnavailable');
+  assert.equal(armPrompt({ ...auto, autoArm: false }, t).title, 'hud.pressToArm:Space');
+  assert.equal(armPrompt({ ...auto, armed: true }, t), null);
+  assert.equal(armPrompt({ ...auto, canArm: false }, t), null);
+});

@@ -294,6 +294,12 @@ Az első kiadásban csak a három elkészült modell indítható el.
   Gombtanítás és élő állapotjelzés segíti a kiosztást. ARM gomb: váltás;
   ARM AUX kapcsoló: be = élesítés, ki = disarm. Aktív kapcsoló csatlakozáskor,
   resetkor és folytatáskor nem élesíthet automatikusan. Élesítés csak alacsony gáznál.
+- Alapból bekapcsolt, személyesen mentett Auto arm: indulás/reset/folytatás után
+  előbb legfeljebb 2% gázt kell érzékelni, majd legalább 6% gázadás armol.
+  Magas gázzal belépés, szünet, multiplayer-visszaszámlálás vagy hiányos rádiójel
+  nem engedélyezheti az armolást. Kézi ARM/DISARM és Turtle elsőbbséget élvez;
+  új automatikus próbát reset vagy folytatás nyit. Az útmutatás mind az öt nyelven
+  jelzi a gáz le/fel mozdulatot; a kézi ARM változatlanul használható.
 - A repülési felületen érinthető ARM/DISARM, reset, nézet- és módváltás,
   menü és teljes képernyő gomb is rendelkezésre áll; a mobil használathoz
   nem kell fizikai billentyűzet. A repülési tengelyeket rádió/kontroller vezérli.

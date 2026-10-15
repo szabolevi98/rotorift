@@ -364,5 +364,12 @@
   "map.audience.standard": "Közepes és nagy drónoknak",
   "picker.search": "Keresés…",
   "picker.empty": "Nincs találat",
-  "map.skyline": "Skyline"
+  "map.skyline": "Skyline",
+  "settings.autoArm": "Auto arm",
+  "settings.autoArmHint": "Induláskor, reset vagy folytatás után: gáz nullára, majd emeld meg az armoláshoz. Kézi DISARM után kézi armolásig vagy resetig/folytatásig kikapcsolva marad.",
+  "hud.autoArmOn": "Auto arming bekapcsolva",
+  "hud.autoArmLower": "Húzd a gázt nullára, majd finoman adj gázt az armoláshoz.",
+  "hud.autoArmRaise": "Most finoman adj gázt az armoláshoz.",
+  "hud.autoArmKeyboard": "Adj gázt ({control}), és a drón automatikusan armol.",
+  "hud.autoArmTouch": "Adj gázt az automatikus armoláshoz, vagy érintsd meg az ARM gombot."
 }

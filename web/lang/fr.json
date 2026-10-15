@@ -364,5 +364,12 @@
   "map.audience.standard": "Pour les drones moyens et grands",
   "picker.search": "Rechercher…",
   "picker.empty": "Aucun résultat",
-  "map.skyline": "Skyline"
+  "map.skyline": "Skyline",
+  "settings.autoArm": "Armement automatique",
+  "settings.autoArmHint": "Au départ, après réinitialisation ou reprise : baissez les gaz à zéro, puis augmentez-les pour armer. Après un DISARM manuel, réarmez manuellement ou réinitialisez/reprenez le vol.",
+  "hud.autoArmOn": "Armement automatique activé",
+  "hud.autoArmLower": "Baissez les gaz à zéro, puis augmentez-les doucement pour armer.",
+  "hud.autoArmRaise": "Augmentez maintenant doucement les gaz pour armer.",
+  "hud.autoArmKeyboard": "Mettez les gaz ({control}) pour armer automatiquement.",
+  "hud.autoArmTouch": "Mettez les gaz pour armer automatiquement ou touchez ARM."
 }

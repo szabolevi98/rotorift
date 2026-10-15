@@ -364,5 +364,12 @@
   "map.audience.standard": "Para drones medianos y grandes",
   "picker.search": "Buscar…",
   "picker.empty": "Sin resultados",
-  "map.skyline": "Skyline"
+  "map.skyline": "Skyline",
+  "settings.autoArm": "Armado automático",
+  "settings.autoArmHint": "Al iniciar, reiniciar o reanudar: baja el acelerador a cero y súbelo para armar. Tras un DISARM manual, arma manualmente o reinicia/reanuda el vuelo.",
+  "hud.autoArmOn": "Armado automático activado",
+  "hud.autoArmLower": "Baja el acelerador a cero y luego súbelo suavemente para armar.",
+  "hud.autoArmRaise": "Ahora sube suavemente el acelerador para armar.",
+  "hud.autoArmKeyboard": "Acelera ({control}) para armar automáticamente.",
+  "hud.autoArmTouch": "Acelera para armar automáticamente o toca ARM."
 }

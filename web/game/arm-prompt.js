@@ -2,6 +2,11 @@ export function armPrompt(state, t) {
   if (state.armed || !state.canArm) return null;
   if (state.radio && !state.radioReady)
     return { title: t("hud.armRadioUnavailable"), detail: t("hud.armRadioSetup") };
+  if (state.autoArm) {
+    const detail = state.radio ? state.autoArmReady ? "hud.autoArmRaise" : "hud.autoArmLower"
+      : state.mobile ? "hud.autoArmTouch" : "hud.autoArmKeyboard";
+    return { title: t("hud.autoArmOn"), detail: t(detail, detail === "hud.autoArmKeyboard" ? { control: state.throttleControl } : {}) };
+  }
 
   let instruction;
   if (state.mobile || (state.radio && !state.binding)) instruction = t("hud.screenToArm");

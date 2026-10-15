@@ -3,6 +3,7 @@ import { CatalogSelect } from "./catalog-select.js";
 import { mapPresentation } from "/shared/catalog/maps.js";
 import { read, write } from "./storage.js";
 import { Controller } from "./input/controller.js";
+import { AutoArm } from "./input/auto-arm.js";
 import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
@@ -44,6 +45,7 @@ function mapName(value) {
   return t(mapPresentation(item).nameKey);
 }
 const loading = new LoadingScreen(t);
+const autoArm = new AutoArm(read("auto-arm", true) !== false);
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
 const fpsLabel = $("#hud-fps");
@@ -295,6 +297,7 @@ function resume() {
   void fullscreen?.enterFlight();
   paused = false;
   controller.bindings.reset();
+  autoArm.reset();
   lastFrame = performance.now();
   flight.active = !room || room.phase === "flying";
   document.activeElement?.blur();
@@ -322,7 +325,7 @@ function action(kind, currentInput = input) {
     if(flight.physics.armed){notice(t('hud.turtleDisarm'));return;}
     if(currentInput.throttle>.06){notice(t('hud.lowThrottle'));return;}
     if(room&&(room.phase!=='flying'||room.players.find(p=>p.id===network.id)?.finished))return;
-    flight.physics.setTurtleMode(kind==='turtle'?!flight.physics.turtleMode:kind==='turtleOn');flight.rotorMotion.reset();hud();return;
+    flight.physics.setTurtleMode(kind==='turtle'?!flight.physics.turtleMode:kind==='turtleOn');autoArm.cancel();flight.rotorMotion.reset();hud();return;
   }
   if (["arm", "armOn", "armOff"].includes(kind)) {
     const armed = kind === "armOn" || (kind === "arm" && !flight.physics.armed);
@@ -333,6 +336,8 @@ function action(kind, currentInput = input) {
       return;
     }
     flight.physics.armed = armed;
+    // A manual ARM/DISARM command takes precedence until reset or resume.
+    autoArm.cancel();
     flight.startSound();
     hud();
   }
@@ -350,7 +355,8 @@ function action(kind, currentInput = input) {
 function resetAircraft() {
   localGhostRecorder.clear();
   controller.clear(); lap = newLap();
-  if (room) network.send("reset"); else flight.reset();
+  if (room) { autoArm.cancel(); network.send("reset"); }
+  else { flight.reset(); autoArm.reset(); }
 }
 function recordKey(
   m = flight.map,
@@ -867,6 +873,7 @@ async function loadRoom(r) {
     flight.reset(
       room.players.find((p) => p.id === network.id)?.p ?? roomMap.spawn,
     );
+    autoArm.reset();
     const restoredProps=room.players.find(p=>p.id===network.id)?.propellers;
     if(r.simulation.propDamage && validPropellers(restoredProps))flight.physics.effects.propellers.blades=restoredProps.map(blades=>[...blades]);
     lap = newLap();
@@ -931,6 +938,7 @@ function receive(m) {
   }
   if (m.type === "reset") {
     flight.reset(m.pose.p);
+    autoArm.reset();
     controller.clear();
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
   }
@@ -1164,6 +1172,8 @@ function hud() {
     armed: flight.physics.armed, canArm: !room || (room.phase === "flying" && !own?.finished),
     radio: controller.usingRadio, radioReady: controller.radioReady, mobile: touchInput.matches,
     lowThrottle: input.throttle <= 0.06, binding: armBinding,
+    autoArm: autoArm.active, autoArmReady: autoArm.lowSeen,
+    throttleControl: keyName(controller.keys.throttleUp),
     control: armBinding ? bindingLabel(armBinding) : controller.keys.arm === "Space" ? t("hud.spaceKey") : keyName(controller.keys.arm),
   }, t);
   visible("#arm-prompt", !!prompt && !paused && !flight.physics.turtleMode);
@@ -1310,6 +1320,17 @@ function frame(now) {
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
   input = controller.poll(dt);
+  if (playing && flight.physics && autoArm.update({
+    throttle: input.throttle, armed: flight.physics.armed, turtle: flight.physics.turtleMode,
+    allowed: !paused && !loading.tasks.size && flight.active &&
+      (!room || room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
+    ready: !controller.range && !controller.setup && !controller.bindings.capture &&
+      (!controller.usingRadio || controller.radioReady),
+  })) {
+    flight.physics.armed = true;
+    flight.startSound();
+    hud();
+  }
   const onlineLive = !!room && flightSimulationActive(playing, paused, room, network.id);
   if (playing && !paused) updateSticks(input);
   if (
@@ -1411,6 +1432,12 @@ function bindUI() {
     await setLanguage(e.target.value);
   };
   $("#launch").onclick = launch;
+  $("#auto-arm").checked = autoArm.enabled;
+  $("#auto-arm").onchange = event => {
+    autoArm.setEnabled(event.target.checked);
+    write("auto-arm", autoArm.enabled);
+    hud();
+  };
   $("#create-room").onclick = createRoom;
   $("#resume").onclick = resume;
   $("#menu-button").onclick = pause;

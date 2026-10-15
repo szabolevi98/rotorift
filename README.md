@@ -104,6 +104,11 @@ rádiómodell beállításáról: [rádióbeállítási útmutató](docs/radio-s
 
 Telefonon is elérhető a képernyőn az **ARM/DISARM**, **Reset**, nézetváltás,
 repülési mód és menü. A repülési tengelyeket a csatlakoztatott rádió/kontroller vezérli.
+Az **Auto arm** alapból engedélyezett, a Beállítások → Irányítás alatt kapcsolható.
+Induláskor, reset és folytatás után előbb húzd nullára a gázt, majd emeld meg:
+ekkor automatikusan armol. Billentyűzettel a gáz eleve nulla, így az első
+gázadásra armol. A kézi DISARM elsőbbséget élvez; új automatikus próbához
+reset vagy folytatás kell. Az opció személyes és multiplayerben is használható.
 A Beállítások → Rádió / kontroller műveletek alatt a **Hozzárendelés** után
 nyomj meg egy gombot vagy állíts egy szabad AUX csatornát végállásba.
 Az ARM gomb váltja az állapotot; az AUX ARM kapcsoló beállása élesít,
