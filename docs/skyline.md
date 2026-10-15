@@ -22,8 +22,15 @@ batches. The construction parts helper retains its default spatial batching
 for existing maps; Skyline explicitly combines its compact district batches.
 Around 2,800 analytic collision records bake to a 50 kB compressed asset. Local
 activation, velocity lookahead and CCD use the existing simulator pipeline.
-An unbroken analytic asphalt floor extends far beyond the district boundary;
-outside scenery is empty, with the existing 10-minute return timer.
+One unbroken analytic floor extends far beyond the district boundary. Its
+visible surface is tiled asphalt inside the 600 m square and bare green grass
+outside; these surfaces meet at the boundary without overlapping. Outside
+scenery stays empty, with the existing 10-minute return timer. The horizon-sized
+collision box is not drawn, avoiding giant foreground triangles.
+
+The shared launch marking is a single, terrain-following disc with explicit
+depth bias for both standard and logarithmic depth rendering. All four maps
+use it, with normal depth testing against aircraft and scenery.
 
 ## Verification
 

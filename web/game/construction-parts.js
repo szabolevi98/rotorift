@@ -81,13 +81,15 @@ export function createConstructionParts(scene, world, RAPIER, { batchSize = 96 }
   let anchor = new THREE.Matrix4();
   const unit = new THREE.Vector3(1, 1, 1);
   const quaternion = (rotation) => new THREE.Quaternion().setFromEuler(new THREE.Euler(...rotation));
-  function part(shape, size, position, color, solid = true, rotation = [0, 0, 0]) {
+  function part(shape, size, position, color, solid = true, rotation = [0, 0, 0], visible = true) {
     const matrix = new THREE.Matrix4().compose(new THREE.Vector3(...position), quaternion(rotation), new THREE.Vector3(...size));
     matrix.premultiply(anchor);
     const p = new THREE.Vector3(), q = new THREE.Quaternion(), scale = new THREE.Vector3(); matrix.decompose(p, q, scale);
     const key = `${shape}:${color}:${Math.floor(p.x / batchSize)}:${Math.floor(p.z / batchSize)}`;
-    if (!batches.has(key)) batches.set(key, { shape, color, matrices: [] });
-    batches.get(key).matrices.push(matrix);
+    if (visible) {
+      if (!batches.has(key)) batches.set(key, { shape, color, matrices: [] });
+      batches.get(key).matrices.push(matrix);
+    }
     if (solid && world) {
       let desc;
       if (solid === "mesh") {
@@ -106,7 +108,7 @@ export function createConstructionParts(scene, world, RAPIER, { batchSize = 96 }
       regions.add(collider, bounds.min.toArray(), bounds.max.toArray());
     }
   }
-  const box = (size, position, color, solid = true, rotation) => part("box", size, position, color, solid, rotation);
+  const box = (size, position, color, solid = true, rotation, visible = true) => part("box", size, position, color, solid, rotation, visible);
   const cylinder = (diameter, length, position, color, solid = true, rotation) => part("cylinder", [diameter, length, diameter], position, color, solid, rotation);
   function beam(a, b, width, color, solid = true, depth = width) {
     const av = new THREE.Vector3(...a), bv = new THREE.Vector3(...b), delta = bv.clone().sub(av);

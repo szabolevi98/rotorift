@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createConstructionParts } from './construction-parts.js';
+import { makeCityGroundGeometry } from './city-ground.js';
 import { CITY_SIZE,CITY_STREETS,CITY_BLOCK_CENTERS,CITY_BUILDINGS,CITY_HERO,CITY_GARAGE,CITY_PLAZA,CITY_SKYWALK,citySurfaceHeight } from '../../shared/world/city-layout.js';
 
 export const CITY_VIEW_DISTANCE = 12000;
@@ -44,12 +45,14 @@ export function buildCity(scene,world,RAPIER,map) {
   const p=createConstructionParts(scene,world,RAPIER,{batchSize:Infinity}),{box,cylinder,beam,model,part}=p;
   p.root.name='Skyline_city_district';
   for(const [name,color]of Object.entries({asphalt:0x434b50,sidewalk:0xb1b2aa,roof:0x636d72,curb:0xd1d0c4,
-    darkGlass:0x314d5c,cream:0xddd3b4,taxi:0xe7b341,leaf:0x68815a,trunk:0x786552,water:0x5f9aaf,signal:0x91bba6}))
+    darkGlass:0x314d5c,cream:0xddd3b4,taxi:0xe7b341,leaf:0x68815a,trunk:0x786552,water:0x5f9aaf,signal:0x91bba6,grass:0x80a15d}))
     p.palette[name]=new THREE.MeshStandardMaterial({color,roughness:name==='darkGlass'?.36:.86,metalness:name==='darkGlass'?.25:0});
   p.palette.blueTower=facade(0x8daab7);p.palette.silverTower=facade(0xb8c2c3);
   p.palette.brick=facade(0xa5806b,true);p.palette.limestone=facade(0xd2c5aa,true);
-  // One analytic floor and an unbroken visible horizon, outside the district too.
-  box([262144,.2,262144],[0,-.1,0],'asphalt');
+  // Keep the cheap infinite collider; draw disjoint asphalt/grass surfaces.
+  box([262144,.2,262144],[0,-.1,0],'asphalt',true,undefined,false);
+  p.ground(makeCityGroundGeometry(),'asphalt',false).name='Skyline_asphalt_ground';
+  p.ground(makeCityGroundGeometry(true),'grass',false).name='Skyline_outside_grass';
   for(const x of CITY_BLOCK_CENTERS)for(const z of CITY_BLOCK_CENTERS)box([96,.18,96],[x,.09,z],'sidewalk');
 
   function rail(a,b,y,color='steel'){
@@ -202,7 +205,7 @@ export function buildCity(scene,world,RAPIER,map) {
     cylinder(.14,5.4,[x+side*14,2.88,z+14],'steel');box([.5,1.6,.45],[x+side*14,4.4,z+14],'rubber');
     for(const [dy,color]of [[-.45,'signal'],[0,'ochre'],[.45,'red']])cylinder(.25,.04,[x+side*14,4.4+dy,z+13.75],color,false,[Math.PI/2,0,0]);
   }
-  // Low, permeable boundary markers; empty asphalt extends beyond the district.
+  // Low, permeable boundary markers; bare grass continues beyond the district.
   for(const side of [-1,1])for(let along=-294;along<=294;along+=6){
     if(CITY_STREETS.some(road=>Math.abs(along-road)<14))continue;
     cylinder(.18,1,[side*CITY_SIZE/2,.5,along],'steel',false);

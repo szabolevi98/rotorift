@@ -29,6 +29,28 @@ test('Skyline has street-aligned blocks, deliberate landmarks and a bounded low-
   }finally{city.dispose();assert.equal(scene.children.length,0);}
 });
 
+test('Skyline asphalt ends at the boundary and non-overlapping green ground continues outside it',()=>{
+  const city=buildCity(new THREE.Scene(),null,RAPIER,map);
+  try{
+    const asphalt=city.root.getObjectByName('Skyline_asphalt_ground'),grass=city.root.getObjectByName('Skyline_outside_grass');
+    assert.ok(asphalt&&grass);assert.equal(grass.material.color.getHex(),0x80a15d);
+    city.root.updateMatrixWorld(true);
+    const ray=new THREE.Raycaster();
+    for(const [x,z,outside]of [[60,250,false],[299.9,75,false],[300.1,75,true],[-300.1,75,true],[75,300.1,true],[75,-300.1,true],[900,900,true],[11000,-11000,true]]){
+      ray.set(new THREE.Vector3(x,5,z),new THREE.Vector3(0,-1,0));
+      assert.equal(!!ray.intersectObject(asphalt).length,!outside);
+      assert.equal(!!ray.intersectObject(grass).length,outside);
+    }
+    assert.equal(grass.castShadow,false);
+    assert.equal(grass.receiveShadow,true);
+    const matrix=new THREE.Matrix4(),size=new THREE.Vector3();
+    city.root.traverse(o=>{if(o.isInstancedMesh&&o.material===asphalt.material)for(let i=0;i<o.count;i++){
+      o.getMatrixAt(i,matrix);size.setFromMatrixScale(matrix);
+      assert.ok(size.x<=600&&size.z<=600,'the horizon-sized collider must not be drawn over the grass');
+    }});
+  }finally{city.dispose();}
+});
+
 for(const baked of [false,true])test(`${baked?'baked':'source'} Skyline: avenues, podium, skywalk and parking bays are open; floors and walls collide`,async()=>{
   const world=new RAPIER.World({x:0,y:-9.81,z:0});let city;
   if(baked){

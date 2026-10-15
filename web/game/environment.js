@@ -4,18 +4,10 @@ import { parkSurfaceHeight } from "/shared/world/park-layout.js";
 import { buildConstruction } from "./construction.js";
 import { buildPlayground } from "./playground.js";
 import { buildCity } from "./city.js";
+import { createLaunchPad } from "./launch-pad.js";
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
   const root = new THREE.Group();
   scene.add(root);
-  const materials = new Map();
-  const material = (color) => {
-    if (!materials.has(color))
-      materials.set(
-        color,
-        new THREE.MeshStandardMaterial({ color, roughness: 0.85 }),
-      );
-    return materials.get(color);
-  };
   let park, construction, playground, city;
   const staticWorld = bakedCollisions ? null : world;
   if (map.kind === "park") park = buildPark(scene, staticWorld, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
@@ -84,11 +76,9 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
     group.add(sign);
     gateMeshes.push(gateMat);
   });
-  const pad = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.65, 0.65, 0.002, 48),
-    material(0x232f2d),
-  );
-  pad.position.set(map.spawn[0], (park ? parkSurfaceHeight(map.spawn[0], map.spawn[2]) + 0.065 : environment.heightAt(map.spawn[0], map.spawn[2])) + 0.003, map.spawn[2]);
+  const pad = createLaunchPad(map.spawn, park
+    ? (x,z) => parkSurfaceHeight(x,z)+.065
+    : (x,z) => environment.heightAt(x,z));
   root.add(pad);
   return {
     root,
