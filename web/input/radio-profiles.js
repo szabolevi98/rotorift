@@ -10,7 +10,7 @@ export const defaultProfile = () => ({
   actions: Object.fromEntries(RADIO_ACTIONS.map((action) => [action, null])),
   axes: {
     roll: { index: 0, invert: false, center: 0, min: -1, max: 1 },
-    pitch: { index: 1, invert: true, center: 0, min: -1, max: 1 },
+    pitch: { index: 1, invert: false, center: 0, min: -1, max: 1 },
     yaw: { index: 3, invert: false, center: 0, min: -1, max: 1 },
     throttle: { index: 2, invert: false, center: 0, min: -1, max: 1 },
   },
@@ -37,6 +37,9 @@ export function radioPreset(pad, preset = "auto", layout = inputLayout()) {
   } else if (selected === "mode2-gamepad") {
     profile.axes.roll.index = 2;
     profile.axes.pitch.index = 3;
+    // Standard gamepads report right-stick forward as negative Y. Raw FPV
+    // radios use the radio default instead of inheriting this convention.
+    profile.axes.pitch.invert = true;
     profile.axes.yaw.index = 0;
     profile.axes.throttle.index = 1;
     profile.axes.throttle.invert = true;
@@ -53,12 +56,23 @@ export function restoreRadioProfile(pad, saved, legacy, layout = inputLayout()) 
     return axis && Number.isInteger(axis.index) && axis.index >= 0 &&
       [axis.center, axis.min, axis.max].every(Number.isFinite) && axis.max > axis.min;
   });
-  if (valid(saved)) return { ...base, ...saved };
+  if (valid(saved)) {
+    // Manual inversion/calibration marks the profile custom. Update only an
+    // untouched named preset from the old pitch-inverted default, preserving
+    // action bindings, deadzone and every deliberately customized mapping.
+    if (RADIO_PRESETS.includes(saved.preset) && saved.preset !== "custom") {
+      const recommended = radioPreset(pad, saved.preset, layout);
+      const previousAxes = structuredClone(recommended.axes); previousAxes.pitch.invert = true;
+      if (JSON.stringify(saved.axes) === JSON.stringify(previousAxes)) return { ...base, ...saved, axes: recommended.axes };
+    }
+    return { ...base, ...saved };
+  }
   // Old profiles assumed browser indices equal radio channels. On Android,
   // discard that unversioned assumption while retaining action assignments.
   if (valid(legacy) && (!legacy.layout || legacy.layout === layout) &&
       !(layout === "android-chromium" && isEdgeTXRadio(pad) && !legacy.schema)) {
-    const unchanged = JSON.stringify(legacy.axes) === JSON.stringify(defaultProfile().axes);
+    const previousAxes = defaultProfile().axes; previousAxes.pitch.invert = true;
+    const unchanged = JSON.stringify(legacy.axes) === JSON.stringify(previousAxes);
     if (!unchanged || legacy.preset === "custom") return { ...base, ...legacy, schema: 2, preset: "custom", layout };
   }
   if (legacy) {

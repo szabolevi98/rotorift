@@ -133,6 +133,10 @@ fallback. Settings include channel mapping, inversion, deadband, stick centers
 and a six-second endpoint calibration. A browser may require a stick movement
 before exposing the connected device.
 
+Pitch inversion defaults to **off for raw FPV radios** and **on for standard
+gamepads**, so their different USB axis conventions can produce the same forward
+stick / nose-down control. Custom inversion and calibration settings are preserved.
+
 RadioMaster/EdgeTX devices have automatic profiles and device priority. A
 four-movement stick detector can learn custom mappings; desktop and Android
 profiles are saved separately. See the [radio setup guide](docs/radio-setup.md)

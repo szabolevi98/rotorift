@@ -135,7 +135,7 @@ test("keyboard yaw is gentler, reversal crosses neutral, and radio is not ramped
     assert.equal(c.keyboard.yaw, 0);
   }
   const c = new Controller(() => {});
-  env.setPads([{ id: "Test USB radio", axes: [1, -1, -1, 1] }]);
+  env.setPads([{ id: "Test USB radio", axes: [1, 1, -1, 1] }]);
   const input = c.poll(1 / 240);
   assert.equal(input.roll, 1); assert.equal(input.pitch, 1); assert.equal(input.yaw, 1);
 });
@@ -168,7 +168,7 @@ test("radio uses calibrated ranges, deadzone and channel inversion", () => {
   });
   assert.deepEqual(radioInput([1, 1, 1, -1], p), {
     roll: 1,
-    pitch: -1,
+    pitch: 1,
     yaw: -1,
     throttle: 1,
   });

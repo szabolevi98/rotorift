@@ -33,7 +33,7 @@ test('connected input moves the real 3D gimbal tips, rather than an overlay mark
   const before=tips.map(tip=>tip.getWorldPosition(new THREE.Vector3()));
   c.raw=[-.5,-.75,.6,.8];g.render(c,500);model.root.updateMatrixWorld(true);
   near(g.sticks[0].rotation.x,-.36);near(g.sticks[0].rotation.y,.48);
-  near(g.sticks[1].rotation.x,-.45);near(g.sticks[1].rotation.y,-.3);
+  near(g.sticks[1].rotation.x,.45);near(g.sticks[1].rotation.y,-.3);
   for(let i=0;i<2;i++)assert.ok(tips[i].getWorldPosition(new THREE.Vector3()).distanceTo(before[i])>.1);
   assert.equal(model.markers,undefined);
   g.axis='yaw';g.render(c,1500);

@@ -30,7 +30,7 @@ test("new Android EdgeTX ordering uses Rx as yaw and preserved Z as throttle", (
   assert.equal(profile.axes.yaw.index, 2);
   assert.equal(profile.axes.throttle.index, 4);
   assert.deepEqual(radioInput([0, 0, 0, 1, -1, -1, 0, 0], profile), { roll: 0, pitch: 0, yaw: 0, throttle: 0 });
-  assert.deepEqual(radioInput([1, -1, 1, -1, 1, 1, 0, 0], profile), { roll: 1, pitch: 1, yaw: 1, throttle: 1 });
+  assert.deepEqual(radioInput([1, 1, 1, -1, 1, 1, 0, 0], profile), { roll: 1, pitch: 1, yaw: 1, throttle: 1 });
 });
 
 test("legacy Android's missing Z is flagged instead of inventing an analogue throttle", () => {
@@ -49,6 +49,41 @@ test("standard gamepad starts in Mode 2 rather than an RC channel order", () => 
   const profile = radioPreset({ id: "Xbox", mapping: "standard", axes: [0, 1, 0, 0] }, "auto", "hid");
   assert.deepEqual(radioInput([0, 1, 0, 0], profile), { roll: 0, pitch: 0, yaw: 0, throttle: 0 });
   assert.deepEqual(radioInput([1, -1, 1, -1], profile), { roll: 1, pitch: 1, yaw: 1, throttle: 1 });
+});
+
+test("FPV radio defaults use non-inverted pitch on desktop and Android; standard gamepads invert Y", () => {
+  for(const id of ['RadioMaster Pocket Joystick','RadioMaster TX15','BETAFPV LiteRadio 2','USB radio'])for(const layout of ['hid','android-chromium']){
+    const pad={id,mapping:'',axes:[0,0,-1,0,-1,-1],buttons:[]};
+    const profile=radioPreset(pad,'auto',layout);
+    assert.equal(profile.axes.pitch.invert,false,`${id} / ${layout}`);
+    for(const forward of [-1,1]){const raw=pad.axes.slice();raw[profile.axes.pitch.index]=forward;assert.equal(radioInput(raw,profile).pitch,forward);}
+  }
+  for(const preset of ['edgetx-classic','edgetx-android','edgetx-mobile-model','custom'])assert.equal(radioPreset(pocket(),preset,'hid').axes.pitch.invert,false);
+  const gamepad=radioPreset({id:'Xbox',mapping:'standard',axes:[0,1,0,0]},'auto','hid');
+  assert.equal(gamepad.axes.pitch.invert,true);assert.equal(radioInput([0,1,0,-1],gamepad).pitch,1);
+});
+
+test("only untouched old presets adopt the new default; customized pitch directions and calibration survive", () => {
+  for(const preset of ['auto','edgetx-classic','edgetx-android','edgetx-mobile-model']){
+    const old=radioPreset(pocket(),preset,'hid');old.axes.pitch.invert=true;old.deadzone=.04;old.actions.arm={type:'button',index:1};
+    const restored=restoreRadioProfile(pocket(),old,null,'hid');
+    assert.equal(restored.axes.pitch.invert,false);assert.equal(restored.deadzone,.04);assert.deepEqual(restored.actions,old.actions);
+    assert.equal(old.axes.pitch.invert,true,'restoration must not mutate the saved object');
+  }
+  for(const invert of [true,false]){
+    const custom=radioPreset(pocket(),'custom','hid');custom.axes.pitch.invert=invert;
+    assert.deepEqual(restoreRadioProfile(pocket(),custom,null,'hid'),custom);
+    assert.deepEqual(restoreRadioProfile(pocket(),null,custom,'hid').axes,custom.axes);
+  }
+  const calibrated=radioPreset(pocket(),'auto','hid');calibrated.axes.pitch.invert=true;calibrated.axes.pitch.center=.07;
+  assert.deepEqual(restoreRadioProfile(pocket(),calibrated,null,'hid'),calibrated);
+  const legacy=defaultProfile();legacy.axes.pitch.invert=true;
+  assert.equal(restoreRadioProfile(pocket(),null,legacy,'hid').axes.pitch.invert,false);
+  const corrected=defaultProfile();assert.deepEqual(restoreRadioProfile(pocket(),null,corrected,'hid').axes,corrected.axes);
+  const pad={id:'Xbox',mapping:'standard',axes:[0,1,0,0]},gamepad=radioPreset(pad,'auto','hid');
+  assert.deepEqual(restoreRadioProfile(pad,gamepad,null,'hid'),gamepad);
+  gamepad.preset='custom';gamepad.axes.pitch.invert=false;
+  assert.deepEqual(restoreRadioProfile(pad,gamepad,null,'hid'),gamepad);
 });
 
 test("profiles are scoped by platform/layout, and a saved custom calibration wins", () => {

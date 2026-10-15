@@ -31,6 +31,13 @@ az A1, A2… számozás böngészős tengely, nem a rádió CH-kiosztása.
   csatornákat, előjeleket, középértékeket és a gáz végpontjait. Kétállású kapcsolót
   nem fogad el analóg botként. Csak a teljes folyamat végén cseréli a profilt.
 
+A pitch invertálása a nyers FPV rádiós profilokban alapból **kikapcsolt**,
+a szabványos gamepad-profilban **bekapcsolt**, a két USB-tengelyelőjelhez igazodva.
+A cél mindkettőnél bot előre → drón orra le. Az érintetlen régi presetek
+átveszik az új alapértéket; az egyéni invertálás, csatornakiosztás, kalibráció,
+gombhozzárendelések és holtjáték megmaradnak. A botfelismerő továbbra is a tényleges
+mozdulatból tanulja meg az előjelet, a rádió saját mixeitől függetlenül.
+
 Egyéni repülési modell, invertált mix vagy Advanced USB esetén a névből nem
 derül ki a rádió tényleges csatornasorrendje. Erre való a botfelismerő.
 Egy Xbox név mögé rejtett virtuális rádiót nem lehet biztosan RadioMasterként
