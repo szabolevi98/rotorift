@@ -38,7 +38,7 @@ const $ = (s) => document.querySelector(s),
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
 const loading = new LoadingScreen(t);
-const fpvOsd = new FpvOsd($("#fpv-horizon"), $("#analog-effect"), $("#game-scene"));
+const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
 const fpsLabel = $("#hud-fps");
 let fpsSince = null, fpsFrames = 0;
@@ -1392,7 +1392,7 @@ function frame(now) {
   if (playing && (!paused || onlineLive || pauseRenderNeeded)) {
     const renderStart=diagnosticSample?performance.now():0;
     if(diagnosticSample)diagnostics.timer.begin(diagnosticSample);
-    try { flight.render(dt); } finally { if(diagnosticSample)diagnostics.timer.end(); }
+    try { flight.render(dt, cameraSettings.analog === true && !paused && !flight.chase); } finally { if(diagnosticSample)diagnostics.timer.end(); }
     if(diagnosticSample)diagnosticSample.renderMs=performance.now()-renderStart;
     pauseRenderNeeded = false;
   }

@@ -41,19 +41,14 @@
 #hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
 #hud .crosshair { transform: translate(-50%, -50%); }
 #hud { z-index: 2; }
-.fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(50vw, 88vh, 960px); transform: translate(-50%, -50%); overflow: visible; pointer-events: none; }
+.fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(48vw, 82vh, 920px); transform: translate(-50%, -50%); overflow: hidden; pointer-events: none; }
 #turtle-hud { position:absolute;top:22%;left:50%;transform:translateX(-50%);width:min(440px,85vw);padding:12px 16px;background:#241910ed;border:1px solid #ffbe75;border-radius:8px;color:#ffe0ab;text-align:center;font-size:13px;pointer-events:none; }
 #hud #hud-turtle.selected { background:#6a411b; border-color:#ffbe75; color:#ffe0ab; }
-.horizon-bars path, .horizon-reference, .horizon-bars-outline path, .horizon-reference-outline { fill: none; stroke-linecap: butt; stroke-linejoin: miter; }
-.horizon-bars path, .horizon-reference { stroke: #fff; stroke-width: 1.2; }
-.horizon-bars-outline path, .horizon-reference-outline { stroke: #111; stroke-width: 2.4; }
+.horizon-bars path, .horizon-reference, .horizon-bars-outline path, .horizon-reference-outline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.horizon-bars path, .horizon-reference { stroke: #fffffff0; stroke-width: .65; }
+.horizon-bars-outline path, .horizon-reference-outline { stroke: #1118; stroke-width: 1.15; }
 #hud:has(#fpv-horizon:not(.hidden)) .crosshair { visibility: hidden; }
 #hud:has(#arm-prompt:not(.hidden)) .fpv-horizon, #hud:has(#flight-help:not(.hidden)) .fpv-horizon { visibility: hidden; }
-#game-scene.analog-video { filter: saturate(.78) contrast(1.06); }
-#analog-effect { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; background: repeating-linear-gradient(0deg, #00000018 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, #00000035 100%); }
-.analog-grain { position: absolute; inset: -128px; background: url('/assets/analog-noise.svg') repeat; opacity: .10; animation: analog-grain .4s steps(4, end) infinite; }
-@keyframes analog-grain { 0% { transform: translate(0, 0); } 25% { transform: translate(41px, 23px); } 50% { transform: translate(-17px, 59px); } 75% { transform: translate(67px, -31px); } }
-@media (prefers-reduced-motion: reduce) { .analog-grain { animation: none; } }
 .arm-prompt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: min(420px, calc(100vw - 48px)); width: max-content; padding: 18px 24px; text-align: center; border: 1px solid #ff997c70; border-radius: 10px; background: #12161beb; text-shadow: none; }
 .arm-prompt strong { display: block; color: #ffd1c4; font-size: 19px; line-height: 1.45; }
 .arm-prompt span { display: block; margin-top: 8px; font-size: 11px; line-height: 1.5; color: #c4ccd6; }
@@ -100,6 +95,8 @@
 .flight-help kbd { font: 600 10px Inter, Arial, sans-serif; padding: 4px 6px; min-width: 24px; text-align: center; background: #ffffff09; border: 1px solid #ffffff20; border-radius: 4px; }
 .flight-help .flight-help-footer { border-top: 1px solid #ffffff18; margin-bottom: 0; padding-top: 10px; font-size: 10px; }
 @media (max-width: 800px), (max-height: 500px) {
+  .horizon-bars path, .horizon-reference { stroke-width: 1; }
+  .horizon-bars-outline path, .horizon-reference-outline { stroke-width: 1.6; }
   #hud { --hud-edge: max(12px, env(safe-area-inset-left)); }
   #hud .hud-top { padding-top: max(10px, env(safe-area-inset-top)); gap: 10px; }
   #hud .hud-brand { display: none; }

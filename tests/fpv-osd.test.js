@@ -30,11 +30,11 @@ test("full flips keep the OSD finite and omit characters outside its nine-row gr
     }
   }
 });
-test("the horizon sidebars span seven character rows with a fixed centre reference", () => {
+test("the horizon has sparse dotted rails and a small circular centre reference", () => {
   const reference=horizonReferencePath();
-  assert.equal((reference.match(/h4M/g)??[]).length,28);
-  assert.ok(reference.includes('M4 22h4') && reference.includes('M172 140h4'));
-  assert.ok(reference.includes('M90 78l3 3-3 3-3-3z'));
+  assert.equal((reference.match(/h\.8/g)??[]).length,26);
+  assert.ok(reference.includes('M25.6 21h.8') && reference.includes('M153.6 141h.8'));
+  assert.ok(reference.includes('a1.5 1.5'));
   const extreme=horizonSegments(attitude([1,0,0],20).multiply(attitude([0,0,1],40)));
   assert.ok(extreme.some(p=>!p.visible));
 });

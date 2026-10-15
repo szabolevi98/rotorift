@@ -21,6 +21,7 @@ import { RotorMotion, RemoteRotorMotion } from "../../shared/visual/rotor-motion
 import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 import { advanceFixedSteps } from '../../shared/physics/fixed-step.js';
 import { LapGhostPilot } from './lap-ghost.js';
+import { AnalogVideo } from './analog-video.js';
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -259,7 +260,7 @@ export class Flight {
     // These are instance-owned materials; the cached geometries stay reusable.
     for (const material of materials) material.dispose();
   }
-  render(dt) {
+  render(dt, analog = false) {
     this.fpvProps?.update(this.view,this.rotorMotion.fraction.map(v=>this.physics.armed?v*v*this.config.motor.maxThrustN:0));
     const w = innerWidth,
       h = innerHeight;
@@ -297,7 +298,13 @@ export class Flight {
       r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
     this.parkShadows?.update({ dynamic: this.view !== "fpv-clean" || this.remotes.size > 0 });
-    this.renderer.render(this.scene, this.camera);
+    if (analog) {
+      this.analogVideo ??= new AnalogVideo(this.renderer);
+      this.analogVideo.render(this.scene, this.camera, dt);
+    } else {
+      this.analogVideo?.reset();
+      this.renderer.render(this.scene, this.camera);
+    }
   }
   startSound() {
     if (this.sound) {

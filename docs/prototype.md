@@ -316,6 +316,10 @@ az automatizált stabilitási tesztek nem bizonyítják a valódi drónnal azono
 
 ## 2026-10-13 – Opcionális FPV OSD és analóg videó
 
+A megjelenítés 2026-10-15-én megújult: pontozott műhorizont és valódi képtorzítást
+alkalmazó, kis felbontású GPU-effekt váltotta az alábbi eredeti változatot.
+Aktuális működés: [fpv-horizon.md](fpv-horizon.md).
+
 - Beállítások → FPV kamera alatt két külön, alapból kikapcsolt, megjegyzett személyes kapcsoló. Egyjátékos és multiplayer FPV nézetben is működnek; a követőnézet és a menü tiszta marad.
 - A Betaflight jellegű műhorizont kilenc lépcsőzetes fehér vonalszegmensből, fix oldalsó és középjelölésből áll. A drón interpolált testhelyzetéből származó gravitációvektor alapján követi a pitch/roll dőlést, a yaw-tól és kameraállítástól függetlenül. A 20° pitch / 40° roll műszerkitérés a klasszikus [Betaflight OSD](https://github.com/betaflight/betaflight/blob/4.5.2/src/main/osd/osd_elements.c) megjelenítési tartományához igazodik; saját SVG-megvalósítás.
 - Az analóg kép szemcsézettséget, scanline-okat, enyhe színtelítettség-/kontrasztváltozást és vignettát kap. A játék világára kerül, a HUD olvasható marad. Kis, előre kirajzolt SVG zajcsempe és CSS-kompozitálás; nincs extra Three render-target vagy shaderpassz. Csökkentett mozgás beállítás mellett a zaj statikus.

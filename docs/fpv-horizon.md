@@ -1,21 +1,30 @@
-# FPV artificial horizon
+# FPV horizon and analog video
 
-The optional horizon follows the Betaflight character-grid layout: nine moving
-horizontal segments, sidebars at ±7 columns with two small ticks per character,
-level arrows and a fixed diamond crosshair. Each logical character is 12×18.
-The shape reference is the [Betaflight OSD glyph table](https://betaflight.com/docs/development/OSD-Glyps);
-the layout and motion limits follow the [OSD element reference](https://github.com/betaflight/betaflight/blob/master/src/main/osd/osd_elements.c).
-Rotorift draws its own vector shapes, without a font or raster image download.
+The optional horizon has two sparse dotted side rails, small inward level marks,
+a fixed circular centre reference and nine short moving horizon dashes. Own SVG
+geometry, with subtle dark outlines for readability over both sky and ground.
+It uses up to 48% of viewport width, bounded by 82% of viewport height and 920 px.
+The rails sit inside this area so the instrument fits landscape phones too.
 
-The overlay uses half the viewport width, limited to 960 px and 88% of viewport
-height so it fits landscape phones. At 1920×1080 the instrument is approximately
-950 px wide, rather than the previous 220 px. Black outline paths keep the white
-symbols readable over sky and ground, without per-element SVG filters.
+Body attitude comes from the interpolated quaternion, independently of yaw,
+camera tilt and FOV. Pitch travel is bounded to ±20° and roll to ±40°. Segments
+outside the display disappear rather than flattening against its edge. Both
+FPV views support it; external view, menus, help and the ARM prompt hide it.
 
-Pitch travel is bounded to ±20° and roll to ±40°. The movement is quantized to
-two logical pixels; segments outside the nine-row display are hidden, rather
-than clamped into a flat line. It remains optional in both FPV views and is
-hidden in external view, menus, help and the initial ARM prompt.
+Analog video is a separate, saved personal option. It renders the world once
+into a buffer capped at 1024×576, without upscaling smaller drawing buffers,
+then applies one full-screen triangle pass. It combines reduced chroma bandwidth,
+fine temporal grain, light scanlines and vignetting. Every roughly 6.5 seconds,
+a 100–180 ms narrow band can suffer horizontal sync slips and black/white
+dropouts. The frame stays readable; the HUD is unaffected. This is a visual
+receiver treatment, not a simulation of RF range or obstacles blocking a signal.
 
-Verification covers level flight, pitch/roll direction, yaw independence and
-full rotations, plus desktop and landscape-phone placement in the actual HUD.
+Temporal noise updates at 30 Hz; interference uses elapsed time, independent of
+monitor refresh. Reduced-motion preference freezes the grain and disables the
+bursts. Disabled, chase and menu views use the original direct rendering path:
+no extra render target or shader pass is created until first enabled. The buffer
+is reused across maps and frames, and render diagnostics include both passes.
+
+Verification covers pitch/roll direction, yaw independence, full rotations,
+burst duration/duty cycle, reduced motion, resolution bounds, render-state
+restoration and actual WebGL rendering in the game.
