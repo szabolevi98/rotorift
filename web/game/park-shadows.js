@@ -12,6 +12,7 @@ export class ParkShadows {
     this.camera = camera;
     this.projection = new THREE.Matrix4();
     this.materialHooks = new Map();
+    this.shaderUniforms = new Map();
     this.dirty = true;
     this.casterHash = -1;
     this.cachedLightPositions = SPLITS.map(() => new THREE.Vector3(Infinity, Infinity, Infinity));
@@ -56,9 +57,20 @@ export class ParkShadows {
         this.materialHooks.set(material, hook);
         this.csm.setupMaterial(material);
         const compileCSM = material.onBeforeCompile;
+        const sharedUniforms = this.shaderUniforms;
         material.onBeforeCompile = function (shader, renderer) {
           hook.call(this, shader, renderer);
           compileCSM.call(this, shader, renderer);
+          // Direct and analog render targets compile separate programs. CSM
+          // tracks one shader per material, so share its mutable uniforms
+          // across all variants when a view changes the camera near plane.
+          const uniforms = sharedUniforms.get(material);
+          if (uniforms) {
+            for (const name of ['CSM_cascades','cameraNear','shadowFar']) shader.uniforms[name] = uniforms[name];
+          } else sharedUniforms.set(material, {
+            CSM_cascades:shader.uniforms.CSM_cascades,
+            cameraNear:shader.uniforms.cameraNear, shadowFar:shader.uniforms.shadowFar,
+          });
         };
         material.needsUpdate = true;
       }
@@ -111,6 +123,7 @@ export class ParkShadows {
         delete material.defines.CSM_CASCADES;
         delete material.defines.CSM_FADE;
         this.materialHooks.delete(material);
+        this.shaderUniforms.delete(material);
         this.csm.shaders.delete(material);
         material.needsUpdate = true;
       }
@@ -123,5 +136,6 @@ export class ParkShadows {
     this.csm.dispose();
     for (const [material, hook] of this.materialHooks) material.onBeforeCompile = hook;
     this.materialHooks.clear();
+    this.shaderUniforms.clear();
   }
 }

@@ -108,3 +108,17 @@ test("streamed and online materials get shadows; release and map changes free th
   assert.equal(shadows.csm.shaders.size, 0);
   assert.equal(shadows.materialHooks.size, 0);
 });
+
+test('direct and analog shader variants share CSM projection uniforms across view switches', () => {
+  const {scene,camera,shadows}=setup();
+  const model=new THREE.Mesh(new THREE.BoxGeometry(),new THREE.MeshStandardMaterial());
+  scene.add(model);shadows.update();
+  const direct={uniforms:{}},analog={uniforms:{}};
+  model.material.onBeforeCompile(direct);model.material.onBeforeCompile(analog);
+  camera.near=.001;camera.fov=60;camera.updateProjectionMatrix();shadows.update();
+  assert.equal(direct.uniforms.cameraNear,analog.uniforms.cameraNear);
+  assert.equal(direct.uniforms.CSM_cascades,analog.uniforms.CSM_cascades);
+  assert.equal(direct.uniforms.cameraNear.value,.001);
+  shadows.releaseModel(model);assert.equal(shadows.shaderUniforms.size,0);
+  shadows.dispose();model.geometry.dispose();model.material.dispose();
+});

@@ -330,7 +330,7 @@ function action(kind, currentInput = input) {
   }
   if (kind === "hover" && !controller.usingRadio && !flight.physics.turtleMode)
     controller.keyboard.throttle = hoverThrottle(flight.config);
-  if (kind === "view") flight.cycleView();
+  if (kind === "view" && !flight.preparingViews) flight.cycleView();
   if (kind === "reset") resetAircraft();
   if (kind === "mode") {
     const next = FLIGHT_MODES[(FLIGHT_MODES.indexOf(flight.physics.mode) + 1) % FLIGHT_MODES.length];
@@ -872,6 +872,7 @@ async function loadRoom(r) {
     applyAircraftCamera();
     renderCameraProfile(roomConfig.id);
     await configureLapGhost();
+    if (await flight.prepareViews({analog:cameraSettings.analog === true}) === false) return;
     if (roomKey(room) !== key || room.phase === "lobby" || room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished) {
       flight.active = false;
       if (!room) void fullscreen?.enterMenu();
@@ -1078,6 +1079,7 @@ async function launch() {
     if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
     applyAircraftCamera();
     await configureLapGhost();
+    if (await flight.prepareViews({analog:cameraSettings.analog === true}) === false) return;
     lap = newLap();
     localGhostRecorder.clear();
     simTime = 0;
@@ -1389,7 +1391,7 @@ function frame(now) {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
     radioGuide.render(controller, now);
   }
-  if (playing && (!paused || onlineLive || pauseRenderNeeded)) {
+  if (playing && !flight.preparingViews && (!paused || onlineLive || pauseRenderNeeded)) {
     const renderStart=diagnosticSample?performance.now():0;
     if(diagnosticSample)diagnostics.timer.begin(diagnosticSample);
     try { flight.render(dt, cameraSettings.analog === true && !paused && !flight.chase); } finally { if(diagnosticSample)diagnostics.timer.end(); }
@@ -1569,6 +1571,21 @@ function bindUI() {
     fpvOsd.setSettings(cameraSettings);
     $("#fpv-horizon").setAttribute("aria-label", t("settings.horizon"));
     write("camera", cameraSettings);
+    if (cameraSettings.analog && flight.active && !flight.analogPrepared && !flight.preparingViews) {
+      const version = flight.loadVersion;
+      const task = loading.begin('loading.flight', {name:t('map.' + flight.map.id)}, {overlay:true});
+      flight.preparingViews = true;
+      void (async () => {
+        try {
+          await paintLoading();
+          if (version === flight.loadVersion) await flight.prepareViews({analog:true});
+        } catch (error) { console.error(error); notice(t('error.requestFailed')); }
+        finally {
+          if (version === flight.loadVersion) {flight.preparingViews=false;pauseRenderNeeded=true;}
+          task.end();
+        }
+      })();
+    }
   }
   for(const d of catalog.drones)cameraProfiles.set(d.id,cameraProfiles.get(d.id));
   write('camera-profiles',cameraProfiles.profiles);renderCameraProfile(config.id);

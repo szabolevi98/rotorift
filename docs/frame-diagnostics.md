@@ -56,3 +56,35 @@ Böngészőben a panel, GPU-eredmények, működő JSON-letöltés és jelentés
 ellenőrzött. Egy rövid helyi X35/Betonudvar próba kb. 75 FPS mellett
 nem reprodukálta a jelzett 60 → 35 FPS beesést; a konkrét okhoz egy
 ilyen beesést tartalmazó felvétel szükséges.
+# View-switch shader preparation (2026-10-15)
+
+The first transition from clean FPV to a visible aircraft previously compiled
+the aircraft's lit/CSM programs inside the live render frame. Analog FPV also
+introduces separate linear render-target variants and its post-process program.
+The camera switch itself took 0–0.2 ms; program compilation caused the hitch.
+
+Local browser measurements on Playground / Rift X5, using the same render
+sequence with analog off/on and all three views:
+
+| First use | Render CPU before | New programs before | Render CPU after | New programs after |
+| --- | ---: | ---: | ---: | ---: |
+| External | 460.9 ms | 7 | 3.2 ms | 0 |
+| Clean analog FPV | 152.0 ms | 4 | 1.4 ms | 0 |
+| Visible-aircraft analog FPV | 2771.7 ms | 5 | 2.3 ms | 0 |
+
+All twelve prepared transitions took 0.6–3.2 ms render CPU, with approximately
+13.2–13.4 ms frame intervals in this local test. These are measurements of this
+scene and browser, not a frame-rate guarantee for other devices or positions.
+
+Solo and multiplayer loading now register the visible drone's CSM materials,
+compile the required programs with `compileAsync`, and render preparation frames
+under the loading screen to upload buffers and prepare depth/shadow variants.
+This does not step physics, alter the selected view, or change flight speed.
+Analog programs are only prepared when the option is enabled; enabling it later
+uses a short translucent loading overlay in settings. Normal rendering is held
+while preparation owns the camera; multiplayer simulation continues.
+
+The output target is restored before awaiting parallel shader completion.
+Cancelled loads cannot render over a newer aircraft. CSM projection uniforms
+are shared between direct and analog shader variants so the changing near plane
+stays consistent after switching views.

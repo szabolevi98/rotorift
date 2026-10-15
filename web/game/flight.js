@@ -22,6 +22,7 @@ import { PLAYGROUND_VIEW_DISTANCE } from "./playground.js";
 import { advanceFixedSteps } from '../../shared/physics/fixed-step.js';
 import { LapGhostPilot } from './lap-ghost.js';
 import { AnalogVideo } from './analog-video.js';
+import { prepareFlightViews } from './prepare-views.js';
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -64,6 +65,8 @@ export class Flight {
   async load(map, config, rates, mode, color = this.color ?? "coral", simulation, onProgress) {
     const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
+    this.preparingViews = false;
+    this.analogPrepared = false;
     this.parkShadows?.dispose();
     this.ghostVersion=(this.ghostVersion??0)+1;
     this.lapGhost?.dispose();this.lapGhost=null;
@@ -154,6 +157,19 @@ export class Flight {
     if (this.visual) this.visual.visible = this.view !== "fpv-clean";
   }
   cycleView() { this.setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(this.view) + 1) % CAMERA_VIEWS.length]); }
+  getAnalogVideo() { return this.analogVideo ??= new AnalogVideo(this.renderer); }
+  async prepareViews(options = {}) {
+    const version = this.loadVersion;
+    this.preparingViews = true;
+    try {
+      const ready = await prepareFlightViews(this, {...options, current: () => version === this.loadVersion});
+      if (version !== this.loadVersion) return false;
+      if (ready && options.analog) this.analogPrepared = true;
+      return ready;
+    } finally {
+      if (version === this.loadVersion) this.preparingViews = false;
+    }
+  }
   setCameraSettings(angle, fov) {
     this.cameraRig.setSettings(angle, fov);
   }
@@ -299,8 +315,7 @@ export class Flight {
     }
     this.parkShadows?.update({ dynamic: this.view !== "fpv-clean" || this.remotes.size > 0 });
     if (analog) {
-      this.analogVideo ??= new AnalogVideo(this.renderer);
-      this.analogVideo.render(this.scene, this.camera, dt);
+      this.getAnalogVideo().render(this.scene, this.camera, dt);
     } else {
       this.analogVideo?.reset();
       this.renderer.render(this.scene, this.camera);

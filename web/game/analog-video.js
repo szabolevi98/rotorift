@@ -91,12 +91,16 @@ export class AnalogVideo {
     this.screen.add(mesh); this.camera=new THREE.Camera(); this.geometry=geometry;
   }
   reset() { this.time=0; }
-  render(scene, camera, dt) {
-    this.time += Math.max(0,Math.min(.1,Number.isFinite(dt)?dt:0));
+  resize() {
     const renderer=this.renderer, canvas=renderer.domElement;
     const [width,height]=analogResolution(canvas.width,canvas.height);
     if(this.target.width!==width||this.target.height!==height)this.target.setSize(width,height);
     this.material.uniforms.resolution.value.set(width,height);
+  }
+  render(scene, camera, dt) {
+    this.time += Math.max(0,Math.min(.1,Number.isFinite(dt)?dt:0));
+    this.resize();
+    const renderer=this.renderer;
     for(const [key,value] of Object.entries(analogSignal(this.time,this.motionPreference?.matches)))
       this.material.uniforms[key].value=value;
     const previousTarget=renderer.getRenderTarget(), autoReset=renderer.info.autoReset;
