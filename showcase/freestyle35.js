@@ -117,8 +117,7 @@ function createRiftX35({cameraMount='cage'}={}) {
       const end=prefix==='FC'?[x,12.0,12.2]:[x,11.65,20.9];
       wire(electronic,[end,[x,pcbTop+.6,z],[x,pcbTop+.32,z]],.12,materials.silver,prefix+'_VTX_'+name+'_tinned_end',6);
     }
-    const bundleX=(i-1.5);
-    wire(electronic,[[x,12,12.2],[bundleX,13.5,14.5],[bundleX,13.5,18.3],[x,11.65,20.9]],.25,mat,'VTX_'+name+'_wire');
+    wire(electronic,[[x,12,12.2],[x,13.5,14.5],[x,13.5,18.3],[x,11.65,20.9]],.25,mat,'VTX_'+name+'_wire');
   }
   const cameraSet=assembly('X35_05_FPV_camera',[0,0,-16]);
   if(cameraMount==='original')for(const side of [-1,1]){
