@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { PARK_BUILDINGS, PARK_LAKES, parkSurfaceHeight } from "../../shared/world/park-layout.js";
+import { PARK_BUILDINGS, PARK_LAKES, PARK_BRIDGE, parkSurfaceHeight } from "../../shared/world/park-layout.js";
 
 export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometry, material, materials, textures }) {
   const markers = [];
@@ -88,7 +88,7 @@ export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometr
 
   // The smaller lake has a real pedestrian bridge, with clear gaps between piers.
   const small = PARK_LAKES.find((lake) => !lake.fountain);
-  const bridgeY = 2.8, length = 116;
+  const {deckY:bridgeY,length,rampLength} = PARK_BRIDGE;
   mark("garden-bridge", [small.x, bridgeY, small.z]);
   part([length, 0.22, 6], [small.x, bridgeY - 0.11, small.z], palette.wood);
   for (const side of [-1, 1]) {
@@ -105,7 +105,7 @@ export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometr
   for (let x = -length / 2; x < length / 2; x += 0.8)
     part([0.025, 0.008, 5.8], [small.x + x, bridgeY + 0.006, small.z], palette.cedar, false);
   for (const side of [-1, 1]) {
-    const startX = small.x + side * length / 2, endX = startX + side * 16;
+    const startX = small.x + side * length / 2, endX = startX + side * rampLength;
     const positions = [startX, bridgeY, small.z - 3, startX, bridgeY, small.z + 3,
       endX, parkSurfaceHeight(endX, small.z - 3) + 0.06, small.z - 3,
       endX, parkSurfaceHeight(endX, small.z + 3) + 0.06, small.z + 3];

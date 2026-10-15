@@ -7,7 +7,7 @@ import { appendTerrainVertex, makeParkDistantTerrain } from "./park-terrain.js";
 import { makeSurfaceGeometry } from "./surface-geometry.js";
 import { parkPaving, parkGravel, parkCurbs } from "../../shared/world/map-surfaces.js";
 import {
-  PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS,
+  PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_TREE_POSITIONS, PARK_SHRUB_POSITIONS,
   PARK_BENCHES, PARK_GARDEN, sampleParkPath, pathClearance,
   parkSurfaceHeight, parkClearance, chunkRandom, lakeOutline,
 } from "../../shared/world/park-layout.js";
@@ -441,6 +441,14 @@ export function buildPark(scene, world, RAPIER, map) {
       const h = 0.6 + rng() * 0.9;
       add("bush", x, parkSurfaceHeight(x, z) + h * 0.55, z, [h * 1.1, h * 0.65, h], rng() * 6,
         rng() > 0.6 ? 0xa9af74 : 0x78915b);
+    }
+    for (const {x,z,height:h,angle,shade} of PARK_SHRUB_POSITIONS) {
+      if (x<x0||x>=x0+PARK_CHUNK_SIZE||z<z0||z>=z0+PARK_CHUNK_SIZE) continue;
+      if (!parkClearance(x,z,map,2.2)) continue;
+      const color=[0x78915b,0x8d9b63,0x667e48][shade];
+      add('bush',x,parkSurfaceHeight(x,z)+h*.53,z,[h*1.3,h*.65,h*1.1],angle,color);
+      const lx=x+Math.cos(angle)*h*.8,lz=z+Math.sin(angle)*h*.8;
+      add('bush',lx,parkSurfaceHeight(lx,lz)+h*.35,lz,[h*.8,h*.45,h*.85],angle+.8,color);
     }
     for (let i = 0; i < 180; i++) {
       const x = x0 + rng() * PARK_CHUNK_SIZE, z = z0 + rng() * PARK_CHUNK_SIZE;

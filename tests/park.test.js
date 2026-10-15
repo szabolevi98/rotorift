@@ -3,13 +3,28 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_SPORT, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_SPORT, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS, PARK_BRIDGE, PARK_TREE_POSITIONS, PARK_SHRUB_POSITIONS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { makeParkDistantTerrain, PARK_VIEW_DISTANCE, PARK_TERRAIN_RINGS } from "../web/game/park-terrain.js";
 import { DronePhysics } from "../shared/physics/drone.js";
 const map = JSON.parse(await readFile(new URL("../data/maps/liget.json", import.meta.url)));
 await RAPIER.init();
+
+test('the lake bridge, ramps and approaches exclude foliage while small shrub islands fill lawn gaps', () => {
+  const free={...map,gates:[]};
+  for(const side of [-1,1])for(const offset of [0,55,65,80])
+    assert.equal(parkClearance(PARK_BRIDGE.x+side*offset,PARK_BRIDGE.z,free,2.2),false);
+  const trees=PARK_TREE_POSITIONS.filter(([x,z])=>parkClearance(x,z,free,8));
+  for(const [x,z]of trees) {
+    const dx=Math.max(0,Math.abs(x-PARK_BRIDGE.x)-PARK_BRIDGE.length/2-PARK_BRIDGE.rampLength);
+    const dz=Math.max(0,Math.abs(z-PARK_BRIDGE.z)-PARK_BRIDGE.width/2);
+    assert.ok(Math.hypot(dx,dz)>8,'tree crowns must clear the whole bridge and both ramps');
+  }
+  const shrubs=PARK_SHRUB_POSITIONS.filter(({x,z})=>parkClearance(x,z,free,2.2));
+  assert.ok(shrubs.length>=80&&shrubs.length<170,'retain scattered planting islands instead of filling every lawn');
+  for(const {x,z,height}of shrubs){assert.ok(pathClearance(x,z)>=3);assert.ok(height<1);}
+});
 
 test("Liget is 700 m across, its start is level, and hills have usable variation", () => {
   assert.equal(map.size, 700);

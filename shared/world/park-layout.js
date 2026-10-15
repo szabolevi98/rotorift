@@ -13,6 +13,8 @@ export const PARK_LAKES = [
   { id: "grand-lake", x: -205, z: -130, rx: 86, rz: 60, waterY: 0.35, fountain: true, phase: 0.4 },
   { id: "garden-lake", x: 190, z: 175, rx: 44, rz: 31, waterY: 0.25, fountain: false, phase: 1.7 },
 ];
+const bridgeLake = PARK_LAKES.find(lake => lake.id === 'garden-lake');
+export const PARK_BRIDGE = { x:bridgeLake.x, z:bridgeLake.z, length:116, width:6, rampLength:16, deckY:2.8 };
 export const PARK_BUILDINGS = [
   { id: "boathouse", x: -74, z: -130, width: 16, depth: 12, baseY: 2.75 },
   { id: "cafe", x: 110, z: -155, width: 22, depth: 14, baseY: 2 },
@@ -51,7 +53,25 @@ export const PARK_TREE_POSITIONS = groves.flatMap(([x, z, radius, count], grove)
 ).concat(
   Array.from({ length: 19 }, (_, i) => -315 + i * 35).flatMap((z) => [[-20, z], [20, z]]),
   PARK_LAKES.flatMap((lake, i) => lakeOutline(lake, 1.65, i === 0 ? 28 : 18).slice(0, -1)),
+  // Stand back from the bridge approaches instead of growing out of its deck.
+  [[106, 151], [281, 196]],
 );
+
+// Small planting islands break up the large lawns without closing flight lines.
+// Fixed centres make the composition reproducible in the game and showcase.
+const shrubPatches = [
+  [-74,-180], [55,-215], [143,-286], [-155,-307], [-313,-189],
+  [-130,-28], [-57,46], [45,65], [-105,98], [92,153],
+  [244,10], [276,101], [323,194], [236,260], [177,302],
+  [62,320], [-78,318], [-172,249], [-247,208], [-309,65],
+  [-197,6], [191,-8], [100,-65], [52,-45],
+];
+export const PARK_SHRUB_POSITIONS = shrubPatches.flatMap(([x,z], patch) =>
+  Array.from({length:7}, (_, i) => {
+    const angle=i*2.39996323+patch*.7, radius=2+Math.sqrt(i/6)*(6+patch%4);
+    return {x:x+Math.cos(angle)*radius,z:z+Math.sin(angle)*radius,
+      height:.55+(i%3)*.18,angle,shade:(patch+i)%3};
+  }));
 
 export function lakeRadius(lake, angle) {
   return 1 + Math.sin(angle * 3 + lake.phase) * 0.07 + Math.cos(angle * 5 - lake.phase) * 0.04;
@@ -189,6 +209,8 @@ export function parkClearance(x, z, map, radius = 0) {
   if (Math.abs(x) + radius >= half || Math.abs(z) + radius >= half) return false;
   if (Math.abs(x) < 29 && Math.abs(z) < 28) return false;
   if (Math.hypot(x - map.spawn[0], z - map.spawn[2]) < 7) return false;
+  if (Math.abs(x-PARK_BRIDGE.x) < PARK_BRIDGE.length/2+PARK_BRIDGE.rampLength+8+radius
+    && Math.abs(z-PARK_BRIDGE.z) < PARK_BRIDGE.width/2+2+radius) return false;
   for (const lake of PARK_LAKES)
     if (lakeDistance(lake, x, z) < 1.23 + radius / Math.min(lake.rx, lake.rz)) return false;
   for (const b of PARK_BUILDINGS)
