@@ -10,5 +10,5 @@
   "routeVersion": 1,
   "gates": [],
   "racingEnabled": false,
-  "boundary": { "returnAfterSeconds": 600 }
+  "boundary": { "returnAfterSeconds": 60 }
 }

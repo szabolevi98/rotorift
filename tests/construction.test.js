@@ -22,7 +22,7 @@ test("construction site has open bays/shafts, a clear main road, a real excavati
   const scene = new THREE.Scene(), world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
   const site = buildConstruction(scene, world, RAPIER, map); world.step();
   try {
-    assert.equal(map.size, 600); assert.equal(map.boundary.returnAfterSeconds, 600);
+    assert.equal(map.size, 600); assert.equal(map.boundary.returnAfterSeconds, 60);
     assert.equal(map.racingEnabled, false); assert.deepEqual(map.gates, []);
     assert.ok(Math.max(...CONSTRUCTION_CRANES.map(c => c.height)) >= 75);
     assert.equal(CONSTRUCTION_VEHICLES.length, 9);

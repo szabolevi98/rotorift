@@ -181,7 +181,7 @@ Ugyanez az árnyékolás működik a pályanézetben. A betöltött növények �
 is megkapják; pályaváltáskor az árnyéktérképek és az anyagokhoz rendelt módosítások
 felszabadulnak. A külön modell-előnézet saját anyagai megmaradnak.
 
-Kilépés után a HUD 10 percről számol vissza, aktív játékidő szerint. Visszatéréskor
+Kilépés után a HUD 1 percről számol vissza, aktív játékidő szerint. Visszatéréskor
 törlődik, menü alatt megáll; lejáratkor disarmolt visszaállítás következik.
 Online a szerver méri az időt, és elég nagy mozgástartományt enged a külső repüléshez.
 A Liget pálya- és útvonalverziója 3. Az időmérő ideiglenesen kikapcsolva, a kapulista üres.
@@ -214,7 +214,7 @@ szerinti instancelt csoportra oszlik; 4864 statikus ütköző közül csak a kö
 részek vesznek részt a repülés fizikájában.
 
 Pálya- és útvonalverzió: 2. A régi kapuk eltávolítva, az időmérő ideiglenesen
-tiltva helyben és online. A kerítés elhagyásakor 10 perces visszatérési idő jár.
+tiltva helyben és online. A kerítés elhagyásakor 1 perces visszatérési idő jár.
 3D nézet a játék pályaválasztója alatt, vagy
 `/map-preview.html?map=betonudvar`, tizenkét nézettel és öt nyelven.
 
@@ -277,7 +277,7 @@ Az `npm test` a következőket ellenőrzi:
 - Távoli talaj fedése 100, 500 és 2000 m magasságból, illeszkedő részletességi szintek és korlátos geometria.
 - Árnyékok talaj- és lombkorona-lefedése 100–1000 m magasságból; 52–140° látószög
   és fekvő/álló képarány; új anyagok árnyékolása és erőforrások felszabadítása.
-- A 600 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
+- A 60 másodperces határidő, visszatérés és szünet kezelése; online visszaállítás
   valódi WebSocket klienssel, a tesztben rövidített türelmi idővel.
 - Betonudvar: szabad főút, nyitott födémaknák és átrepülhető első szint minden
   betonvázban; ütköző oszlopok, tényleges munkagödör/lejtők, üreges betoncsövek,

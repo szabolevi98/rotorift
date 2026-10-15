@@ -40,7 +40,7 @@ nem tölti ki láthatatlan doboz. Festett, kopott csatlakozások és beton
 talprögzítések egészítik ki. Belső, lekerekített sétány, ültetett szegélyek,
 ugróiskola és változatosabb lombkoronák teszik rendezettebbé a környezetet.
 
-A kerítésen kívül csak a talaj folytatódik a horizontig. 10 perces visszatérési
+A kerítésen kívül csak a talaj folytatódik a horizontig. 1 perces visszatérési
 időkorlát működik. A nyitott mászóvár, alacsony átjárók és fahenger a 65/75-ös
 whoophoz adnak szűk repülhető helyeket; minden drón választhatja a pályát.
 

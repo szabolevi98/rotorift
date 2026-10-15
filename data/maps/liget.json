@@ -4,7 +4,7 @@
   "name": "Liget",
   "kind": "park",
   "size": 700,
-  "boundary": { "returnAfterSeconds": 600 },
+  "boundary": { "returnAfterSeconds": 60 },
   "racingEnabled": false,
   "spawn": [0, 0.15, 60],
   "routeId": "garden-loop",

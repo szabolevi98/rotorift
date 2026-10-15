@@ -18,7 +18,10 @@ test("catalog contains five valid drone models and four maps with explicit race 
       (await stat(new URL("../web" + c.model, import.meta.url))).size > 100000,
     );
   }
-  for (const m of maps) assert.equal(validateMap(m), m);
+  for (const m of maps) {
+    assert.equal(validateMap(m), m);
+    assert.equal(m.boundary.returnAfterSeconds, 60, 'every map allows one minute to return');
+  }
   const park = maps.find((m) => m.id === "liget");
   assert.equal(canRace(park), true);
   assert.equal(park.routeId, "race_1");

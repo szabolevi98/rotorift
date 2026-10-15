@@ -163,7 +163,7 @@
   "key.mode": "Cycle flight mode",
   "key.hover": "Keyboard hover throttle",
   "hud.boundary": "Outside the park · Return to launch in {time} · Fly back inside the fence",
-  "hud.boundaryReset": "10 minutes outside the park have elapsed. The drone returned to launch.",
+  "hud.boundaryReset": "One minute outside the map has elapsed. The drone returned to launch.",
   "fly.mapPreview": "View map in 3D ↗",
   "fly.color": "Drone color",
   "fly.colorHint": "TPU and whoop frame. In multiplayer, your trail uses this color too.",

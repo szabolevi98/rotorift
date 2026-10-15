@@ -13,7 +13,7 @@
   "routeVersion": 2,
   "gates": [],
   "boundary": {
-    "returnAfterSeconds": 600
+    "returnAfterSeconds": 60
   },
   "racingEnabled": false
 }

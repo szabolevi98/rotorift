@@ -166,7 +166,7 @@ optimalizálás után kerülnek a játék assetjei közé, a fizikai ütközőte
 - A kerítés jól láthatóan jelölje a játszható terület szélét, de legyen átrepülhető.
   A terep a kerítésen túl is folytatódjon, a drón körül betöltődő új területekkel.
   A kerítésen kívül kizárólag talaj legyen; növényzet, utak és más objektumok ne.
-- Kilépéskor 10 perces aktív játékidős visszaszámlálás indul. Visszatéréskor törlődik;
+- Kilépéskor 1 perces aktív játékidős visszaszámlálás indul. Visszatéréskor törlődik;
   szünet alatt megáll. Lejáratkor a drón disarmolva visszatér a rajthelyre.
   Ugyanez online is működjön, szerveroldali időméréssel.
 - Nyitott füves részek, fák, lombkoronák és változatos repülhető átjárók.
@@ -194,7 +194,7 @@ A Liget napos skyboxot, meleg napfényt és néhány felhőt kap; a pályaelőn�
   homlokrakodó, dömper és billenőplatós teherautó; rendezett munkautak és géppark.
 - Valódi munkagödör alaptestekkel, anyagraktár, nyitott konténerek, üreges betoncsövek,
   irodakonténerek, szervizterület, állványzat és ideiglenes kerítés.
-- A kerítésen kívül folytatódó, objektumok nélküli föld és 10 perces visszatérési idő.
+- A kerítésen kívül folytatódó, objektumok nélküli föld és 1 perces visszatérési idő.
 - Az átépítés idején az időmérő és checkpointok itt is kikapcsolva;
   a kapus útvonalat a végleges pálya alapján tervezzük újra.
 - Beltéri és kültéri szakaszok, repülhető rések, freestyle vonalak és kapus útvonalak.

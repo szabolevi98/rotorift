@@ -163,7 +163,7 @@
   "key.mode": "Repülési mód váltása",
   "key.hover": "Billentyűzetes lebegési gáz",
   "hud.boundary": "A parkon kívül vagy · Visszatérés a rajthelyre: {time} · Repülj vissza a kerítésen belülre",
-  "hud.boundaryReset": "Letelt a 10 perc a parkon kívül. A drón visszakerült a rajthelyre.",
+  "hud.boundaryReset": "Letelt az 1 perc a pályán kívül. A drón visszakerült a rajthelyre.",
   "fly.mapPreview": "Pálya megtekintése 3D-ben ↗",
   "fly.color": "Drón színe",
   "fly.colorHint": "TPU és whoopváz. Multiplayerben a nyomvonalad is ezt a színt kapja.",

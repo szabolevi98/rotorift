@@ -67,7 +67,7 @@ a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
   parkoló és öt autó található; a fő sétányt szabadon hagyó saját bekötésekkel.
   A Liget időmérője és checkpointjai az elrendezés véglegesítéséig kikapcsolva.
   Betonudvar: félkész építkezés, saját kapus útvonallal.
-- A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 10 perces visszaszámlálás
+- A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 1 perces visszaszámlálás
   indul; visszatéréskor törlődik, lejáratkor a drón visszaáll a rajthelyre.
   Külön, fokozatosan egyszerűsödő távoli domborzat tölti ki a horizontot; a közeli
   objektumok és ütközések ettől függetlenül töltődnek be. A látótávolság 12 km.

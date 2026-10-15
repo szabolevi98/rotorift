@@ -25,7 +25,7 @@ activation, velocity lookahead and CCD use the existing simulator pipeline.
 One unbroken analytic floor extends far beyond the district boundary. Its
 visible surface is tiled asphalt inside the 600 m square and bare green grass
 outside; these surfaces meet at the boundary without overlapping. Outside
-scenery stays empty, with the existing 10-minute return timer. The horizon-sized
+scenery stays empty, with the existing 1-minute return timer. The horizon-sized
 collision box is not drawn, avoiding giant foreground triangles.
 
 The shared launch marking is a single, terrain-following disc with explicit

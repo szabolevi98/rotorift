@@ -38,7 +38,7 @@ test('the small parking-lawn garden retains connected seating and intentionally 
 
 test("Liget is 700 m across, its start is level, and hills have usable variation", () => {
   assert.equal(map.size, 700);
-  assert.equal(map.boundary.returnAfterSeconds, 600);
+  assert.equal(map.boundary.returnAfterSeconds, 60);
   assert.equal(parkHeight(map.spawn[0], map.spawn[2]), 0);
   const heights = [];
   for (let x = -300; x <= 300; x += 30) for (let z = -300; z <= 300; z += 30)
@@ -272,21 +272,21 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
   park.dispose(); assert.equal(scene.children.length, 0); world.free();
 });
 
-test("boundary gives ten full minutes, clears on reentry, and pauses when no time advances", () => {
+test("boundary gives one full minute, clears on reentry, and pauses when no time advances", () => {
   const boundary = new MapBoundary(map);
   assert.equal(boundary.update([350, 15, 350], 60), false);
   assert.equal(boundary.outside, false);
   assert.equal(boundary.update([350.1, 15, 0], 0), false);
-  assert.equal(boundary.remainingSeconds, 600);
-  assert.equal(boundary.update([351, 15, 0], 599.9), false);
+  assert.equal(boundary.remainingSeconds, 60);
+  assert.equal(boundary.update([351, 15, 0], 59.9), false);
   assert.equal(boundary.update([351, 15, 0], 0), false);
   assert.equal(boundary.update([351, 15, 0], 0.1), true);
   boundary.reset();
-  boundary.update([-351, 1, 0], 400);
+  boundary.update([-351, 1, 0], 40);
   boundary.update([349, 1, 0], 1);
   assert.equal(boundary.outside, false);
   boundary.update([0, 1, -351], 1);
-  assert.equal(boundary.remainingSeconds, 599);
+  assert.equal(boundary.remainingSeconds, 59);
   const unlimited = new MapBoundary({ size: 120 });
   assert.equal(unlimited.update([1e6, 10, -1e6], 700), false);
 });
