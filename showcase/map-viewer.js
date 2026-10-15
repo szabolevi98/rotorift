@@ -7,7 +7,7 @@ import { createMapAtmosphere } from "../web/game/map-atmosphere.js";
 import { ParkShadows } from "../web/game/park-shadows.js";
 import { PARK_VIEW_DISTANCE } from "../web/game/park-terrain.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
-import { PARK_GARDEN, parkSurfaceHeight } from "../shared/world/park-layout.js";
+import { PARK_GARDEN, PARK_POCKET, parkSurfaceHeight } from "../shared/world/park-layout.js";
 import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
@@ -17,6 +17,9 @@ import { RouteDraft, normalFromYaw, yawFromNormal } from "../shared/race/editor.
 const PARK_VIEWS = {
   overview: ["Park overview", [0,520,125], [0,2,0]],
   pavilion: ["Pavilion and passage", [43,21,55], [0,3,0]],
+  gallery: ["Upper gallery and stair entry", [29,10,23], [7,6,2]],
+  stairs: ["Connected pavilion stairs", [32,8,17], [20,3.7,7]],
+  pocket: ["Parking lawn garden", [112,parkSurfaceHeight(PARK_POCKET.x,PARK_POCKET.z)+27,201], [PARK_POCKET.x,parkSurfaceHeight(PARK_POCKET.x,PARK_POCKET.z)+1,PARK_POCKET.z]],
   garden: ["Garden pergola", [PARK_GARDEN.x-23,21,PARK_GARDEN.z+24], [PARK_GARDEN.x,3,PARK_GARDEN.z]],
   lake: ["Small lake and bridge", [249,43,240], [190,2,175]],
   hill: ["Hilltop pavilion", [-265,58,225], [-210,12,180]],

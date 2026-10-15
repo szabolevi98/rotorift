@@ -227,19 +227,62 @@ export function buildPark(scene, world, RAPIER, map) {
   part([36.5, 0.28, 26], [0, 4.48, 0], palette.concrete);
   part([39, 0.32, 29], [0, 8.25, 0], palette.concrete);
   part([39.3, 0.22, 29.3], [0, 8.46, 0], palette.metal, false);
+  // Retain the glazed wings and floating roof, but open a 10 m gallery route
+  // through the upper storey, directly above the iconic ground passage.
   for (const z of [-12.8, 12.8]) {
-    part([36, 2.8, 0.1], [0, 6.25, z], palette.glass);
-    for (const x of [-17.7, -12, -6, 0, 6, 12, 17.7])
+    for(const side of [-1,1])part([13, 2.8, 0.1], [side*11.5, 6.25, z], palette.glass);
+    for (const x of [-17.7, -12, -5, 5, 12, 17.7])
       part([0.075, 3.45, 0.1], [x, 6.5, z], palette.metal);
     part([36, 0.12, 0.12], [0, 7.9, z], palette.metal);
   }
-  for (const x of [-17.9, 17.9]) part([0.1, 3.2, 25], [x, 6.15, 0], palette.glass);
+  part([0.1, 3.2, 25], [-17.9, 6.15, 0], palette.glass);
+  // A full-height side doorway joins the stair landing at Z=5.
+  for(const [z,depth]of [[-4.65,15.7],[9.65,5.7]])
+    part([0.1,3.2,depth],[17.9,6.15,z],palette.glass);
+  for(const z of [3.2,6.8])part([.12,3.46,.12],[17.9,6.35,z],palette.metal);
+  part([.12,.12,3.72],[17.9,7.9,5],palette.metal);
+  for(const side of [-1,1]){
+    bench(side*11,7,0,4.62);
+    part([3.2,.42,1.1],[side*12,4.83,-7],palette.cedar);
+    for(const dx of [-.9,0,.9])part([.8,.48,.47],[side*12+dx,5.25,-7],palette.bush,false,dx,'bush');
+  }
   // Slatted soffit and side lights leave the entire flight corridor clear.
   for (let z = -12; z <= 12; z += 1.4)
     part([8.2, 0.085, 0.1], [0, 4.26, z], palette.wood);
   for (const x of [-4.5, 4.5]) part([0.08, 0.04, 23], [x, 4.2, 0], palette.flowers, false);
-  for (let i = 0; i < 25; i++)
-    part([3, 0.18, 0.33], [21, (i + 1) * 0.18, 14 - i * 0.33], palette.concrete);
+  // Grounded solid steps terminate at a supported landing exactly flush with
+  // the 4.62 m gallery floor; its open left edge meets the new side doorway.
+  const stairBase=.12,stairTop=4.62,tread=.30,count=28,firstZ=14.2;
+  const lastZ=firstZ-(count-1)*tread,landingEdge=lastZ-tread/2;
+  part([4,.12,1.7],[21,.06,firstZ+tread/2+.85],palette.concrete);
+  for(let i=0;i<count;i++){
+    const height=(stairTop-stairBase)*(i+1)/count;
+    part([3,height,tread],[21,stairBase+height/2,firstZ-i*tread],palette.concrete);
+  }
+  part([4.25,.22,2],[20.375,stairTop-.11,landingEdge-1],palette.concrete);
+  for(const z of [landingEdge-.2,landingEdge-1.8])
+    part([.22,4.4,.22],[22.2,2.2,z],palette.concrete);
+  const slopedRail=(a,b)=>{
+    const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),delta=end.clone().sub(start);
+    const rail=new THREE.Mesh(boxGeometry,palette.metal);rail.position.copy(start).add(end).multiplyScalar(.5);
+    rail.scale.set(.075,delta.length(),.075);rail.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());
+    rail.castShadow=rail.receiveShadow=true;root.add(rail);rail.updateMatrixWorld(true);
+    if(world){
+      const desc=RAPIER.ColliderDesc.cuboid(.0375,rail.scale.y/2,.0375).setTranslation(...rail.position.toArray()).setRotation(rail.quaternion).setFriction(.85);
+      const collider=world.createCollider(desc),bounds=new THREE.Box3().setFromObject(rail);
+      collisionRegions.add(collider,bounds.min.toArray(),bounds.max.toArray());
+    }
+  };
+  for(const x of [19.43,22.57]){
+    for(const i of [0,7,14,21,27]){
+      const top=stairBase+(stairTop-stairBase)*(i+1)/count;
+      part([.075,1.05,.075],[x,top+.525,firstZ-i*tread],palette.metal);
+    }
+    slopedRail([x,stairBase+(stairTop-stairBase)/count+1.05,firstZ],[x,stairTop+1.05,lastZ]);
+  }
+  for(const z of [landingEdge,landingEdge-2])part([.075,1.05,.075],[22.57,stairTop+.525,z],palette.metal);
+  part([.075,.075,2.15],[22.57,stairTop+1.05,lastZ-1.075],palette.metal);
+  part([4.32,.075,.075],[20.41,stairTop+1.05,landingEdge-2],palette.metal);
   bench(-10, 19, Math.PI); bench(10, 19, Math.PI);
   // Curving promenades, gravel trails, and narrow stone edging.
   for (const [polygons, mat] of [[parkPaving, palette.paving], [parkGravel, palette.gravel]]) {

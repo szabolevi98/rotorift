@@ -25,6 +25,12 @@ export const PARK_SPORT = {
   court: { x: -58, z: 238, width: 26, depth: 40, baseY: 3 },
   parking: { x: 58, z: 238, width: 54, depth: 46, baseY: 2.2 },
 };
+export const PARK_POCKET = {
+  x:61,z:166,
+  benches:[[52,170],[68,170]],
+  trees:[[43,148],[84,158],[79,189]],
+  shrubs:[[43,173],[75,177],[88,175],[54,148],[73,146]],
+};
 export const PARK_CLEARINGS = [
   { x: 0, z: 0, rx: 55, rz: 48 },
   { x: 5, z: 205, rx: 103, rz: 78 },
@@ -55,6 +61,7 @@ export const PARK_TREE_POSITIONS = groves.flatMap(([x, z, radius, count], grove)
   PARK_LAKES.flatMap((lake, i) => lakeOutline(lake, 1.65, i === 0 ? 28 : 18).slice(0, -1)),
   // Stand back from the bridge approaches instead of growing out of its deck.
   [[106, 151], [281, 196]],
+  PARK_POCKET.trees,
 );
 
 // Small planting islands break up the large lawns without closing flight lines.
@@ -71,7 +78,7 @@ export const PARK_SHRUB_POSITIONS = shrubPatches.flatMap(([x,z], patch) =>
     const angle=i*2.39996323+patch*.7, radius=2+Math.sqrt(i/6)*(6+patch%4);
     return {x:x+Math.cos(angle)*radius,z:z+Math.sin(angle)*radius,
       height:.55+(i%3)*.18,angle,shade:(patch+i)%3};
-  }));
+  })).concat(PARK_POCKET.shrubs.map(([x,z],i)=>({x,z,height:.7,angle:i*.8,shade:i%3})));
 
 export function lakeRadius(lake, angle) {
   return 1 + Math.sin(angle * 3 + lake.phase) * 0.07 + Math.cos(angle * 5 - lake.phase) * 0.04;
@@ -160,6 +167,7 @@ export const PARK_PATHS = [
   { width: 3, points: [[-28, 202], [-28, 223], [-28, 238], [-45, 238]] },
   { width: 3, points: [[-28, 238], [-28, 263], [-40, 279], [-58, 283]] },
   { width: 7, points: [[0, 238], [16, 238], [31, 238]] },
+  { width: 2, points: [[0,159],[22,159],[43,166],[74,166]] },
 ];
 
 // Rendering, furnishing and vegetation all use the same curved centerlines.
@@ -195,7 +203,8 @@ export const PARK_BENCHES = [
   const offset = side * (PARK_PATHS[index].width / 2 + 1.9);
   return { x: p.x - p.tz * offset, z: p.z + p.tx * offset,
     angle: Math.atan2(-p.tz, p.tx) + (side < 0 ? Math.PI : 0), tx: p.tx, tz: p.tz };
-}).filter(({ x, z }) => pathClearance(x, z) > 1.5);
+}).concat(PARK_POCKET.benches.map(([x,z])=>({x,z,angle:0,tx:1,tz:0})))
+  .filter(({ x, z }) => pathClearance(x, z) > 1.5);
 
 export function segmentDistance(x, z, a, b) {
   const dx = b[0] - a[0], dz = b[1] - a[1];
@@ -217,8 +226,12 @@ export function parkClearance(x, z, map, radius = 0) {
     if (Math.abs(x - b.x) < b.width / 2 + 12 + radius && Math.abs(z - b.z) < b.depth / 2 + 12 + radius) return false;
   for (const area of [PARK_SPORT.court, PARK_SPORT.parking])
     if (Math.abs(x - area.x) < area.width / 2 + 3 + radius && Math.abs(z - area.z) < area.depth / 2 + 3 + radius) return false;
-  for (const clearing of PARK_CLEARINGS)
+  const plannedPocketPlant = [...PARK_POCKET.trees,...PARK_POCKET.shrubs].some(([px,pz])=>x===px&&z===pz);
+  for (const clearing of PARK_CLEARINGS) {
+    // Only the deliberately placed pocket garden may enter this open lawn.
+    if(clearing===PARK_CLEARINGS[1]&&plannedPocketPlant)continue;
     if (Math.hypot((x - clearing.x) / (clearing.rx + radius), (z - clearing.z) / (clearing.rz + radius)) < 1) return false;
+  }
   if (pathClearance(x, z) < 3) return false;
   for (const seat of PARK_BENCHES)
     if (Math.hypot(x - seat.x, z - seat.z) < radius + 3.5) return false;

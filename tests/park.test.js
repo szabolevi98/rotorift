@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_SPORT, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS, PARK_BRIDGE, PARK_TREE_POSITIONS, PARK_SHRUB_POSITIONS } from "../shared/world/park-layout.js";
+import { parkHeight, parkSurfaceHeight, parkClearance, pathClearance, PARK_BENCHES, PARK_GARDEN, PARK_SPORT, PARK_POCKET, PARK_CHUNK_SIZE, PARK_GRID_STEPS, PARK_PATHS, PARK_LAKES, PARK_BUILDINGS, PARK_BRIDGE, PARK_TREE_POSITIONS, PARK_SHRUB_POSITIONS } from "../shared/world/park-layout.js";
 import { MapBoundary } from "../shared/world/boundary.js";
 import { makeParkTerrain, buildPark, ribbon } from "../web/game/park.js";
 import { makeParkDistantTerrain, PARK_VIEW_DISTANCE, PARK_TERRAIN_RINGS } from "../web/game/park-terrain.js";
@@ -24,6 +24,16 @@ test('the lake bridge, ramps and approaches exclude foliage while small shrub is
   const shrubs=PARK_SHRUB_POSITIONS.filter(({x,z})=>parkClearance(x,z,free,2.2));
   assert.ok(shrubs.length>=80&&shrubs.length<170,'retain scattered planting islands instead of filling every lawn');
   for(const {x,z,height}of shrubs){assert.ok(pathClearance(x,z)>=3);assert.ok(height<1);}
+});
+
+test('the small parking-lawn garden retains connected seating and intentionally spaced trees',()=>{
+  const free={...map,gates:[]};
+  for(const [x,z]of PARK_POCKET.trees){assert.ok(parkClearance(x,z,free,8));assert.ok(pathClearance(x,z)>8);}
+  for(const [x,z]of PARK_POCKET.shrubs)assert.ok(parkClearance(x,z,free,2.2));
+  for(const [x,z]of PARK_POCKET.benches){
+    assert.ok(PARK_BENCHES.some(seat=>seat.x===x&&seat.z===z));
+    assert.ok(pathClearance(x,z)>1.5&&pathClearance(x,z)<5,'seats must face a nearby path without sitting on it');
+  }
 });
 
 test("Liget is 700 m across, its start is level, and hills have usable variation", () => {
@@ -215,6 +225,16 @@ test("the pavilion passage is flyable and the streamed landscape has no fence wa
   assert.equal(cafeBay, null, "the cafe terrace and side bay must be open");
   const passage = castRay(new RAPIER.Ray({ x: 0, y: 2, z: 22 }, { x: 0, y: 0, z: -1 }), 44, true);
   assert.equal(passage, null);
+  const gallery = castRay(new RAPIER.Ray({x:0,y:6,z:18},{x:0,y:0,z:-1}),36,true);
+  assert.equal(gallery,null,'the upper gallery must have clear front and rear flight openings');
+  const stairEntry = castRay(new RAPIER.Ray({x:25,y:6,z:5},{x:-1,y:0,z:0}),27,true);
+  assert.equal(stairEntry,null,'the supported stair landing must meet an open side doorway');
+  const glazedWing = castRay(new RAPIER.Ray({x:12,y:6,z:18},{x:0,y:0,z:-1}),10,true);
+  assert.ok(glazedWing,'retain the recognisable glazed side wings');
+  for(const [x,z]of [[21,6.1],[20.375,5],[18.25,5],[17.7,5]]){
+    const floor=castRay(new RAPIER.Ray({x,y:6.4,z},{x:0,y:-1,z:0}),2,true);
+    assert.ok(floor&&Math.abs(6.4-floor.timeOfImpact-4.62)<.001,'last step, landing and gallery floor must share one level');
+  }
   const roof = castRay(new RAPIER.Ray({ x: 0, y: 2, z: 0 }, { x: 0, y: 1, z: 0 }), 7, true);
   assert.ok(roof && roof.timeOfImpact > 2);
   const start = castRay(new RAPIER.Ray({ x: 0, y: 1, z: 60 }, { x: 0, y: -1, z: 0 }), 2, true);

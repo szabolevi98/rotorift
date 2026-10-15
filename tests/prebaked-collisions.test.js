@@ -87,6 +87,12 @@ test("baked park retains its passage, road/terrain heights and physical ground b
   try{
     for(const collider of baked.colliders)collider.setEnabled(true);world.step();
     assert.equal(world.castRay(new RAPIER.Ray({x:0,y:2,z:15},{x:0,y:0,z:-1}),30,true),null);
+    assert.equal(world.castRay(new RAPIER.Ray({x:0,y:6,z:18},{x:0,y:0,z:-1}),36,true),null,"upper gallery has open front and rear bays");
+    assert.equal(world.castRay(new RAPIER.Ray({x:25,y:6,z:5},{x:-1,y:0,z:0}),27,true),null,"stair landing leads through an open side entry");
+    for(const [x,z]of [[21,6.1],[20.375,5],[18.25,5],[17.7,5]]){
+      const hit=world.castRay(new RAPIER.Ray({x,y:6.4,z},{x:0,y:-1,z:0}),3,true);
+      assert.ok(hit&&Math.abs(6.4-hit.timeOfImpact-4.62)<.001,"top stair, landing and gallery share a floor level");
+    }
     for(const [x,z]of [[23.2,61.7],[89.1,23.3],[124,112],[2.3,5.8]]){
       const hit=world.castRay(new RAPIER.Ray({x,y:40,z},{x:0,y:-1,z:0}),50,true,undefined,undefined,undefined,undefined,
         collider=>Math.abs(collider.friction()-.9)<.001);
