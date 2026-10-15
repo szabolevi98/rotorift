@@ -1,5 +1,6 @@
 /* Shared by the hangar and the pause dialog. Each page keeps its own height. */
 #settings-panel { min-width: 0; }
+#menu #settings-panel { padding-bottom: 24px; }
 #menu #settings-panel > .intro { margin: 4px 0 20px; }
 #menu #settings-panel > .intro h1 { font-size: clamp(28px, 3vw, 38px); margin: 6px 0 9px; }
 #settings-panel .settings-tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 5px; margin-bottom: 20px; padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: #14161b; }
