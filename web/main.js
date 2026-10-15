@@ -1,5 +1,6 @@
 import { initLanguage, t } from "./lang.js";
 import { CatalogSelect } from "./catalog-select.js";
+import { SettingsTabs } from "./settings-tabs.js";
 import { mapPresentation } from "/shared/catalog/maps.js";
 import { read, write } from "./storage.js";
 import { Controller } from "./input/controller.js";
@@ -70,7 +71,7 @@ function updateFps(now, rendering) {
   }
 }
 document.addEventListener("visibilitychange", () => updateFps(performance.now(), false));
-let fullscreen, radioGuide, pauseMenu, diagnostics, pauseRenderNeeded = false;
+let fullscreen, radioGuide, settingsTabs, pauseMenu, diagnostics, pauseRenderNeeded = false;
 window.addEventListener("resize", () => { if (playing && paused) pauseRenderNeeded = true; });
 const stickMarkers = [
   [$("#stick-left-dot"), $("#stick-left-stem")],
@@ -676,9 +677,10 @@ function renderKeys() {
     i.value = keyName(code);
     i.setAttribute("aria-label", t("key." + action));
     i.onkeydown = (e) => {
+      if (e.code === "Tab") return;
       e.preventDefault();
       e.stopPropagation();
-      if (["Tab", "ShiftLeft", "ShiftRight"].includes(e.code)) return;
+      if (["ShiftLeft", "ShiftRight"].includes(e.code)) return;
       const old = controller.keys[action];
       for (const key in controller.keys)
         if (controller.keys[key] === e.code) controller.keys[key] = old;
@@ -1394,7 +1396,7 @@ function frame(now) {
     const elapsed=started===null||started===undefined||!room&&lap.invalid?null:(room?network.now:simTime-PHYSICS_DT*1000+flight.accumulator*1000)-started;
     flight.lapGhost.update(paused?null:elapsed,flight.physics.pose.p);
   }
-  if (!$("#settings-panel").classList.contains("hidden")) {
+  if (!$("#settings-panel").classList.contains("hidden") && settingsTabs.selected === "radio") {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
     radioGuide.render(controller, now);
   }
@@ -1414,6 +1416,18 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function bindUI() {
+  settingsTabs = new SettingsTabs($("#settings-panel"), {
+    selected: read("settings-tab", "controls"),
+    onChange: name => {
+      write("settings-tab", name);
+      // A hidden calibration or button-learning session must not keep listening.
+      controller.bindings.reset();
+      controller.setup = null;
+      controller.range = null;
+      inputSignature = "";
+      renderInputUI();
+    },
+  });
   ghostSelection=new GhostSelection($('#lap-ghost-picker'),t,time);
   diagnostics=new FrameDiagnostics($('#performance-panel'),fpsLabel,flight.renderer,t);
   fullscreen = bindFullscreen(t, notice);

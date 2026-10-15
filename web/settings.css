@@ -1,0 +1,71 @@
+/* Shared by the hangar and the pause dialog. Each page keeps its own height. */
+#settings-panel { min-width: 0; }
+#menu #settings-panel > .intro { margin: 4px 0 20px; }
+#menu #settings-panel > .intro h1 { font-size: clamp(28px, 3vw, 38px); margin: 6px 0 9px; }
+#settings-panel .settings-tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 5px; margin-bottom: 20px; padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: #14161b; }
+#settings-panel .settings-tabs button { flex: 1; min-width: 0; padding: 13px 12px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 650; line-height: 1.4; }
+#settings-panel .settings-tabs button[aria-selected="true"] { color: var(--orange); background: #ff664813; border-color: #ff66483d; }
+#settings-panel .settings-tabs button:hover { color: var(--ink); background: #ffffff07; }
+#settings-panel .settings-tabs button[aria-selected="true"]:hover { color: var(--orange); background: #ff66481a; }
+#settings-panel .settings-page { display: grid; gap: 16px; align-items: start; }
+#settings-panel .settings-page[hidden] { display: none !important; }
+#settings-panel .settings-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+#settings-panel .settings-device-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+#settings-panel .card { min-width: 0; padding: 20px; background: #ffffff03; border-radius: 8px; }
+#settings-panel .card h2 { font-size: 15px; margin: 0 0 17px; }
+#settings-panel .card h3 { font-size: 13px; margin: 22px 0 12px; }
+#settings-panel .card label { margin: 12px 0; }
+#settings-panel .card .muted { margin: 10px 0 0; }
+#settings-panel .card .button-row { margin-top: 14px; }
+#settings-panel .card .simulation-row { display: flex; align-items: center; flex-wrap: nowrap; gap: 12px; }
+#settings-panel .settings-input-bar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 28px; align-items: start; }
+#settings-panel .settings-input-bar > label:has(#auto-arm) { grid-column: 2; grid-row: 1; margin-top: 0; }
+#settings-panel #auto-arm-hint { grid-column: 2; grid-row: 2 / 4; margin: 0; }
+#settings-panel .settings-input-bar > label:has(#input-source) { grid-column: 1; grid-row: 1 / 3; margin: 0; }
+#settings-panel #radio-name { grid-column: 1; margin-top: 7px; }
+#settings-panel #keyboard-bindings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 18px; }
+#settings-panel .key-row { align-items: center; min-height: 49px; gap: 8px; padding: 6px 0; font-size: 11px; }
+#settings-panel .key-row input { flex: none; width: 52px; text-align: center; padding: 8px 4px; }
+#settings-panel .radio-action-row { grid-template-columns: minmax(75px, .9fr) minmax(80px, 1fr) auto; gap: 7px; margin: 8px 0; font-size: 11px; }
+#settings-panel .radio-action-row select { padding: 8px 6px; font-size: 11px; }
+#settings-panel .radio-action-row button { padding: 9px 10px; font-size: 11px; }
+#settings-panel .settings-radio-guide #radio-guide { border: 0; margin: 0; padding: 0; }
+#settings-panel #radio-guide-scene { height: 270px; }
+#settings-panel .radio-mobile-help { margin-top: 16px; }
+#settings-panel .axis-row { grid-template-columns: 43px minmax(65px, 1fr) 33px minmax(55px, 1fr); gap: 8px; }
+#settings-panel .axis-row label { margin: 0; }
+#settings-panel .rates-table { table-layout: fixed; }
+#settings-panel .rates-table th:first-child { width: 14%; }
+#settings-panel .rates-table th { overflow-wrap: anywhere; }
+#settings-panel .rates-table input { width: 100% !important; min-width: 0; }
+#settings-panel #rate-graph { display: block; height: auto; aspect-ratio: 21 / 8; margin: 0; }
+#settings-panel .rate-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 11px; }
+#settings-panel .rate-legend span:nth-child(1) { color: #ff6648; }
+#settings-panel .rate-legend span:nth-child(2) { color: #73d9d0; }
+#settings-panel .rate-legend span:nth-child(3) { color: #a5c776; }
+#settings-panel label:has(#rates-target) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+#settings-panel label:has(#rates-target) > span { display: none; }
+#settings-panel #settings-video label:has(input[type="checkbox"]) { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+#settings-panel #settings-video label:has(input[type="checkbox"]) > span { margin: 0; color: var(--ink); font-size: 12px; }
+#settings-panel input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--orange); flex: none; }
+@media (max-width: 1100px) {
+  #settings-panel #keyboard-bindings { grid-template-columns: 1fr; }
+  #settings-panel .key-row { min-height: 39px; }
+}
+@media (max-width: 850px) {
+  #settings-panel .settings-columns { grid-template-columns: 1fr; }
+  #settings-panel #keyboard-bindings { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  #settings-panel .settings-tabs { gap: 2px; padding: 4px; }
+  #settings-panel .settings-tabs button { padding: 11px 7px; font-size: 11px; }
+}
+@media (max-width: 520px) {
+  #settings-panel .settings-device-fields { grid-template-columns: 1fr; gap: 0; }
+  #settings-panel .settings-input-bar { grid-template-columns: 1fr; gap: 8px; }
+  #settings-panel .settings-input-bar > label:has(#auto-arm), #settings-panel #auto-arm-hint, #settings-panel .settings-input-bar > label:has(#input-source), #settings-panel #radio-name { grid-column: auto; grid-row: auto; }
+  #settings-panel .settings-input-bar > label:has(#input-source) { order: -2; }
+  #settings-panel #radio-name { order: -1; margin: 0 0 7px; }
+  #settings-panel .settings-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  #settings-panel .card { padding: 16px; }
+  #settings-panel #keyboard-bindings { grid-template-columns: 1fr; }
+  #settings-panel .radio-action-row { grid-template-columns: minmax(75px, 1fr) minmax(90px, 1fr) auto; }
+}

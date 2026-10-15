@@ -104,12 +104,12 @@ rádiómodell beállításáról: [rádióbeállítási útmutató](docs/radio-s
 
 Telefonon is elérhető a képernyőn az **ARM/DISARM**, **Reset**, nézetváltás,
 repülési mód és menü. A repülési tengelyeket a csatlakoztatott rádió/kontroller vezérli.
-Az **Auto arm** alapból engedélyezett, a Beállítások → Irányítás alatt kapcsolható.
+Az **Auto arm** alapból engedélyezett, a Beállítások → Vezérlés alatt kapcsolható.
 Induláskor, reset és folytatás után előbb húzd nullára a gázt, majd emeld meg:
 ekkor automatikusan armol. Billentyűzettel a gáz eleve nulla, így az első
 gázadásra armol. A kézi DISARM elsőbbséget élvez; új automatikus próbához
 reset vagy folytatás kell. Az opció személyes és multiplayerben is használható.
-A Beállítások → Rádió / kontroller műveletek alatt a **Hozzárendelés** után
+A Beállítások → Vezérlés → Rádió / kontroller műveletek alatt a **Hozzárendelés** után
 nyomj meg egy gombot vagy állíts egy szabad AUX csatornát végállásba.
 Az ARM gomb váltja az állapotot; az AUX ARM kapcsoló beállása élesít,
 kikapcsolása leállítja a motorokat. Alacsony gáz kell az élesítéshez.
@@ -119,6 +119,10 @@ nem élesít automatikusan. Az AUX csatorna nem lehet repülési stickhez rendel
 Az Actual Rates tengelyenként Center Sensitivity / Max Rate / Expo értékeket használ;
 alapértékük 70 / 670 / 0. A beállítás külön menthető drónonként, másolható egy másik
 drónra vagy minden drónra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek a böngészőben maradnak.
+
+A beállítások négy külön fülön érhetők el: **Vezérlés**, **Rádió és kalibrálás**,
+**Rate-ek**, **Kép és hang**. A főmenü és az ESC-menü ugyanazt a felületet használja;
+a fülek megőrzik a szerkesztett értékeket. [Részletek](docs/settings-menu.md).
 
 ## Multiplayer és rekordok
 

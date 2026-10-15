@@ -47,8 +47,8 @@
   "online.finished": "Rennen beendet",
   "online.disconnected": "Verbindung verloren. Die Drohne wurde entschärft; verbinde dich im Menü erneut.",
   "settings.eyebrow": "DEINE EINSTELLUNGEN",
-  "settings.title": "Deine Funke. Deine Rates.",
-  "settings.subtitle": "Kalibriere die Sticks, ordne die Achsen zu und speichere für jede Drohne ein Profil.",
+  "settings.title": "Einstellungen",
+  "settings.subtitle": "Steuerung, Funk, Rates und FPV-Ansicht abstimmen.",
   "settings.controller": "Steuerung",
   "settings.input": "Eingabegerät",
   "input.auto": "Funke zuerst · Tastatur als Ersatz",
@@ -371,5 +371,10 @@
   "hud.autoArmLower": "Gas auf null senken und dann zum Scharfschalten vorsichtig erhöhen.",
   "hud.autoArmRaise": "Jetzt zum Scharfschalten vorsichtig Gas geben.",
   "hud.autoArmKeyboard": "Gas geben ({control}), um automatisch scharfzuschalten.",
-  "hud.autoArmTouch": "Zum automatischen Scharfschalten Gas geben oder ARM antippen."
+  "hud.autoArmTouch": "Zum automatischen Scharfschalten Gas geben oder ARM antippen.",
+  "settings.tabs.controls": "Steuerung",
+  "settings.tabs.radio": "Funk & Kalibrierung",
+  "settings.tabs.rates": "Rates",
+  "settings.tabs.video": "Bild & Ton",
+  "settings.rateCurve": "Knüppelreaktion"
 }

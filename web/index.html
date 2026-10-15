@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="/catalog-select.css" />
     <link rel="stylesheet" href="/hangar.css" />
     <link rel="stylesheet" href="/hud.css" />
+    <link rel="stylesheet" href="/settings.css" />
     <script type="importmap">
       {
         "imports": {
@@ -145,20 +146,47 @@
         <section id="settings-panel" class="panel hidden">
           <div class="intro">
             <span class="eyebrow" data-i18n="settings.eyebrow"></span>
-            <h1 data-i18n="settings.title"></h1>
+            <h1 id="settings-title" data-i18n="settings.title"></h1>
             <p data-i18n="settings.subtitle"></p>
           </div>
-          <div class="settings-grid">
-            <section class="card">
-              <h2 data-i18n="settings.controller"></h2>
+          <div class="settings-tabs" role="tablist" aria-labelledby="settings-title">
+            <button id="settings-tab-controls" type="button" role="tab" data-settings-tab="controls" aria-controls="settings-controls" aria-selected="true" tabindex="0" data-i18n="settings.tabs.controls"></button>
+            <button id="settings-tab-radio" type="button" role="tab" data-settings-tab="radio" aria-controls="settings-radio" aria-selected="false" tabindex="-1" data-i18n="settings.tabs.radio"></button>
+            <button id="settings-tab-rates" type="button" role="tab" data-settings-tab="rates" aria-controls="settings-rates" aria-selected="false" tabindex="-1" data-i18n="settings.tabs.rates"></button>
+            <button id="settings-tab-video" type="button" role="tab" data-settings-tab="video" aria-controls="settings-video" aria-selected="false" tabindex="-1" data-i18n="settings.tabs.video"></button>
+          </div>
+          <div id="settings-controls" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-controls">
+            <div class="settings-input-bar card">
               <label class="simulation-row"><span data-i18n="settings.autoArm"></span><input id="auto-arm" type="checkbox" aria-describedby="auto-arm-hint" /></label>
               <p id="auto-arm-hint" class="muted" data-i18n="settings.autoArmHint"></p>
               <label><span data-i18n="settings.input"></span><select id="input-source">
                   <option value="auto" data-i18n="input.auto"></option>
                   <option value="keyboard" data-i18n="input.keyboard"></option></select></label>
               <p id="radio-name" class="muted"></p>
-              <label><span data-i18n="settings.radioDevice"></span><select id="radio-device"></select></label>
-              <label><span data-i18n="settings.radioPreset"></span><select id="radio-preset"></select></label>
+            </div>
+            <div class="settings-columns settings-bindings">
+              <section class="card">
+                <h2 data-i18n="settings.keys"></h2>
+                <div id="keyboard-bindings"></div>
+                <p class="muted" data-i18n="settings.keysHint"></p>
+              </section>
+              <section class="card">
+                <h2 data-i18n="settings.actionBindings"></h2>
+                <p class="muted" data-i18n="settings.actionBindingsHint"></p>
+                <div id="radio-actions"></div>
+                <p id="radio-buttons-live" class="muted"></p>
+                <p id="binding-status" class="muted" role="status"></p>
+                <button id="binding-cancel" type="button" class="secondary hidden" data-i18n="settings.cancelBinding"></button>
+              </section>
+            </div>
+          </div>
+          <div id="settings-radio" class="settings-page settings-columns" role="tabpanel" aria-labelledby="settings-tab-radio" hidden>
+            <section class="card">
+              <h2 data-i18n="settings.radioDevice"></h2>
+              <div class="settings-device-fields">
+                <label><span data-i18n="settings.radioDevice"></span><select id="radio-device"></select></label>
+                <label><span data-i18n="settings.radioPreset"></span><select id="radio-preset"></select></label>
+              </div>
               <div class="button-row"><button id="radio-recommend" type="button" class="secondary" data-i18n="settings.radioRecommend"></button><button id="stick-setup-start" type="button" class="secondary" data-i18n="stickSetup.start"></button></div>
               <p class="muted" data-i18n="stickSetup.startHint"></p>
               <p id="radio-preset-warning" class="radio-warning hidden" data-i18n="settings.radioMissing" role="status"></p>
@@ -169,7 +197,15 @@
                 <details><summary data-i18n="stickSetup.usbDetails"></summary><pre id="stick-setup-usb" class="radio-usb-details"></pre></details>
                 <div class="button-row"><button id="stick-setup-next" type="button" class="secondary" data-i18n="stickSetup.next"></button><button id="stick-setup-cancel" type="button" class="secondary" data-i18n="settings.cancelBinding"></button></div>
               </div>
-              <details class="radio-mobile-help"><summary data-i18n="settings.radioMobileHelp"></summary><p class="muted" data-i18n="settings.radioMobileRecipe"></p></details>
+              <div id="axis-settings"></div>
+              <div class="button-row">
+                <button id="calibrate-center" class="secondary" data-i18n="settings.center"></button><button id="calibrate-range" class="secondary" data-i18n="settings.range"></button>
+              </div>
+              <p id="calibration-status" class="muted"></p>
+              <label><span data-i18n="settings.deadzone"></span><input id="deadzone" type="number" min="0" max="0.2" step="0.005" value="0.015" /></label>
+              <p class="muted" data-i18n="settings.hardware"></p>
+            </section>
+            <section class="card settings-radio-guide">
               <div id="radio-guide" class="radio-guide">
                 <div class="radio-guide-heading"><h3 id="radio-guide-title" data-i18n="radioGuide.title"></h3><span>Mode 2</span></div>
                 <div class="radio-guide-visual">
@@ -185,20 +221,10 @@
                 </div>
                 <div class="radio-guide-instruction" role="status"><p data-radio-instruction></p><strong data-radio-timer></strong></div>
               </div>
-              <div id="axis-settings"></div>
-              <div class="button-row">
-                <button id="calibrate-center" class="secondary" data-i18n="settings.center"></button><button id="calibrate-range" class="secondary" data-i18n="settings.range"></button>
-              </div>
-              <p id="calibration-status" class="muted"></p>
-              <label><span data-i18n="settings.deadzone"></span><input id="deadzone" type="number" min="0" max="0.2" step="0.005" value="0.015" /></label>
-              <p class="muted" data-i18n="settings.hardware"></p>
-              <h3 data-i18n="settings.actionBindings"></h3>
-              <p class="muted" data-i18n="settings.actionBindingsHint"></p>
-              <div id="radio-actions"></div>
-              <p id="radio-buttons-live" class="muted"></p>
-              <p id="binding-status" class="muted" role="status"></p>
-              <button id="binding-cancel" type="button" class="secondary hidden" data-i18n="settings.cancelBinding"></button>
+              <details class="radio-mobile-help"><summary data-i18n="settings.radioMobileHelp"></summary><p class="muted" data-i18n="settings.radioMobileRecipe"></p></details>
             </section>
+          </div>
+          <div id="settings-rates" class="settings-page settings-columns" role="tabpanel" aria-labelledby="settings-tab-rates" hidden>
             <section class="card">
               <h2>Actual Rates</h2>
               <label><span data-i18n="fly.aircraft"></span><select id="rates-drone"></select></label>
@@ -213,13 +239,20 @@
                 </thead>
                 <tbody id="rates-table"></tbody>
               </table>
-              <canvas id="rate-graph" width="420" height="160"></canvas>
               <div class="button-row">
                 <button id="rates-save" class="primary small" data-i18n="action.save"></button><button id="rates-all" class="secondary" data-i18n="settings.all"></button><button id="rates-reset" class="text-button" data-i18n="action.defaults"></button>
               </div>
-              <label><span data-i18n="settings.copy"></span><select id="rates-target"></select><button id="rates-copy" class="secondary" data-i18n="action.copy"></button></label>
               <p id="rate-status" class="muted"></p>
             </section>
+            <section class="card">
+              <h2 data-i18n="settings.rateCurve"></h2>
+              <canvas id="rate-graph" width="420" height="160"></canvas>
+              <div class="rate-legend"><span data-i18n="axis.roll"></span><span data-i18n="axis.pitch"></span><span data-i18n="axis.yaw"></span></div>
+              <h3 id="settings-rates-copy-title" data-i18n="settings.copy"></h3>
+              <label><span data-i18n="settings.copy"></span><select id="rates-target" aria-labelledby="settings-rates-copy-title"></select><button id="rates-copy" class="secondary" data-i18n="action.copy"></button></label>
+            </section>
+          </div>
+          <div id="settings-video" class="settings-page settings-columns" role="tabpanel" aria-labelledby="settings-tab-video" hidden>
             <section class="card">
               <h2 data-i18n="settings.camera"></h2>
               <label><span data-i18n="fly.aircraft"></span><select id="camera-drone"></select></label>
@@ -227,15 +260,13 @@
               <label><span data-i18n="settings.angle"></span><input id="camera-angle" type="range" min="0" max="60" value="20" /><output id="angle-output">20°</output></label>
               <label><span data-i18n="settings.fov"></span><input id="camera-fov" type="range" min="70" max="140" value="100" /><output id="fov-output">100°</output></label>
               <div class="button-row"><button id="camera-all" class="secondary small" type="button" data-i18n="settings.all"></button><button id="camera-reset" class="text-button" type="button" data-i18n="action.defaults"></button></div>
+            </section>
+            <section class="card">
+              <h2 data-i18n="settings.tabs.video"></h2>
               <label><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
               <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
               <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
               <p class="muted" data-i18n="settings.fpvEffectsHint"></p>
-            </section>
-            <section class="card">
-              <h2 data-i18n="settings.keys"></h2>
-              <div id="keyboard-bindings"></div>
-              <p class="muted" data-i18n="settings.keysHint"></p>
             </section>
           </div>
         </section>

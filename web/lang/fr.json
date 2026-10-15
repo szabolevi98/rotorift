@@ -47,8 +47,8 @@
   "online.finished": "Course terminée",
   "online.disconnected": "Connexion perdue. Le drone a été désarmé ; reconnectez-vous depuis le menu.",
   "settings.eyebrow": "À VOTRE MESURE",
-  "settings.title": "Votre radio. Vos rates.",
-  "settings.subtitle": "Calibrez les manches, associez les axes et enregistrez un profil par drone.",
+  "settings.title": "Paramètres",
+  "settings.subtitle": "Réglez les commandes, la radio, les rates et la vue FPV.",
   "settings.controller": "Contrôleur",
   "settings.input": "Source de commande",
   "input.auto": "Radio en priorité · clavier en secours",
@@ -371,5 +371,10 @@
   "hud.autoArmLower": "Baissez les gaz à zéro, puis augmentez-les doucement pour armer.",
   "hud.autoArmRaise": "Augmentez maintenant doucement les gaz pour armer.",
   "hud.autoArmKeyboard": "Mettez les gaz ({control}) pour armer automatiquement.",
-  "hud.autoArmTouch": "Mettez les gaz pour armer automatiquement ou touchez ARM."
+  "hud.autoArmTouch": "Mettez les gaz pour armer automatiquement ou touchez ARM.",
+  "settings.tabs.controls": "Commandes",
+  "settings.tabs.radio": "Radio et calibrage",
+  "settings.tabs.rates": "Rates",
+  "settings.tabs.video": "Image et son",
+  "settings.rateCurve": "Réponse des manches"
 }

@@ -47,8 +47,8 @@
   "online.finished": "Carrera terminada",
   "online.disconnected": "Conexión perdida. El dron se desarmó; vuelve a conectar desde el menú.",
   "settings.eyebrow": "A TU MEDIDA",
-  "settings.title": "Tu emisora. Tus rates.",
-  "settings.subtitle": "Calibra los sticks, asigna los ejes y guarda un perfil por dron.",
+  "settings.title": "Ajustes",
+  "settings.subtitle": "Configura los controles, la radio, los rates y la vista FPV.",
   "settings.controller": "Controlador",
   "settings.input": "Dispositivo de entrada",
   "input.auto": "Emisora primero · teclado de respaldo",
@@ -371,5 +371,10 @@
   "hud.autoArmLower": "Baja el acelerador a cero y luego súbelo suavemente para armar.",
   "hud.autoArmRaise": "Ahora sube suavemente el acelerador para armar.",
   "hud.autoArmKeyboard": "Acelera ({control}) para armar automáticamente.",
-  "hud.autoArmTouch": "Acelera para armar automáticamente o toca ARM."
+  "hud.autoArmTouch": "Acelera para armar automáticamente o toca ARM.",
+  "settings.tabs.controls": "Controles",
+  "settings.tabs.radio": "Radio y calibración",
+  "settings.tabs.rates": "Rates",
+  "settings.tabs.video": "Imagen y sonido",
+  "settings.rateCurve": "Respuesta de los sticks"
 }

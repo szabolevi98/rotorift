@@ -47,8 +47,8 @@
   "online.finished": "Race finished",
   "online.disconnected": "Connection lost. The drone was disarmed; reconnect from the menu.",
   "settings.eyebrow": "MAKE IT YOURS",
-  "settings.title": "Your radio. Your rates.",
-  "settings.subtitle": "Calibrate your sticks, set each axis, and save a profile for each aircraft.",
+  "settings.title": "Settings",
+  "settings.subtitle": "Tune your controls, radio, rates and FPV view.",
   "settings.controller": "Controller",
   "settings.input": "Input source",
   "input.auto": "Radio first · keyboard fallback",
@@ -371,5 +371,10 @@
   "hud.autoArmLower": "Lower throttle to zero, then gently raise it to arm.",
   "hud.autoArmRaise": "Now gently raise throttle to arm.",
   "hud.autoArmKeyboard": "Add throttle ({control}) to arm automatically.",
-  "hud.autoArmTouch": "Add throttle to arm automatically, or tap ARM."
+  "hud.autoArmTouch": "Add throttle to arm automatically, or tap ARM.",
+  "settings.tabs.controls": "Controls",
+  "settings.tabs.radio": "Radio & calibration",
+  "settings.tabs.rates": "Rates",
+  "settings.tabs.video": "Video & audio",
+  "settings.rateCurve": "Stick response"
 }

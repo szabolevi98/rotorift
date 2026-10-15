@@ -47,8 +47,8 @@
   "online.finished": "Vége a futamnak",
   "online.disconnected": "Megszakadt a kapcsolat. A drón kikapcsolt; a menüből csatlakozhatsz újra.",
   "settings.eyebrow": "HANGOLD MAGADRA",
-  "settings.title": "A rádiód. A rate-jeid.",
-  "settings.subtitle": "Kalibráld a botokat, állítsd be a tengelyeket, és ments külön profilt minden drónhoz.",
+  "settings.title": "Beállítások",
+  "settings.subtitle": "Irányítás, rádió, rate-ek és FPV külön füleken.",
   "settings.controller": "Irányítás",
   "settings.input": "Vezérlő",
   "input.auto": "Rádió elsőként · billentyűzet tartaléknak",
@@ -371,5 +371,10 @@
   "hud.autoArmLower": "Húzd a gázt nullára, majd finoman adj gázt az armoláshoz.",
   "hud.autoArmRaise": "Most finoman adj gázt az armoláshoz.",
   "hud.autoArmKeyboard": "Adj gázt ({control}), és a drón automatikusan armol.",
-  "hud.autoArmTouch": "Adj gázt az automatikus armoláshoz, vagy érintsd meg az ARM gombot."
+  "hud.autoArmTouch": "Adj gázt az automatikus armoláshoz, vagy érintsd meg az ARM gombot.",
+  "settings.tabs.controls": "Vezérlés",
+  "settings.tabs.radio": "Rádió és kalibrálás",
+  "settings.tabs.rates": "Rate-ek",
+  "settings.tabs.video": "Kép és hang",
+  "settings.rateCurve": "Botkitérés és fordulási sebesség"
 }
