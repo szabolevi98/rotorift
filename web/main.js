@@ -854,7 +854,7 @@ async function loadRoom(r) {
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
   const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
-    routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates } : resolveRoute(baseMap, r.routeId);
+    routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates, guide:r.route.guide } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
   flightHelp?.setOpen(false);
   $("#flight-mode").value = r.mode;

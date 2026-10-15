@@ -202,6 +202,21 @@ Each route is a separate file: `data/maps/liget/race_1.json`, `data/maps/betonud
 
 Routes have `id`, `name`, `version`, `spawn` and ordered `gates`. Gate positions `p` are absolute metres; direction `n` is a horizontal unit vector; `width` and `height` are metres. Spawn X/Z are world coordinates and spawn Y is ground clearance. Increase the version when editing JSON manually. The editor increments it for changes; project saving also detects geometry changes and bumps the version. Records are separated by map, route ID/version, drone/config, flight mode and simulation rules. Multiplayer rooms retain their chosen route snapshot even if a file is edited later.
 
-One demo race ships for each map: **Park Flow** (6 gates, including the pavilion passage) and **Concrete Circuit** (10 gates). Free flight hides race gates.
+Three demo races ship: **Park Flow** (6 gates, including the pavilion passage), **Concrete Circuit** (10 gates), and **Pocket Circuit** (7 gates). Each includes elevated floating gates. Free flight hides race gates and their guide.
 
-Build the complete static showcase with `npm ci` and `npm run showcase:build`. For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and `map-viewer.bundle.js` together. Both renderers pause when their tab is inactive. The GitHub Pages workflow rebuilds and publishes these files; re-run the build after changing map geometry or race files.
+Races use rounded neon frames. The next gate and its approach line glow lime;
+other gates and guide legs are dim cyan. Normal depth testing hides them behind
+scenery. The guide follows a saved, collision-checked polyline, including vertical
+changes and detours, rather than drawing straight through obstacles. Its luminous
+core and additive sleeve use no extra lights or full-screen bloom pass.
+
+After positioning gates, choose **Build neon guide around obstacles** in the editor.
+The planner checks the baked scenery with aircraft clearance and saves `guide`
+in the route JSON: one point list from each gate to the next, including the final
+gate back to gate 1. Move a gate with Y/the green handle to make it float.
+Gate edits clear the guide; regenerate it before exporting. If no safe path is
+found, the editor reports it instead of drawing through scenery. Rebuild all
+saved guides after map changes with `node scripts/build-race-guides.mjs`, then
+rebuild the showcase. Guide generation runs only during authoring, not in flight.
+
+Build the complete static showcase with `npm ci` and `npm run showcase:build`. For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and `map-viewer.bundle.js` together. Copy `web/assets/collisions/` to `assets/collisions/` alongside them to generate guides in the editor. Both renderers pause when their tab is inactive. The GitHub Pages workflow rebuilds and publishes these files; re-run the build after changing map geometry or race files.

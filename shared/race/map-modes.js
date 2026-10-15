@@ -3,6 +3,6 @@ export const isTimedSession = (session) => ["time", "online-race", "online-hotla
 
 // Free flight uses the map's own spawn and never instantiates race obstacles.
 export const withoutRaceRoute = map => map ? {
-  ...map, spawn: [...(map.baseSpawn ?? map.spawn)], gates: [],
+  ...map, spawn: [...(map.baseSpawn ?? map.spawn)], gates: [], guide:undefined,
   routeId: null, routeName: null, routeVersion: null, racingEnabled: false,
 } : null;

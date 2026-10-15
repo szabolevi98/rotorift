@@ -18,6 +18,7 @@ export class RouteDraft {
   change(fn, history = true) {
     const next = structuredClone(this.route);
     fn(next);
+    if(JSON.stringify(next.gates)!==JSON.stringify(this.route.gates))delete next.guide;
     if (next.gates.length > 128) throw Error("A race can contain at most 128 gates.");
     validateMap({ ...this.map, spawn: next.spawn, routeId: next.id, routeVersion: next.version, gates: next.gates, racingEnabled: false });
     for (const gate of next.gates) {

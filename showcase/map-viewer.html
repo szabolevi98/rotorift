@@ -21,7 +21,7 @@
     </section>
     <aside id="editor" hidden>
       <div class="editor-heading"><h1>Race editor</h1><button id="close-editor" type="button" aria-label="Close editor">×</button></div>
-      <p class="help">Place gates on the map. Their order is the race order; gate 1 is start/finish. Arrows show the flying direction.</p>
+      <p class="help">Place gates on the map. Their order is the race order; gate 1 is start/finish. Arrows show the flying direction. Use Y or the green move handle to float gates above the ground.</p>
       <div class="button-row"><button id="new-race" type="button">New race</button><button id="restore-draft" type="button" hidden>Restore draft</button></div>
       <label>File ID<input id="race-id" pattern="[a-z0-9][a-z0-9_-]*" maxlength="64" placeholder="race_2"></label>
       <label>Race name<input id="race-name" maxlength="80"></label>
@@ -36,6 +36,8 @@
         </div>
         <div class="button-row"><button id="ground-gate" type="button">Set above ground</button><button id="gate-up" type="button">Earlier</button><button id="gate-down" type="button">Later</button><button id="delete-gate" type="button">Delete</button></div>
       </fieldset>
+      <button id="build-guide" type="button">Build neon guide around obstacles</button>
+      <p id="guide-status" class="help"></p>
       <details><summary>Start position</summary><p class="help">Y is the height above the ground; the drone faces −Z.</p><div class="fields"><label>X (m)<input id="spawn-x" type="number" step="0.1"></label><label>Y (m)<input id="spawn-y" type="number" min="0.1" step="0.1"></label><label>Z (m)<input id="spawn-z" type="number" step="0.1"></label></div><button id="start-at-view" type="button">Start at view centre</button></details>
       <div class="save-actions"><button id="download" type="button" class="primary">Download JSON</button><button id="save-project" type="button" hidden>Save to project</button><label class="file-button">Import JSON<input id="import" type="file" accept=".json,application/json"></label></div>
       <p id="file-path" class="help"></p><p id="status" role="status" aria-live="polite"></p>

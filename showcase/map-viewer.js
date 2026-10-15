@@ -13,6 +13,11 @@ import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
 import { RouteDraft, normalFromYaw, yawFromNormal } from "../shared/race/editor.js";
+import {createNeonGate,createRaceGuide} from '../web/game/race-course.js';
+import {generateRaceGuide} from '../web/game/route-guide-planner.js';
+import {PrebakedCollisions} from '../web/game/prebaked-collisions.js';
+import {COLLISION_ASSETS} from '../shared/world/collision-assets.js';
+import {decodeCollisionData} from '../shared/world/collision-data.js';
 
 const PARK_VIEWS = {
   overview: ["Park overview", [0,520,125], [0,2,0]],
@@ -93,7 +98,7 @@ export async function startMapViewer(embeddedCatalog) {
   const attempt = fn => { try { fn(); } catch (error) { status(error.message); } };
   const disposeGroup = group => {
     const materials = new Set(); group?.traverse(object => {
-      object.geometry?.dispose();
+      if(!object.isSprite)object.geometry?.dispose();
       for (const material of Array.isArray(object.material) ? object.material : [object.material]) if (material) materials.add(material);
     });
     for (const material of materials) { material.map?.dispose(); material.dispose(); }
@@ -127,21 +132,12 @@ export async function startMapViewer(embeddedCatalog) {
     rebuilding = true; transform.detach(); disposeGroup(gateRoot);
     gateRoot = new THREE.Group(); gateRoot.name = "Editable_race_gates"; scene.add(gateRoot); gateGroups = [];
     draft.route.gates.forEach((gate,index) => {
-      const group = new THREE.Group(); group.userData.gateIndex = index; group.position.set(...gate.p); group.rotation.y = yawFromNormal(gate.n)*Math.PI/180;
-      const mat = new THREE.MeshBasicMaterial({color:index===selected?0x21b5c8:index===0?0xff6648:0xfdf7df});
-      const parts = [[[.16,gate.height,.16],[-gate.width/2,0,0]],[[.16,gate.height,.16],[gate.width/2,0,0]],[[gate.width+.16,.16,.16],[0,gate.height/2,0]]];
-      for(const [size,p] of parts){const mesh=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);mesh.position.set(...p);group.add(mesh);}
-      const label=document.createElement("canvas");label.width=label.height=128;
-      const context=label.getContext("2d");context.fillStyle=index===0?"#ff6648":"#26342c";context.fillRect(0,0,128,128);context.fillStyle="#fff";context.font="bold 82px Arial";context.textAlign="center";context.fillText(String(index+1),64,93);
-      const texture=new THREE.CanvasTexture(label);texture.colorSpace=THREE.SRGBColorSpace;
-      const sign=new THREE.Sprite(new THREE.SpriteMaterial({map:texture}));sign.position.y=gate.height/2+.8;sign.scale.set(1.3,1.3,1);group.add(sign);
+      const group=createNeonGate(gate,index,{selected:index===selected,active:index===0});group.userData.gateIndex=index;
       const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(0,0,-1),3,0x21b5c8,.7,.45);group.add(arrow);
       gateRoot.add(group);gateGroups.push(group);
     });
-    if(draft.route.gates.length>1) {
-      const points=draft.route.gates.map(g=>new THREE.Vector3(...g.p));points.push(points[0].clone());
-      gateRoot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xff6648,transparent:true,opacity:.65})));
-    }
+    gateRoot.add(createRaceGuide(draft.route.guide));
+    $("#guide-status").textContent=draft.route.guide?'Obstacle-checked guide saved. Moving gates clears it; rebuild before saving.':'No guide saved. Build it after placing the gates; it will avoid scenery.';
     const spawn=draft.route.spawn,start=new THREE.ArrowHelper(new THREE.Vector3(0,0,-1),new THREE.Vector3(spawn[0],environment.heightAt(spawn[0],spawn[2])+spawn[1]+1,spawn[2]),5,0x26a27c,1,.7);gateRoot.add(start);
     $("#gate-list").replaceChildren(...draft.route.gates.map((gate,index)=>{
       const button=document.createElement("button");button.type="button";button.textContent=`${String(index+1).padStart(2,"0")}${index===0?" · S":""}`;button.setAttribute("aria-pressed",String(index===selected));button.setAttribute("aria-label",`Gate ${index+1}${index===0?", start / finish":""}`);button.onclick=()=>{selected=index;renderGates();};return button;
@@ -189,6 +185,21 @@ export async function startMapViewer(embeddedCatalog) {
   $("#map-select").onchange=()=>selectMap($("#map-select").value);
   $("#route-select").onchange=()=>{if($("#route-select").value!==draft.route.id)selectRoute($("#route-select").value);};
   $("#view-select").onchange=()=>setView($("#view-select").value);
+  $("#build-guide").onclick=async()=>{
+    if(draft.route.gates.length<2){status('Place at least two gates first.');return;}
+    const button=$("#build-guide"),token=request,route=draft;button.disabled=true;status('Checking scenery and routing the neon guide…');
+    let guideWorld,collisions;
+    try{
+      const asset=COLLISION_ASSETS[map.id];
+      const url=projectSaving||(!local&&location.pathname.startsWith('/showcase/'))?asset.url:new URL(local?'../web'+asset.url:'.'+asset.url,location.href);
+      const response=await fetch(url);if(!response.ok)throw Error('Cannot load collision data for guide planning.');
+      const raw=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+      if(token!==request||route!==draft)return;
+      guideWorld=new RAPIER.World({x:0,y:0,z:0});collisions=new PrebakedCollisions(RAPIER,guideWorld,map,decodeCollisionData(raw,map.id));
+      await new Promise(requestAnimationFrame);if(token!==request||route!==draft)return;
+      const guide=generateRaceGuide(guideWorld,RAPIER,map,draft.route.gates);draft.change(r=>{r.guide=guide;});changed('Neon guide rebuilt around scenery and saved in this draft.');
+    }catch(error){status(error.message);}finally{collisions?.dispose();guideWorld?.free();button.disabled=false;}
+  };
   $("#add-gate").onclick=()=>{placing=!placing;$("#add-gate").textContent=placing?"Cancel placement":"Place gate";status(placing?"Click the terrain or a floor to place the next gate.":"");};
   let down;
   canvas.addEventListener("pointerdown",event=>{down=[event.clientX,event.clientY];});

@@ -29,7 +29,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     results: r.results ?? buildResults(r.participants?.values() ?? [], r.kind),
     mapId: r.map.id,
     routeId: r.map.routeId,
-    route: r.kind === "free" ? null : { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates },
+    route: r.kind === "free" ? null : { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates, guide:r.map.guide },
     droneId: r.drone.id,
     mode: r.mode,
     simulation: r.simulation,

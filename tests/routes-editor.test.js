@@ -33,12 +33,12 @@ test("race storage discovers multiple files, bumps changed versions and rejects 
   const folder=await mkdtemp(path.join(runtime,"routes-tests-")),root=pathToFileURL(folder+path.sep),map=catalog.maps[0];
   t.after(async()=>{if(!path.resolve(folder).startsWith(runtime+path.sep)||!path.basename(folder).startsWith("routes-tests-"))throw Error("Unsafe fixture cleanup");await rm(folder,{recursive:true,force:true});});
   const first=await saveRoute(map,map.routes[0],root);
-  const second=await saveRoute(map,{...first,id:"race_2",name:"Another race",gates:first.gates.slice(0,3)},root);
+  const second=await saveRoute(map,{...first,id:"race_2",name:"Another race",gates:first.gates.slice(0,3),guide:undefined},root);
   const loaded=await loadRoutes(map,root),base={...map,routes:loaded};
   assert.equal(loaded.length,2);assert.equal(resolveRoute(base,"race_2").gates.length,3);assert.equal(resolveRoute(base,"missing"),null);
   assert.notDeepEqual(resolveRoute(base,"race_1").gates,resolveRoute(base,"race_2").gates);
   assert.equal((await saveRoute(map,second,root)).version,second.version);
-  const edited=structuredClone(second);edited.gates[0].p[1]+=1;
+  const edited=structuredClone(second);edited.gates[0].p[1]+=1;delete edited.guide;
   assert.equal((await saveRoute(map,edited,root)).version,second.version+1);
   await assert.rejects(()=>saveRoute(map,{...first,id:"../outside"},root));await assert.rejects(()=>saveRoute(map,{...first,gates:[]},root));
   assert.equal(JSON.parse(await readFile(new URL(`maps/${map.id}/race_1.json`,root),"utf8")).id,"race_1");

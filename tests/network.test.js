@@ -127,7 +127,7 @@ test("X35 multiplayer rooms pin the new aircraft and accept its own config hash 
 test("a room pins the selected race file, gate order and start position for every pilot", async t => {
   const gates=[{p:[12,2,4],n:[0,0,-1],width:5,height:4},{p:[20,2,4],n:[1,0,0],width:5,height:4}];
   const routes=[{id:"race_1",name:"First race",version:1,spawn:[0,1,-.5],gates},
-    {id:"race_2",name:"Second race",version:3,spawn:[12,1,8],gates:[...gates].reverse()}];
+      {id:"race_2",name:"Second race",version:3,spawn:[12,1,8],gates:[...gates].reverse(),guide:[[gates[1].p,[20,4,8],gates[0].p],[gates[0].p,gates[1].p]]}];
   const {client,catalog}=await fixture(t,{routeId:"race_1",routes});
   const host=await client("Route host"),guest=await client("Route guest");
   host.send("create",{mapId:"test-route",routeId:"race_2",droneId:"rift-x5",mode:"angle",kind:"race"});
@@ -137,6 +137,7 @@ test("a room pins the selected race file, gate order and start position for ever
   assert.equal(catalog.maps[0].routeId,"race_1","room selection must not mutate the map catalog");
   guest.send("join",{code:created.code});
   const joined=(await guest.next(m=>m.type==="room")).room;
+    assert.deepEqual(created.route.guide,routes[1].guide,'all pilots receive the same saved guide');
   assert.deepEqual(joined.route,created.route);assert.equal(joined.players.length,2);
   catalog.maps[0]={...catalog.maps[0],routes:[{...routes[1],version:99,gates:[]}]};
   host.send("ready",{ready:true});
