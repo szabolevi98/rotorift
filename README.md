@@ -2,221 +2,300 @@
 
 ![Rotorift · FPV. On the go.](web/assets/rotorift-x5-cover.jpg)
 
-Böngészős FPV drónszimulátor Three.js megjelenítéssel, Rapier merevtestfizikával,
-Node.js/WebSocket multiplayerrel és MySQL/MariaDB ranglistával.
-Éles játék: **[fpv.levente.net](https://fpv.levente.net/)**.
-VPS-telepítés és frissítés: [DEPLOY.md](DEPLOY.md).
-Az első **játszható prototípus** elkészült; az öt drón alapfizikája automatizált
-repülési méréssel ellenőrzött. A konkrét valós gépekkel való pontos egyezéshez
-repülési logokkal végzett hangolás, a rádiókhoz hardveres kompatibilitási próba szükséges.
+**FPV. On the go. Desktop or phone.**
 
-## Indítás
+A lightweight FPV drone simulator that runs in your browser, with low-poly worlds,
+detailed procedural drones, Three.js rendering and Rapier rigid-body physics.
+Fly with a compatible USB radio or controller, or try it with a keyboard.
+Node.js/WebSocket multiplayer and MySQL/MariaDB leaderboards support online sessions.
 
-Node.js 22 vagy újabb és WebGL 2 képes böngésző kell.
-Mobilon fekvő nézetet kér a játék. A drónmodellek betöltésekor teljes képernyős
-jelzés mutatja a letöltés százalékát és a 3D modell előkészítését.
-Mobilon a repülés indításakor és folytatásakor automatikusan teljes képernyőre
-vált a játék, a menübe visszatérve kilép belőle. A kézi kapcsoló továbbra is
-elérhető. A működéshez a böngésző teljesképernyő-támogatása szükséges.
-A rádióbeállítások Mode 2 animált 3D útmutatóval mutatják a botközepeket,
-a tengelyek mozgását és a végpontkalibrálást. USB rádiónál az élő botállás is
-látszik. Kis kijelzőn a 3D ábra elrejtődik, a szöveges útmutató megmarad.
+**[Play Rotorift](https://fpv.levente.net/)** · **[Explore the showcase](https://szabolevi98.github.io/rotorift/)** · **[Deployment guide](DEPLOY.md)**
 
-```powershell
+Rotorift is a playable prototype. The five drone configurations have automated
+flight measurements, but matching specific real aircraft requires further tuning
+against flight logs. Hardware compatibility also depends on the radio, firmware,
+operating system and browser.
+
+## Getting started
+
+Requirements: **Node.js 22 or newer** and a **WebGL 2 browser**. MySQL or MariaDB
+is needed to save online records; flying remains available if the database is
+unavailable at startup.
+
+```sh
 npm ci
-Copy-Item .env.example .env
+cp .env.example .env
 npm start
 ```
 
-A `.env` másolását csak első beállításkor végezd el. A játék címe alapból
-**http://localhost:3015/**. A Node szerver szolgálja ki a teljes játékot,
-az API-t és a WebSocket kapcsolatot. XAMPP-ból a MariaDB/MySQL szükséges;
-az Apache alatt továbbra is külön elérhető a modellbemutató.
+In PowerShell, replace `cp .env.example .env` with `Copy-Item .env.example .env`.
+Copy the environment file only during initial setup, then edit it for your installation.
 
-Az adatbázis neve alapból `rotorift`, a helyi XAMPP beállítás `root` felhasználó,
-üres jelszó, `127.0.0.1:3306`. A szerver létrehozza az adatbázist és a táblákat,
-ha a felhasználónak erre van jogosultsága. A saját elérés a `.env`-ben állítható.
-Induláskor elérhetetlen adatbázissal is lehet repülni; online rekord ekkor nem menthető.
+Open **http://localhost:3015/**. The Node server serves the game, API and WebSocket
+connection. XAMPP can supply MariaDB/MySQL; Apache can also serve the standalone
+showcase at `http://localhost/rotorift/showcase/`.
 
-Fejlesztés: `npm run dev`. Ellenőrzés: `npm test`.
-Repülési mérés: `npm run physics:measure`; az eredmény a
-`docs/flight-measurements.json` fájlba kerül. A feltételek, kategóriánkénti
-eredmények és a modell becslési határai: [physics-tuning.md](docs/physics-tuning.md).
-Úthálózat vagy munkaterületi elrendezés módosítása után: `npm run maps:build`.
-A burkolatok/szegélyek metszése és a két pálya ütközési fájlja előre készül el;
-a játékban nincs poligonműveleti függőség. Csak a fizika újrasütése: `npm run collisions:build`.
-Az összevont, térben felosztott ütközési hálók mérését és működését a
-[collision-performance.md](docs/collision-performance.md) írja le.
-Az önálló propeller- és lapátsérülések: [propeller-damage.md](docs/propeller-damage.md).
-Saját és globális top 10 körszellemek időmérőhöz: [lap-ghosts.md](docs/lap-ghosts.md).
-A `npm run showcase:build` a burkolatmetszést automatikusan elvégzi a bemutató csomagolása előtt.
-Az adatbázisteszt külön `rotorift_test_<id>` adatbázist hoz létre és takarít el;
-a játék rekordjait nem módosítja. MariaDB nélkül csak ez a teszt marad ki.
+The default local database settings are `rotorift`, user `root`, an empty password,
+and `127.0.0.1:3306`. The server creates the database and tables if the configured
+user has permission. Change these settings in `.env` for your environment.
 
-## Repülés
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the server with automatic restarts during development |
+| `npm test` | Run the test suite |
+| `npm run physics:measure` | Write flight measurements to `docs/flight-measurements.json` |
+| `npm run maps:build` | Rebuild path surfaces, curbs and prepared collision assets |
+| `npm run collisions:build` | Rebuild collision assets only |
+| `npm run showcase:build` | Rebuild the standalone drone showcase and map/race viewer |
 
-- Rift 65: 65 mm, 1S tinywhoop; Rift 75: 75-ös osztály, 80,8 mm motortáv, 1S whoop; Rift C3: 3″, 4S cinewhoop; Rift X35: 3,5″, 4S freestyle; Rift X5: 5″, 6S freestyle.
-- Az [X35](docs/rift-x35.md) 215 g-os, kompakt karbonvázas gép, felül 4S / 650 mAh akkumulátorral, akciókamera nélkül. Mért szimulációs lebegési gáza 28,6%, közel szinttartó végsebessége 153,6 km/h.
-- Játszótér / Pocket Park: kis, 84 × 84 m-es gyakorlópálya mászóvárral, hintákkal,
-  nyújtósorral, fahengerrel és játszóházzal. A 65/75 whoopokhoz épült, választható
-  hétkapus versenyútvonallal. Részletek: [pocket-park-and-rift75.md](docs/pocket-park-and-rift75.md).
-- Liget: 700 × 700 méteres dombos park, átjárható központi épülettel, utakkal,
-  sűrűbb facsoportokkal, tóparti fákkal és fasorral, nyílt freestyle térrel, két tóval és animált szökőkúttal.
-  Csónakház, móló, híd, kávézó, fedett sétány és dombtetői pavilon ad repülhető részleteket.
-  A déli Sportligetben átjárható klubház és terasz, kosárpálya, valamint két sor fedett
-  parkoló és öt autó található; a fő sétányt szabadon hagyó saját bekötésekkel.
-  A Liget időmérője és checkpointjai az elrendezés véglegesítéséig kikapcsolva.
-  Betonudvar: félkész építkezés, saját kapus útvonallal.
-- A Liget kerítésén túl csak a talaj folytatódik, objektumok nélkül. Kilépéskor 1 perces visszaszámlálás
-  indul; visszatéréskor törlődik, lejáratkor a drón visszaáll a rajthelyre.
-  Külön, fokozatosan egyszerűsödő távoli domborzat tölti ki a horizontot; a közeli
-  objektumok és ütközések ettől függetlenül töltődnek be. A látótávolság 12 km.
-  Körbeforgatható parkbemutató: [map-preview.html](http://localhost:3015/map-preview.html).
-- Skyline: 600 × 600 méteres városrész alacsonyabb téglaházakkal, lépcsőzetes
-  felhőkarcolókkal és egy 244 méterig nyúló központi toronnyal. A torony alatti
-  nyitott csarnok, az emeleti összekötő, az öt szintes parkolóház és a sikátorok
-  átrepülhetők. Tetőkön víztartályok, gépészeti berendezések és tűzlépcsők;
-  az utcákon álló taxik, furgonok, busz és központi szökőkutas tér található.
-  Egyelőre szabad repülésre készül; versenyútvonal a pályaszerkesztőben adható hozzá.
-- Acro, Angle és Horizon; FPV és követőnézet; kamera dőlése és látószöge állítható.
-- Beállítások → FPV kamera: külön kapcsolható, mentett pontozott műhorizont
-  és analóg videóeffekt zajjal, színelmosódással, rövid sorcsúszásokkal. FPV nézetben
-  működnek, egyjátékos és online repülésben is.
-- Helyi szabad repülés és időmérő, elkülönített helyi rekorddal.
-- Online szabad repülés, háromkörös verseny és szerver által követett egyéni időmérő.
-- Öt nyelv: magyar, angol, német, francia, spanyol.
+Rebuild maps after changing paths or site layouts. Surface clipping happens at
+build time; the game does not load the polygon-clipping dependency. The showcase
+build also prepares these surfaces before packaging its viewer.
 
-Billentyűzeten a **Space** élesít/kikapcsol, **W/S** növeli/csökkenti a megmaradó
-gázértéket, a **nyilak** döntik a drónt, **A/D** fordítanak.
-**H** becsült lebegési gázt állít (nem magasságtartás), **Shift** finomabb irányításhoz csökkenti a botkitérést.
-**R** reset, **V** kameranézet, **M** helyi repülési mód váltás, **Esc** menü/folytatás.
-Élesítéskor a gáz legyen alacsony. Minden alapbillentyű átállítható a beállításokban.
+Database tests create and remove a separate `rotorift_test_<id>` database without
+changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
-Az USB joystickként megjelenő rádió az elsődleges bemenet; rádió nélkül
-automatikusan működik a billentyűzet. A beállításokban csatornakiosztás,
-fordítás, holtjáték, botközép és hatmásodperces végpontkalibráció található.
-A böngészőnek a csatlakoztatott rádión egy botmozdításra is szüksége lehet.
-A TX15, Pocket és DJI vezérlők tényleges hardveres tesztje még hátravan.
-A RadioMaster/EdgeTX rádiókhoz automatikus profil és eszközprioritás tartozik;
-egyéni kiosztást négy mozdulatos botfelismerő tanít be. A PC-s és androidos
-profilok külön mentődnek. A régi Android USB-csatornavesztéséről és a külön SIM
-rádiómodell beállításáról: [rádióbeállítási útmutató](docs/radio-setup.md).
+## Aircraft and maps
 
-Telefonon is elérhető a képernyőn az **ARM/DISARM**, **Reset**, nézetváltás,
-repülési mód és menü. A repülési tengelyeket a csatlakoztatott rádió/kontroller vezérli.
-Az **Auto arm** alapból engedélyezett, a Beállítások → Vezérlés alatt kapcsolható.
-Induláskor, reset és folytatás után előbb húzd nullára a gázt, majd emeld meg:
-ekkor automatikusan armol. Billentyűzettel a gáz eleve nulla, így az első
-gázadásra armol. A kézi DISARM elsőbbséget élvez; új automatikus próbához
-reset vagy folytatás kell. Az opció személyes és multiplayerben is használható.
-A Beállítások → Vezérlés → Rádió / kontroller műveletek alatt a **Hozzárendelés** után
-nyomj meg egy gombot vagy állíts egy szabad AUX csatornát végállásba.
-Az ARM gomb váltja az állapotot; az AUX ARM kapcsoló beállása élesít,
-kikapcsolása leállítja a motorokat. Alacsony gáz kell az élesítéshez.
-A kiosztás eszközönként megmarad; csatlakozáskor/folytatáskor a már aktív kapcsoló
-nem élesít automatikusan. Az AUX csatorna nem lehet repülési stickhez rendelve.
+| Aircraft | Class | Battery |
+| --- | --- | --- |
+| Rift 65 | 65 mm tinywhoop | 1S / 300 mAh |
+| Rift 75 | 75-class whoop, 80.8 mm motor diagonal | 1S / 580 mAh |
+| Rift C3 | 3-inch cinewhoop | 4S / 720 mAh |
+| Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
+| Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
 
-Az Actual Rates tengelyenként Center Sensitivity / Max Rate / Expo értékeket használ;
-alapértékük 70 / 670 / 0. A beállítás külön menthető drónonként, másolható egy másik
-drónra vagy minden drónra. A rádióprofil, nyelv, kamera, kiosztás és rate-ek a böngészőben maradnak.
+The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
+top-mounted battery and no action camera. Its measured simulation hover throttle
+is 28.6%, with a near-level top speed of 153.6 km/h.
 
-A beállítások négy külön fülön érhetők el: **Vezérlés**, **Rádió és kalibrálás**,
-**Rate-ek**, **Kép és hang**. A főmenü és az ESC-menü ugyanazt a felületet használja;
-a fülek megőrzik a szerkesztett értékeket. [Részletek](docs/settings-menu.md).
+- **Grove:** a rolling 700 × 700 m park with a fly-through central pavilion,
+  connected upper gallery and stairs, paths, tree groups and open freestyle space.
+  Two lakes, an animated fountain, a boathouse, pier, bridge, café, covered walkway
+  and hilltop pavilion provide varied lines. The southern sports area includes
+  an open clubhouse, terrace, basketball court and covered parking.
+- **Concrete Yard:** a large unfinished construction site with open structural
+  frames, cranes, earthworks, construction vehicles, materials and a hangar.
+- **Playground:** an 84 × 84 m practice area for the 65/75 whoops, with a climbing
+  fort, swings, a cube climber, timber tunnel and playhouse.
+- **Skyline:** a 600 × 600 m city district with brick buildings, stepped skyscrapers
+  and a central tower reaching 244 m. Fly through its open podium, elevated skywalk,
+  five-level parking garage and alleys. Rooftop water tanks, equipment, fire escapes,
+  parked vehicles, street furniture and a fountain square complete the district.
+  Skyline currently offers freestyle; routes can be added in the race editor.
 
-## Multiplayer és rekordok
+Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
+`jatszoter` remain unchanged for saved routes, rooms and records.
 
-Az Egyjátékos és Multiplayer külön menüképernyő. A multiplayer oldal
-szobalistát, szobakódos csatlakozást és önálló szobanyitást kínál; a nyitott
-szobák öt másodpercenként frissülnek. A drón 3D előnézete és a közös
-drón-/pályaválasztó mindkét indítási felületen megmarad.
-A szimulációs opciók mindig nyitott panelen látszanak. Szobában a házigazda
-állítja őket indítás előtt, a vendégeknél és indítás után zároltak.
-Szüneteltetett repülés a menü bármely oldaláról folytatható vagy befejezhető.
+Bare terrain continues outside the fences without scenery objects. Leaving the
+map starts a **one-minute return countdown**; returning cancels it, while expiry
+resets the aircraft to launch. Distant terrain fills the horizon independently of
+nearby scenery and collision loading, with a 12 km view distance.
 
-Az online módban létrehozott szoba kóddal vagy a nyilvános listából érhető el.
-Legfeljebb nyolc pilóta csatlakozhat; az egyéni időmérő egyfős.
-Mindenki jelzi a készenlétét, a házigazda indítja a hárommásodperces rajtot.
-Az élő eredménytábla a szerver körszámát és időit mutatja; a befutók a teljes
-futamidő alapján kerülnek sorrendbe. Menübe lépéskor csak a saját drón áll meg;
-a többiek repülése folytatódik.
+Explore maps and race routes in the [showcase](https://szabolevi98.github.io/rotorift/).
+The old `/map-preview.html` address redirects to its map tab.
 
-Az 1. kapu indítja a kört. A sorrendben és megfelelő irányban teljesített kapuk
-után az 1. kapu újbóli átlépése zárja azt. Reset új kísérletet kezd;
-megszakítás vagy szabálytalan állapot érvényteleníti az aktuális kört.
-Az online rekord kategóriája pálya + útvonalverzió + drón + fizika-konfiguráció hash + repülési mód.
-A MySQL-profil helyi, névtelen azonosítót használ; több pilóta teszteléséhez
-külön böngészőprofil szükséges, azonos profil két lapja nem lehet ugyanabban a szobában.
+## Flying and controls
 
-A saját fizika 240 Hz-en fut, az állapotküldés és a szobafrissítés 20 Hz-es.
-A szerver a rajtot, kapukat, köridőket és mozgáskorlátokat ellenőrzi;
-teljes Rapier újraszimulálás és csalásbiztos ranglista még nincs.
-Kapcsolatvesztés után egy percig automatikusan visszatérhetsz ugyanabba a szobába,
-ugyanazzal a pilótával és teljesített körökkel. A megszakadt kör újrakezdődik,
-a drón a rajthelyen, kikapcsolt motorokkal folytatja. Az újratöltés is működik
-ugyanabban a böngészőlapban. Lejárat után a hely felszabadul; a többiek futama folytatódik.
-A házigazda lezárhat egy futamot, majd ugyanott készítheti elő a következőt;
-új készenlét és külön futamazonosító szükséges. Saját eredményképernyő mutatja
-a helyezést, köröket, legjobb kört, összidőt és a kiesett pilótákat is.
-Az élő szobák Node-újraindítást nem élnek túl; a már mentett rekordok és eredmények igen.
-Drón–drón ütközés a közös ghost mód kikapcsolásával használható.
+- **Acro, Angle and Horizon**, switchable during flight.
+- **Chase, FPV with the aircraft visible, and clean FPV** views.
+- Camera angle and field of view settings for each drone.
+- Optional artificial horizon and analog video effects, including noise,
+  color bleed and brief line glitches, available in FPV for solo and online flying.
+- Optional battery simulation, individual propeller damage, propwash and wind.
+- Turtle mode for recovering an overturned aircraft.
+- Local freestyle and time trials, online freestyle, three-lap races and
+  server-tracked solo time trials.
+- English, Hungarian, German, French and Spanish interfaces.
 
-## Fizikai konfigurációk
+### Keyboard
 
-A `data/drones/*.json` fájlokban SI egységek szerepelnek:
-tömeg (kg), méretek és súlypont (m), tehetetlenség (kg·m²), motoronkénti tolóerő (N),
-motorválasz (s), légellenállás, repülésvezérlő és akkumulátoradatok.
-A motorok tényleges pozícióban fejtenek ki erőt, a keverő számol a súlyponttal
-és a motorhatárokkal. A látványmodell és a fizikai test külön kezelhető.
+| Default key | Action |
+| --- | --- |
+| Space | Arm / disarm |
+| W / S | Increase / decrease throttle; throttle stays at the selected value |
+| Arrow keys | Pitch / roll |
+| A / D | Yaw |
+| H | Set estimated hover throttle; this is not altitude hold |
+| Shift | Reduce stick deflection for finer control |
+| R | Reset aircraft |
+| V | Cycle camera views |
+| M | Cycle flight modes |
+| T | Toggle turtle mode while disarmed |
+| Esc | Pause menu / resume |
 
-Opcionális akkumulátorfogyás és alacsony töltöttségnél teljesítménykorlát,
-propellersérülés, propwash és szél már használható; paramétereik drónonként
-konfigurálhatók. Az aerodinamikai talajhatás és további alkatrészsérülések későbbi munka.
-A collider a középtestet és a motor/propeller környékét közelíti;
-nem követi a modell minden apró alkatrészét. A parkban a fatörzsek és a fő
-lombkoronák egyszerűsített ütközési felületet kapnak; az apró levelek és fűszálak
-látványelemek. A környezetek további látványbeli finomításra nyitott prototípusok.
+All default bindings can be changed in settings. Arming requires low throttle.
 
-Konfiguráció változtatása után indítsd újra a Node szervert és frissítsd az oldalt.
-A konfiguráció hash-e változik, a korábbi online idő más kategóriában marad.
+### Radios, controllers and mobile
 
-## Modellbemutató és dokumentáció
+A radio exposed as a USB joystick is the primary input, with automatic keyboard
+fallback. Settings include channel mapping, inversion, deadband, stick centers
+and a six-second endpoint calibration. A browser may require a stick movement
+before exposing the connected device.
 
-Az elfogadott modellek önálló nézegetője: [GitHub Pages](https://szabolevi98.github.io/rotorift/),
-illetve `http://localhost/rotorift/showcase/` XAMPP alatt. A statikus drón- és pályabemutató,
-valamint a kapuszerkesztő is a Pages-re kerül; a játékhoz külön Node szerver kell.
+RadioMaster/EdgeTX devices have automatic profiles and device priority. A
+four-movement stick detector can learn custom mappings; desktop and Android
+profiles are saved separately. See the [radio setup guide](docs/radio-setup.md)
+for Android USB channel issues and cases that need a separate simulator radio model.
 
-- [Fejlesztési terv](docs/plan.md)
-- [Prototípus állapota és ellenőrzése](docs/prototype.md)
-- [Modellek leírása](showcase/README.md)
+An animated Mode 2 3D radio guide shows stick centers, axis movement and calibration
+endpoints, including live stick movement from the connected radio. Small screens
+keep the text instructions and hide the 3D illustration.
 
-Licenc: [AGPL-3.0](LICENSE).
+Mobile play uses landscape orientation. Launching or resuming a flight requests
+fullscreen, and returning to the main menu exits it where supported by the browser.
+A manual fullscreen toggle remains available. Loading screens show model download
+progress and preparation; switching aircraft after startup uses an overlay.
+
+On-screen **ARM/DISARM**, **Reset**, camera, flight-mode and menu buttons are also
+available on phones. A connected radio/controller supplies the flight axes.
+
+**Auto arm** is enabled by default under **Settings → Controls**. After launch,
+reset or resume, lower throttle to zero and then raise it to arm. Keyboard throttle
+starts at zero, so the first throttle increase arms the aircraft. Manual disarm
+takes priority until reset or resume. This personal setting also works in multiplayer.
+
+Under **Settings → Controls → Radio / controller actions**, choose **Assign**, then
+press a button or move an unused AUX channel to its endpoint. A button toggles ARM;
+an AUX switch arms when on and disarms when off. An already-active switch does not
+arm automatically on connection or resume. Flight stick channels cannot also be
+assigned as AUX actions, and bindings are saved per device.
+
+### Rates and settings
+
+Actual Rates use **Center Sensitivity / Max Rate / Expo** for each axis, with defaults
+of **70 / 670 / 0**. Save rates per aircraft, copy them to another drone or apply them
+to all drones. Radio profiles, language, camera settings, bindings and rates stay
+in the browser.
+
+Settings have four tabs: **Controls**, **Radio & calibration**, **Rates**, and
+**Video & audio**. The main menu and pause menu share the same settings interface;
+switching tabs preserves edited values. See [settings-menu.md](docs/settings-menu.md).
+
+## Multiplayer and records
+
+Singleplayer and Multiplayer have separate menu pages. Multiplayer provides a room
+list, joining by code and room creation. Open rooms refresh every five seconds.
+Both launch pages retain the 3D aircraft preview and shared aircraft/map selectors.
+Simulation options remain visible; in a room, only the host can change them before
+launch. They are locked for guests and after the session starts.
+
+Rooms support **up to eight pilots**; online solo time trials are single-player.
+Pilots mark themselves ready, and the host starts a three-second countdown.
+The live scoreboard uses server-tracked laps and times. Race finishers are ranked
+by total time. Opening the menu pauses only your aircraft while other pilots continue.
+
+Gate 1 starts a lap. Pass every gate in order and in the correct direction, then
+cross gate 1 again to finish it. Reset starts a new attempt; an interruption or
+invalid state invalidates the current lap. Records are separated by map, route
+ID/version, aircraft/configuration hash, flight mode and simulation rules.
+
+Profiles use a local anonymous identifier. Testing multiple pilots requires
+separate browser profiles; two tabs using the same profile cannot join the same room.
+
+Local physics runs at **240 Hz**, with state transmission and room updates at
+**20 Hz**. The server validates starts, gates, lap times and motion limits. Full
+server-side Rapier resimulation and a cheat-proof leaderboard are not implemented.
+
+After a connection loss, the browser can automatically rejoin the same room for
+one minute, retaining the pilot and completed laps. The interrupted lap restarts,
+and the aircraft returns to launch with motors disarmed. Reloading the same tab is
+also supported. Once the reservation expires, the slot is released while the race
+continues for other pilots.
+
+The host can finish a session and prepare another in the same room, with new
+readiness and a separate session ID. A results screen shows positions, completed
+laps, best laps, total times and DNF pilots. Live rooms do not survive a Node restart;
+saved records and results do. Disable the shared **ghost mode** to enable
+collisions between aircraft.
+
+Personal and global top-10 lap ghosts are available for time trials:
+[lap-ghosts.md](docs/lap-ghosts.md).
+
+## Physics configuration
+
+`data/drones/*.json` uses SI units: mass in kg, dimensions and center of mass in m,
+inertia in kg·m², thrust per motor in N, and motor response times in s, together
+with drag, flight-controller and battery parameters.
+
+Motors apply force at their actual positions. The mixer accounts for the center of
+mass and motor limits. Visual models and physics bodies are handled separately.
+Battery consumption and low-charge power limits, propeller damage, propwash and
+wind are optional, with parameters configurable for each aircraft. Aerodynamic
+ground effect and damage to additional components remain future work.
+
+Collision shapes approximate the body, motors, propellers and guards rather than
+every visual part. Tree trunks and main crowns use simplified colliders; small
+leaves and grass are visual details. Regular terrain grids use prepared native
+heightfields to avoid expensive mesh CCD checks. Maps remain open to further
+visual refinement.
+
+Restart the Node server and refresh the browser after editing configurations.
+Changing a configuration changes its hash, keeping older online times in a
+separate category.
+
+Further details:
+
+- [Physics tuning and measurement limits](docs/physics-tuning.md)
+- [Collision preparation and performance](docs/collision-performance.md)
+- [Individual propeller and blade damage](docs/propeller-damage.md)
 
 ## Showcase and race editor
 
-The English showcase combines the drone studio (65 → C3 → X5) with both map viewers. Open http://localhost:3015/showcase/ or the GitHub Pages site. The old /map-preview.html entry redirects to the map tab.
+The English showcase combines five drone models with all four map viewers. It runs
+on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
+`http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
+The game itself requires a separate Node server.
 
-Choose **Maps & races → Edit gates**. Place gates by clicking terrain or floors; select numbered gates to move/rotate them with the gizmo or numeric controls. Gate 1 is start/finish; arrows show the required crossing direction. Use Earlier/Later, Undo/Redo and the start-position controls to arrange the race.
+Choose **Maps & races → Edit gates**. Click terrain or floors to place a gate,
+then move or rotate selected gates with the gizmo or numeric controls. Gate 1 is
+start/finish; arrows indicate the crossing direction. Use **Earlier/Later**,
+**Undo/Redo** and the start-position controls to arrange the race.
 
-Each route is a separate file: `data/maps/liget/race_1.json`, `data/maps/betonudvar/race_1.json`, then `race_2.json`, etc. The server discovers these JSON files automatically at startup. **Save to project** writes directly to these folders on same-origin localhost; reload the game after saving. **Download JSON** and **Import JSON** also work on GitHub Pages. Exported files must be placed in the matching map folder to become game routes.
+Each route is a separate file, such as `data/maps/liget/race_1.json`,
+`data/maps/betonudvar/race_1.json` or a subsequent `race_2.json`. The server discovers
+route files at startup. **Save to project** writes directly to these folders on
+same-origin localhost; reload the game afterward. **Download JSON** and
+**Import JSON** also work on GitHub Pages. Place exported files in the matching
+map folder to make them available in the game.
 
-Routes have `id`, `name`, `version`, `spawn` and ordered `gates`. Gate positions `p` are absolute metres; direction `n` is a horizontal unit vector; `width` and `height` are metres. Spawn X/Z are world coordinates and spawn Y is ground clearance. Increase the version when editing JSON manually. The editor increments it for changes; project saving also detects geometry changes and bumps the version. Records are separated by map, route ID/version, drone/config, flight mode and simulation rules. Multiplayer rooms retain their chosen route snapshot even if a file is edited later.
+Routes contain `id`, `name`, `version`, `spawn` and ordered `gates`. Gate position
+`p` uses absolute metres, `n` is a horizontal unit direction, and `width`/`height`
+are metres. Spawn X/Z are world coordinates; spawn Y is ground clearance.
+Increase the version when editing JSON manually. The editor and project-saving
+endpoint detect changes and update versions. Multiplayer rooms retain their
+chosen route snapshot even if the underlying file is edited later.
 
-Three demo races ship: **Park Flow** (6 gates, including the pavilion passage), **Concrete Circuit** (10 gates), and **Pocket Circuit** (7 gates). Each includes elevated floating gates. Free flight hides race gates and their guide.
+Three demo races ship: **Park Flow** (6 gates, including the pavilion passage),
+**Concrete Circuit** (10 gates), and **Pocket Circuit** (7 gates). Each includes
+elevated floating gates. Free flight hides the gates and their guide.
 
 Races use rounded neon frames. The next gate and its approach line glow lime;
-other gates and guide legs are dim cyan. Normal depth testing hides them behind
-scenery. The guide follows a saved, collision-checked polyline, including vertical
-changes and detours, rather than drawing straight through obstacles. Its luminous
-core and additive sleeve use no extra lights or full-screen bloom pass.
+other gates and guide legs are dim cyan. Scenery normally occludes them. The guide
+follows a saved, collision-checked polyline with height changes and detours. Its
+luminous core and additive sleeve need no extra lights or fullscreen bloom pass.
 
-After positioning gates, choose **Build neon guide around obstacles** in the editor.
-The planner checks the baked scenery with aircraft clearance and saves `guide`
-in the route JSON: one point list from each gate to the next, including the final
-gate back to gate 1. Move a gate with Y/the green handle to make it float.
-Gate edits clear the guide; regenerate it before exporting. If no safe path is
-found, the editor reports it instead of drawing through scenery. Rebuild all
-saved guides after map changes with `node scripts/build-race-guides.mjs`, then
-rebuild the showcase. Guide generation runs only during authoring, not in flight.
+After placing gates, choose **Build neon guide around obstacles**. The planner
+checks prepared collision geometry with aircraft clearance and saves `guide` in
+the route JSON: one point list from each gate to the next, including the final
+gate back to gate 1. Use Y or the green move handle to make gates float. Gate edits
+clear the guide; regenerate it before exporting. If no safe path is found, the
+editor reports it. Guide generation runs during authoring, not in flight.
 
-Build the complete static showcase with `npm ci` and `npm run showcase:build`. For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and `map-viewer.bundle.js` together. Copy `web/assets/collisions/` to `assets/collisions/` alongside them to generate guides in the editor. Both renderers pause when their tab is inactive. The GitHub Pages workflow rebuilds and publishes these files; re-run the build after changing map geometry or race files.
+After map changes, rebuild collisions, run `node scripts/build-race-guides.mjs`
+and rebuild the showcase.
+
+For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and
+`map-viewer.bundle.js` together. Copy `web/assets/collisions/` to
+`assets/collisions/` alongside them to generate guides in the editor. Both viewers
+pause when inactive. The GitHub Pages workflow rebuilds and publishes the
+showcase; rebuild after changing map geometry or race files.
+
+## Documentation and license
+
+- [Development plan](docs/plan.md)
+- [Prototype status and verification](docs/prototype.md)
+- [Showcase models and source files](showcase/README.md)
+- [VPS deployment and updates](DEPLOY.md)
+
+Licensed under [AGPL-3.0-only](LICENSE).
