@@ -23,6 +23,7 @@
     <title>Rotorift · Lightweight Browser FPV Simulator</title>
     <link rel="icon" href="/assets/icon.svg" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/catalog-select.css" />
     <link rel="stylesheet" href="/hangar.css" />
     <link rel="stylesheet" href="/hud.css" />
     <script type="importmap">
@@ -75,8 +76,8 @@
               <div class="aircraft-title"><h1 id="selected-name">Rift X5</h1><p id="selected-description"></p></div>
               <div id="drone-specs" class="drone-specs"></div>
               <div class="aircraft-controls">
-                <h2 class="dock-label" data-i18n="hangar.aircraftColor"></h2>
-                <div id="drone-picker" class="drone-picker"></div>
+                <h2 id="drone-picker-label" class="dock-label" data-i18n="hangar.aircraftColor"></h2>
+                <div id="drone-picker" class="catalog-select"></div>
                 <div class="drone-color-control">
                   <span id="drone-color-label" class="visually-hidden" data-i18n="fly.color"></span>
                   <div id="drone-color-picker" role="group" aria-labelledby="drone-color-label"></div>
@@ -90,8 +91,8 @@
           </div>
           <div class="launch-controls">
             <div class="environment-controls">
-              <h2 class="dock-label" data-i18n="fly.environment"></h2>
-              <div id="map-picker" class="map-picker"></div>
+              <h2 id="map-picker-label" class="dock-label" data-i18n="fly.environment"></h2>
+              <div id="map-picker" class="catalog-select"></div>
               <label class="race-row"><span data-i18n="fly.route"></span><select id="race-route" aria-label="Race route"></select></label>
               <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
             </div>

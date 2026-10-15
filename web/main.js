@@ -1,4 +1,6 @@
 import { initLanguage, t } from "./lang.js";
+import { CatalogSelect } from "./catalog-select.js";
+import { mapPresentation } from "/shared/catalog/maps.js";
 import { read, write } from "./storage.js";
 import { Controller } from "./input/controller.js";
 import { Network } from "./net/client.js";
@@ -37,6 +39,10 @@ const $ = (s) => document.querySelector(s),
     return e;
   };
 const visible = (selector, on) => $(selector).classList.toggle("hidden", !on);
+function mapName(value) {
+  const item = typeof value === 'string' ? catalog?.maps.find(m => m.id === value) ?? value : value;
+  return t(mapPresentation(item).nameKey);
+}
 const loading = new LoadingScreen(t);
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
@@ -93,6 +99,8 @@ const keyName = (key) =>
     Escape: "Esc",
   })[key] ?? key.replace(/^Key|^Digit/, "");
 let catalog,
+  dronePicker,
+  mapPicker,
   config,
   map,
   preview,
@@ -260,7 +268,7 @@ function refreshSessionBanner() {
   const active = playing && paused && (!room || (["countdown", "flying"].includes(room.phase) && !room.players.find(p=>p.id===network.id)?.finished));
   visible("#active-session", active);
   if (active && flight?.config) $("#active-session-description").textContent =
-    `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
+    `${mapName(flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
 }
 function pause() {
   if (!playing || paused) return;
@@ -416,18 +424,8 @@ function updateSessionOptions() {
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
-  for (const d of catalog.drones) {
-    const b = $(`[data-drone="${d.id}"]`);
-    b.classList.toggle("selected", config?.id === d.id);
-    b.setAttribute("aria-pressed", String(config?.id === d.id));
-    b.querySelector("small").textContent = t("hangar.drone." + d.id);
-  }
-  for (const m of catalog.maps) {
-    const b = $(`[data-map="${m.id}"]`);
-    b.classList.toggle("selected", map?.id === m.id);
-    b.setAttribute("aria-pressed", String(map?.id === m.id));
-    b.querySelector("b").textContent = t("map." + m.id);
-  }
+  dronePicker.update(catalog.drones.map(d => ({value:d.id,label:d.name,detail:t("drone." + d.id)})), config?.id);
+  mapPicker.update(catalog.maps.map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
   if (config) {
     $("#selected-name").textContent = config.name;
     $("#selected-description").textContent = t("drone." + config.id);
@@ -451,11 +449,14 @@ function refreshCatalogText() {
     }
   }
   for (const s of ["#records-map"])
-    for (const o of $(s).options) o.textContent = t("map." + o.value);
+    for (const o of $(s).options) o.textContent = mapName(o.value);
   const noRoute = $("#race-route").querySelector('option[value=""]');
   if (noRoute) noRoute.textContent = t("fly.noRoute");
 }
 function createCatalogUI() {
+  dronePicker = new CatalogSelect($("#drone-picker"), "drone-picker-label", t,
+    id => selectDrone(id).catch(() => notice(t("error.requestFailed"))));
+  mapPicker = new CatalogSelect($("#map-picker"), "map-picker-label", t, selectMap);
   for (const [id,hex] of Object.entries(DRONE_COLORS)) {
     const button=node("button", "drone-color-swatch"); button.type="button"; button.dataset.droneColor=id;
     const dot=node("i"); dot.style.setProperty("--pilot-color",hex); dot.setAttribute("aria-hidden","true");
@@ -463,26 +464,11 @@ function createCatalogUI() {
   }
   refreshColors();
   for (const d of catalog.drones) {
-    const b = node("button", "drone-card");
-    b.dataset.drone = d.id;
-    b.append(node("strong", "", d.name.replace("Rift ", "")), node("small"));
-    b.addEventListener("click", () =>
-      selectDrone(d.id).catch(() => notice(t("error.requestFailed"))),
-    );
-    $("#drone-picker").append(b);
     for (const select of ["#rates-drone", "#rates-target", "#records-drone", "#camera-drone"])
       $(select).append(new Option(d.name, d.id));
   }
   for (const m of catalog.maps) {
-    const b = node("button", "map-card");
-    b.dataset.map = m.id;
-    b.append(node("div", "map-art " + m.kind));
-    const label = node("div", "map-label");
-    label.append(node("b", "", t("map." + m.id)), node("span", "", "↗"));
-    b.append(label);
-    b.addEventListener("click", () => selectMap(m.id));
-    $("#map-picker").append(b);
-    $("#records-map").append(new Option(t("map." + m.id), m.id));
+    $("#records-map").append(new Option(mapName(m), m.id));
   }
   refreshRecordRoutes();
 }
@@ -730,7 +716,7 @@ function renderRooms() {
     button.onclick = () => requestRoom("join", { code: r.code });
     button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
     const summary = node("div", "room-summary");
-    summary.append(node("strong", "", r.code), node("span", "", t("map." + r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
+    summary.append(node("strong", "", r.code), node("span", "", mapName(r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
     summary.append(node("span", "", (catalog.drones.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
       summary,
@@ -782,7 +768,7 @@ function renderLobby() {
   if (!room) return;
   $("#lobby-code").textContent = room.code;
   $("#lobby-description").textContent =
-    t("map." + room.mapId) +
+    mapName(room.mapId) +
     " · " +
     catalog.drones.find((d) => d.id === room.droneId)?.name +
     " · " +
@@ -814,7 +800,7 @@ function renderResults() {
   const signature = [roomKey(room), room.phase, room.host, network.id, document.documentElement.lang, JSON.stringify(room.results)].join("|");
   if (signature === resultsSignature) return;
   resultsSignature = signature;
-  $("#results-code").textContent = room.code + " · " + t("map." + room.mapId);
+  $("#results-code").textContent = room.code + " · " + mapName(room.mapId);
   $("#results-description").textContent = [room.route?.name, catalog.drones.find(d=>d.id===room.droneId)?.name].filter(Boolean).join(" · ");
   $("#results-status").textContent = t(room.phase === "finished" ? "results.complete" : "results.waiting");
   const head = node("tr");
@@ -856,7 +842,7 @@ async function loadRoom(r) {
   flight.active = false;
   flight.mute();
   void fullscreen?.enterFlight();
-  const task = loading.begin("loading.flight", { name: t("map." + r.mapId) });
+  const task = loading.begin("loading.flight", { name: mapName(r.mapId) });
   const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
   const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
@@ -1073,7 +1059,7 @@ async function launch() {
   $("#launch").disabled = true;
   // Start from the launch click, before loading consumes its user activation.
   void fullscreen?.enterFlight();
-  const task = loading.begin("loading.flight", { name: t("map." + map.id) });
+  const task = loading.begin("loading.flight", { name: mapName(map.id) });
   try {
     await paintLoading();
     if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
@@ -1221,7 +1207,7 @@ function hud() {
   visible("#wind-hud", effects.options.wind !== "calm");
   $("#wind-hud").textContent = t("simulation.wind") + " · " + t("wind." + effects.options.wind);
   $("#hud-session").textContent =
-    t("map." + flight.map.id) + " / " + flight.config.name;
+    mapName(flight.map.id) + " / " + flight.config.name;
   const boundary = room ? own?.boundary : flight.boundary;
   const outside = !!boundary?.outside;
   visible("#boundary-hud", outside);
@@ -1434,7 +1420,7 @@ function bindUI() {
     leave: endFlight,
   }, () => ({
     online: !!room,
-    description: `${t("map." + flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : ""),
+    description: `${mapName(flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : ""),
     canReset: !room || (room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
   }));
   flightHelp = new FlightHelp(t, flightHelpContent);
@@ -1573,7 +1559,7 @@ function bindUI() {
     write("camera", cameraSettings);
     if (cameraSettings.analog && flight.active && !flight.analogPrepared && !flight.preparingViews) {
       const version = flight.loadVersion;
-      const task = loading.begin('loading.flight', {name:t('map.' + flight.map.id)}, {overlay:true});
+      const task = loading.begin('loading.flight', {name:mapName(flight.map.id)}, {overlay:true});
       flight.preparingViews = true;
       void (async () => {
         try {

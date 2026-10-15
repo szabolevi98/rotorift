@@ -57,7 +57,7 @@ const x35StudyScript=[three,addon('vendor/OrbitControls.js','OrbitControls'),
 writeFileSync(join(root,'x35-mount-lab.html'),read('x35-mount-lab.template.html').replace('/* X35_LAB_SCRIPT */',()=>x35StudyScript.replace(/<\/script/gi,'<\\/script')));
 // The showcase stays English; use the game's dictionary as the name source.
 const english = JSON.parse(read('../web/lang/en.json'));
-const maps = catalog.maps.map(map => ({ ...map, name: english['map.' + map.id] ?? map.name }));
+const maps = catalog.maps.map(map => ({ ...map, name: english[map.nameKey] ?? map.name }));
 await build({
   stdin: { contents: `import { startMapViewer } from './map-viewer.js'; startMapViewer(${JSON.stringify({maps})}).catch(error => { document.querySelector('#loading').textContent = 'Cannot load the map: ' + error.message; console.error(error); });`, resolveDir: root, sourcefile: 'map-entry.js' },
   bundle: true, format: 'iife', platform: 'browser', target: 'es2022', minify: true,

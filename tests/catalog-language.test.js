@@ -8,6 +8,8 @@ test("catalog contains five valid drone models and three maps with explicit race
   const { drones, maps } = await loadCatalog();
   assert.equal(drones.length, 5);
   assert.equal(maps.length, 3);
+  assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter']);
+  assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground']);
   assert.equal(new Set(drones.map((d) => d.configHash)).size, 5);
   assert.deepEqual(drones.map(d=>d.id),["rift-65","rift-75","rift-c3","rift-x35","rift-x5"]);
   for (const c of drones) {
@@ -53,4 +55,12 @@ test("five languages have identical nonempty keys and cover the HTML", async () 
   );
   for (const m of html.matchAll(/data-i18n(?:-placeholder)?="([^"]+)"/g))
     assert.ok(keys.includes(m[1]), "Missing translation " + m[1]);
+  const {maps}=await loadCatalog();
+  for(const dictionary of dictionaries)for(const map of maps){
+    assert.ok(dictionary[map.nameKey], 'Every map code needs a translated name');
+    assert.ok(dictionary[map.audienceKey], 'Every map needs a translated size recommendation');
+  }
+  assert.equal(dictionaries[0]['map.playground'],'Playground');
+  assert.equal(dictionaries[1]['map.playground'],'Játszótér');
+  assert.equal(dictionaries[1]['fly.environment'],'Pálya');
 });
