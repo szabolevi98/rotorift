@@ -8,7 +8,7 @@ import { DroneTrail, TRAIL_CAPACITY, TRAIL_LIFETIME } from "../web/game/drone-tr
 import { colorBatteryLabel } from "../shared/visual/battery-labels.js";
 
 test("accepted drone assets tint their shared TPU/frame materials without recoloring wiring, optics or connectors", async () => {
-  for (const id of ["x5","65","c3","x35"]) {
+  for (const id of ["x5","65","75","c3","x35"]) {
     const buffer=await readFile(new URL(`../web/assets/models/rotorift-rift-${id}.glb`,import.meta.url));
     const json=JSON.parse(buffer.subarray(20,20+buffer.readUInt32LE(12)).toString("utf8"));
     const materials=json.materials.map(m=>new THREE.MeshStandardMaterial({color:new THREE.Color().fromArray(m.pbrMetallicRoughness?.baseColorFactor??[1,1,1])}));
@@ -21,8 +21,8 @@ test("accepted drone assets tint their shared TPU/frame materials without recolo
     for(const object of nodes)if(!object.parent)root.add(object);
     tagDroneColorMaterials(root);
     assert.equal(materials.filter(m=>m.userData.droneColorRole==="base").length,1,id+" has one shared color material");
-    assert.equal(materials.filter(m=>m.userData.droneColorRole==="detail").length,["65","x35"].includes(id)?0:1);
-    assert.equal(materials.filter(m=>m.userData.droneColorRole==="label").length,id==="65"?1:2,"battery print only, excluding camera labels");
+    assert.equal(materials.filter(m=>m.userData.droneColorRole==="detail").length,["65","75","x35"].includes(id)?0:1);
+    assert.equal(materials.filter(m=>m.userData.droneColorRole==="label").length,["65","75"].includes(id)?1:2,"battery print only, excluding camera labels");
     const original=materials.map(m=>m.color.toArray()),a=root.clone(),b=root.clone();
     isolateModelMaterials(a);isolateModelMaterials(b);
     applyDroneColor(a,"teal");applyDroneColor(b,"violet");

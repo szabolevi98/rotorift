@@ -1,3 +1,36 @@
+// One atlas/material serves all four printed faces of the small pouch packs.
+// Side printing stays visible while the battery is inside its frame cradle.
+function addWhoopBatteryPrint(battery,{model,capacity,width,height,centerY,radius,length}) {
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#e9eae3';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle='#ff6648';ctx.fillRect(12,16,232,90);
+  ctx.fillStyle='#17262a';ctx.font='bold 36px Arial';ctx.fillText(`R / ${model}`,30,76);
+  ctx.font='bold 72px Arial';ctx.fillText('1S',30,202);
+  ctx.font='bold 34px Arial';ctx.fillText(`${capacity} mAh`,28,266);
+  ctx.font='bold 22px Arial';ctx.fillText('ROTORIFT',30,332);
+  ctx.font='20px Arial';ctx.fillText('3.8 V · LiHV',30,372);
+  ctx.fillStyle='#ff6648';ctx.fillRect(16,422,224,7);
+  ctx.fillStyle='#17262a';ctx.font='16px Arial';ctx.fillText('SINGLE CELL',30,468);
+  // Compact, horizontal side panel occupies the upper-right atlas quarter.
+  ctx.fillStyle='#ff6648';ctx.fillRect(256,0,256,128);
+  ctx.fillStyle='#17262a';ctx.font='bold 31px Arial';ctx.fillText(`1S · ${capacity} mAh`,270,53);
+  ctx.font='bold 20px Arial';ctx.fillText('ROTORIFT / LiHV',270,97);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  const material=new THREE.MeshStandardMaterial({map:texture,roughness:.65});
+  function panel(name,w,h,x,y,rx,ry,side=false) {
+    const geometry=new THREE.PlaneGeometry(w,h),uv=geometry.attributes.uv;
+    for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*.5+(side?.5:0),side?.75+uv.getY(i)*.25:uv.getY(i));
+    const print=new THREE.Mesh(geometry,material);print.name=`Battery_label_print_${name}`;
+    print.position.set(x,y,0);print.rotation.set(rx,ry,0);print.receiveShadow=true;battery.add(print);
+  }
+  // Keep the paper on the flat faces, clear of the rounded pouch shoulders.
+  panel('top',width-2*radius-.25,length,0,centerY+height/2+.07,-Math.PI/2,0);
+  panel('bottom',width-2*radius-.25,length,0,centerY-height/2-.07,Math.PI/2,0);
+  for(const side of [-1,1])panel(side<0?'left':'right',length,height-2*radius-.25,side*(width/2+.07),centerY,0,side*Math.PI/2,true);
+  return material;
+}
+
 // Saját Air65-jellegű vizuális modell. Milliméterben épül, előre: -Z.
 function createRift65() {
   const root = new THREE.Group(); root.name = 'Rotorift_Rift_65'; root.scale.setScalar(.001);
@@ -198,13 +231,8 @@ function createRift65() {
   // A cella a végburkolatok belső síkjáig tart: nincs egymásra fekvő külső felület.
   const cellLength=45.8, endLength=2.2, endCenter=(cellLength+endLength)/2;
   extrude(battery,roundShape(10.8,5.8,1),cellLength,materials.cell,'1S_pouch_cell',0,2.9,0);
-  box(battery,10.9,.2,41,materials.white,'Own_Rotorift_battery_label',0,5.85,0);
   for(const z of [-endCenter,endCenter])extrude(battery,roundShape(10.8,5.8,1),endLength,materials.black,'Battery_heatshrink_end',0,2.9,z);
-  const cv=document.createElement('canvas');cv.width=256;cv.height=512;const ctx=cv.getContext('2d');
-  ctx.fillStyle='#e9eae3';ctx.fillRect(0,0,256,512);ctx.fillStyle='#ff6648';ctx.fillRect(14,16,228,90);ctx.fillStyle='#17262a';ctx.font='bold 36px Arial';ctx.fillText('R / 65',36,76);ctx.font='bold 48px Arial';ctx.fillText('1S',33,186);ctx.font='bold 29px Arial';ctx.fillText('300 mAh',30,248);ctx.font='18px Arial';ctx.fillText('ROTORIFT',31,301);ctx.font='17px Arial';ctx.fillText('3.8 V · LiHV',31,341);ctx.fillText('VISUAL DEMO',31,405);
-  const labelMap=new THREE.CanvasTexture(cv);labelMap.colorSpace=THREE.SRGBColorSpace;
-  const labelMat=new THREE.MeshStandardMaterial({map:labelMap,roughness:.65});materials.label=labelMat;
-  const label=mesh(battery,new THREE.PlaneGeometry(10.5,40),labelMat,'Battery_label_print',0,5.97,0);label.rotation.x=-Math.PI/2;
+  materials.label=addWhoopBatteryPrint(battery,{model:65,capacity:300,width:10.8,height:5.8,centerY:2.9,radius:1,length:40});
   const batteryExit=roundShape(10.8,5.8,1);
   for(const side of [-1,1])batteryExit.holes.push(hole(side*2,0,.68));
   extrude(battery,batteryExit,.55,materials.black,'Battery_wire_exit_panel',0,2.9,25.075);
