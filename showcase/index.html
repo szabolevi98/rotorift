@@ -59477,6 +59477,7 @@ function createRiftX5() {
   materials.glass = new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens);
   materials.battery = new THREE.MeshStandardMaterial({ color: '#303b40', metalness: .28, roughness: .43 });
   materials.redWire = new THREE.MeshStandardMaterial({ color: '#c44232', roughness: .66 });
+  materials.videoWire = new THREE.MeshStandardMaterial({ color: '#e5b52a', roughness: .7 });
   materials.white = new THREE.MeshStandardMaterial({ color: '#c8c9ba', roughness: .5 });
   materials.led = new THREE.MeshStandardMaterial({ color: '#8ce9b6', emissive: '#50cc87', emissiveIntensity: 1.3 });
 
@@ -59818,8 +59819,19 @@ function createRiftX5() {
   const glass=cylinder(fpv,4.9,4.9,.7,materials.glass,'FPV_coated_lens',0,0,-14.8,32); glass.rotation.x=Math.PI/2;
   const glint=mesh(fpv,new THREE.SphereGeometry(1.15,10,8),new THREE.MeshStandardMaterial({color:'#7293b1',metalness:.8,roughness:.05}),'Lens_reflection',-1.9,1.5,-15.3); glint.scale.z=.14;
   beveled(fpv,7,3,2,.5,materials.white,'FPV_camera_rear_socket',0,0,8,.2);
-  wire(front,[[0,21.6,-42.8],[6,20,-34],[9,23,-24],[0,26,stackCenterZ-17]],.75,materials.rubber,'FPV_camera_cable');
-  beveled(electronics,7,2.4,3,.5,materials.white,'FC_camera_socket',0,26,stackCenterZ-16,.2);
+  beveled(fpv,5.8,2.4,2,.4,materials.white,'FPV_camera_three_pin_plug',0,0,9.7,.15);
+  beveled(electronics,7,2.4,3,.5,materials.white,'FC_camera_socket',0,26.9,stackCenterZ-16,.2);
+  beveled(electronics,5.8,1.9,2,.35,materials.white,'FC_camera_three_pin_plug',0,26.9,stackCenterZ-18.2,.15);
+  for(const [i,name,mat]of [[0,'5V',materials.redWire],[1,'GND',materials.rubber],[2,'VIDEO',materials.videoWire]]){
+    const x=(i-1)*1.6;
+    box(fpv,.95,1.1,.08,materials.rubber,'Camera_'+name+'_plug_cavity',x,0,10.72);
+    box(electronics,.95,1.1,.08,materials.rubber,'FC_camera_'+name+'_plug_cavity',x,26.9,stackCenterZ-19.22);
+    const start=new THREE.Vector3(x,0,10.78).applyQuaternion(fpv.quaternion).add(fpv.position);
+    wire(front,[start.toArray(),[x+4,21,-34],[x+5,23,-27],[x,26.9,stackCenterZ-22],[x,26.9,stackCenterZ-19.26]],.3,mat,'FPV_camera_'+name+'_wire',32);
+    // Exposed PCB legs anchor the board connector rather than floating above it.
+    box(electronics,.5,.3,1.4,materials.gold,'FC_camera_'+name+'_socket_pin',x,25.8,stackCenterZ-14.1);
+    const solder=mesh(electronics,new THREE.SphereGeometry(.5,8,5),materials.silver,'FC_camera_'+name+'_socket_solder',x,25.92,stackCenterZ-13.65);solder.scale.y=.45;
+  }
 
   // 6S LiPo, vékonyrétegű burkolat, két tépőzáras pánt és saját címkék.
   const battery=assembly('05_6S_battery_and_straps',[0,0,0],[0,74,3]); batteryParts.push(battery);
@@ -60818,7 +60830,7 @@ function createRiftX35({cameraMount='cage'}={}) {
   function softBox(p,w,h,d,r,m,n,x,y,z){return mesh(p,softened(shape(w-.7,h-.7,r),d),m,n,x,y,z);}
   function plate(p,s,y,d,n,m=materials.carbon){const g=geometry(s,d);g.rotateX(-Math.PI/2);return mesh(p,g,m,n,0,y,0);}
   function loop(p,w,h,iw,ih,d,m,n,x,y,z){const s=shape(w,h,2);s.holes.push(shape(iw,ih,1.2));return mesh(p,geometry(s,d),m,n,x,y,z);}
-  function wire(p,points,r,m,n){const curve=new THREE.CatmullRomCurve3(points.map(v=>new THREE.Vector3(...v)));return mesh(p,new THREE.TubeGeometry(curve,28,r,5,false),m,n);}
+  function wire(p,points,r,m,n,segments=28){const curve=new THREE.CatmullRomCurve3(points.map(v=>new THREE.Vector3(...v)));return mesh(p,new THREE.TubeGeometry(curve,segments,r,5,false),m,n);}
   function beam(p,a,b,w,d,m,n){const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),o=box(p,w,start.distanceTo(end),d,m,n,...start.clone().add(end).multiplyScalar(.5).toArray());o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),end.sub(start).normalize());return o;}
   function screw(p,x,y,z,r=1.5){cyl(p,r,.7,materials.silver,'Socket_head_bolt',x,y,z,12);cyl(p,r*.43,.1,materials.black,'Hex_socket',x,y+.4,z,6);}
   function assembly(name,delta){const group=new THREE.Group();group.name=name;root.add(group);assemblies.push({group,base:group.position.clone(),delta:new THREE.Vector3(...delta)});return group;}
@@ -60901,7 +60913,19 @@ function createRiftX35({cameraMount='cage'}={}) {
   rounded(electronic,12,8,1,1,materials.pcb,'ELRS_receiver',0,7,43).rotation.x=-Math.PI/2;
   for(const z of [22,36])for(const x of [-8,8])cyl(electronic,1.3,7.2,materials.rubber,'VTX_mount_spacer',x,5.6,z);
   const tray=rounded(electronic,25,1.5,23,2,materials.tpu,'VTX_bolted_TPU_tray',0,2.8,29);
-  for(let i=0;i<4;i++)wire(electronic,[[i-2,11,21],[i-2,14,17],[i-2,13,9]],.25,i===0?materials.red:materials.rubber,'VTX_signal_wire');
+  // Four discrete analog VTX leads: regulated power, ground, video and control.
+  // Each tinned end lands on its own exposed pad, outside the heatsink/MCU.
+  for(const [i,name,mat]of [[0,'5V',materials.red],[1,'GND',materials.rubber],[2,'VIDEO',materials.yellow],[3,'CONTROL',materials.white]]){
+    const x=(i-1.5)*3.6;
+    for(const [prefix,z,pcbTop]of [['FC',11,11.1],['VTX',21.9,10.65]]){
+      box(electronic,1.8,.18,1.8,materials.gold,prefix+'_VTX_'+name+'_pad',x,pcbTop+.09,z);
+      const solder=mesh(electronic,new THREE.SphereGeometry(1,8,5),materials.silver,prefix+'_VTX_'+name+'_solder',x,pcbTop+.32,z);
+      solder.scale.set(.72,.32,.72);
+      const end=prefix==='FC'?[x,12.0,12.2]:[x,11.65,20.9];
+      wire(electronic,[end,[x,pcbTop+.6,z],[x,pcbTop+.32,z]],.12,materials.silver,prefix+'_VTX_'+name+'_tinned_end',6);
+    }
+    wire(electronic,[[x,12,12.2],[x,13.5,14.5],[x,13.5,18.3],[x,11.65,20.9]],.25,mat,'VTX_'+name+'_wire');
+  }
   const cameraSet=assembly('X35_05_FPV_camera',[0,0,-16]);
   if(cameraMount==='original')for(const side of [-1,1]){
     const cheek=new THREE.Shape();cheek.moveTo(-11,-14);cheek.lineTo(10,-14);cheek.quadraticCurveTo(12,-14,11,-10);cheek.lineTo(4,3);cheek.quadraticCurveTo(0,9,-5,4);cheek.quadraticCurveTo(-11,-2,-11,-14);
@@ -61005,7 +61029,9 @@ function createRiftX35({cameraMount='cage'}={}) {
   const socket=cyl(rear,2.5,6,materials.tpu,'VTX_antenna_root_socket',...base.toArray());socket.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
   const head=cyl(rear,4,9,materials.black,'Compact_omni_radome',...tip.clone().addScaledVector(axis,4).toArray(),20);head.quaternion.copy(socket.quaternion);
   cyl(rear,3,1,materials.black,'Omni_radome_base_seam',...tip.clone().addScaledVector(axis,-.8).toArray(),20).quaternion.copy(socket.quaternion);
-  wire(rear,[[-6,14,36],[-11,18,40],[-11,23,51],[0,27,54],base.toArray()],.6,materials.rubber,'VTX_antenna_coax');
+  cyl(electronic,1.5,.5,materials.gold,'VTX_UFL_board_socket',-6,10.9,36,12);
+  cyl(electronic,1.3,.4,materials.silver,'VTX_UFL_mated_plug',-6,11.3,36,12);
+  wire(rear,[[-6,11.5,36],[-10,12,38],[-11,18,42],[-11,23,51],[0,27,54],base.toArray()],.6,materials.rubber,'VTX_antenna_coax');
   let meshes=0,triangles=0;const unique=new Set();root.traverse(o=>{if(o.isMesh){meshes++;triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;unique.add(o.material);}});
   return {root,assemblies,propellers,batteryParts,actionParts,materials,meshes,triangles:Math.round(triangles),
     setExplode(value){for(const a of assemblies)a.group.position.copy(a.base).addScaledVector(a.delta,value);},

@@ -53,6 +53,7 @@ function createRiftX5() {
   materials.glass = new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens);
   materials.battery = new THREE.MeshStandardMaterial({ color: '#303b40', metalness: .28, roughness: .43 });
   materials.redWire = new THREE.MeshStandardMaterial({ color: '#c44232', roughness: .66 });
+  materials.videoWire = new THREE.MeshStandardMaterial({ color: '#e5b52a', roughness: .7 });
   materials.white = new THREE.MeshStandardMaterial({ color: '#c8c9ba', roughness: .5 });
   materials.led = new THREE.MeshStandardMaterial({ color: '#8ce9b6', emissive: '#50cc87', emissiveIntensity: 1.3 });
 
@@ -394,8 +395,19 @@ function createRiftX5() {
   const glass=cylinder(fpv,4.9,4.9,.7,materials.glass,'FPV_coated_lens',0,0,-14.8,32); glass.rotation.x=Math.PI/2;
   const glint=mesh(fpv,new THREE.SphereGeometry(1.15,10,8),new THREE.MeshStandardMaterial({color:'#7293b1',metalness:.8,roughness:.05}),'Lens_reflection',-1.9,1.5,-15.3); glint.scale.z=.14;
   beveled(fpv,7,3,2,.5,materials.white,'FPV_camera_rear_socket',0,0,8,.2);
-  wire(front,[[0,21.6,-42.8],[6,20,-34],[9,23,-24],[0,26,stackCenterZ-17]],.75,materials.rubber,'FPV_camera_cable');
-  beveled(electronics,7,2.4,3,.5,materials.white,'FC_camera_socket',0,26,stackCenterZ-16,.2);
+  beveled(fpv,5.8,2.4,2,.4,materials.white,'FPV_camera_three_pin_plug',0,0,9.7,.15);
+  beveled(electronics,7,2.4,3,.5,materials.white,'FC_camera_socket',0,26.9,stackCenterZ-16,.2);
+  beveled(electronics,5.8,1.9,2,.35,materials.white,'FC_camera_three_pin_plug',0,26.9,stackCenterZ-18.2,.15);
+  for(const [i,name,mat]of [[0,'5V',materials.redWire],[1,'GND',materials.rubber],[2,'VIDEO',materials.videoWire]]){
+    const x=(i-1)*1.6;
+    box(fpv,.95,1.1,.08,materials.rubber,'Camera_'+name+'_plug_cavity',x,0,10.72);
+    box(electronics,.95,1.1,.08,materials.rubber,'FC_camera_'+name+'_plug_cavity',x,26.9,stackCenterZ-19.22);
+    const start=new THREE.Vector3(x,0,10.78).applyQuaternion(fpv.quaternion).add(fpv.position);
+    wire(front,[start.toArray(),[x+4,21,-34],[x+5,23,-27],[x,26.9,stackCenterZ-22],[x,26.9,stackCenterZ-19.26]],.3,mat,'FPV_camera_'+name+'_wire',32);
+    // Exposed PCB legs anchor the board connector rather than floating above it.
+    box(electronics,.5,.3,1.4,materials.gold,'FC_camera_'+name+'_socket_pin',x,25.8,stackCenterZ-14.1);
+    const solder=mesh(electronics,new THREE.SphereGeometry(.5,8,5),materials.silver,'FC_camera_'+name+'_socket_solder',x,25.92,stackCenterZ-13.65);solder.scale.y=.45;
+  }
 
   // 6S LiPo, vékonyrétegű burkolat, két tépőzáras pánt és saját címkék.
   const battery=assembly('05_6S_battery_and_straps',[0,0,0],[0,74,3]); batteryParts.push(battery);

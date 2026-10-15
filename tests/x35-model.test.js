@@ -121,3 +121,26 @@ test('X35 rounded 3.5-inch paddles clear the frame throughout their full swept v
     }
   }
 });
+
+test('X35 VTX harness is soldered at both boards and stays above their surfaces',()=>{
+  const m=model(),ray=new THREE.Raycaster();
+  const boards=['X35_35A_AIO_PCB','VTX_board'].map(name=>m.root.getObjectByName(name));
+  for(const name of ['5V','GND','VIDEO','CONTROL']){
+    const insulation=m.root.getObjectByName('VTX_'+name+'_wire'),path=insulation.geometry.parameters.path;
+    for(const [prefix,t]of [['FC',0],['VTX',1]]){
+      const pad=new THREE.Box3().setFromObject(m.root.getObjectByName(prefix+'_VTX_'+name+'_pad'));
+      const solder=new THREE.Box3().setFromObject(m.root.getObjectByName(prefix+'_VTX_'+name+'_solder'));
+      const core=m.root.getObjectByName(prefix+'_VTX_'+name+'_tinned_end'),corePath=core.geometry.parameters.path;
+      assert.ok(pad.intersectsBox(solder),'solder contacts its pad');
+      assert.ok(solder.containsPoint(corePath.getPoint(1)),'tinned end is embedded in solder');
+      assert.ok(path.getPoint(t).distanceTo(corePath.getPoint(0))<1e-6,'insulation meets conductor');
+    }
+    const points=path.getPoints(80);
+    for(let i=1;i<points.length;i++){
+      const delta=points[i].clone().sub(points[i-1]);ray.set(points[i-1],delta.clone().normalize());ray.far=delta.length();
+      assert.equal(ray.intersectObjects(boards).length,0,'harness must not cross either PCB');
+    }
+  }
+  const coax=m.root.getObjectByName('VTX_antenna_coax');
+  assert.ok(new THREE.Box3().setFromObject(m.root.getObjectByName('VTX_UFL_mated_plug')).containsPoint(coax.geometry.parameters.path.getPoint(0)));
+});

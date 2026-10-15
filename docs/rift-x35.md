@@ -88,3 +88,8 @@ The mount lab renders only on view changes, resizing and dragging. The game
 GLB contains only the current mount, not all three alternatives. Tests verify
 the unobstructed optical axes, open carbon bay, antenna/connector separation,
 rotor alignment and existing underside wiring.
+
+The analog VTX has four separate power, ground, video and control leads. Both
+boards expose individual gold pads with solder fillets and short tinned wire
+ends; the harness clears both PCBs. A mated U.FL socket anchors the antenna
+coax to the rear VTX board. The exported game model includes these details.

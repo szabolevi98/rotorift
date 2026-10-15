@@ -10,6 +10,30 @@ import {DRONE_SURFACES,configureDronePolymer} from '../shared/visual/drone-rende
 const context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,
  document:{createElement:()=>({width:0,height:0,getContext:()=>({fillRect(){},fillText(){}})})}});
 for(const name of ['whoop65.js','whoop75.js'])vm.runInContext(await readFile(new URL('../showcase/'+name,import.meta.url),'utf8'),context);
+const x5Context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,document:{createElement:()=>({getContext:()=>({fillRect(){},fillText(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},createLinearGradient:()=>({addColorStop(){}})})})}});
+vm.runInContext(await readFile(new URL('../showcase/drone.js',import.meta.url),'utf8'),x5Context);
+
+test('X5 camera has three separate conductors seated in connector cavities and board-mounted socket legs',()=>{
+ const m=vm.runInContext('createRiftX5()',x5Context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);
+ const board=m.root.getObjectByName('Flight_controller_board'),boardBox=new THREE.Box3().setFromObject(board),colors=new Set(),ray=new THREE.Raycaster();
+ for(const name of ['5V','GND','VIDEO']){
+  const wire=m.root.getObjectByName('FPV_camera_'+name+'_wire'),path=wire.geometry.parameters.path;
+  colors.add(wire.material.color.getHex());
+  for(const [cavity,t]of [['Camera_'+name+'_plug_cavity',0],['FC_camera_'+name+'_plug_cavity',1]]){
+   const bounds=new THREE.Box3().setFromObject(m.root.getObjectByName(cavity)).expandByScalar(.1);
+   assert.ok(bounds.containsPoint(wire.localToWorld(path.getPoint(t))),'wire must enter its own connector cavity');
+  }
+  const pins=new THREE.Box3().setFromObject(m.root.getObjectByName('FC_camera_'+name+'_socket_pin'));
+  assert.ok(pins.min.y<=boardBox.max.y&&pins.max.y>boardBox.max.y,'socket contacts the PCB');
+  const points=path.getPoints(100);
+  for(let i=1;i<points.length;i++){
+   const a=wire.localToWorld(points[i-1].clone()),b=wire.localToWorld(points[i].clone()),delta=b.sub(a);
+   ray.set(a,delta.clone().normalize());ray.far=delta.length();assert.equal(ray.intersectObject(board).length,0,'camera wires clear the FC board');
+  }
+ }
+ assert.equal(colors.size,3,'power, ground and video remain distinguishable');
+ assert.equal(m.root.getObjectByName('FPV_camera_cable'),undefined,'remove the old single thick cable');
+});
 for(const size of [65,75])test(`${size} whoop: all motor leads connect underneath the PCB and clear the moulded frame`,()=>{
  const model=vm.runInContext(`createRift${size}()`,context),root=model.root;root.scale.setScalar(1);root.updateMatrixWorld(true);
  const frame=root.children.find(o=>/^\d+_01_/.test(o.name)),board=root.children.find(o=>/AIO/.test(o.name)),wires=board.children.filter(o=>o.name==='Motor_phase_wire'),pads=board.children.filter(o=>o.name==='Motor_phase_pad');
