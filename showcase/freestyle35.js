@@ -90,7 +90,9 @@ function createRiftX35({cameraMount='cage'}={}) {
     for(let lead=0;lead<3;lead++){
       const offset=(lead-1)*1.25,padX=sx*9.3,padZ=sz*(3.5+lead*1.6);
       cyl(electronic,.75,.7,materials.gold,'Motor_phase_pad',padX,9.9,padZ,10);
-      wire(electronic,[[padX,9.4,padZ],[sx*13,9.1,padZ],[sx*14,7,sz*13+offset],[sx*25,3,sz*25+offset],[sx*39,2,sz*39+offset],[x-sx*7,2.1,z-sz*7+offset]],.42,materials.rubber,'Motor_phase_wire');
+      const solder=mesh(electronic,new THREE.SphereGeometry(1,6,3),materials.silver,'Motor_phase_solder_fillet',padX,9.35,padZ);
+      solder.scale.set(.85,.42,.85);
+      wire(electronic,[[padX,9.4,padZ],[sx*13,9.1,padZ],[sx*14,7,sz*13+offset],[sx*25,3,sz*25+offset],[sx*39,2,sz*39+offset],[x-sx*7,2.1,z-sz*7+offset]],.42,materials.rubber,'Motor_phase_wire',24);
     }
   }
   const boardShape=shape(25,25,2);for(const x of [-10,10])for(const z of [-10,10])boardShape.holes.push(hole(x,z,1.3));plate(electronic,boardShape,10.5,1.2,'X35_35A_AIO_PCB',materials.pcb);
@@ -189,7 +191,16 @@ function createRiftX35({cameraMount='cage'}={}) {
   batteryLabel('RIFT / 4S','650 mAh · X35',25,13,0,57.1,5,true);
   batteryLabel('4S','FLIGHT PACK',23,7,0,50.5,32.1,false);
   rounded(battery,12,8,1.2,2,materials.rubber,'Battery_cable_exit_grommet',0,40,32.2);
-  for(const [x,mat] of [[2,materials.rubber],[6,materials.red]])wire(battery,[[x,40,32.5],[x,41,35],[x,44,40],[x-4,42,47],[x-4,36,54],[x-4,36,51.2]],1.05,mat,'Battery_power_lead');
+  // A broad, tangent-continuous loop ends straight along the XT30 entry axis.
+  // The old interpolated path doubled back sharply just behind the connector.
+  for(const [x,mat] of [[2,materials.rubber],[6,materials.red]]){
+    const path=new THREE.CurvePath(),v=(a,b,c)=>new THREE.Vector3(a,b,c);
+    path.add(new THREE.CubicBezierCurve3(v(x,40,32.5),v(x,44,38),v(x-4,45,44),v(x-4,45,51.2)));
+    const k=.55228475;
+    path.add(new THREE.CubicBezierCurve3(v(x-4,45,51.2),v(x-4,45,51.2+6*k),v(x-4,40.5+4.5*k,57.2),v(x-4,40.5,57.2)));
+    path.add(new THREE.CubicBezierCurve3(v(x-4,40.5,57.2),v(x-4,40.5-4.5*k,57.2),v(x-4,36,51.2+6*k),v(x-4,36,51.2)));
+    mesh(battery,new THREE.TubeGeometry(path,40,1.05,5,false),mat,'Battery_power_lead');
+  }
   const rear=assembly('X35_07_Rear_connections',[0,0,16]);
   for(const [center,name] of [[42,'XT30_ESC_half'],[48,'XT30_battery_half']]){
     const keyed=new THREE.Shape();keyed.moveTo(-5,-3);keyed.lineTo(5,-3);keyed.lineTo(5,1.4);keyed.lineTo(3.5,3);keyed.lineTo(-3.5,3);keyed.lineTo(-5,1.4);keyed.closePath();
@@ -221,6 +232,8 @@ function createRiftX35({cameraMount='cage'}={}) {
   wire(rear,[base.toArray(),tip.toArray()],.85,materials.rubber,'VTX_straight_antenna_stem');
   const socket=cyl(rear,2.5,6,materials.tpu,'VTX_antenna_root_socket',...base.toArray());socket.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),axis);
   const head=cyl(rear,4,9,materials.black,'Compact_omni_radome',...tip.clone().addScaledVector(axis,4).toArray(),20);head.quaternion.copy(socket.quaternion);
+  cyl(rear,4.06,.65,materials.tpu,'Radome_color_accent',...tip.clone().addScaledVector(axis,.9).toArray(),16).quaternion.copy(socket.quaternion);
+  cyl(rear,1.7,.12,materials.tpu,'Radome_top_mark',...tip.clone().addScaledVector(axis,8.55).toArray(),12).quaternion.copy(socket.quaternion);
   cyl(rear,3,1,materials.black,'Omni_radome_base_seam',...tip.clone().addScaledVector(axis,-.8).toArray(),20).quaternion.copy(socket.quaternion);
   cyl(electronic,1.5,.5,materials.gold,'VTX_UFL_board_socket',-6,10.9,36,12);
   cyl(electronic,1.3,.4,materials.silver,'VTX_UFL_mated_plug',-6,11.3,36,12);

@@ -29,7 +29,10 @@ The pack has an XT30 pair with separated wire
 entries, and a balance connector resting on the power leads, secured with a
 thin black band and a small cushion. The rear
 omni antenna is above the deck; the ELRS dipole is held in closed clamps below
-the propeller plane. Motor wiring attaches beneath the AIO PCB and clears carbon.
+the propeller plane. All twelve motor leads attach beneath the AIO PCB with
+exposed silver solder fillets touching the gold pads, and clear carbon.
+The battery leads use a broad, smooth return loop with a straight axial entry
+into the XT30, rather than a sharp final kink.
 
 The camera now has three separate insulated leads (5V, ground and video), a rear
 camera socket, short exposed conductor tips and silver solder fillets on three
@@ -81,7 +84,8 @@ the main showcase and exported game model; A and B remain comparison options.
 The upper carbon deck now has an open camera bay so it does not intersect the
 tilted housing. The rear omni antenna sits behind the XT30 on its own shelf,
 attached to the deck by two bolted feet and diagonal braces. The stem, radome
-and base seam are black, with no colored decoration. The XT30, battery leads,
+and base seam are black, with a thin accent ring and a small top mark sharing
+the selected aircraft color. The XT30, battery leads,
 balance connector and lower receiver antenna retain their separate positions.
 
 The mount lab renders only on view changes, resizing and dragging. The game

@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import vm from 'node:vm';import * as THREE from 'three';
 import {DRONE_SURFACES,configureDronePolymer} from '../shared/visual/drone-rendering.js';
 const config=JSON.parse(await readFile(new URL('../data/drones/rift-x35.json',import.meta.url),'utf8'));
-const context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,document:{createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})}});
+const context=vm.createContext({THREE,DRONE_SURFACES,configureDronePolymer,applyBatteryLabelColor(){},document:{createElement:()=>({getContext:()=>({fillRect(){},fillText(){}})})}});
 vm.runInContext(await readFile(new URL('../showcase/freestyle35.js',import.meta.url),'utf8'),context);
 function model(cameraMount){const m=vm.runInContext(cameraMount?`createRiftX35({cameraMount:'${cameraMount}'})`:'createRiftX35()',context);m.root.scale.setScalar(1);m.root.updateMatrixWorld(true);return m;}
 test('X35 is a compact 4S aircraft with no action camera, flat arms and independently exportable tri-blade rotors',()=>{
@@ -64,12 +64,53 @@ test('X35 mount alternatives leave the optical axis and carbon nose bay clear',(
     if(variant==='cage')assert.ok(m.root.getObjectByName('FPV_open_corner_bumper'));
   }
 });
-test('X35 omni antenna is separate from both XT30 halves and has a plain black radome',()=>{
+test('X35 omni antenna clears the XT30 and keeps a black body with small color accents',()=>{
   const m=model(),antenna=new THREE.Box3().setFromObject(m.root.getObjectByName('VTX_straight_antenna_stem'));
   for(const name of ['XT30_ESC_half','XT30_battery_half','XT30_retention_collar','JST_XH_4S_balance_plug'])assert.equal(antenna.intersectsBox(new THREE.Box3().setFromObject(m.root.getObjectByName(name))),false,name);
-  assert.equal(m.root.getObjectByName('Radome_color_accent'),undefined);
+  for(const name of ['Radome_color_accent','Radome_top_mark'])assert.equal(m.root.getObjectByName(name).material,m.materials.tpu);
+  m.setColor('#3e938c');
+  assert.equal(m.root.getObjectByName('Radome_color_accent').material.color.getHexString(),'3e938c');
   assert.equal(m.root.getObjectByName('Compact_omni_radome').material,m.materials.black);
   assert.ok(m.root.getObjectByName('VTX_antenna_rear_shelf'));
+});
+
+test('X35 underside motor leads sit in twelve silver solder fillets touching their pads',()=>{
+  const m=model(),electronics=m.root.getObjectByName('X35_04_Electronics');
+  const pads=electronics.children.filter(o=>o.name==='Motor_phase_pad');
+  const fillets=electronics.children.filter(o=>o.name==='Motor_phase_solder_fillet');
+  const wires=electronics.children.filter(o=>o.name==='Motor_phase_wire');
+  const pcb=new THREE.Box3().setFromObject(m.root.getObjectByName('X35_35A_AIO_PCB'));
+  assert.equal(fillets.length,12);
+  for(const wire of wires){
+    const end=wire.geometry.parameters.path.getPoint(0);
+    const fillet=fillets.find(o=>Math.hypot(o.position.x-end.x,o.position.z-end.z)<.01);
+    const pad=pads.find(o=>Math.hypot(o.position.x-end.x,o.position.z-end.z)<.01);
+    const bounds=new THREE.Box3().setFromObject(fillet);
+    assert.ok(bounds.containsPoint(end));assert.ok(bounds.intersectsBox(new THREE.Box3().setFromObject(pad)));
+    assert.ok(bounds.max.y<pcb.min.y,'silver joint remains exposed underneath the board');
+    assert.equal(fillet.material,m.materials.silver);
+  }
+});
+
+test('X35 pack leads enter the XT30 axially through a broad continuous bend',()=>{
+  const m=model();
+  const wires=[];m.root.traverse(o=>{if(o.name==='Battery_power_lead')wires.push(o);});
+  assert.equal(wires.length,2);
+  const connector=new THREE.Box3().setFromObject(m.root.getObjectByName('XT30_battery_half'));
+  for(const wire of wires){
+    const path=wire.geometry.parameters.path;
+    assert.ok(connector.clone().expandByScalar(.3).containsPoint(path.getPoint(1)),'lead ends inside connector entry');
+    assert.ok(path.getTangent(1).dot(new THREE.Vector3(0,0,-1))>.999,'straight final entry');
+    for(let i=1;i<path.curves.length;i++)assert.ok(path.curves[i-1].getTangent(1).dot(path.curves[i].getTangent(0))>.99999,'no corner at the joined curves');
+    const points=path.curves.slice(1).flatMap((curve,i)=>curve.getPoints(80).slice(i?1:0));
+    let minRadius=Infinity;
+    for(let i=1;i<points.length-1;i++){
+      const u=points[i].clone().sub(points[i-1]),v=points[i+1].clone().sub(points[i]),chord=points[i+1].distanceTo(points[i-1]);
+      const area=u.clone().cross(v).length();
+      if(area>1e-9)minRadius=Math.min(minRadius,u.length()*v.length()*chord/(2*area));
+    }
+    assert.ok(minRadius>2.5,'no tight kink at the connector');
+  }
 });
 
 test('X35 camera power, ground and video end inside solder fillets on exposed FC pads',()=>{
