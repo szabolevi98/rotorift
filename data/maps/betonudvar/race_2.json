@@ -2,6 +2,20 @@
   "id": "race_2",
   "name": "Tower A Dive",
   "version": 1,
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Climb above Tower A, dive down its open central shaft and exit near ground level before tackling Tower B.",
+      "hu": "Emelkedj az A torony fölé, dive-olj le a nyitott központi aknán, majd talajközelben fordulj a B torony felé.",
+      "de": "Steige über Turm A, tauche durch den offenen Mittelschacht und verlasse ihn bodennah in Richtung Turm B.",
+      "fr": "Montez au-dessus de la tour A, plongez dans son puits central ouvert, puis ressortez près du sol vers la tour B.",
+      "es": "Sube sobre la torre A, desciende por su hueco central abierto y sal cerca del suelo antes de afrontar la torre B."
+    }
+  },
   "spawn": [
     0,
     0.2,

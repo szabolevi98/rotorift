@@ -2,6 +2,21 @@
   "id": "race_1",
   "name": "Grove Grand Tour",
   "version": 4,
+  "details": {
+    "difficulty": "medium",
+    "recommendedDrones": [
+      "rift-c3",
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "A long lap through the pavilion passage, past the large lake and around the wooded edges of the park.",
+      "hu": "Hosszú kör a pavilon átjáróján keresztül, a nagy tó mellett és a park erdős szélein.",
+      "de": "Eine lange Runde durch den Pavillondurchgang, am großen See vorbei und entlang der bewaldeten Parkränder.",
+      "fr": "Un long tour par le passage du pavillon, le grand lac et les lisières boisées du parc.",
+      "es": "Una vuelta larga por el paso del pabellón, junto al lago grande y los bordes arbolados del parque."
+    }
+  },
   "spawn": [
     0,
     0.15,

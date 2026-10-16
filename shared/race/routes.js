@@ -1,4 +1,5 @@
 import { validateMap } from "../physics/config.js";
+import { validateRouteDetails } from './route-info.js';
 
 export const validRouteId = id => typeof id === "string" && /^[a-z0-9][a-z0-9_-]{0,63}$/.test(id);
 
@@ -25,6 +26,7 @@ export function validateRoute(route, map) {
     if (Math.abs(gate.p[0]) > map.size / 2 || Math.abs(gate.p[2]) > map.size / 2 || gate.p[1] < -20 || gate.p[1] > 200 || gate.width > 30 || gate.height > 30)
       throw Error("Gates must be inside the map, with dimensions up to 30 metres.");
   const spawn = route.spawn ?? map.spawn;
+  const details = validateRouteDetails(route.details);
   validateGuide(route.guide,route.gates,map);
   if (Math.abs(spawn[0]) > map.size / 2 || Math.abs(spawn[2]) > map.size / 2 || spawn[1] < -20 || spawn[1] > 200)
     throw Error("The start position must be inside the map.");
@@ -32,6 +34,7 @@ export function validateRoute(route, map) {
     id: route.id, name: route.name.trim(), version: route.version, spawn: [...spawn],
     gates: route.gates.map(g => ({ p: [...g.p], n: [...g.n], width: g.width, height: g.height })),
     ...(route.guide?{guide:structuredClone(route.guide)}:{}),
+    ...(details ? {details} : {}),
   };
 }
 

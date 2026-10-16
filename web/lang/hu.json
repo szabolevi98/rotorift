@@ -378,5 +378,13 @@
   "settings.tabs.radio": "Rádió és kalibrálás",
   "settings.tabs.rates": "Rate-ek",
   "settings.tabs.video": "Kép és hang",
-  "settings.rateCurve": "Botkitérés és fordulási sebesség"
+  "settings.rateCurve": "Botkitérés és fordulási sebesség",
+  "route.details": "Részletek",
+  "route.close": "Bezárás",
+  "route.recommended": "Ajánlott drónok",
+  "route.gates": "{count} kapu",
+  "route.easy": "Könnyű",
+  "route.medium": "Közepes",
+  "route.hard": "Nehéz",
+  "route.noDescription": "Ehhez az útvonalhoz még nincs leírás."
 }

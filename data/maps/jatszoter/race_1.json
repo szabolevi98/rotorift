@@ -2,6 +2,20 @@
   "id": "race_1",
   "name": "Pocket Circuit",
   "version": 3,
+  "details": {
+    "difficulty": "easy",
+    "recommendedDrones": [
+      "rift-65",
+      "rift-75"
+    ],
+    "description": {
+      "en": "A short, low circuit around the playground for micro drones. A gentle introduction to gate flying.",
+      "hu": "Rövid, alacsonyan vezető játszótéri kör micro drónoknak. Könnyed bevezetés a kapuk közötti repülésbe.",
+      "de": "Eine kurze, niedrige Spielplatzrunde für Micro-Drohnen. Ein sanfter Einstieg ins Torfliegen.",
+      "fr": "Un petit circuit à basse altitude autour du terrain de jeux pour micro-drones, idéal pour découvrir les portes.",
+      "es": "Un circuito corto y bajo por el parque infantil para microdrones. Una introducción sencilla al vuelo entre puertas."
+    }
+  },
   "spawn": [
     0,
     0.15,

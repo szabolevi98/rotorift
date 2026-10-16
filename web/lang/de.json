@@ -378,5 +378,13 @@
   "settings.tabs.radio": "Funk & Kalibrierung",
   "settings.tabs.rates": "Rates",
   "settings.tabs.video": "Bild & Ton",
-  "settings.rateCurve": "Knüppelreaktion"
+  "settings.rateCurve": "Knüppelreaktion",
+  "route.details": "Details",
+  "route.close": "Schließen",
+  "route.recommended": "Empfohlene Drohnen",
+  "route.gates": "{count} Tore",
+  "route.easy": "Leicht",
+  "route.medium": "Mittel",
+  "route.hard": "Schwer",
+  "route.noDescription": "Für diese Strecke gibt es noch keine Beschreibung."
 }

@@ -2,6 +2,20 @@
   "id": "race_3",
   "name": "Pavilion Peaks",
   "version": 1,
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Fly through the covered arcade and upper pavilion gallery, then dive back toward the park paths.",
+      "hu": "Repülj át a fedett árkádon és a pavilon emeleti galériáján, majd dive-olj vissza a park sétányai felé.",
+      "de": "Fliege durch die überdachte Arkade und die obere Pavillongalerie, dann im Sturzflug zurück zu den Parkwegen.",
+      "fr": "Traversez les arcades couvertes et la galerie haute du pavillon, puis plongez vers les allées du parc.",
+      "es": "Atraviesa la arcada cubierta y la galería superior del pabellón, y desciende en picado hacia los senderos."
+    }
+  },
   "spawn": [
     0,
     0.15,

@@ -1,5 +1,6 @@
 import { initLanguage, t } from "./lang.js";
 import { CatalogSelect } from "./catalog-select.js";
+import { RouteDetails } from './route-details.js';
 import { SettingsTabs } from "./settings-tabs.js";
 import { mapPresentation } from "/shared/catalog/maps.js";
 import { read, write } from "./storage.js";
@@ -47,6 +48,7 @@ function mapName(value) {
   return t(mapPresentation(item).nameKey);
 }
 const loading = new LoadingScreen(t);
+const routeDetails = new RouteDetails($('#route-summary'), t);
 const autoArm = new AutoArm(read("auto-arm", true) !== false);
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
@@ -244,6 +246,7 @@ function notice(message) {
   noticeTimer = setTimeout(() => visible("#notice", false), 4200);
 }
 function panel(name) {
+  routeDetails.close();
   controller?.bindings.reset();
   if (controller) controller.setup = null;
   $("#menu").dataset.panel = name;
@@ -427,9 +430,14 @@ function updateSessionOptions() {
   fillRoutes($("#race-route"), catalog.maps.find(m => m.id === map.id), timed ? map.routeId : "", true);
   visible(".race-row", true);
   visible("#map-mode-note", !enabled);
+  refreshRouteDetails();
   refreshSimulationControls();
   refreshMenuNavigation();
   refreshGhostChoices();
+}
+function refreshRouteDetails() {
+  const selected = $('#race-route').value;
+  routeDetails.update(catalog?.maps.find(item => item.id === map?.id)?.routes.find(route => route.id === selected), catalog?.drones ?? []);
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
@@ -461,6 +469,7 @@ function refreshCatalogText() {
     for (const o of $(s).options) o.textContent = mapName(o.value);
   const noRoute = $("#race-route").querySelector('option[value=""]');
   if (noRoute) noRoute.textContent = t("fly.noRoute");
+  refreshRouteDetails();
 }
 function createCatalogUI() {
   dronePicker = new CatalogSelect($("#drone-picker"), "drone-picker-label", t,

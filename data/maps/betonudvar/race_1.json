@@ -2,6 +2,21 @@
   "id": "race_1",
   "name": "Concrete Marathon",
   "version": 4,
+  "details": {
+    "difficulty": "medium",
+    "recommendedDrones": [
+      "rift-c3",
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Tour the construction site through open building frames, the hangar and an upper floor on the east side.",
+      "hu": "Járd be az építkezést a nyitott épületvázakon, a hangáron és a keleti épület egyik emeletén keresztül.",
+      "de": "Eine Baustellenrunde durch offene Rohbauten, den Hangar und ein Obergeschoss auf der Ostseite.",
+      "fr": "Explorez le chantier en traversant les structures ouvertes, le hangar et un étage du bâtiment est.",
+      "es": "Recorre la obra atravesando estructuras abiertas, el hangar y una planta elevada del edificio este."
+    }
+  },
   "spawn": [
     0,
     0.2,

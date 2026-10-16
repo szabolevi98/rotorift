@@ -378,5 +378,13 @@
   "settings.tabs.radio": "Radio & calibration",
   "settings.tabs.rates": "Rates",
   "settings.tabs.video": "Video & audio",
-  "settings.rateCurve": "Stick response"
+  "settings.rateCurve": "Stick response",
+  "route.details": "Details",
+  "route.close": "Close",
+  "route.recommended": "Recommended drones",
+  "route.gates": "{count} gates",
+  "route.easy": "Easy",
+  "route.medium": "Intermediate",
+  "route.hard": "Hard",
+  "route.noDescription": "No description has been added to this route yet."
 }

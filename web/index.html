@@ -95,6 +95,7 @@
               <h2 id="map-picker-label" class="dock-label" data-i18n="fly.environment"></h2>
               <div id="map-picker" class="catalog-select"></div>
               <label class="race-row"><span data-i18n="fly.route"></span><select id="race-route" aria-label="Race route"></select></label>
+              <div id="route-summary" class="route-summary" hidden><span data-route-summary></span><button type="button" aria-haspopup="dialog" aria-controls="route-details" aria-expanded="false"><span aria-hidden="true">ⓘ</span> <span data-i18n="route.details"></span></button></div>
               <a id="map-preview-link" class="map-preview-link" href="/map-preview.html" target="_blank" rel="noopener" data-i18n="fly.mapPreview"></a>
             </div>
             <section class="simulation-controls simulation-dock">
@@ -436,6 +437,12 @@
       <span id="fullscreen-error" class="hidden" role="status"></span>
     </div>
     <!-- Localize the first paint without waiting for modules or language requests. -->
+    <dialog id="route-details" aria-labelledby="route-details-title" aria-describedby="route-details-description">
+      <header><h2 id="route-details-title"></h2><button type="button" data-i18n="route.close"></button></header>
+      <p class="route-details-metrics" data-route-metrics></p>
+      <p id="route-details-description" data-route-description></p>
+      <div class="route-details-drones"><span data-i18n="route.recommended"></span><strong data-route-drones></strong></div>
+    </dialog>
     <script id="boot-language">
       (() => {
         const text = {

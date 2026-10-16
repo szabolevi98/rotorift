@@ -2,6 +2,20 @@
   "id": "race_3",
   "name": "Cranes & Twin Shafts",
   "version": 1,
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Reach crane height, dive through both tower shafts and return through the hangar. The most vertical construction route.",
+      "hu": "Emelkedj darumagasságba, dive-olj át mindkét torony aknáján, majd térj vissza a hangáron keresztül. Az építkezés legvertikálisabb köre.",
+      "de": "Erreiche Kranhöhe, tauche durch beide Turmschächte und kehre durch den Hangar zurück. Die vertikalste Baustellenstrecke.",
+      "fr": "Atteignez la hauteur des grues, plongez dans les deux tours et revenez par le hangar. Le parcours le plus vertical du chantier.",
+      "es": "Alcanza la altura de las grúas, desciende por los huecos de ambas torres y vuelve por el hangar. La ruta más vertical de la obra."
+    }
+  },
   "spawn": [
     0,
     0.2,

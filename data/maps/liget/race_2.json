@@ -2,6 +2,21 @@
   "id": "race_2",
   "name": "Twin Lakes Flow",
   "version": 1,
+  "details": {
+    "difficulty": "medium",
+    "recommendedDrones": [
+      "rift-c3",
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Link both lakes with a low pass under the footbridge, a run along the jetty and a flight through the boathouse.",
+      "hu": "A két tavat összekötő kör: alacsony átrepülés a gyaloghíd alatt, a stég mentén, majd át a csónakházon.",
+      "de": "Verbinde beide Seen: tief unter der Fußgängerbrücke hindurch, am Steg entlang und durch das Bootshaus.",
+      "fr": "Reliez les deux lacs en passant sous la passerelle, le long du ponton et à travers le hangar à bateaux.",
+      "es": "Une ambos lagos pasando bajo el puente peatonal, junto al embarcadero y por el cobertizo de botes."
+    }
+  },
   "spawn": [
     0,
     0.15,

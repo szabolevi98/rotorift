@@ -378,5 +378,13 @@
   "settings.tabs.radio": "Radio et calibrage",
   "settings.tabs.rates": "Rates",
   "settings.tabs.video": "Image et son",
-  "settings.rateCurve": "Réponse des manches"
+  "settings.rateCurve": "Réponse des manches",
+  "route.details": "Détails",
+  "route.close": "Fermer",
+  "route.recommended": "Drones conseillés",
+  "route.gates": "{count} portes",
+  "route.easy": "Facile",
+  "route.medium": "Intermédiaire",
+  "route.hard": "Difficile",
+  "route.noDescription": "Ce parcours n’a pas encore de description."
 }

@@ -2,6 +2,21 @@
   "id": "race_1",
   "name": "Canyon Express",
   "version": 1,
+  "details": {
+    "difficulty": "medium",
+    "recommendedDrones": [
+      "rift-c3",
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "A fast street-level loop through the tower canyons and the narrow western service alley.",
+      "hu": "Gyors, utcaszinten vezető kör a toronyházak között és a nyugati, szűk szervizsikátoron át.",
+      "de": "Eine schnelle Runde auf Straßenniveau durch die Häuserschluchten und die schmale westliche Servicegasse.",
+      "fr": "Un tour rapide au niveau des rues, entre les tours et dans l’étroite ruelle de service à l’ouest.",
+      "es": "Una vuelta rápida a nivel de calle, entre rascacielos y por el estrecho callejón de servicio del oeste."
+    }
+  },
   "spawn": [
     60,
     0.15,

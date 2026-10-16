@@ -2,6 +2,20 @@
   "id": "race_3",
   "name": "Rooftop Descent",
   "version": 1,
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Climb high above the skyline, then follow the descending gates back toward the parking-garage roof.",
+      "hu": "Emelkedj magasan a város fölé, majd a lefelé vezető kapukon át ereszkedj vissza a parkolóház teteje felé.",
+      "de": "Steige hoch über die Skyline und folge den abwärts führenden Toren zurück zum Parkhausdach.",
+      "fr": "Montez bien au-dessus de la ville, puis suivez les portes descendantes vers le toit du parking.",
+      "es": "Sube muy por encima de la ciudad y sigue las puertas descendentes hasta el tejado del aparcamiento."
+    }
+  },
   "spawn": [
     60,
     0.15,

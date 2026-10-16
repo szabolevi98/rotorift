@@ -45,6 +45,10 @@ test("race storage discovers multiple files, bumps changed versions and rejects 
   const folder=await mkdtemp(path.join(runtime,"routes-tests-")),root=pathToFileURL(folder+path.sep),map=catalog.maps[0];
   t.after(async()=>{if(!path.resolve(folder).startsWith(runtime+path.sep)||!path.basename(folder).startsWith("routes-tests-"))throw Error("Unsafe fixture cleanup");await rm(folder,{recursive:true,force:true});});
   const first=await saveRoute(map,map.routes[0],root);
+  const metadataEdit=structuredClone(first);metadataEdit.details.description.en='An updated route description.';
+  const updated=await saveRoute(map,metadataEdit,root);
+  assert.equal(updated.version,first.version,'description edits must preserve records and ghosts');
+  assert.deepEqual(updated.gates,first.gates);assert.deepEqual(updated.details,metadataEdit.details);
   const second=await saveRoute(map,{...first,id:"race_2",name:"Another race",gates:first.gates.slice(0,3),guide:undefined},root);
   const loaded=await loadRoutes(map,root),base={...map,routes:loaded};
   assert.equal(loaded.length,2);assert.equal(resolveRoute(base,"race_2").gates.length,3);assert.equal(resolveRoute(base,"missing"),null);

@@ -283,6 +283,15 @@ Increase the version when editing JSON manually. The editor and project-saving
 endpoint detect changes and update versions. Multiplayer rooms retain their
 chosen route snapshot even if the underlying file is edited later.
 
+The hangar shows route length, gate count and difficulty below the route selector.
+**Details** opens a floating description with recommended drones, without expanding
+the menu. Length is calculated from the saved 3D guide; routes without a guide show
+an approximate gate-to-gate distance. No preview images need to be maintained.
+Optional `details` in each race JSON stores `difficulty` (`easy`, `medium`, `hard`),
+`recommendedDrones` (catalog IDs) and `description` in `en`, `hu`, `de`, `fr`, `es`.
+Descriptions and recommendations are advisory and do not restrict drone selection.
+Metadata-only project saves preserve the route version, records and ghosts.
+
 Ten race routes ship. Lengths follow the saved guide, including the return to
 the start/finish gate:
 

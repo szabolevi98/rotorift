@@ -148,7 +148,10 @@ for(const [id,designs]of Object.entries(courses)){
       input.guide=generateRaceGuide(world,RAPIER,map,input.gates);
       const route=validateRoute(input,map),file=new URL(`../data/maps/${id}/${input.id}.json`,import.meta.url);
       let previous;try{previous=JSON.parse(await readFile(file));}catch(error){if(error.code!=='ENOENT')throw error;}
-      if(previous){const same=r=>JSON.stringify({name:r.name,spawn:r.spawn,gates:r.gates,guide:r.guide});route.version=same(previous)===same(route)?previous.version:Math.max(route.version,previous.version+1);}
+      if(previous){
+        if(previous.details) route.details=validateRoute({...route,details:previous.details},map).details;
+        const same=r=>JSON.stringify({name:r.name,spawn:r.spawn,gates:r.gates,guide:r.guide});route.version=same(previous)===same(route)?previous.version:Math.max(route.version,previous.version+1);
+      }
       await writeFile(file,JSON.stringify(route,null,2)+'\n');
       const length=route.guide.reduce((sum,leg)=>sum+leg.slice(1).reduce((s,p,i)=>s+Math.hypot(...p.map((v,j)=>v-leg[i][j])),0),0);
       console.log(`${id}/${route.id}: ${Math.round(length)} m, ${route.gates.length} gates, ${Math.min(...route.gates.map(g=>g.p[1])).toFixed(1)}–${Math.max(...route.gates.map(g=>g.p[1])).toFixed(1)} m altitude`);

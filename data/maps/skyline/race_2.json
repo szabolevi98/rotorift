@@ -2,6 +2,20 @@
   "id": "race_2",
   "name": "Garage to Skywalk",
   "version": 1,
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Thread an upper parking-garage floor, climb to the skywalk and weave through the eastern tower alleys.",
+      "hu": "Repülj át a parkolóház egyik emeletén, emelkedj az üveghídhoz, majd kanyarogj a keleti tornyok közötti sikátorokban.",
+      "de": "Durchquere ein Parkhaus-Obergeschoss, steige zur Skybridge auf und schlängle dich durch die östlichen Turmgassen.",
+      "fr": "Traversez un étage du parking, montez vers la passerelle aérienne et slalomez entre les tours à l’est.",
+      "es": "Cruza una planta del aparcamiento, sube a la pasarela elevada y serpentea entre las torres del este."
+    }
+  },
   "spawn": [
     60,
     0.15,

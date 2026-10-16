@@ -378,5 +378,13 @@
   "settings.tabs.radio": "Radio y calibración",
   "settings.tabs.rates": "Rates",
   "settings.tabs.video": "Imagen y sonido",
-  "settings.rateCurve": "Respuesta de los sticks"
+  "settings.rateCurve": "Respuesta de los sticks",
+  "route.details": "Detalles",
+  "route.close": "Cerrar",
+  "route.recommended": "Drones recomendados",
+  "route.gates": "{count} puertas",
+  "route.easy": "Fácil",
+  "route.medium": "Intermedio",
+  "route.hard": "Difícil",
+  "route.noDescription": "Esta ruta aún no tiene descripción."
 }
