@@ -31,7 +31,7 @@ test("catalog contains five valid drone models and four maps with explicit race 
   assert.equal(canRace(construction), true);
   assert.equal(construction.routes.length, 3);
   assert.ok(construction.gates.length >= 4);
-  assert.equal(maps.find(m=>m.id==='jatszoter').routes.length,1);
+  assert.equal(maps.find(m=>m.id==='jatszoter').routes.length,2);
   assert.equal(maps.find(m=>m.id==='skyline').routes.length,3);
   assert.equal(canRace(maps.find(m=>m.id==='skyline')),true);
   assert.throws(() => validateMap({ ...park, gates: [], racingEnabled: true }));

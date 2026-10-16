@@ -294,7 +294,7 @@ Optional `details` in each race JSON stores `difficulty` (`easy`, `medium`, `har
 Descriptions and recommendations are advisory and do not restrict drone selection.
 Metadata-only project saves preserve the route version, records and ghosts.
 
-Ten race routes ship. Lengths follow the saved guide, including the return to
+Eleven race routes ship. Lengths follow the saved guide, including the return to
 the start/finish gate:
 
 | Map | Route | Length | Gates | Main features |
@@ -309,6 +309,7 @@ the start/finish gate:
 | Skyline | Garage to Skywalk | 1.30 km | 25 | Garage interior, 48 m skywalk and tower alleys |
 | Skyline | Rooftop Descent | 1.65 km | 24 | High-altitude climb and a dive onto the garage roof |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
+| Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
 
 Floating gates can face horizontally as well as vertically. Dive gates require
 downward passage through their full opening; passing upward does not count.
@@ -333,8 +334,14 @@ and rebuild the showcase.
 
 `node scripts/author-races.mjs` rebuilds the nine long authored courses from their
 landmark-based designs, checks gate clearance and regenerates their guides. It
-leaves the Playground circuit and custom race files alone. This command replaces
+leaves the Playground courses and custom race files alone. This command replaces
 manual edits to those nine shipped route files; use a new race ID for custom work.
+
+`node scripts/author-playground-race.mjs` rebuilds **Pocket Gauntlet**, the hard
+65/75 mm course through the playground equipment. It preserves **Pocket Circuit**
+and custom files. Its guide is checked against both equipment and all race rails,
+including the separate crosswise, lengthwise and roof-cell passes in the cage.
+These tight sections are intended for slow, precise micro-drone flying.
 
 For offline use, keep `index.html`, `map-viewer.html`, `map-viewer.css` and
 `map-viewer.bundle.js` together. Copy `web/assets/collisions/` to

@@ -28,7 +28,7 @@ test('legacy routes close between gate centres, while vertical routes remain fin
   assert.equal(routeDiagram(null),null);
 });
 
-test('all ten built-in diagrams fit the viewport and retain every saved guide bend', async () => {
+test('all eleven built-in diagrams fit the viewport and retain every saved guide bend', async () => {
   const catalog=await loadCatalog();let count=0;
   for(const map of catalog.maps)for(const route of map.routes){
     const result=routeDiagram(route);count++;
@@ -39,5 +39,5 @@ test('all ten built-in diagrams fit the viewport and retain every saved guide be
     }
     assert.ok(result.arrow);
   }
-  assert.equal(count,10);
+  assert.equal(count,11);
 });
