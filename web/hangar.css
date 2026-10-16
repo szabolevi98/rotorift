@@ -244,7 +244,9 @@
   #menu .launch-controls { gap: 36px; }
 }
 @media (min-width: 1151px) and (min-height: 850px) {
-  #menu #fly-panel #preview-scene { height: clamp(420px, 48vh, 560px); }
+  /* Leave room for race details, the ghost picker and footer below the preview. */
+  #menu #fly-panel .aircraft-stage { align-items: start; }
+  #menu #fly-panel #preview-scene { height: clamp(360px, calc(100svh - 510px), 560px); }
 }
 @media (max-width: 1050px) {
   .menu-body { grid-template-columns: 152px minmax(0, 1fr); }

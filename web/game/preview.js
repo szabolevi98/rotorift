@@ -87,8 +87,8 @@ export class Preview {
     ) {
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
-      // Leave room for the tilted propellers in the taller desktop stage.
-      const baseFov = w >= 700 && h >= 420 ? 44 : 36;
+      // Keep the whole drone visible when the desktop stage adapts to screen height.
+      const baseFov = w >= 700 ? 48 : 36;
       this.camera.fov = Math.min(75, baseFov * Math.max(1, 1.7 / this.camera.aspect));
       this.camera.updateProjectionMatrix();
     }
