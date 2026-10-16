@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { buildPark } from "./park.js";
-import { parkSurfaceHeight } from "/shared/world/park-layout.js";
+import { parkSurfaceHeight } from "../../shared/world/park-layout.js";
 import { buildConstruction } from "./construction.js";
 import { buildPlayground } from "./playground.js";
 import { buildCity } from "./city.js";
@@ -17,7 +17,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
   const environment=park??construction??playground??city;
   const gateGroups = [], gateColliders = [];
-  const guide=createRaceGuide(map.guide);root.add(guide);
+  const guide=createRaceGuide(map.gates.length ? map.guide : undefined);root.add(guide);
   let gatesEnabled = true, highlighted=-1;
   map.gates.forEach((gate,i)=>{
     const group=createNeonGate(gate,i,{active:i===0});root.add(group);gateGroups.push(group);group.updateMatrixWorld(true);

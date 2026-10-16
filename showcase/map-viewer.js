@@ -12,6 +12,7 @@ import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
+import { withoutRaceRoute } from '../shared/race/map-modes.js';
 import { RouteDraft, normalFromYaw, normalFromAngles, yawFromNormal, tiltFromNormal } from "../shared/race/editor.js";
 import {createNeonGate,createRaceGuide} from '../web/game/race-course.js';
 import {generateRaceGuide} from '../web/game/route-guide-planner.js';
@@ -166,7 +167,7 @@ export async function startMapViewer(embeddedCatalog) {
       transform.detach();disposeGroup(gateRoot);gateRoot=null;shadows?.dispose();environment?.dispose();atmosphere?.dispose();world?.free();
       map=maps.find(m=>m.id===id)??maps[0];scene=new THREE.Scene();world=new RAPIER.World({x:0,y:-9.81,z:0});
       atmosphere=createMapAtmosphere(renderer,scene,map.kind);
-      environment=buildEnvironment(scene,world,RAPIER,{...map,gates:[],spawn:map.baseSpawn??map.spawn});
+      environment=buildEnvironment(scene,world,RAPIER,withoutRaceRoute(map));
       camera.far=map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
       shadows=new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
       $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=`${map.size} × ${map.size} m`;
