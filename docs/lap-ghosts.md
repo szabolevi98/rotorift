@@ -4,6 +4,23 @@ A Racing projekt `shared/ghost.js`, szerveres `raceController.js`, rekordmentés
 kódja és `web/mp.js` top-listás választója alapján készült. A Rotoriftben is
 20 Hz-es pózminták és képkockánkénti pozíció-/kvaternió-interpoláció fut.
 
+## Kapunkénti deltaidő
+
+A helyi és online időmérőben a kiválasztott saját vagy globális szellem a
+referencia. A részideje a rögzített 3D útból, az élő köridőméréssel közös,
+irányhelyes kapumetszéssel készül; a dive-kapukat is kezeli. Hiányzó vagy még
+betöltődő szellemrészidőt nem helyettesítünk a játékos legjobb idejével.
+Kikapcsolt szellem mellett és normál versenyben az aktuális menet legjobb teljes,
+érvényes körének azonos kapuja a referencia, nem a legjobb külön szektorok.
+
+A zöld mínusz gyorsabb, a piros plusz lassabb részidőt jelent; a referencia neve
+alatta látható. A jelzés 2,6 másodperc után eltűnik, azonos hálózati snapshot nem
+indítja újra. Körkezdés, szünet, érvénytelen kör és Reset eltünteti. Reset és
+kapcsolat-helyreállítás megőrzi a kategória legjobb körét; mód- és szabályváltás,
+illetve új menet tiszta referenciával indul. Online a szerver pontos metszési idejét
+használjuk, nem a snapshot beérkezését. Csak az utolsó részidő és annak referenciája
+kerül a snapshotba; a teljes részidőtörténet nem utazik minden csomaggal.
+
 ## Használat
 
 Egyjátékos menüben válassz **Időmérő** vagy **Ellenőrzött egyéni időmérő** módot.

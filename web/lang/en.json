@@ -133,6 +133,8 @@
   "hud.lap": "Lap",
   "hud.gate": "Next gate",
   "hud.best": "Best",
+  "hud.delta": "Split delta",
+  "hud.delta.best": "Best valid lap",
   "hud.invalid": "Lap invalidated · cross the start to begin again",
   "hud.start": "Cross gate 1 to start the clock.",
   "hud.saved": "Lap {time} · saved online",

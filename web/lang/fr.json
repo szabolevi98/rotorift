@@ -133,6 +133,8 @@
   "hud.lap": "Tour",
   "hud.gate": "Prochaine porte",
   "hud.best": "Meilleur",
+  "hud.delta": "Écart au passage",
+  "hud.delta.best": "Meilleur tour valide",
   "hud.invalid": "Tour invalidé · franchissez le départ pour recommencer",
   "hud.start": "Franchissez la porte 1 pour lancer le chrono.",
   "hud.saved": "Tour {time} · enregistré en ligne",

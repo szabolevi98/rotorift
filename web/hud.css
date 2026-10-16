@@ -78,6 +78,13 @@
 #hud #race-hud { background: #11151bba; border: 1px solid #ffffff18; border-radius: 7px; padding: 10px 14px; font-size: 12px; }
 #hud #race-hud:empty { display: none; }
 #lap-ghost-hud { background:#132d2bd9;border:1px solid #85ffe45c;border-radius:6px;color:#acffef;padding:8px 10px;font-size:11px; }
+.split-delta { position:absolute;top:max(16px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:grid;gap:3px;max-width:min(230px,40vw);padding:7px 16px;border:1px solid #ffffff30;border-radius:8px;background:#11151be6;text-align:center;text-shadow:none;pointer-events:none; }
+.split-delta strong { font-size:23px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap; }
+.split-delta span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#d0d7df; }
+.split-delta.is-faster { border-color:#64dc9870; }
+.split-delta.is-faster strong { color:#73e9a3; }
+.split-delta.is-slower { border-color:#ff797970; }
+.split-delta.is-slower strong { color:#ff8d8d; }
 #hud #race-hud b { display: block; font-size: 26px; line-height: 1.4; }
 #hud #scoreboard { top: 84px; right: var(--hud-edge); max-height: calc(100svh - 220px); overflow-y: auto; pointer-events: auto; background: #11151bba; border: 1px solid #ffffff18; }
 #hud #scoreboard .score-row.own-pilot { color: #ffb29e; }
@@ -95,6 +102,8 @@
 .flight-help kbd { font: 600 10px Inter, Arial, sans-serif; padding: 4px 6px; min-width: 24px; text-align: center; background: #ffffff09; border: 1px solid #ffffff20; border-radius: 4px; }
 .flight-help .flight-help-footer { border-top: 1px solid #ffffff18; margin-bottom: 0; padding-top: 10px; font-size: 10px; }
 @media (max-width: 800px), (max-height: 500px) {
+  .split-delta { top:max(66px,env(safe-area-inset-top));padding:5px 11px;max-width:40vw; }
+  .split-delta strong { font-size:19px; }
   .horizon-bars path, .horizon-reference { stroke-width: 1; }
   .horizon-bars-outline path, .horizon-reference-outline { stroke-width: 1.6; }
   #hud { --hud-edge: max(12px, env(safe-area-inset-left)); }

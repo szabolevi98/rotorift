@@ -194,6 +194,18 @@ cross gate 1 again to finish it. Reset starts a new attempt; an interruption or
 invalid state invalidates the current lap. Records are separated by map, route
 ID/version, aircraft/configuration hash, flight mode and simulation rules.
 
+Checkpoint deltas compare elapsed time at the same gate with the **best complete,
+valid lap of the current session**. They do not combine best sectors or use a
+slower previous lap. With an own or global ghost selected, **that ghost is always
+the reference**; a missing/loading ghost split never falls back to personal best.
+With ghosts switched off, time trials use the session best. A green minus means
+faster and a red plus means slower; the reference name appears below the delta
+for 2.6 seconds. Invalid laps, pauses, new laps and resets clear the display.
+Reset retains the category's best lap and its splits; changing mode/rules or
+starting a new session clears them. Timing and ghost interpolation share the
+same directional 3D gate calculation, including downward shaft gates. Online
+splits come from the server, independently of snapshot arrival time.
+
 Profiles use a local anonymous identifier. Testing multiple pilots requires
 separate browser profiles; two tabs using the same profile cannot join the same room.
 

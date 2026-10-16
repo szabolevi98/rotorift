@@ -85,6 +85,19 @@ test('expired reservations release capacity and retain departed pilots as DNF in
   const expired=await client('Dropout',{resume:b.welcome.resume});assert.equal(expired.welcome.resumeRejected,true);
 });
 
+test('reconnection preserves the exact best-lap checkpoint reference without replaying an interrupted split',async t=>{
+  const {client,create,start,laps}=await fixture(t),pilot=await client('Split recovery');
+  await create(pilot,'hotlap');await start(pilot);await laps(pilot,1);
+  await pilot.state([0,1,2.5]);await pilot.state([0,1,1.5]);
+  const old=(await pilot.next(m=>m.type==='room'&&Number.isFinite(m.room.players[0].lap.lastSplit?.referenceMs))).room.players[0].lap;
+  await pilot.drop();const back=await client('Split recovery',{resume:pilot.welcome.resume});
+  const restored=(await back.next(m=>m.type==='room')).room.players[0].lap;
+  assert.equal(restored.bestMs,old.bestMs);assert.equal(restored.lastSplit,null);
+  for(const z of [-.5,.5,2.5,1.5])await back.state([0,1,z]);
+  const next=(await back.next(m=>m.type==='room'&&m.room.players[0].lap.lastSplit)).room.players[0].lap;
+  assert.equal(next.lastSplit.referenceMs,old.lastSplit.referenceMs);
+});
+
 test('only the host can close and restart a run; readiness, epochs and immutable saves survive repeated requests',async t=>{
   const {client,create,start,db}=await fixture(t),a=await client('Host'),b=await client('Guest');
   const r=await create(a);b.send('join',{code:r.code});await b.next(m=>m.type==='room'&&m.room.players.length===2);await start(a,b);

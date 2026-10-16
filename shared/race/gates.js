@@ -18,14 +18,20 @@ export function gateCrossing(a, b, g) {
     ? t
     : null;
 }
-export const newLap = () => ({
+export const newLap = (reference = null) => ({
   next: 0,
   startedAt: null,
   completed: 0,
-  bestMs: null,
+  bestMs: reference?.bestMs ?? null,
   lastMs: null,
   invalid: false,
+  splits: [],
+  bestSplits: reference?.bestSplits ? [...reference.bestSplits] : null,
+  lastSplit: null,
 });
+export function clearLapReference(lap) {
+  lap.bestMs = lap.lastMs = lap.bestSplits = lap.lastSplit = null;
+}
 export function advanceLap(lap, previous, current, startTime, endTime, gates) {
   if (gates.length < 2) return [];
   // A packet may contain several consecutive crossings; use each crossing's substep time.
@@ -43,14 +49,24 @@ export function advanceLap(lap, previous, current, startTime, endTime, gates) {
         lap.lastMs = ms;
         if (valid) {
           lap.completed++;
-          lap.bestMs = Math.min(lap.bestMs ?? Infinity, ms);
+          if (lap.bestMs === null || ms < lap.bestMs) {
+            lap.bestMs = ms;
+            lap.bestSplits = [...lap.splits];
+          }
         }
         events.push({ kind: "lap", ms, valid, at });
       }
       lap.startedAt = at;
       lap.invalid = false;
+      lap.splits = new Array(gates.length).fill(null);
+      lap.lastSplit = null;
       events.push({ kind: "start", at });
-    } else events.push({ kind: "gate", index: lap.next, at });
+    } else {
+      const index = lap.next, ms = at - lap.startedAt;
+      lap.splits[index] = ms;
+      lap.lastSplit = { index, ms, at, startedAt: lap.startedAt, referenceMs: lap.bestSplits?.[index] ?? null };
+      events.push({ kind: "gate", index, at });
+    }
     lap.next = (lap.next + 1) % gates.length;
   }
   return events;

@@ -1,7 +1,7 @@
 import { WebSocketServer } from "ws";
 import { randomUUID, randomBytes } from "node:crypto";
 import { buildResults } from "../../shared/race/results.js";
-import { newLap, advanceLap } from "../../shared/race/gates.js";
+import { newLap, advanceLap, clearLapReference } from "../../shared/race/gates.js";
 import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
 import { canRace, withoutRaceRoute } from "../../shared/race/map-modes.js";
@@ -12,6 +12,7 @@ import { freshPropellers, validPropellers } from "../../shared/physics/propeller
 import { STOPPED_ROTORS, validRotorSpeeds } from "../../shared/visual/rotor-motion.js";
 import { LapGhostRecorder } from '../../shared/race/ghost.js';
 const MODES = FLIGHT_MODES;
+const publicLap = ({ splits, bestSplits, ...lap }) => lap;
 export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdownMs = 3000 } = {}) {
   const rooms = new Map(),
     clients = new Set();
@@ -51,7 +52,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       propellers: p.propellers ?? freshPropellers(),
       rotorSpeeds: r.phase==="flying" && p.connected && !p.finished && Date.now()-p.rotorsAt<600 ? p.rotorSpeeds : STOPPED_ROTORS,
       turtleMode: r.phase==="flying" && p.connected && !p.finished && Date.now()-p.rotorsAt<600 && p.turtleMode===true,
-      lap: p.lap,
+      lap: publicLap(p.lap),
       finished: p.finished,
       finishMs: p.finishMs,
       boundary: p.boundary ? { outside: p.boundary.outside, remainingSeconds: p.boundary.remainingSeconds } : null,
@@ -99,7 +100,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     maybeFinish(r);
     broadcast(r);
   };
-  const reset = (p, r) => {
+  const reset = (p, r, keepBest = false) => {
     p.propellers = freshPropellers();
     p.rotorSpeeds = STOPPED_ROTORS;
     p.turtleMode = false;
@@ -108,7 +109,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     p.boundary = new MapBoundary(r.map);
     p.boundaryAt = null;
     p.boundaryPaused = false;
-    p.lap = newLap();
+    p.lap = newLap(keepBest ? p.lap : null);
     p.ghostRecorder=new LapGhostRecorder();
     p.ghostBestMs=null;
     p.finished = false;
@@ -188,7 +189,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               if (oldSocket !== ws) oldSocket.terminate();
               const r = p.room;
               if (!p.finished && r.phase !== "finished") {
-                const progress = { completed: p.lap.completed, bestMs: p.lap.bestMs, lastMs: p.lap.lastMs };
+                const progress = { completed: p.lap.completed, bestMs: p.lap.bestMs, lastMs: p.lap.lastMs, bestSplits: p.lap.bestSplits };
                 reset(p, r);
                 Object.assign(p.lap, progress);
                 if (r.phase === "lobby") p.ready = false;
@@ -335,7 +336,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           broadcast(r); return;
         }
         if (m.type === "mode" && FLIGHT_MODES.includes(m.mode) && r.phase === "flying" && !p.finished) {
-          if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; p.lap.bestMs = p.lap.lastMs = null;p.ghostBestMs=null;p.ghostRecorder?.clear(); }
+          if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; clearLapReference(p.lap);p.ghostBestMs=null;p.ghostRecorder?.clear(); }
           broadcast(r); return;
         }
         if (m.type === "ready" && r.phase === "lobby") {
@@ -372,7 +373,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           broadcast(r); return;
         }
         if (m.type === "reset" && r.phase === "flying") {
-          reset(p, r);
+          reset(p, r, true);
           send(p, "reset", { pose: p.pose });
           broadcast(r);
           return;
@@ -428,7 +429,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         const activeBoundaryDt = m.interrupted || p.boundaryPaused ? 0 : boundaryDt;
         p.boundaryPaused = !!m.interrupted;
         if (p.boundary?.update(m.p, activeBoundaryDt)) {
-          reset(p, r);
+          reset(p, r, true);
           send(p, "reset", { pose: p.pose, reason: "boundary" });
           broadcast(r);
           return;

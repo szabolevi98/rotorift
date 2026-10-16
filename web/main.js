@@ -14,6 +14,7 @@ import { PauseMenu } from "./game/pause-menu.js";
 import { armPrompt } from "./game/arm-prompt.js";
 import { FpvOsd } from "./game/fpv-osd.js";
 import { PropellerHud } from "./game/propeller-hud.js";
+import { SplitDeltaHud } from "./game/split-delta.js";
 import { CameraProfiles, DEFAULT_CAMERA_PROFILE } from './game/camera-profiles.js';
 import { FrameDiagnostics } from './game/frame-diagnostics.js';
 import { GhostSelection, savePersonalGhost, ghostKey } from './game/ghost-selection.js';
@@ -28,7 +29,7 @@ import { RADIO_PRESETS } from "./input/radio-profiles.js";
 import { simulationView, activeMenuTab, flightSimulationActive } from "./menu-state.js";
 import { defaultRates, validRate, actualRate } from "/shared/physics/rates.js";
 import { hoverThrottle } from "/shared/physics/propulsion.js";
-import { newLap, advanceLap } from "/shared/race/gates.js";
+import { newLap, advanceLap, clearLapReference } from "/shared/race/gates.js";
 import { resolveRoute } from "/shared/race/routes.js";
 import { canRace, isTimedSession, withoutRaceRoute } from "/shared/race/map-modes.js";
 import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
@@ -49,6 +50,7 @@ const loading = new LoadingScreen(t);
 const autoArm = new AutoArm(read("auto-arm", true) !== false);
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
+const splitDelta = new SplitDeltaHud($('#split-delta'),t);
 const fpsLabel = $("#hud-fps");
 let fpsSince = null, fpsFrames = 0;
 function updateFps(now, rendering) {
@@ -140,7 +142,7 @@ async function configureLapGhost(){
   const generation=++lapGhostLoad;
   if(!(room?.kind==='hotlap'||!room&&session==='time')){await flight.setLapGhost(null);return;}
   const version=flight.loadVersion,context=flightGhostContext();
-  try{const value=await ghostSelection.load(context);if(version===flight.loadVersion&&generation===lapGhostLoad)await flight.setLapGhost(value);}
+  try{const value=await ghostSelection.load(context);if(version===flight.loadVersion&&generation===lapGhostLoad){await flight.setLapGhost(value);if(version===flight.loadVersion&&generation===lapGhostLoad)splitDelta.prepare(flight.lapGhost,flight.map.gates);}}
   catch{if(version===flight.loadVersion&&generation===lapGhostLoad){await flight.setLapGhost(null);notice(t('ghost.unavailable'));}}
 }
 function keepPersonalGhost(ms,replay){
@@ -185,7 +187,7 @@ function createSimulationControls() {
         if (context === "lobby" && room) network.send("rules", { simulation: next });
         else {
           simulation = normalizeSimulation(next); write("simulation", simulation);
-          if (playing && !room && context === "solo") { flight.setSimulation(simulation); lap.invalid = true; lap.bestMs = lap.lastMs = null; localGhostRecorder.clear();void configureLapGhost(); }
+          if (playing && !room && context === "solo") { flight.setSimulation(simulation); lap.invalid = true; clearLapReference(lap); localGhostRecorder.clear();void configureLapGhost(); }
         }
         refreshSimulationControls();refreshGhostChoices();
       };
@@ -349,13 +351,13 @@ function action(kind, currentInput = input) {
   if (kind === "mode") {
     const next = FLIGHT_MODES[(FLIGHT_MODES.indexOf(flight.physics.mode) + 1) % FLIGHT_MODES.length];
     if (room) { if (room.phase === "flying") network.send("mode", {mode: next}); }
-    else { $("#flight-mode").value = next; flight.physics.mode = next; lap.invalid = true; lap.bestMs = lap.lastMs = null; }
+    else { $("#flight-mode").value = next; flight.physics.mode = next; lap.invalid = true; clearLapReference(lap); }
     if(!room){localGhostRecorder.clear();void configureLapGhost();}
   }
 }
 function resetAircraft() {
   localGhostRecorder.clear();
-  controller.clear(); lap = newLap();
+  controller.clear(); lap = newLap(lap); splitDelta.hide();
   if (room) { autoArm.cancel(); network.send("reset"); }
   else { flight.reset(); autoArm.reset(); }
 }
@@ -1148,7 +1150,7 @@ async function showRecords() {
   }
 }
 function hud() {
-  if (!playing || !flight.physics) return;
+  if (!playing || !flight.physics) { splitDelta.update(); return; }
   const p = flight.physics.pose,
     own = room?.players.find((p) => p.id === network.id),
     currentLap = own?.lap ?? lap;
@@ -1233,6 +1235,10 @@ function hud() {
   const race = $("#race-hud");
   race.replaceChildren();
   const timed = canRace(flight.map) && isTimedSession(session);
+  const ghostRequested = (room?.kind === 'hotlap' || !room && session === 'time') && ghostSelection.choice(flightGhostContext()) !== 'off';
+  splitDelta.update({ lap: currentLap, gates: flight.map.gates, ghostRequested, ghost: flight.lapGhost,
+    context: `${flight.loadVersion}:${roomKey(room)}:${own?.resetId ?? 0}:${flight.physics.mode}`,
+    active: timed && !paused && !outside && (!room || room.phase === 'flying' && !own?.finished) });
   if (timed) {
     race.append(
       node(

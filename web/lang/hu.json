@@ -133,6 +133,8 @@
   "hud.lap": "Kör",
   "hud.gate": "Következő kapu",
   "hud.best": "Legjobb",
+  "hud.delta": "Részidőkülönbség",
+  "hud.delta.best": "Legjobb érvényes kör",
   "hud.invalid": "Érvénytelen kör · új körhöz menj át a rajtkapun",
   "hud.start": "Az időmérés az 1-es kapunál indul.",
   "hud.saved": "Kör: {time} · online elmentve",

@@ -81,9 +81,10 @@ async function fixture(t, mapOverrides = {}) {
       id: welcome.id,
       state: async (p, extra = {}) => {
         await delay(30);
+        const at = Date.now();
         send("state", {
           seq: seq++,
-          t: Date.now(),
+          t: at,
           p,
           v: [0, 0, 0],
           q: { x: 0, y: 0, z: 0, w: 1 },
@@ -91,6 +92,7 @@ async function fixture(t, mapOverrides = {}) {
           mode: "angle",
           ...extra,
         });
+        return at;
       },
     };
   }
@@ -109,6 +111,29 @@ test('Skyline supports shared freestyle rooms with its own district spawn and st
   const guestSpawn=joined.players.find(p=>p.id===guest.id).p;
   assert.deepEqual(guestSpawn.slice(1),skyline.spawn.slice(1));
   assert.ok(guestSpawn[0]>skyline.spawn[0]&&guestSpawn[0]<skyline.spawn[0]+5,'pilots get separate slots on the same clear avenue');
+});
+
+test('server sends interpolated checkpoint deltas against the best valid lap, retains them across reset, and omits split history from snapshots',async t=>{
+  const {client}=await fixture(t),p=await client('Delta pilot');
+  p.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'angle',kind:'hotlap'});
+  await p.next(m=>m.type==='room');p.send('start');await p.next(m=>m.type==='room'&&m.room.phase==='flying');
+  const a=await p.state([0,1,-.5]),b=await p.state([0,1,.5]);
+  const c=await p.state([0,1,2.5]),d=await p.state([0,1,1.5]);
+  const first=(await p.next(m=>m.type==='room'&&m.room.players[0].lap.lastSplit?.at>=c)).room.players[0].lap;
+  assert.equal(first.startedAt,(a+b)/2);assert.equal(first.lastSplit.ms,(c+d-a-b)/2);
+  assert.equal(first.lastSplit.referenceMs,null);
+  assert.equal('splits' in first,false);assert.equal('bestSplits' in first,false);
+  await p.state([0,1,-.5]);await p.state([0,1,.5]);
+  const completed=await p.next(m=>m.type==='lap');assert.equal(completed.valid,true);
+  const e=await p.state([0,1,2.5]);await p.state([0,1,1.5]);
+  const second=(await p.next(m=>m.type==='room'&&m.room.players[0].lap.lastSplit?.at>=e)).room.players[0].lap;
+  assert.equal(second.lastSplit.referenceMs,first.lastSplit.ms);assert.equal(second.bestMs,completed.ms);
+  p.send('reset');await p.next(m=>m.type==='reset');
+  const reset=(await p.next(m=>m.type==='room'&&m.room.players[0].resetId>=3)).room.players[0].lap;
+  assert.equal(reset.bestMs,completed.ms);assert.equal(reset.lastSplit,null);
+  p.send('mode',{mode:'acro'});
+  const changed=(await p.next(m=>m.type==='room'&&m.room.players[0].mode==='acro')).room.players[0].lap;
+  assert.equal(changed.bestMs,null);assert.equal(changed.lastSplit,null);
 });
 
 test("X35 multiplayer rooms pin the new aircraft and accept its own config hash and motor speeds",async t=>{

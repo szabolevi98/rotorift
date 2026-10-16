@@ -133,6 +133,8 @@
   "hud.lap": "Vuelta",
   "hud.gate": "Próxima puerta",
   "hud.best": "Mejor",
+  "hud.delta": "Diferencia de tiempo parcial",
+  "hud.delta.best": "Mejor vuelta válida",
   "hud.invalid": "Vuelta invalidada · cruza la salida para empezar de nuevo",
   "hud.start": "Cruza la puerta 1 para iniciar el cronómetro.",
   "hud.saved": "Vuelta {time} · guardada en línea",

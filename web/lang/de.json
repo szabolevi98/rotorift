@@ -133,6 +133,8 @@
   "hud.lap": "Runde",
   "hud.gate": "Nächstes Tor",
   "hud.best": "Bestzeit",
+  "hud.delta": "Zwischenzeitdifferenz",
+  "hud.delta.best": "Beste gültige Runde",
   "hud.invalid": "Runde ungültig · durch das Starttor neu beginnen",
   "hud.start": "Durch Tor 1 startet die Uhr.",
   "hud.saved": "Runde {time} · online gespeichert",
