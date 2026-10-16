@@ -137,8 +137,8 @@ export function buildCity(scene,world,RAPIER,map) {
     for(const x of [-32,32])box([2.4,1.5,14],[x,.75,0],'concrete');
   });
   model('Open_skywalk',[CITY_SKYWALK.x,CITY_SKYWALK.y,CITY_SKYWALK.z],0,()=>{
-    box([14.4,.36,6],[0,0,0],'steel');box([14.4,.18,6],[0,3.5,0],'cream');
-    for(const x of [-6.7,6.7])for(const z of [-2.8,2.8])box([.18,3.5,.18],[x,1.75,z],'steel');
+    box([14.4,.36,6],[0,0,0],'steel');box([14.4,.18,6],[0,6,0],'cream');
+    for(const x of [-6.7,6.7])for(const z of [-2.8,2.8])box([.18,6,.18],[x,3,z],'steel');
     // Open long sides allow a high-level transverse flight line.
     for(const z of [-2.85,2.85])for(const x of [-6.2,6.2])box([1,.9,.1],[x,.65,z],'steel');
   });

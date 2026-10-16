@@ -68,6 +68,7 @@ for(const baked of [false,true])test(`${baked?'baked':'source'} Skyline: avenues
     assert.equal(ray([-290,2,60],[1,0,0],580),null,'cross street');
     assert.equal(ray([0,5,-70],[0,0,-1],100),null,'tower podium');
     assert.equal(ray([0,49.8,-8],[0,0,1],16),null,'open sides of elevated skywalk');
+    assert.equal(ray([0,53.6,-8],[0,0,1],16),null,'raised skywalk roof leaves the taller race gate open');
     assert.equal(ray([-144,2.6,162],[0,0,-1],84),null,'ground-level garage bay');
     for(const {x,z}of CITY_DETAIL_COURTS)for(const offset of [-3,0,3]){
       assert.equal(ray([x+offset,1.4,z-40],[0,0,1],80),null,`alley corridor stays open at ${x},${z} offset ${offset}`);
