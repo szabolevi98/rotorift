@@ -16,6 +16,8 @@ import {createNeonGate,createRaceGuide,gateFrameParts} from '../web/game/race-co
 import {gateBasis,gateCrossing,newLap,advanceLap} from '../shared/race/gates.js';
 import {buildEnvironment} from '../web/game/environment.js';
 import {withoutRaceRoute} from '../shared/race/map-modes.js';
+import {CONSTRUCTION_HANGAR,constructionHeight} from '../shared/world/construction-layout.js';
+import {buildConstruction} from '../web/game/construction.js';
 await RAPIER.init();
 const catalog=await loadCatalog();
 
@@ -87,7 +89,7 @@ test('saved demo neon guides clear baked scenery along every segment, including 
             const {right,up}=gateBasis(g.n),q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...right),new THREE.Vector3(...up),new THREE.Vector3(...g.n)));
             const hit=world.castShape({x:g.p[0]-g.n[0]*2,y:g.p[1]-g.n[1]*2,z:g.p[2]-g.n[2]*2},q,
               {x:g.n[0]*4,y:g.n[1]*4,z:g.n[2]*4},new RAPIER.Cuboid(g.width/2+.07,g.height/2+.07,.07),0,1,true);
-            assert.equal(hit,null,`${map.id}/${route.id} gate ${i+1}: entire frame and approach must clear scenery`);
+            assert.ok(!hit,`${map.id}/${route.id} gate ${i+1}: entire frame and approach must clear scenery`);
             assert.notEqual(gateCrossing(g.p.map((v,j)=>v-g.n[j]),g.p.map((v,j)=>v+g.n[j]),g),null);
           }
         }
@@ -121,6 +123,28 @@ test('Pavilion Peaks has one dive gate followed by open recovery space for large
   assert.ok(Math.hypot(exit.p[0]+38,exit.p[2]-27)>40,'room to pull out before the next gate');
   assert.ok(Math.abs(exit.n[1])<.01,'the next gate is an upright recovery gate');
   assert.ok(route.guide[23].filter(p=>Math.hypot(p[0]+38,p[2]-27)<2).every(p=>p[1]>10.5),'the guide turns out higher instead of dropping to the old low gate');
+});
+
+test('Cranes & Twin Shafts approaches the hangar through its open end instead of an abrupt side turn',()=>{
+  const map=catalog.maps.find(m=>m.id==='betonudvar'),route=map.routes.find(r=>r.id==='race_3');
+  const approach=route.gates[21],entry=route.gates[22],inside=route.gates[23],h=CONSTRUCTION_HANGAR;
+  assert.deepEqual(approach.n,[0,0,1]);
+  assert.equal(approach.p[0],h.x,'line up with the doorway before descending');
+  assert.ok(entry.p[2]-approach.p[2]>=25,'room to line up before entering');
+  const direction=new THREE.Vector3(...entry.p).sub(new THREE.Vector3(...approach.p)).normalize();
+  assert.ok(direction.dot(new THREE.Vector3(...approach.n))>Math.cos(Math.PI/6),'less than thirty degrees of approach offset');
+  assert.equal(entry.p[0],h.x);assert.equal(inside.p[0],h.x);
+  assert.ok(entry.p[2]<h.z-h.depth/2&&inside.p[2]>h.z-h.depth/2,'cross the central end doorway');
+  const scene=new THREE.Scene(),environment=buildConstruction(scene,null,null,map);
+  scene.updateMatrixWorld(true);
+  try{
+    const a=new THREE.Vector3(...entry.p),b=new THREE.Vector3(...inside.p),delta=b.clone().sub(a);
+    for(const dx of [-.45,0,.45])for(const dy of [-.45,0,.45]){
+      const ray=new THREE.Raycaster(a.clone().add(new THREE.Vector3(dx,dy,0)),delta.clone().normalize(),0,delta.length());
+      assert.equal(ray.intersectObjects(scene.children,true).length,0,'rendered cladding must leave the whole flight corridor open');
+    }
+    assert.ok(entry.p[1]-constructionHeight(h.x,h.z)>3,'adequate floor clearance');
+  }finally{environment.dispose();}
 });
 
 test('floating neon gates have a closed collision frame and depth-tested luminous cores without lights',()=>{

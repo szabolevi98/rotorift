@@ -304,7 +304,7 @@ the start/finish gate:
 | Grove | Pavilion Peaks | 1.85 km | 26 | Covered arcade, upper pavilion gallery and a single outdoor dive gate with recovery space |
 | Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
 | Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
-| Construction Yard | Cranes & Twin Shafts | 1.75 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |
+| Construction Yard | Cranes & Twin Shafts | 1.70 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |
 | Skyline | Canyon Express | 1.92 km | 29 | Fast street-grid loop and service alley |
 | Skyline | Garage to Skywalk | 1.30 km | 25 | Garage interior, 48 m skywalk and tower alleys |
 | Skyline | Rooftop Descent | 1.65 km | 24 | High-altitude climb and a dive onto the garage roof |
