@@ -21,6 +21,20 @@ import {buildConstruction} from '../web/game/construction.js';
 await RAPIER.init();
 const catalog=await loadCatalog();
 
+test('Skyline starts face gate one with the final gate safely behind the launch position',()=>{
+  const map=catalog.maps.find(m=>m.id==='skyline');
+  for(const route of map.routes){
+    const first=route.gates[0],last=route.gates.at(-1);
+    const forward=p=>p.reduce((sum,v,i)=>sum+(v-route.spawn[i])*first.n[i],0);
+    assert.ok(forward(first.p)>0,`${route.id}: first gate ahead of spawn`);
+    assert.ok(forward(last.p)<=-10,`${route.id}: final gate at least ten metres behind spawn`);
+    const launch=[route.spawn[0],first.p[1],route.spawn[2]];
+    const pastFirst=first.p.map((v,i)=>v+first.n[i]);
+    assert.notEqual(gateCrossing(launch,pastFirst,first),null);
+    assert.equal(gateCrossing(launch,pastFirst,last),null,`${route.id}: launch never crosses the final gate`);
+  }
+});
+
 test('scenery-only previews on every map never retain the default guide behind any selected route',()=>{
   for(const map of catalog.maps)for(const scenery of [withoutRaceRoute(map),{...map,gates:[]}]){
     const scene=new THREE.Scene(),world=new RAPIER.World({x:0,y:0,z:0});

@@ -89,7 +89,7 @@ const courses={
       T(0,7,-282),T(-60,6,-245),T(-60,5,-180),T(-175,5,-180),T(-180,6,-80),T(-180,6,-60),
       T(-240,7,-60),T(-240,8,-25,6,4,S),T(-240,8,25,6,4,S),T(-240,7,60),
       T(-180,6,60),T(-180,6,145),T(-180,5,180),T(-70,5,180),T(-60,6,180),
-      T(-60,6,250),T(0,7,282),T(60,5,282),T(60,4,245,8,5,N),
+      T(-60,6,250),T(0,7,282),T(60,5,282),T(60,4,265,8,5,N),
     ]},
     {name:'Garage to Skywalk',spawn:[60,.15,250],gates:[
       T(60,4,220,8,5,N),T(60,5,180),T(-45,8.2,180),T(-144,8.2,165,5.5,2.2,N),
@@ -97,20 +97,23 @@ const courses={
       T(-100,18,60),T(-60,20,60),T(-60,40,0),T(-60,49.8,-60),T(0,49.8,-60),
       T(0,49.8,-14,4,1.8,S),T(0,49.8,0,4,1.8,S),T(0,49.8,16,4,1.8,S),
       T(0,35,60),T(60,25,60),T(120,28,60),T(120,35,120,6,4,S),T(120,45,165,6,4,S),
-      T(180,25,180),T(180,12,260),T(120,8,282),T(60,5,282),T(60,4,245,8,5,N),
+      T(180,25,180),T(180,12,260),T(120,8,282),T(60,5,282),T(60,4,265,8,5,N),
     ]},
     {name:'Rooftop Descent',spawn:[60,.15,250],gates:[
       T(60,5,220,8,5,N),T(60,22,145),T(60,65,60),T(120,90,60),T(120,125,0,7,5,N),
       T(120,165,-60),T(120,185,-120,7,5,N),T(60,185,-180),T(0,185,-180),T(-60,160,-180),
       T(-120,110,-180),T(-120,105,-120,6,5,S),T(-120,100,-60),T(-180,95,-60),
       T(-180,80,60),T(-120,65,60),T(-144,44,110,6,6,DOWN),T(-144,30,110,5.5,5.5,DOWN),
-      T(-144,27,144,6,3,S),T(-180,18,180),T(-180,12,240),T(-60,9,282),T(60,5,282),T(60,5,245,8,5,N),
+      T(-144,27,144,6,3,S),T(-180,18,180),T(-180,12,240),T(-60,9,282),T(60,5,282),T(60,5,265,8,5,N),
     ]},
   ],
 };
 
+const selectedMap=process.argv[2];
+if(selectedMap&&!Object.hasOwn(courses,selectedMap))throw Error(`Unknown authored map: ${selectedMap}`);
 await RAPIER.init();
 for(const [id,designs]of Object.entries(courses)){
+  if(selectedMap&&id!==selectedMap)continue;
   const map=JSON.parse(await readFile(new URL(`../data/maps/${id}.json`,import.meta.url)));
   const world=new RAPIER.World({x:0,y:0,z:0}),raw=gunzipSync(await readFile(new URL('../web'+COLLISION_ASSETS[id].url,import.meta.url)));
   const collisions=new PrebakedCollisions(RAPIER,world,map,decodeCollisionData(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),id));

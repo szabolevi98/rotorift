@@ -1,21 +1,7 @@
 {
   "id": "race_2",
   "name": "Garage to Skywalk",
-  "version": 1,
-  "details": {
-    "difficulty": "hard",
-    "recommendedDrones": [
-      "rift-x35",
-      "rift-x5"
-    ],
-    "description": {
-      "en": "Thread an upper parking-garage floor, climb to the skywalk and weave through the eastern tower alleys.",
-      "hu": "Repülj át a parkolóház egyik emeletén, emelkedj az üveghídhoz, majd kanyarogj a keleti tornyok közötti sikátorokban.",
-      "de": "Durchquere ein Parkhaus-Obergeschoss, steige zur Skybridge auf und schlängle dich durch die östlichen Turmgassen.",
-      "fr": "Traversez un étage du parking, montez vers la passerelle aérienne et slalomez entre les tours à l’est.",
-      "es": "Cruza una planta del aparcamiento, sube a la pasarela elevada y serpentea entre las torres del este."
-    }
-  },
+  "version": 2,
   "spawn": [
     60,
     0.15,
@@ -351,9 +337,9 @@
         282
       ],
       "n": [
-        -0.85117086972399,
+        -0.9621267263153837,
         0,
-        -0.5248887029964605
+        -0.27260257245602537
       ],
       "width": 7,
       "height": 4
@@ -362,7 +348,7 @@
       "p": [
         60,
         4,
-        245
+        265
       ],
       "n": [
         0,
@@ -2127,77 +2113,77 @@
       [
         118.169,
         7.996,
-        282.322
+        282.321
       ],
       [
         118.031,
         7.993,
-        282.337
+        282.336
       ],
       [
         117.892,
         7.988,
-        282.349
+        282.347
       ],
       [
         117.753,
         7.983,
-        282.358
+        282.355
       ],
       [
         117.613,
         7.977,
-        282.364
+        282.36
       ],
       [
         117.474,
         7.97,
-        282.367
+        282.362
       ],
       [
-        62.262,
+        62.483,
         5.03,
-        283.043
+        282.543
       ],
       [
-        62.123,
+        62.344,
         5.023,
-        283.04
+        282.541
       ],
       [
-        61.987,
+        62.205,
         5.017,
-        283.028
+        282.535
       ],
       [
-        61.854,
+        62.067,
         5.012,
-        283.006
+        282.523
       ],
       [
-        61.723,
+        61.929,
         5.007,
-        282.975
+        282.507
       ],
       [
-        61.595,
+        61.792,
         5.004,
-        282.934
+        282.485
       ],
       [
-        61.469,
+        61.656,
         5.002,
-        282.884
+        282.459
       ],
       [
-        61.346,
+        61.52,
         5,
-        282.825
+        282.428
       ],
       [
-        61.226,
+        61.385,
         5,
-        282.756
+        282.393
       ],
       [
         60,
@@ -2212,71 +2198,111 @@
         282
       ],
       [
-        58.774,
+        58.615,
         5,
-        281.244
+        281.607
       ],
       [
-        58.663,
-        5,
-        281.167
-      ],
-      [
-        58.568,
+        58.489,
         4.999,
-        281.081
+        281.563
       ],
       [
-        58.488,
+        58.383,
         4.998,
-        280.986
+        281.506
       ],
       [
-        58.424,
-        4.996,
-        280.884
+        58.297,
+        4.995,
+        281.437
       ],
       [
-        58.376,
-        4.994,
-        280.773
+        58.229,
+        4.99,
+        281.355
       ],
       [
-        58.343,
-        4.991,
-        280.654
+        58.18,
+        4.985,
+        281.26
       ],
       [
-        58.327,
-        4.987,
-        280.527
+        58.151,
+        4.978,
+        281.153
       ],
       [
-        58.326,
-        4.984,
-        280.391
+        58.141,
+        4.971,
+        281.033
+      ],
+      [
+        58.149,
+        4.962,
+        280.901
+      ],
+      [
+        59.926,
+        4.038,
+        267.554
+      ],
+      [
+        59.944,
+        4.029,
+        267.415
+      ],
+      [
+        59.959,
+        4.022,
+        267.277
+      ],
+      [
+        59.971,
+        4.015,
+        267.138
+      ],
+      [
+        59.982,
+        4.01,
+        266.998
+      ],
+      [
+        59.99,
+        4.005,
+        266.859
+      ],
+      [
+        59.995,
+        4.002,
+        266.72
+      ],
+      [
+        59.999,
+        4.001,
+        266.58
       ],
       [
         60,
         4,
-        247
+        266.44
       ],
       [
         60,
         4,
-        245
+        265
       ]
     ],
     [
       [
         60,
         4,
-        245
+        265
       ],
       [
         60,
         4,
-        243
+        263
       ],
       [
         60,
@@ -2289,5 +2315,19 @@
         220
       ]
     ]
-  ]
+  ],
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Thread an upper parking-garage floor, climb to the skywalk and weave through the eastern tower alleys.",
+      "hu": "Repülj át a parkolóház egyik emeletén, emelkedj az üveghídhoz, majd kanyarogj a keleti tornyok közötti sikátorokban.",
+      "de": "Durchquere ein Parkhaus-Obergeschoss, steige zur Skybridge auf und schlängle dich durch die östlichen Turmgassen.",
+      "fr": "Traversez un étage du parking, montez vers la passerelle aérienne et slalomez entre les tours à l’est.",
+      "es": "Cruza una planta del aparcamiento, sube a la pasarela elevada y serpentea entre las torres del este."
+    }
+  }
 }

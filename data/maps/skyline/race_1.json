@@ -1,22 +1,7 @@
 {
   "id": "race_1",
   "name": "Canyon Express",
-  "version": 1,
-  "details": {
-    "difficulty": "medium",
-    "recommendedDrones": [
-      "rift-c3",
-      "rift-x35",
-      "rift-x5"
-    ],
-    "description": {
-      "en": "A fast street-level loop through the tower canyons and the narrow western service alley.",
-      "hu": "Gyors, utcaszinten vezető kör a toronyházak között és a nyugati, szűk szervizsikátoron át.",
-      "de": "Eine schnelle Runde auf Straßenniveau durch die Häuserschluchten und die schmale westliche Servicegasse.",
-      "fr": "Un tour rapide au niveau des rues, entre les tours et dans l’étroite ruelle de service à l’ouest.",
-      "es": "Una vuelta rápida a nivel de calle, entre rascacielos y por el estrecho callejón de servicio del oeste."
-    }
-  },
+  "version": 2,
   "spawn": [
     60,
     0.15,
@@ -408,9 +393,9 @@
         282
       ],
       "n": [
-        0.85117086972399,
+        0.9621267263153837,
         0,
-        -0.5248887029964605
+        -0.27260257245602537
       ],
       "width": 7,
       "height": 4
@@ -419,7 +404,7 @@
       "p": [
         60,
         4,
-        245
+        265
       ],
       "n": [
         0,
@@ -2772,77 +2757,77 @@
       [
         1.8,
         6.997,
-        282.46
+        282.459
       ],
       [
         1.937,
         6.995,
-        282.481
+        282.479
       ],
       [
         2.075,
         6.992,
-        282.497
+        282.495
       ],
       [
         2.213,
         6.989,
-        282.509
+        282.506
       ],
       [
         2.352,
         6.985,
-        282.517
+        282.513
       ],
       [
         2.492,
         6.98,
-        282.521
+        282.516
       ],
       [
-        57.738,
+        57.516,
         5.02,
-        283.044
+        282.545
       ],
       [
-        57.877,
+        57.656,
         5.015,
-        283.041
+        282.543
       ],
       [
-        58.013,
+        57.795,
         5.011,
-        283.028
+        282.535
       ],
       [
-        58.146,
+        57.933,
         5.008,
-        283.006
+        282.524
       ],
       [
-        58.277,
+        58.071,
         5.005,
-        282.975
+        282.507
       ],
       [
-        58.405,
+        58.208,
         5.003,
-        282.934
+        282.486
       ],
       [
-        58.531,
+        58.344,
         5.001,
-        282.884
+        282.459
       ],
       [
-        58.654,
+        58.48,
         5,
-        282.825
+        282.428
       ],
       [
-        58.774,
+        58.615,
         5,
-        282.756
+        282.393
       ],
       [
         60,
@@ -2857,71 +2842,111 @@
         282
       ],
       [
-        61.226,
+        61.385,
         5,
-        281.244
+        281.607
       ],
       [
-        61.337,
-        5,
-        281.167
-      ],
-      [
-        61.432,
+        61.511,
         4.999,
-        281.081
+        281.563
       ],
       [
-        61.512,
+        61.617,
         4.998,
-        280.986
+        281.506
       ],
       [
-        61.576,
-        4.996,
-        280.884
+        61.703,
+        4.995,
+        281.437
       ],
       [
-        61.624,
-        4.994,
-        280.773
+        61.771,
+        4.99,
+        281.355
       ],
       [
-        61.657,
-        4.991,
-        280.654
+        61.82,
+        4.985,
+        281.26
       ],
       [
-        61.673,
-        4.987,
-        280.527
+        61.849,
+        4.978,
+        281.153
       ],
       [
-        61.674,
-        4.984,
-        280.391
+        61.859,
+        4.971,
+        281.033
+      ],
+      [
+        61.851,
+        4.962,
+        280.901
+      ],
+      [
+        60.074,
+        4.038,
+        267.554
+      ],
+      [
+        60.056,
+        4.029,
+        267.415
+      ],
+      [
+        60.041,
+        4.022,
+        267.277
+      ],
+      [
+        60.029,
+        4.015,
+        267.138
+      ],
+      [
+        60.018,
+        4.01,
+        266.998
+      ],
+      [
+        60.01,
+        4.005,
+        266.859
+      ],
+      [
+        60.005,
+        4.002,
+        266.72
+      ],
+      [
+        60.001,
+        4.001,
+        266.58
       ],
       [
         60,
         4,
-        247
+        266.44
       ],
       [
         60,
         4,
-        245
+        265
       ]
     ],
     [
       [
         60,
         4,
-        245
+        265
       ],
       [
         60,
         4,
-        243
+        263
       ],
       [
         60,
@@ -2934,5 +2959,20 @@
         220
       ]
     ]
-  ]
+  ],
+  "details": {
+    "difficulty": "medium",
+    "recommendedDrones": [
+      "rift-c3",
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "A fast street-level loop through the tower canyons and the narrow western service alley.",
+      "hu": "Gyors, utcaszinten vezető kör a toronyházak között és a nyugati, szűk szervizsikátoron át.",
+      "de": "Eine schnelle Runde auf Straßenniveau durch die Häuserschluchten und die schmale westliche Servicegasse.",
+      "fr": "Un tour rapide au niveau des rues, entre les tours et dans l’étroite ruelle de service à l’ouest.",
+      "es": "Una vuelta rápida a nivel de calle, entre rascacielos y por el estrecho callejón de servicio del oeste."
+    }
+  }
 }
