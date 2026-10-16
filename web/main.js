@@ -158,7 +158,7 @@ const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) : null;
 const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
-  cameraSettings = read("camera", { angle: 20, fov: 100, sound: true, horizon: false, analog: false });
+  cameraSettings = read("camera", { angle: 20, fov: 100, sound: true, horizon: true, analog: false });
 const cameraProfiles=new CameraProfiles(read('camera-profiles',{}),cameraSettings);
 function applyAircraftCamera(){
   const profile=cameraProfiles.get(flight?.config?.id??config?.id);flight?.setCameraSettings(profile.angle,profile.fov);
