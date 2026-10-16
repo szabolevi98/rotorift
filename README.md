@@ -352,6 +352,7 @@ showcase; rebuild after changing map geometry or race files.
 ## Documentation and license
 
 - [Development plan](docs/plan.md)
+- [Fixed-wing aircraft introduction proposal](docs/fixed-wing-plan.md)
 - [Prototype status and verification](docs/prototype.md)
 - [Showcase models and source files](showcase/README.md)
 - [VPS deployment and updates](DEPLOY.md)

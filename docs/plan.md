@@ -1,5 +1,10 @@
 # Rotorift – fejlesztési terv
 
+2026-10-16: külön terv készült a merevszárnyú RC repülők későbbi bevezetésére:
+[fixed-wing-plan.md](fixed-wing-plan.md). Egy elektromos trénergép, külön fizika,
+fokozatos helyi/online bevezetés és ellenőrzési feltételek. Egyelőre csak terv;
+a repülők megvalósítása és végleges típusa nincs jóváhagyva.
+
 2026-10-14-i flottabővítés: **Rift X35**, 3,5″ freestyle, 4S / 650 mAh,
 215 g, 160 mm motortáv. Felül akkumulátor, akciókamera és annak tartója nélkül.
 Saját modell és `data/drones/rift-x35.json` fizikai konfiguráció; helyi és online
