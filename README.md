@@ -129,7 +129,8 @@ All default bindings can be changed in settings. Arming requires low throttle.
 ### Radios, controllers and mobile
 
 A radio exposed as a USB joystick is the primary input, with automatic keyboard
-fallback. Settings include channel mapping, inversion, deadband, stick centers
+fallback on desktop and touch sticks on mobile when no controller is detected.
+Settings include channel mapping, inversion, deadband, stick centers
 and a six-second endpoint calibration. A browser may require a stick movement
 before exposing the connected device.
 
@@ -152,7 +153,11 @@ A manual fullscreen toggle remains available. Loading screens show model downloa
 progress and preparation; switching aircraft after startup uses an overlay.
 
 On-screen **ARM/DISARM**, **Reset**, camera, flight-mode and menu buttons are also
-available on phones. A connected radio/controller supplies the flight axes.
+available on phones. Without a detected controller, the HUD becomes two large
+Mode 2 touch sticks in the lower corners. Left: throttle/yaw; right: pitch/roll.
+Throttle holds on release; the other axes recenter. Pausing, resetting or an
+interrupted touch clears the input. Connecting a controller restores the compact
+stick display and uses the radio's calibrated axes.
 
 **Auto arm** is enabled by default under **Settings → Controls**. After launch,
 reset or resume, lower throttle to zero and then raise it to arm. Keyboard throttle

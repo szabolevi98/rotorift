@@ -78,6 +78,7 @@ export class Controller {
     this.range = null;
     this.bindings = new ActionBindings();
     this.setup = null;
+    this.touch = null;
     window.addEventListener("keydown", (e) => {
       if (e.target.closest("input,select,textarea,button")) return;
       if (Object.values(this.keys).includes(e.code) || ["ShiftLeft", "ShiftRight"].includes(e.code)) {
@@ -101,6 +102,7 @@ export class Controller {
   }
   clear() {
     this.pressed.clear();
+    this.touch?.reset();
     this.keyboard = { roll: 0, pitch: 0, yaw: 0, throttle: 0 };
     this.bindings.reset();
     this.setup = null;
@@ -150,9 +152,10 @@ export class Controller {
     write("input-source", this.source);
     write("radio-device", this.deviceId);
   }
-  poll(dt) {
+  poll(dt, { touchEnabled = false } = {}) {
     const pads = Array.from(navigator.getGamepads?.() ?? []).filter(Boolean);
     this.pads = pads;
+    this.touch?.setEnabled(touchEnabled && pads.length === 0);
     this.pad = this.deviceId !== "auto" ? pads.find((p) => p.id === this.deviceId) ?? null
       : pads.find(isEdgeTXRadio) ?? pads.find((p) => p.id === this.lastId) ?? pads[0] ?? null;
     if ((this.pad?.id ?? null) !== this.lastId || (this.pad?.index ?? null) !== this.lastIndex) {
@@ -211,7 +214,8 @@ export class Controller {
       const travel = dt * response.limit / (returning ? KEYBOARD_RESPONSE.returnSeconds : response.riseSeconds);
       k[axis] += clamp(target - k[axis], -travel, travel);
     }
-    const out = this.usingRadio ? this.radioReady ? radioInput(this.raw, this.profile) : { roll: 0, pitch: 0, yaw: 0, throttle: 0 } : { ...k };
+    const out = this.usingRadio ? this.radioReady ? radioInput(this.raw, this.profile) : { roll: 0, pitch: 0, yaw: 0, throttle: 0 }
+      : this.usingTouch ? this.touch.sample() : { ...k };
     const { events, assignment } = this.bindings.sample(this.pad, this.profile, this.usingRadio && !this.range && !this.setup);
     if (assignment) this.bindAction(assignment.action, assignment.binding);
     for (const event of events) {
@@ -224,6 +228,7 @@ export class Controller {
   get usingRadio() {
     return this.source !== "keyboard" && !!this.pad;
   }
+  get usingTouch() { return this.touch?.enabled === true; }
   get radioReady() {
     const axes = Object.values(this.profile.axes);
     return !this.setup && this.profile.supported !== false && new Set(axes.map((axis) => axis.index)).size === 4 && axes.every((axis) => Number.isFinite(this.raw[axis.index]));

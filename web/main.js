@@ -5,6 +5,7 @@ import { SettingsTabs } from "./settings-tabs.js";
 import { mapPresentation } from "/shared/catalog/maps.js";
 import { read, write } from "./storage.js";
 import { Controller } from "./input/controller.js";
+import { TouchSticks } from "./input/touch-sticks.js";
 import { AutoArm } from "./input/auto-arm.js";
 import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
@@ -706,9 +707,9 @@ function renderKeys() {
 function updateInputText() {
   const text = controller.usingRadio
     ? t("input.radio", { name: controller.pad.id })
-    : t(controller.pad ? "input.keyboard" : "input.noRadio");
+    : t(controller.pad ? "input.keyboard" : touchInput.matches && !controller.pads.length ? 'input.touchAvailable' : "input.noRadio");
   $("#input-status").textContent = text;
-  $("#radio-name").textContent = controller.pad?.id ?? t("input.noRadio");
+  $("#radio-name").textContent = controller.pad?.id ?? t(touchInput.matches && !controller.pads.length ? 'input.touchAvailable' : "input.noRadio");
   if (controller.setup) {
     const signal = controller.setup.signal;
     $("#stick-setup-signal").textContent = t("stickSetup.signal" + signal.state, { axis: (signal.index ?? 0) + 1, travel: Math.round((signal.travel ?? 0) * 50) });
@@ -1206,7 +1207,7 @@ function hud() {
   $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);
   $("#hud-mode").disabled = !!room && (room.phase !== "flying" || own?.finished);
   $("#hud-input").textContent = t(
-    controller.usingRadio ? "settings.controller" : "input.keyboard",
+    controller.usingRadio ? "settings.controller" : controller.usingTouch ? "input.touch" : "input.keyboard",
   );
   $("#speed").textContent = Math.round(Math.hypot(...p.v) * 3.6);
   $("#altitude").textContent = Math.max(0,
@@ -1316,6 +1317,10 @@ function hud() {
 }
 function flightHelpContent() {
   const radio = controller.usingRadio;
+  if (controller.usingTouch) return {
+    source: t('input.touch'), note: t('hud.helpTouch'),
+    rows: ['arm', 'reset', 'view', 'mode', 'turtle', 'menu'].map(action => [t('key.' + action), [t('hud.touchButton')]]),
+  };
   const name = action => controller.keys[action] === "Space" ? t("hud.spaceKey") : keyName(controller.keys[action]);
   const rows = radio ? RADIO_ACTIONS.map(action => [t("key." + action),
     [controller.profile.actions?.[action] ? bindingLabel(controller.profile.actions[action]) : t("settings.unassigned")],
@@ -1338,7 +1343,8 @@ function frame(now) {
   const elapsed = Math.max(0, (now - lastFrame) / 1000);
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
-  input = controller.poll(dt);
+  input = controller.poll(dt, { touchEnabled: touchInput.matches && playing && !paused && !document.hidden &&
+    flight.active && !loading.tasks.size && (!room || room.phase === 'flying' && !room.players.find(p=>p.id===network.id)?.finished) });
   if (playing && flight.physics && autoArm.update({
     throttle: input.throttle, armed: flight.physics.armed, turtle: flight.physics.turtleMode,
     allowed: !paused && !loading.tasks.size && flight.active &&
@@ -1694,6 +1700,7 @@ try {
   preview = new Preview($("#preview-scene"));
   flight = new Flight($("#game-scene"));
   controller = new Controller(action);
+  controller.touch = new TouchSticks($('#stick-hud'), $('#hud'));
   network = new Network(receive);
   preview.setColor(droneColor); flight.setColor(droneColor);
   await flight.init();

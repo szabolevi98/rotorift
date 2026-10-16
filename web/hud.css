@@ -144,3 +144,38 @@
   #hud .hud-pilot-controls { grid-row: 2; }
   #hud .hud-location { max-width: 90px; }
 }
+
+/* Touch flight: large Mode 2 pads in the thumb zones; the desktop HUD stays compact. */
+#hud.touch-controls { --touch-stick-size: clamp(144px, min(24vw, 42svh), 210px); }
+#hud.touch-controls #stick-hud {
+  position: fixed; left: var(--hud-edge); right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom)); transform: none;
+  justify-content: space-between; gap: 0;
+}
+#hud.touch-controls .stick-display { width: var(--touch-stick-size); }
+#hud.touch-controls .stick-display svg {
+  pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+#hud.touch-controls .stick-frame { fill: #11151b66; stroke: #ffffff90; }
+#hud.touch-controls .is-dragging .stick-frame { stroke: #ff997c; fill: #11151b99; }
+#hud.touch-controls .stick-tip { r: 7; }
+#hud.touch-controls .stick-glow { r: 14; }
+#hud.touch-controls .stick-label { font-size: 9px; }
+#hud.touch-controls .hud-pilot-controls {
+  position: absolute; bottom: 0; left: calc(var(--touch-stick-size) + 16px); right: calc(var(--touch-stick-size) + 16px);
+  align-items: center; gap: 6px;
+}
+#hud.touch-controls .hud-control-buttons { justify-content: center; }
+#hud.touch-controls #arm-state, #hud.touch-controls #hud-mode, #hud.touch-controls #hud-turtle { min-width: 0; padding: 6px 8px; font-size: 10px; }
+#hud.touch-controls .telemetry { position: absolute; right: 0; bottom: calc(var(--touch-stick-size) + 24px); padding: 6px 10px; gap: 12px; }
+#hud.touch-controls .telemetry b { font-size: 20px; }
+#hud.touch-controls .telemetry small { font-size: 8px; }
+#hud.touch-controls .battery-card { width: min(180px, 100%); padding: 6px 8px; }
+#hud.touch-controls #battery-gauge { width: 42px; }
+#hud.touch-controls #battery-percent { font-size: 23px; }
+#hud.touch-controls .battery-voltage { font-size: 9px; }
+#hud.touch-controls #battery-warning { font-size: 9px; margin-top: 3px; }
+#hud.touch-controls .hud-flight-info { max-height: calc(100svh - var(--touch-stick-size) - 110px); overflow-y: auto; }
+#hud.touch-controls .arm-prompt { top: 72px; transform: translateX(-50%); padding: 8px 12px; }
+#hud.touch-controls .arm-prompt strong { font-size: 14px; }
+#hud.touch-controls .arm-prompt span { margin-top: 4px; font-size: 10px; }

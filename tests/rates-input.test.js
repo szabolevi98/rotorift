@@ -43,6 +43,23 @@ function inputEnvironment(t) {
   });
   return { events, setPads: (value) => (pads = value) };
 }
+
+test('touch is a mobile-flight fallback only, yields to any detected pad and clears with controller input', t => {
+  const env=inputEnvironment(t), c=new Controller(()=>{});
+  c.touch={enabled:false,values:{roll:.2,pitch:-.4,yaw:.1,throttle:.3},
+    setEnabled(value){if(value!==this.enabled){this.enabled=value;this.reset();}},
+    reset(){this.values={roll:0,pitch:0,yaw:0,throttle:0};},sample(){return {...this.values};}};
+  c.poll(.01,{touchEnabled:true}); assert.equal(c.usingTouch,true);
+  c.touch.values={roll:.2,pitch:-.4,yaw:.1,throttle:.3};
+  assert.deepEqual(c.poll(.01,{touchEnabled:true}),c.touch.values);
+  c.clear();assert.equal(c.poll(.01,{touchEnabled:true}).throttle,0);
+  env.setPads([{id:'Test USB radio',axes:[0,0,-1,0]}]);
+  c.poll(.01,{touchEnabled:true});assert.equal(c.usingTouch,false);assert.equal(c.usingRadio,true);
+  c.deviceId='Missing selected radio';
+  c.poll(.01,{touchEnabled:true});assert.equal(c.usingRadio,false);assert.equal(c.usingTouch,false,'a different detected pad still prevents touch fallback');
+  env.setPads([]);c.poll(.01,{touchEnabled:true});assert.equal(c.usingTouch,true);
+  c.poll(.01);assert.equal(c.usingTouch,false,'desktop, menus and pauses disable touch');
+});
 test("keyboard throttle and smooth stick response are independent of render frequency", (t) => {
   inputEnvironment(t);
   const result = [];
