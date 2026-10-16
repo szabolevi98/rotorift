@@ -1,5 +1,16 @@
 # Rotorift – fejlesztési terv
 
+## Aktuális állapot – 2026-10-16
+
+Öt drón (65, 75, C3, X35, X5), négy pálya (Liget, Betonudvar, Játszótér,
+Skyline) és 11 választható versenyútvonal működik. Elkészült a multiplayer,
+visszacsatlakozás, futamújraindítás, eredményképernyő, saját/globális szellemek,
+deltaidő, kapuszerkesztő, SVG-útvonalrészletek és a megosztási kép is.
+Az aktuális nyitott feladatokat és a mérési korlátokat a
+[prototype.md](prototype.md) tartalmazza. Az alábbi eredeti követelmények és
+dátumozott bejegyzések történeti tervet őriznek; a régi drón-/pályaszámok és
+megvalósítási sorrend nem a jelenlegi flottát vagy teendőlistát jelölik.
+
 2026-10-16: külön terv készült a merevszárnyú RC repülők későbbi bevezetésére:
 [fixed-wing-plan.md](fixed-wing-plan.md). Egy elektromos trénergép, külön fizika,
 fokozatos helyi/online bevezetés és ellenőrzési feltételek. Egyelőre csak terv;
@@ -21,8 +32,8 @@ a racing projekt Node.js megoldása alapján. A három showcase-modell
 megkezdését, valamint a commitot és push-t. Az alábbiak a teljes tervezett kiadás
 követelményei; a megvalósítás és ellenőrzés állapota külön követendő.
 
-Megvalósítási frissítés: elkészült a 0.1-es játszható repülési prototípus,
-immár három pályával, négy fizikai konfigurációval, öt nyelvvel és multiplayer alappal.
+Megvalósítási frissítés (2026-10-16): a játszható prototípus öt drónt,
+négy pályát, öt nyelvet és multiplayert tartalmaz.
 2026. október 13-i bővítés: Rift 75, Meteor75 Pro jellegű saját modell és
 külön 1S fizika; Játszótér / Pocket Park, a kis whoopokhoz épített pálya.
 Részletek: [pocket-park-and-rift75.md](pocket-park-and-rift75.md).
@@ -30,7 +41,7 @@ Részletes állapot és ellenőrzések: [prototype.md](prototype.md).
 A teljes első kiadás elfogadási feltételei még nem mind teljesülnek;
 különösen a hardveres rádióteszt és a valódi repülési adatokkal végzett fizikai hangolás hátravan.
 
-## 1. Cél és első kiadás
+## 1. Cél és az eredeti első kiadás követelményei
 
 A Rotorift böngészőben futó FPV drónszimulátor lesz, saját arculattal,
 pályákkal és drónnevekkel. A cél valósághű, jól hangolható repülési élmény,
@@ -548,7 +559,7 @@ A felhasználó által engedélyezett fejlesztés sorrendje:
 13. Eszköztesztek, repülési hangolás, hálózati késleltetés/szakadás,
     szerver- és adatbázis-újraindítás, teljesítmény és terhelés ellenőrzése.
 
-## 13. Az első kiadás elfogadási feltételei
+## 13. Az eredeti első kiadás elfogadási feltételei
 
 - Mindkét saját pálya és mindhárom induló drón játszható.
 - Minden drón saját, ellenőrzött konfigurációs fájlból kapja a fizikai paramétereit;

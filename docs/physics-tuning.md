@@ -1,4 +1,9 @@
-# Repülési hangolás – 5. konfigurációverzió
+# Repülési hangolás és dátumozott mérések
+
+Aktuális állapot (2026-10-16): öt külön konfiguráció működik; a verziók
+drónonként értendők, nem egy közös flottaverzióként. A mérőprogram mind az öt
+gépet futtatja. A lentebb szereplő három-/négydrónos táblázatok és korábbi
+verziószámok a megadott időpontok mérési előzményei, nem a jelenlegi flotta felsorolásai.
 
 2026-10-14: a [Rift X35](rift-x35.md) saját 1-es konfigurációval csatlakozott:
 215 g, 3,5″ propeller, 160 mm motortáv, 4S / 650 mAh akku, akciókamera nélkül.

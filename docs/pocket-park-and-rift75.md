@@ -1,5 +1,10 @@
 # Rift 75 és a Játszótér
 
+Állapotfrissítés (2026-10-16): a flotta már öt gép, sorrendben 65, 75, C3,
+X35, X5; négy pálya működik. A Játszótéren a Pocket Circuit mellett elkészült
+a nehezebb, 29 kapus Pocket Gauntlet is. Az alábbi bevezetési jegyzet a
+2026-10-13-i állapotot és az akkori ellenőrzéseket írja le.
+
 2026-10-13. Új, repülhető drón és harmadik pálya, a játékban és az angol
 showcase-ben is. Választási sorrend: Rift 65, Rift 75, Rift C3, Rift X5.
 

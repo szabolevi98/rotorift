@@ -1,7 +1,8 @@
 # Bekészített ütközési geometria és talajközeli teljesítmény
 
-2026. október 13. A Racingben alkalmazott bekészített geometria elve alapján
-a Rotorift is kész ütközési fájlokat tölt mindhárom pályához.
+Aktuális állapot (2026-10-16): mind a négy pálya — Liget, Betonudvar,
+Játszótér és Skyline — előre elkészített ütközési fájlokat használ.
+Az alábbi 2026. október 13-i javítás és mérései az akkori három pályára vonatkoznak.
 
 ## Whoop FPS-esés javítása az akadályok közelében
 

@@ -74,7 +74,7 @@ Alacsony töltöttségnél sárga, leszállási állapotban piros. A figyelmezte
 képernyőolvasóval is elérhető; az élő feszültséget nem olvassa fel folyamatosan.
 Kikapcsolt szimulációnál a kártya rejtett.
 
-A tesztek mindhárom drónnál ellenőrzik a fogyasztás integrálását, a gáztól
+A tesztek a katalógus mind az öt drónjánál ellenőrzik a fogyasztás integrálását, a gáztól
 függő merülést, a rövid terhelési esést, a kapacitás nélküli feszültség-visszaállást,
 a figyelmeztetéseket, a teljes kimerülést, a resetet és a 30/120/240 Hz-es
 időlépés-egyezést. Böngészőben a gyorsított, 1%-os kapacitású, adatbázis nélküli
