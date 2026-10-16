@@ -1,5 +1,73 @@
 # Pályák teljesítményjavítása
 
+## 2026-10-16 – ritka megakadások vizsgálata
+
+A beküldött Liget/Rift 75 jelentés 97 képkockája kb. 1,29 másodpercnyi,
+stabil 75 FPS-es szakaszt tartalmazott, 13,5 ms-os maximális intervallummal.
+Ebből a korábban érzékelt megakadás oka nem állapítható meg.
+A mérő megnyitásakor elvesző előzmény javítása és a jelentés számai a
+[diagnosztikai jegyzetben](frame-diagnostics.md) szerepelnek.
+
+A CPU-előzmény most zárt panelnél is készül, fix méretű körpufferbe.
+Panelmegnyitás nem nullázza a felvételt, és külön megmarad az indítás/nullázás
+óta legrosszabb képkocka. GPU-lekérdezés csak nyitott panelnél történik.
+A böngészős exportpróba 747 mintát, 9,99 másodpercnyi intervallumot tartott meg,
+több mint 500, még a panel megnyitása előtt rögzített CPU-only mintával;
+a tíz másodperces ablakból már kiesett csúcsminta is az exportban maradt.
+
+A fejlesztői mérőoldal `frames` paramétere 30–600 mintát enged helyzetenként.
+Ha meg van adva, a mintavétel valódi animációs képkockákra oszlik, nem egyetlen
+hosszú főszál-feladatban fut. Legfeljebb 20 bemelegítő minta után átlag, p95 és
+maximum render/GPU-, valamint fizikai részidőt közöl. Példa mind a négy pályára:
+
+`/performance.html?variant=moving&physics=prepared&drone=rift-75&hold=1&frames=120&prepare=1`
+
+A `prepare=1` a játékban is használt aszinkron shader-előkészítést futtatja,
+egyszer pályabetöltéskor. Nélküle a mérőoldal hideg shaderprogramokat vizsgál,
+így nem szabad az eredményt előkészített játékrepülésként értelmezni.
+A legrosszabb renderhez külön CPU-idő, `gl.finish()` várakozás és előtte/utána
+programszám tartozik; az utóbbi új shaderfordítást jelezhet.
+
+A mérőlapot aktív böngészőben kell futtatni: a háttérlap animációs ütemezését
+a böngésző korlátozhatja. A teszt előre kijelölt, közeli talaj/épület helyzeteket
+vizsgál; a drón helyét a `hold` mód tartja, kezdeti sebessége 7 m/s.
+Négy fizikai lépést mér mintánként. Nem teljes felületes játék-FPS, nem több
+különböző készüléken végzett teszt, és nem bizonyítja minden ritka akadás hiányát.
+`gl.finish()` továbbra is csak ezen a fejlesztői lapon szerepel, a játékban nincs.
+
+### A hideg és az előkészített shaderes játszótéri próba
+
+GTX 1080 / ANGLE D3D11, 1280 × 504, Rift 75, mozgó kamera, helyzetenként
+180 képkocka, 20 bemelegítő után 160 minta. Az előkészítés nélküli
+`outside` helyzetben 89,6 ms-os csúcs ismétlődött: 89,5 ms CPU-render,
+0,1 ms GPU-várakozás, a programok száma 4-ről 5-re nőtt. A korábbi négy pályás,
+120 képkockás hideg próbában ugyanezen a helyen 114,9 ms volt a csúcs.
+
+A játékban már használt `compileForTarget` előkészítésével, változatlan
+geometriával az `outside` csúcsa 2,9 ms-ra csökkent; a programszám végig 9
+maradt. A másik négy közeli helyzet rendermaximuma 0,9–1,1 ms, a négy fizikai
+lépés maximuma az öt helyzetben 1,9–2,9 ms volt. A hideg fejlesztői teszt
+csúcsa tehát nem bizonyít a már előkészítést használó játékban új shaderhibát.
+Az eredeti beküldött, stabil FPS-szakasz alapján más konkrét ok nem igazolható.
+
+Az előkészített, négy pályás végső próbában 18 helyzet és helyzetenként
+120 képkocka szerepelt (20 bemelegítő, 100 értékelt minta). A táblázat
+pályánként a helyzetek legnagyobb p95 és maximum részidejét mutatja, ms-ban:
+
+| Pálya | Render/GPU p95 | Render/GPU max. | Fizika, 4 lépés p95 | Fizika, 4 lépés max. |
+| --- | ---: | ---: | ---: | ---: |
+| Betonudvar | 5,2 | 6,9 | 2,6 | 3,2 |
+| Liget | 3,6 | 4,4 | 2,2 | 2,9 |
+| Játszótér | 0,9 | 2,8 | 1,9 | 2,5 |
+| Skyline | 1,1 | 1,9 | 1,4 | 2,4 |
+
+Ezekben az előkészített próbákban nem reprodukálódott a súlyos megakadás;
+a legrosszabb renderek alatt sem nőtt a shaderprogramok száma.
+A [nyers saját mérési jegyzőkönyv](performance-measurements-2026-10-16.json)
+a hideg és előkészített teszteket is megőrzi. A felhasználó eredeti teljes
+jelentését nem másoljuk a publikus repóba. Más készülékek hosszabb valódi
+repülése és egy újabb, tényleges FPS-esést tartalmazó felvétel továbbra is szükséges.
+
 ## Betonudvar kisebb tárgycsoportjai — 2026. október 14.
 
 Egy északi szállító teherautó és tizenkét kisebb tárolócsoport került az

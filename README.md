@@ -254,6 +254,7 @@ Further details:
 
 - [Physics tuning and measurement limits](docs/physics-tuning.md)
 - [Collision preparation and performance](docs/collision-performance.md)
+- [FPS reports and automatic flight history](docs/frame-diagnostics.md)
 - [Individual propeller and blade damage](docs/propeller-damage.md)
 
 ## Showcase and race editor

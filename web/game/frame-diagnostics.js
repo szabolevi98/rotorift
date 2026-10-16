@@ -1,5 +1,7 @@
-// All timing queries are asynchronous. Never gl.finish(), never wait for a GPU
-// result. Opening the panel enables recording; closing it releases all queries.
+import { FrameHistory } from './frame-history.js';
+
+// CPU flight history also runs with the panel closed. GPU queries remain opt-in,
+// asynchronous and bounded: never gl.finish(), never wait for a GPU result.
 export class GpuTimer {
   constructor(gl) {
     this.gl = gl;
@@ -58,7 +60,7 @@ export function summarizeFrames(samples) {
 export class FrameDiagnostics {
   constructor(panel, toggle, renderer, t) {
     this.panel=panel; this.toggle=toggle; this.renderer=renderer; this.t=t;
-    this.samples=[]; this.longTasks=[]; this.open=false;
+    this.history=new FrameHistory(); this.longTasks=[]; this.open=false;
     this.rows=panel.querySelector('[data-performance-rows]');
     this.localize();
     window.addEventListener('languagechange',()=>this.localize());
@@ -66,6 +68,13 @@ export class FrameDiagnostics {
     panel.querySelector('[data-performance-close]').onclick=()=>this.setOpen(false);
     panel.querySelector('[data-performance-reset]').onclick=()=>this.reset();
     panel.querySelector('[data-performance-export]').onclick=()=>this.download();
+    if (typeof PerformanceObserver!=='undefined' && PerformanceObserver.supportedEntryTypes?.includes('longtask')) {
+      this.observer=new PerformanceObserver(list=>{
+        for(const e of list.getEntries())this.longTasks.push({at:e.startTime,durationMs:e.duration});
+        this.longTasks=this.longTasks.slice(-30);
+      });
+      this.observer.observe({type:'longtask'});
+    }
   }
   localize() {
     this.toggle.setAttribute('aria-label',this.toggle.textContent+' · '+this.t('perf.open'));
@@ -73,53 +82,38 @@ export class FrameDiagnostics {
     this.panel.querySelector('[data-performance-close]').setAttribute('aria-label',this.t('perf.close'));
   }
   reset() {
-    this.timer?.dispose(); this.samples=[]; this.longTasks=[];
-    this.previousAt=null; this.previousSample=null; this.updatedAt=0;
+    this.timer?.dispose(); this.history.reset(); this.longTasks=[];
+    this.observer?.takeRecords(); this.updatedAt=0;
+    if(this.open)this.render();
   }
   setOpen(open) {
-    this.open=open; this.reset();
+    this.open=open;
     this.panel.classList.toggle('hidden',!open);
     this.toggle.setAttribute('aria-expanded',String(open));
-    this.observer?.disconnect();
     if (open) {
       this.timer ??= new GpuTimer(this.renderer.getContext());
-      if (typeof PerformanceObserver!=='undefined' && PerformanceObserver.supportedEntryTypes?.includes('longtask')) {
-        this.observer=new PerformanceObserver(list=>{
-          for(const e of list.getEntries())this.longTasks.push({at:e.startTime,durationMs:e.duration});
-          this.longTasks=this.longTasks.slice(-30);
-        });
-        this.observer.observe({type:'longtask'});
-      }
       this.render();
-    }
+    } else this.timer?.dispose();
   }
   begin(at) {
-    if (!this.open) return null;
-    this.timer.poll();
-    // The interval ending now belongs to the work submitted on the preceding
-    // frame. Keep its CPU/GPU costs and position attached to that interval.
-    if(this.previousSample)this.previousSample.frameMs=at-this.previousAt;
-    const sample={at,frameMs:null,
-      physicsMs:0,worldMs:0,renderMs:0,steps:0,droppedMs:0};
-    this.previousAt=at;this.previousSample=sample;
-    return sample;
+    if (this.open) this.timer?.poll();
+    return this.history.begin(at);
   }
   record(sample, cpuMs, context) {
     if (!sample) return;
-    Object.assign(sample,context,{cpuMs,otherMs:Math.max(0,cpuMs-sample.physicsMs-sample.worldMs-sample.renderMs),
-      calls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles});
-    // Do not count a pause, background-tab gap, or a new aircraft load as FPS.
-    this.samples.push(sample);
-    this.samples=this.samples.filter(s=>s.at>=sample.at-10000).slice(-2000);
-    if (sample.at-this.updatedAt>=500) {this.updatedAt=sample.at;this.render();}
+    this.history.record(sample,cpuMs,{...context,
+      calls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
+      programs:this.renderer.info.programs?.length,geometries:this.renderer.info.memory?.geometries,textures:this.renderer.info.memory?.textures});
+    if (this.open && sample.at-this.updatedAt>=500) {this.updatedAt=sample.at;this.render();}
   }
-  idle() { this.previousAt=null;this.previousSample=null; }
+  idle() { this.history.idle(); }
   render() {
-    const summary=summarizeFrames(this.samples),t=this.t;
+    const summary=summarizeFrames(this.history.samples()),t=this.t;
     const ms=v=>Number.isFinite(v)?v.toFixed(2)+' ms':'—';
     const rows=[
       [t('perf.frame'),ms(summary.frameMs)+' / '+ms(summary.p95Ms)],
       [t('perf.worst'),ms(summary.worst?.frameMs)],
+      [t('perf.sessionWorst'),ms(this.history.worstSinceReset?.frameMs)],
       ['CPU',ms(summary.cpuMs)],
       [t('perf.physics'),ms(summary.physicsMs)],
       [t('perf.world'),ms(summary.worldMs)],
@@ -136,11 +130,20 @@ export class FrameDiagnostics {
       dt.textContent=label;dd.textContent=value;row.append(dt,dd);return row;
     }));
   }
-  download() {
-    const report={version:1,createdAt:new Date().toISOString(),windowSeconds:10,
+  report() {
+    const samples=this.history.samples(),worst=this.history.worstSinceReset;
+    const overlaps=(task,sample)=>sample && task.at<=sample.at+sample.frameMs && task.at+task.durationMs>=sample.at;
+    return {version:2,createdAt:new Date().toISOString(),windowSeconds:10,
+      capturedSeconds:samples.reduce((sum,s)=>sum+s.frameMs,0)/1000,
+      captureMode:'flight-ring-buffer',gpuCaptureMode:'panel-open-only',
       resolution:{width:this.renderer.domElement.width,height:this.renderer.domElement.height,pixelRatio:this.renderer.getPixelRatio()},
-      gpuTimerSupported:!!this.timer?.ext,summary:summarizeFrames(this.samples),samples:this.samples.filter(s=>Number.isFinite(s.frameMs)),
-      longTasks:this.longTasks.filter(e=>e.at>=(this.samples[0]?.at??Infinity))};
+      gpuTimerSupported:this.timer?!!this.timer.ext:null,summary:summarizeFrames(samples),samples,
+      worstSinceReset:worst,
+      worstLongTasks:this.longTasks.filter(e=>overlaps(e,worst)),
+      longTasks:this.longTasks.filter(e=>samples.some(sample=>overlaps(e,sample)))};
+  }
+  download() {
+    const report=this.report();
     const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));
     const a=document.createElement('a');a.href=url;a.download='rotorift-performance-'+Date.now()+'.json';a.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);

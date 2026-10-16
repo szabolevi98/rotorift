@@ -22,8 +22,12 @@ időt, de nem gyorsítja a drónt. A panel külön kiírja az így kihagyott id�
 
 Repülés közben kattints a bal felső **FPS** számra. Hagyd nyitva a panelt,
 és egy beesés után nyomd meg a **JSON letöltése** gombot.
-A jelentés a legutóbbi tíz másodpercet őrzi (legfeljebb 2000 minta), a legrosszabb
-képkockával, pálya/drón/nézet/pozíció adatokkal és renderfelbontással.
+2026-10-16-tól a CPU- és képkockaidők felvétele zárt panel mellett is fut:
+nem kell az akadás előtt megnyitni. A panel megnyitása/becsukása nem töröl adatot.
+A jelentés a legutóbbi tíz másodpercet őrzi (legfeljebb 2000 minta), továbbá
+külön az indítás vagy a mérő nullázása óta legrosszabb teljes képkockát a
+pálya/drón/nézet/pozíció adataival. Új pálya/drón betöltése és a Nullázás gomb
+törli a régi felvételt; szünet és háttérbe kerülés csak az intervallumláncot szakítja meg.
 Csak helyi letöltés történik, automatikus feltöltés nincs.
 
 A panel külön méri:
@@ -35,13 +39,26 @@ A panel külön méri:
   [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/)
   bővítményt. A CPU-renderidő nem a GPU ideje, és ezek részben átfednek.
 - Rajzolási hívások, háromszögek, fizikai lépések száma és kihagyott szimulációs idő.
+- Exportban shaderprogram-/geometria-/textúraszám és az adott renderben létrejött
+  új programok száma is szerepel, hogy a késői shaderfordítás felismerhető legyen.
 - Exportban a támogatott böngészők 50 ms feletti főszál-feladatai is szerepelnek.
 
 A megjelenítési intervallumot az azt megelőző képkocka CPU-/GPU-munkájához
 kötjük, így a legrosszabb képkocka nem a következő, már olcsó képkocka költségeit mutatja.
-Szüneteltetés és háttérbe kerülés nem számít megakadásnak. A panel zárása leállítja
-a mérést és felszabadítja a GPU query objektumokat. A mérési adatok nincsenek mentve
-a felhasználói beállításokba.
+Szüneteltetés, betöltés és háttérbe kerülés nem számít megakadásnak.
+A panel zárása csak a GPU-mérést állítja le és felszabadítja annak query objektumait.
+Zárt panelnél nincs GPU-lekérdezés vagy panelrajzolás. Az előzményt fix méretű
+körpuffer őrzi, képkockánkénti tömbmásolás nélkül. A mérési adatok nem kerülnek
+a felhasználói beállításokba vagy automatikusan a szerverre.
+
+A 2-es jelentésverzió `capturedSeconds` mezője a ténylegesen rögzített
+intervallumok összideje; a `windowSeconds: 10` csak a felső időablak, nem ígéret
+tíz másodpercnyi adatra. A `worstSinceReset` megőrzi a korábbi csúcsot akkor is,
+ha az már kikerült a friss mintákból. A `gpuCaptureMode: panel-open-only` miatt
+a zárt panelnél keletkezett csúcshoz nincs utólag kitalált GPU-idő.
+`gpuTimerSupported: null` azt jelenti, hogy a panelt még nem nyitották meg,
+ezért a támogatás még nincs lekérdezve. A hosszú főszál-feladatokat korlátos
+listából, a rögzített képkockákkal átfedés alapján rendeljük a jelentéshez.
 
 GPU-mérésnél nincs `gl.finish`, szinkron várakozás vagy végtelen polling.
 Képkockánként egyszer ellenőrizzük a később megérkező eredményeket,
@@ -50,12 +67,36 @@ Ha nincs timer-támogatás, a GPU-sor „Nem elérhető”, a CPU-adatok tovább
 
 ## Ellenőrzés
 
-A teljes tesztcsomag 320 ellenőrzése sikeres; utána külön teszt került be a
+A mérő eredeti bevezetésekor a teljes tesztcsomag 320 ellenőrzése sikeres volt;
+utána külön teszt került be a
 képkockaintervallumok helyes hozzárendelésére és a szünet kizárására.
 Böngészőben a panel, GPU-eredmények, működő JSON-letöltés és jelentésformátum
 ellenőrzött. Egy rövid helyi X35/Betonudvar próba kb. 75 FPS mellett
-nem reprodukálta a jelzett 60 → 35 FPS beesést; a konkrét okhoz egy
-ilyen beesést tartalmazó felvétel szükséges.
+nem reprodukálta a jelzett 60 → 35 FPS beesést. Ez a korábbi mérés nem
+állapította meg a felhasználó összes ritka megakadásának okát.
+
+## 2026-10-16 – beküldött jelentés és elvesző előzmény
+
+A `rotorift-performance-1792147921248.json` Liget/Rift 75/FPV próba
+1920 × 911 képpontos felbontáson 97 teljes mintát tartalmaz. A mintakezdetek
+közötti idő 1,2804 s, az intervallumok összesen kb. 1,294 s-ot fednek.
+Átlag: 74,97 FPS; p95: 13,4 ms; maximum: 13,5 ms; kihagyott idő: 0 ms.
+CPU átlag/max.: 5,40 / 8,20 ms; GPU átlag/max.: 6,24 / 8,56 ms;
+fizika átlag/max.: 0,99 / 2,10 ms; hosszú főszál-feladat: nincs a jelentésben.
+
+Ebben a felvételben nincs FPS-beesés. A korábbi mérő csak nyitott panelnél
+rögzített, és minden megnyitáskor törölte az előzményt. Ez megmagyarázhatja,
+miért hiányzik egy korábban érzékelt megakadás; magának a megakadásnak az oka
+ebből nem állapítható meg, és háttérprogramra sem vezethető vissza bizonyíték nélkül.
+A fenti folyamatos körpuffer és megőrzött csúcsminta ezt a rögzítési hiányt javítja.
+
+A regressziós tesztek zárt panelnél keletkező 120/200 ms-os intervallumokat,
+megnyitást/becsukást, pufferből kiöregedő csúcsot, szünetet, nullázást,
+GPU-adat hiányát és a jelentés tényleges időtartamát ellenőrzik.
+A 2026-10-16-i célzott futtatás 20 ellenőrzése sikeres: diagnosztika,
+mind az öt drón kijelzőfrekvenciától független fizikája, katalógus/fordítások
+és betöltési képernyő, valamint shader-előkészítés. Ez nem új teljes
+tesztcsomag-eredmény.
 # View-switch shader preparation (2026-10-15)
 
 The first transition from clean FPV to a visible aircraft previously compiled

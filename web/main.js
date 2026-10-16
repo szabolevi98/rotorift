@@ -872,6 +872,7 @@ async function loadRoom(r) {
   try {
     const own = r.players.find(p=>p.id===network.id);
     await paintLoading();
+    diagnostics?.reset();
     const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
     if (loaded === false) return;
     applyAircraftCamera();
@@ -1083,6 +1084,7 @@ async function launch() {
   const task = loading.begin("loading.flight", { name: mapName(map.id) });
   try {
     await paintLoading();
+    diagnostics?.reset();
     if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
     applyAircraftCamera();
     await configureLapGhost();
@@ -1328,8 +1330,8 @@ function flightHelpContent() {
     note: t(radio ? "hud.helpRadio" : "hud.helpKeyboard"), rows };
 }
 function frame(now) {
-  const frameStart=diagnostics?.open?performance.now():0;
-  const diagnosticSample=playing&&!paused&&!document.hidden?diagnostics?.begin(now):null;
+  const frameStart=playing&&!paused?performance.now():0;
+  const diagnosticSample=playing&&!paused&&!document.hidden&&flight.active&&!flight.preparingViews&&!loading.tasks.size?diagnostics?.begin(now):null;
   if(!diagnosticSample)diagnostics?.idle();
   if (!$("#menu").classList.contains("hidden") && $("#menu").dataset.panel === "multiplayer" && network.ready && !room && !roomRequest && now - roomsRefreshAt > 5000)
     refreshRooms();
@@ -1417,9 +1419,13 @@ function frame(now) {
   }
   if (playing && !flight.preparingViews && (!paused || onlineLive || pauseRenderNeeded)) {
     const renderStart=diagnosticSample?performance.now():0;
-    if(diagnosticSample)diagnostics.timer.begin(diagnosticSample);
-    try { flight.render(dt, cameraSettings.analog === true && !paused && !flight.chase); } finally { if(diagnosticSample)diagnostics.timer.end(); }
-    if(diagnosticSample)diagnosticSample.renderMs=performance.now()-renderStart;
+    const programsBefore=diagnosticSample?flight.renderer.info.programs.length:0;
+    if(diagnosticSample&&diagnostics.open)diagnostics.timer.begin(diagnosticSample);
+    try { flight.render(dt, cameraSettings.analog === true && !paused && !flight.chase); } finally { if(diagnosticSample&&diagnostics.open)diagnostics.timer.end(); }
+    if(diagnosticSample){
+      diagnosticSample.renderMs=performance.now()-renderStart;
+      diagnosticSample.newPrograms=Math.max(0,flight.renderer.info.programs.length-programsBefore);
+    }
     pauseRenderNeeded = false;
   }
   pauseMenu?.update();

@@ -8,15 +8,19 @@ import { createMapAtmosphere } from "./map-atmosphere.js";
 import { loadPrebakedCollisions } from "./prebaked-collisions.js";
 import { DronePhysics } from "../../shared/physics/drone.js";
 import { hoverThrottle } from "../../shared/physics/propulsion.js";
+import { compileForTarget } from './prepare-views.js';
 const report=document.querySelector('#report'), results=[];
 const params=new URLSearchParams(location.search), variant=params.get('variant')??'current', original=params.has('original');
+const requestedFrames=Number(params.get('frames')??30);
+const sampleFrames=Number.isFinite(requestedFrames)?Math.min(600,Math.max(30,Math.floor(requestedFrames))):30;
+const warmupFrames=Math.min(20,Math.floor(sampleFrames/5));
 const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#scene'),antialias:true,logarithmicDepthBuffer:variant!=='depth'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(innerWidth,Math.round(innerHeight*.7),false);
 configureDroneRenderer(THREE,renderer);
 const gl=renderer.getContext(), gpuExtension=gl.getExtension('WEBGL_debug_renderer_info');
 const gpu=gpuExtension?gl.getParameter(gpuExtension.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER);
 const physicsMode=params.get('physics')??'none';
-function output(status){report.textContent=JSON.stringify({variant,physicsMode,originalShadowUpdates:original,gpu,size:[renderer.domElement.width,renderer.domElement.height],status,results},null,2);}
+function output(status){report.textContent=JSON.stringify({variant,physicsMode,sampleFrames,warmupFrames,shaderPreparation:params.has('prepare'),originalShadowUpdates:original,gpu,size:[renderer.domElement.width,renderer.domElement.height],status,results},null,2);}
 await RAPIER.init();const {maps,drones}=await(await fetch('/api/catalog')).json();
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 try {
@@ -50,11 +54,17 @@ for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jat
    const base=environment.heightAt(position[0],position[2]);position[1]+=base;target[1]+=base;
   }
   camera.position.set(...position);camera.lookAt(...target);environment.update(position);
+  if(params.has('prepare')&&name===poses[0][0]){
+   output(`${id} preparing shaders`);shadows?.update({dynamic:true});
+   await compileForTarget(renderer,scene,camera);renderer.render(scene,camera);gl.finish();
+  }
   if(drone){drone.reset(position);drone.armed=true;for(let i=0;i<120;i++)drone.step(input);}
   const costs=[],calls=[],triangles=[],physicsCosts=[],collisionCosts=[];
+  let worstRenderFrame=null;
   output(`${id}/${name} warming up`);
   await frame();
-  for(let i=0;i<30;i++){
+  for(let i=0;i<sampleFrames;i++){
+   if(params.has('frames'))await frame();
    if(variant==='moving') {
     camera.position.set(position[0],position[1],position[2]+i*.25);
     camera.lookAt(target[0],target[1],target[2]+i*.25);
@@ -65,12 +75,19 @@ for(const id of params.has('map')?[params.get('map')]:['betonudvar','liget','jat
    }
    let start=performance.now();environment.update(drone?drone.pose.p:position,drone?.pose.v);const collisionCost=performance.now()-start;
    start=performance.now();if(drone)for(let step=0;step<4;step++)drone.step(input);const physicsCost=performance.now()-start;
-   start=performance.now();shadows?.update();renderer.render(scene,camera);gl.finish();
-   if(i>=6){costs.push(performance.now()-start);calls.push(renderer.info.render.calls);triangles.push(renderer.info.render.triangles);physicsCosts.push(physicsCost);collisionCosts.push(collisionCost);}
+   const programsBefore=renderer.info.programs.length;
+   start=performance.now();shadows?.update();renderer.render(scene,camera);
+   const renderCpuMs=performance.now()-start,waitStart=performance.now();gl.finish();
+   const renderAndGpuMs=performance.now()-start,gpuWaitMs=performance.now()-waitStart;
+   if(i>=warmupFrames){
+    costs.push(renderAndGpuMs);calls.push(renderer.info.render.calls);triangles.push(renderer.info.render.triangles);physicsCosts.push(physicsCost);collisionCosts.push(collisionCost);
+    if(!worstRenderFrame||renderAndGpuMs>worstRenderFrame.renderAndGpuMs)worstRenderFrame={index:i,renderAndGpuMs,renderCpuMs,gpuWaitMs,programsBefore,programsAfter:renderer.info.programs.length,physicsMs:physicsCost,collisionMs:collisionCost};
+   }
   }
   const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
+  const p95=a=>a.toSorted((a,b)=>a-b)[Math.ceil(a.length*.95)-1];
   let activeColliders=0;world.colliders.forEach(collider=>{if(collider.isEnabled())activeColliders++;});
-  results.push({map:id,pose:name,renderAndGpuMs:+mean(costs).toFixed(2),physics4StepsMs:+mean(physicsCosts).toFixed(3),collisionUpdateMs:+mean(collisionCosts).toFixed(3),activeColliders,calls:Math.round(mean(calls)),triangles:Math.round(mean(triangles))});output(`${id}/${name} complete`);
+  results.push({map:id,pose:name,renderAndGpuMs:+mean(costs).toFixed(2),renderAndGpuP95Ms:+p95(costs).toFixed(2),renderAndGpuMaxMs:+Math.max(...costs).toFixed(2),physics4StepsMs:+mean(physicsCosts).toFixed(3),physics4StepsP95Ms:+p95(physicsCosts).toFixed(3),physics4StepsMaxMs:+Math.max(...physicsCosts).toFixed(3),collisionUpdateMs:+mean(collisionCosts).toFixed(3),worstRenderFrame,activeColliders,calls:Math.round(mean(calls)),triangles:Math.round(mean(triangles))});output(`${id}/${name} complete`);
  }
  shadows?.dispose();drone?.dispose();environment.dispose();world.free();atmosphere.dispose();
 }
