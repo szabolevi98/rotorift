@@ -56225,6 +56225,10 @@ function createRift75(){
  camera.getObjectByName('FPV_multicoated_lens').geometry.scale(1.15,1,1.15);
  camera.position.set(0,23,-11);camera.name='Micro_FPV_camera';canopy.add(camera);wire(canopy,[[4,23,-8],[5.2,18,-5],[6,12.6,2]],.4,materials.black,'Camera_signal_wire');
  rod(canopy,[0,16,9],[0,21.5,25.5],1.3,materials.rubber,'VTX_antenna_heatshrink');rod(canopy,[0,21.3,25],[0,25.4,37.5],.3,materials.silver,'VTX_wire_radiator');
+ // Short coax from the red VTX module to the antenna's heatshrink base.
+ ring(board,.78,.28,.4,materials.gold,'VTX_coax_socket',5.8,12,7.2);
+ cyl(board,.48,.45,materials.silver,'VTX_coax_plug',5.8,12.15,7.2,12);
+ wire(canopy,[[5.8,12.3,7.2],[5.2,13.1,7.2],[2,13.8,6.7],[0,14.5,5],[0,16,9]],.28,materials.black,'VTX_antenna_coax');
  const collar=ring(canopy,2.15,1.35,1.5,materials.canopy,'Moulded_antenna_guide',0,18.9,17.7);collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(0,1,3).normalize());
  const battery=assembly('75_06_1S_580mAh_battery',[0,-16,0]);batteryParts.push(battery);extrude(battery,shape(12.5,6.9,1.3),57,materials.cell,'1S_580mAh_pouch',0,2.3,0);for(const z of [-29.5,29.5])extrude(battery,shape(12.5,6.9,1.3),2,materials.black,'Battery_heatshrink_end',0,2.3,z);
  materials.label=addWhoopBatteryPrint(battery,{model:75,capacity:580,width:12.5,height:6.9,centerY:2.3,radius:1.3,length:54});
