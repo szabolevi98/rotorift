@@ -110,6 +110,19 @@ test('construction dive courses descend the open shafts and horizontal gate mesh
   }
 });
 
+test('Pavilion Peaks has one dive gate followed by open recovery space for larger aircraft',()=>{
+  const route=catalog.maps.find(m=>m.id==='liget').routes.find(r=>r.id==='race_3');
+  assert.equal(route.gates.length,26);
+  const dives=route.gates.filter(g=>g.n[1]<-.99);
+  assert.equal(dives.length,1,'no second low dive gate forcing a last-second recovery');
+  assert.deepEqual(route.gates[23].p,[-38,13,27]);
+  assert.ok(route.gates[23].n[1]<-.99);
+  const exit=route.gates[24];
+  assert.ok(Math.hypot(exit.p[0]+38,exit.p[2]-27)>40,'room to pull out before the next gate');
+  assert.ok(Math.abs(exit.n[1])<.01,'the next gate is an upright recovery gate');
+  assert.ok(route.guide[23].filter(p=>Math.hypot(p[0]+38,p[2]-27)<2).every(p=>p[1]>10.5),'the guide turns out higher instead of dropping to the old low gate');
+});
+
 test('floating neon gates have a closed collision frame and depth-tested luminous cores without lights',()=>{
   const gate={p:[0,10,0],n:[0,0,-1],width:6,height:4},group=createNeonGate(gate,0,{active:true});
   const parts=gateFrameParts(gate);assert.equal(parts.length,4);assert.equal(parts[3][1][1],-2);

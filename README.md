@@ -301,7 +301,7 @@ the start/finish gate:
 | --- | --- | --- | --- | --- |
 | Grove | Grove Grand Tour | 2.27 km | 28 | Pavilion passage, lakes and woodland perimeter |
 | Grove | Twin Lakes Flow | 1.74 km | 28 | Under the footbridge, over the jetty and through the boathouse |
-| Grove | Pavilion Peaks | 1.86 km | 27 | Covered arcade, upper pavilion gallery and a short outdoor dive |
+| Grove | Pavilion Peaks | 1.85 km | 26 | Covered arcade, upper pavilion gallery and a single outdoor dive gate with recovery space |
 | Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
 | Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
 | Construction Yard | Cranes & Twin Shafts | 1.75 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |

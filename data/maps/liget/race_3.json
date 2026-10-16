@@ -1,21 +1,7 @@
 {
   "id": "race_3",
   "name": "Pavilion Peaks",
-  "version": 1,
-  "details": {
-    "difficulty": "hard",
-    "recommendedDrones": [
-      "rift-x35",
-      "rift-x5"
-    ],
-    "description": {
-      "en": "Fly through the covered arcade and upper pavilion gallery, then dive back toward the park paths.",
-      "hu": "Repülj át a fedett árkádon és a pavilon emeleti galériáján, majd dive-olj vissza a park sétányai felé.",
-      "de": "Fliege durch die überdachte Arkade und die obere Pavillongalerie, dann im Sturzflug zurück zu den Parkwegen.",
-      "fr": "Traversez les arcades couvertes et la galerie haute du pavillon, puis plongez vers les allées du parc.",
-      "es": "Atraviesa la arcada cubierta y la galería superior del pabellón, y desciende en picado hacia los senderos."
-    }
-  },
+  "version": 2,
   "spawn": [
     0,
     0.15,
@@ -357,20 +343,6 @@
       ],
       "width": 6,
       "height": 6
-    },
-    {
-      "p": [
-        -38,
-        6,
-        27
-      ],
-      "n": [
-        0,
-        -1,
-        0
-      ],
-      "width": 4,
-      "height": 4
     },
     {
       "p": [
@@ -2281,115 +2253,93 @@
       ],
       [
         -38,
-        11.4,
+        11.56,
         27
       ],
       [
-        -38,
-        7.6,
-        27
+        -37.998,
+        11.428,
+        27.008
       ],
       [
-        -38,
-        6,
-        27
-      ]
-    ],
-    [
-      [
-        -38,
-        6,
-        27
+        -37.993,
+        11.31,
+        27.034
       ],
       [
-        -38,
-        4.848,
-        27
+        -37.984,
+        11.208,
+        27.076
       ],
       [
-        -37.999,
-        4.743,
-        27.007
+        -37.971,
+        11.12,
+        27.136
       ],
       [
-        -37.994,
-        4.652,
-        27.027
+        -37.955,
+        11.048,
+        27.212
       ],
       [
-        -37.987,
-        4.576,
-        27.062
+        -37.935,
+        10.991,
+        27.305
       ],
       [
-        -37.976,
-        4.514,
-        27.109
+        -37.911,
+        10.949,
+        27.415
       ],
       [
-        -37.963,
-        4.465,
-        27.171
+        -37.884,
+        10.921,
+        27.542
       ],
       [
-        -37.946,
-        4.432,
-        27.246
+        -29.239,
+        5.079,
+        67.803
       ],
       [
-        -37.927,
-        4.412,
-        27.335
+        -29.207,
+        5.06,
+        67.937
       ],
       [
-        -37.904,
-        4.406,
-        27.438
+        -29.169,
+        5.044,
+        68.069
       ],
       [
-        -28.994,
-        4.994,
-        68.238
+        -29.124,
+        5.031,
+        68.198
       ],
       [
-        -28.968,
-        4.995,
-        68.347
+        -29.073,
+        5.02,
+        68.325
       ],
       [
-        -28.936,
-        4.996,
-        68.453
+        -29.017,
+        5.011,
+        68.45
       ],
       [
-        -28.9,
-        4.998,
-        68.557
+        -28.953,
+        5.005,
+        68.572
       ],
       [
-        -28.859,
-        4.998,
-        68.659
+        -28.884,
+        5.001,
+        68.691
       ],
       [
-        -28.814,
-        4.999,
-        68.759
-      ],
-      [
-        -28.763,
+        -28.809,
         5,
-        68.857
-      ],
-      [
-        -28.707,
-        5,
-        68.953
-      ],
-      [
-        -28.647,
-        5,
-        69.047
+        68.808
       ],
       [
         -28,
@@ -2521,5 +2471,19 @@
         38
       ]
     ]
-  ]
+  ],
+  "details": {
+    "difficulty": "hard",
+    "recommendedDrones": [
+      "rift-x35",
+      "rift-x5"
+    ],
+    "description": {
+      "en": "Fly through the covered arcade and upper pavilion gallery, then dive back toward the park paths.",
+      "hu": "Repülj át a fedett árkádon és a pavilon emeleti galériáján, majd dive-olj vissza a park sétányai felé.",
+      "de": "Fliege durch die überdachte Arkade und die obere Pavillongalerie, dann im Sturzflug zurück zu den Parkwegen.",
+      "fr": "Traversez les arcades couvertes et la galerie haute du pavillon, puis plongez vers les allées du parc.",
+      "es": "Atraviesa la arcada cubierta y la galería superior del pabellón, y desciende en picado hacia los senderos."
+    }
+  }
 }
