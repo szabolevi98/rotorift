@@ -152,7 +152,9 @@ export function buildCity(scene,world,RAPIER,map) {
     for(const x of [-30,-12,6])box([6,.15,1.5],[x,22.4,-25],'blue');
   });
   model('Civic_square_and_fountain',[CITY_PLAZA.x,.18,CITY_PLAZA.z],0,()=>{
-    box([32,.4,20],[0,.2,0],'concrete');box([30,.02,18],[0,.42,0],'water',false);
+    // The floor ends at the inner rim; its outer faces must not coincide
+    // with the cream walls and flicker along the lower basin sides.
+    box([30.8,.4,18.8],[0,.2,0],'concrete');box([30,.02,18],[0,.42,0],'water',false);
     for(const x of [-15.7,15.7])box([.6,.75,20],[x,.375,0],'cream');
     for(const z of [-9.7,9.7])box([30.8,.75,.6],[0,.375,z],'cream');
     for(const x of [-8,0,8]){cylinder(.3,3.5,[x,2.15,0],'white',false);part('sphere',[.8,.7,.8],[x,3.9,0],'white',false);}
