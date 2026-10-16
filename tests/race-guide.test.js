@@ -19,17 +19,16 @@ import {withoutRaceRoute} from '../shared/race/map-modes.js';
 await RAPIER.init();
 const catalog=await loadCatalog();
 
-test('scenery-only previews never retain the default race guide behind the selected route',()=>{
-  const map=catalog.maps.find(m=>m.id==='liget');
-  for(const scenery of [withoutRaceRoute(map),{...map,gates:[]}]){
+test('scenery-only previews on every map never retain the default guide behind any selected route',()=>{
+  for(const map of catalog.maps)for(const scenery of [withoutRaceRoute(map),{...map,gates:[]}]){
     const scene=new THREE.Scene(),world=new RAPIER.World({x:0,y:0,z:0});
     const environment=buildEnvironment(scene,world,RAPIER,scenery);
     try{
       const background=environment.root.getObjectByName('Neon_racing_line');
-      assert.equal(background.children.length,0,'no inherited line without race gates');
+      assert.equal(background.children.length,0,`${map.id}: no inherited line without race gates`);
       for(const route of map.routes){
         const selected=createRaceGuide(route.guide);scene.add(selected);
-        assert.equal(selected.children.length,route.gates.length);
+        assert.equal(selected.children.length,route.gates.length,`${map.id}/${route.id}: only the selected guide`);
         assert.equal(background.children.length,0);
         scene.remove(selected);selected.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
       }
