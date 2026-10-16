@@ -24,20 +24,28 @@ function facadeTexture(brick) {
 function facade(color,brick=false) {
   const material=new THREE.MeshStandardMaterial({color,roughness:brick?.9:.48,metalness:brick?0:.25,map:facadeTexture(brick)});
   material.onBeforeCompile=shader=>{
-    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vCityPosition;\nvarying vec3 vCityNormal;')
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vCityFacadeUv;\nvarying vec3 vCityNormal;')
       .replace('#include <begin_vertex>',`#include <begin_vertex>
-        vec4 cityPosition=vec4(transformed,1.0);vec3 cityNormal=normal;
+        vec3 citySize=vec3(1.0);
         #ifdef USE_INSTANCING
-          cityPosition=instanceMatrix*cityPosition;cityNormal=mat3(instanceMatrix)*cityNormal;
+          citySize=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz));
         #endif
-        vCityPosition=(modelMatrix*cityPosition).xyz;vCityNormal=normalize(mat3(modelMatrix)*cityNormal);`);
-    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vCityPosition;\nvarying vec3 vCityNormal;')
+        // Unit-box coordinates keep each face independent of its world offset.
+        // Fit whole tiles between corners and roof setbacks; reserve the first
+        // four metres for storefronts instead of cutting a window at the awning.
+        bool cityFront=abs(normal.z)>0.5;
+        vec2 citySpan=vec2(cityFront?citySize.x:citySize.z,max(citySize.y-4.0,0.001));
+        vec2 cityTiles=max(vec2(1.0),floor(citySpan/vec2(3.8,3.6)));
+        vCityFacadeUv=vec2((cityFront?position.x:position.z)+0.5,
+          ((position.y+0.5)*citySize.y-4.0)/citySpan.y)*cityTiles;
+        vCityNormal=normal;`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vCityFacadeUv;\nvarying vec3 vCityNormal;')
       .replace('#include <map_fragment>',`#ifdef USE_MAP
-        if(abs(vCityNormal.y)<0.5){vec2 cityUv=abs(vCityNormal.z)>0.5?vCityPosition.xy:vCityPosition.zy;
-          diffuseColor*=texture2D(map,cityUv/vec2(3.8,3.6));}
+        if(abs(vCityNormal.y)<0.5){
+          diffuseColor*=texture2D(map,vec2(vCityFacadeUv.x,max(vCityFacadeUv.y,0.0)));}
         #endif`);
   };
-  material.customProgramCacheKey=()=> 'rotorift-city-facade-v1';return material;
+  material.customProgramCacheKey=()=> 'rotorift-city-facade-v2';return material;
 }
 
 export function buildCity(scene,world,RAPIER,map) {

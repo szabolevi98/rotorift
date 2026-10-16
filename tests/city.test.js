@@ -28,7 +28,7 @@ test('Skyline has street-aligned blocks, deliberate landmarks and a bounded low-
     for(const name of ['Recycling_dumpster','Delivery_pallet','Utility_cabinet','Bicycle_stands','Sidewalk_bench'])assert.ok(city.root.userData.landmarks.some(p=>p.name===name));
     let triangles=0;city.root.traverse(o=>{if(o.isMesh)triangles+=((o.geometry.index?.count??o.geometry.attributes.position.count)/3)*(o.count??1);});
     assert.ok(triangles<400000,`district triangles: ${triangles}`);
-    const facades=city.root.children.filter(o=>o.material?.map&&o.material.customProgramCacheKey?.()==='rotorift-city-facade-v1');
+    const facades=city.root.children.filter(o=>o.material?.map&&o.material.customProgramCacheKey?.()==='rotorift-city-facade-v2');
     assert.ok(facades.length>=3);assert.ok(facades.every(o=>!o.material.transparent&&!o.material.transmission));
   }finally{city.dispose();assert.equal(scene.children.length,0);}
 });
