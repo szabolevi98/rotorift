@@ -386,5 +386,9 @@
   "route.easy": "Leicht",
   "route.medium": "Mittel",
   "route.hard": "Schwer",
-  "route.noDescription": "Für diese Strecke gibt es noch keine Beschreibung."
+  "route.noDescription": "Für diese Strecke gibt es noch keine Beschreibung.",
+  "route.diagram": "Streckenverlauf: {name}",
+  "route.topView": "Draufsicht",
+  "route.sideView": "Seitenansicht",
+  "route.startFinish": "Start / Ziel"
 }

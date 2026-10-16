@@ -386,5 +386,9 @@
   "route.easy": "Könnyű",
   "route.medium": "Közepes",
   "route.hard": "Nehéz",
-  "route.noDescription": "Ehhez az útvonalhoz még nincs leírás."
+  "route.noDescription": "Ehhez az útvonalhoz még nincs leírás.",
+  "route.diagram": "Útvonalrajz: {name}",
+  "route.topView": "Felülnézet",
+  "route.sideView": "Oldalnézet",
+  "route.startFinish": "Start / cél"
 }

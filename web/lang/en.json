@@ -386,5 +386,9 @@
   "route.easy": "Easy",
   "route.medium": "Intermediate",
   "route.hard": "Hard",
-  "route.noDescription": "No description has been added to this route yet."
+  "route.noDescription": "No description has been added to this route yet.",
+  "route.diagram": "Route diagram: {name}",
+  "route.topView": "Top view",
+  "route.sideView": "Side view",
+  "route.startFinish": "Start / finish"
 }

@@ -386,5 +386,9 @@
   "route.easy": "Facile",
   "route.medium": "Intermédiaire",
   "route.hard": "Difficile",
-  "route.noDescription": "Ce parcours n’a pas encore de description."
+  "route.noDescription": "Ce parcours n’a pas encore de description.",
+  "route.diagram": "Tracé du parcours : {name}",
+  "route.topView": "Vue de dessus",
+  "route.sideView": "Vue de côté",
+  "route.startFinish": "Départ / arrivée"
 }

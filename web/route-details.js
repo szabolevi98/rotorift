@@ -1,4 +1,5 @@
 import { routeMetrics } from '/shared/race/route-info.js';
+import { renderRouteDiagram } from './route-diagram.js';
 
 export class RouteDetails {
   constructor(root, t) {
@@ -31,6 +32,7 @@ export class RouteDetails {
       route.details ? this.t(`route.${route.details.difficulty}`) : null].filter(Boolean).join(' · ');
     this.dialog.querySelector('h2').textContent = route.name;
     this.dialog.querySelector('[data-route-metrics]').textContent = this.summary.textContent;
+    renderRouteDiagram(this.dialog.querySelector('[data-route-diagram]'), route, this.t);
     this.dialog.querySelector('[data-route-description]').textContent =
       route.details?.description[locale] ?? route.details?.description.en ?? this.t('route.noDescription');
     const recommended = this.dialog.querySelector('[data-route-drones]');

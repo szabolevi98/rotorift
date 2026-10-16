@@ -386,5 +386,9 @@
   "route.easy": "Fácil",
   "route.medium": "Intermedio",
   "route.hard": "Difícil",
-  "route.noDescription": "Esta ruta aún no tiene descripción."
+  "route.noDescription": "Esta ruta aún no tiene descripción.",
+  "route.diagram": "Trazado de la ruta: {name}",
+  "route.topView": "Vista superior",
+  "route.sideView": "Vista lateral",
+  "route.startFinish": "Salida / meta"
 }

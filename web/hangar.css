@@ -122,6 +122,16 @@
 #route-details h2 { margin: 0; font-size: 18px; line-height: 1.4; }
 #route-details button { padding: 3px 0 5px 8px; min-height: 32px; border: 0; background: transparent; color: #a0a7af; font-size: 11px; }
 #route-details .route-details-metrics { margin: 8px 0 16px; color: #ff8067; }
+#route-details .route-diagram { margin: 0 0 16px; padding: 4px 8px 8px; border: 1px solid #ffffff0d; border-radius: 5px; background: #101216; }
+#route-details .route-diagram svg { display: block; width: 100%; height: auto; }
+#route-details .route-diagram polyline { fill: none; stroke: #65ffe2; stroke-linecap: round; stroke-linejoin: round; }
+#route-details .route-diagram-glow { stroke-width: 6; opacity: .1; }
+#route-details .route-diagram-line { stroke-width: 1.6; }
+#route-details .route-diagram-gate { fill: #d6eee8; stroke: #101216; stroke-width: .6; }
+#route-details .route-diagram-start { fill: #ff8067; stroke: #101216; stroke-width: 2; }
+#route-details .route-diagram-arrow { fill: none; stroke: #ff8067; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#route-details .route-diagram figcaption { display: flex; justify-content: space-between; gap: 8px; color: #a0a7af; font-size: 10px; }
+#route-details .route-diagram-key::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; background: #ff8067; }
 #route-details .route-details-drones { border-top: 1px solid #ffffff16; padding-top: 12px; }
 #route-details .route-details-drones span, #route-details .route-details-drones strong { display: block; }
 #route-details .route-details-drones span { color: #a0a7af; font-size: 11px; }

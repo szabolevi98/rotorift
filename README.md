@@ -284,8 +284,10 @@ endpoint detect changes and update versions. Multiplayer rooms retain their
 chosen route snapshot even if the underlying file is edited later.
 
 The hangar shows route length, gate count and difficulty below the route selector.
-**Details** opens a floating description with recommended drones, without expanding
-the menu. Length is calculated from the saved 3D guide; routes without a guide show
+**Details** opens a floating description with recommended drones and an SVG route
+diagram generated directly from the saved guide, without expanding the menu. The
+diagram marks the gates, start/finish and initial direction in a top view; altitude
+is not shown. Length is calculated from the saved 3D guide; routes without a guide show
 an approximate gate-to-gate distance. No preview images need to be maintained.
 Optional `details` in each race JSON stores `difficulty` (`easy`, `medium`, `hard`),
 `recommendedDrones` (catalog IDs) and `description` in `en`, `hu`, `de`, `fr`, `es`.
