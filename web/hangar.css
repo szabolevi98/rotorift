@@ -114,8 +114,9 @@
 #menu .race-row select { font-size: 12px; }
 #menu .route-summary { display: flex; align-items: center; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin-top: 4px; font-size: 11px; color: var(--muted); }
 #menu .route-summary[hidden] { display: none; }
-#menu .route-summary button { flex: none; min-height: 36px; padding: 6px 0 6px 6px; border: 0; background: transparent; color: var(--ink); font-size: 11px; }
-#menu .route-summary button:hover { color: var(--orange); }
+#menu .route-summary button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; min-height: 40px; padding: 8px 13px; border: 1px solid #ff664888; border-radius: 5px; background: #ff664824; color: #ff9c82; font-size: 12px; font-weight: 700; }
+#menu .route-summary button:hover, #menu .route-summary button[aria-expanded="true"] { background: #ff66483d; border-color: var(--orange); color: #ffb29d; }
+#menu .route-summary button > [aria-hidden] { font-size: 16px; line-height: 1; }
 #route-details { position: fixed; margin: 0; inset: auto; width: 360px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 20px; overflow: auto; border: 1px solid #ffffff24; border-radius: 8px; background: #181a1f; color: #eef1f4; box-shadow: 0 16px 60px #0008; font-size: 13px; line-height: 1.6; }
 #route-details::backdrop { background: #0003; }
 #route-details header { display: flex; align-items: start; gap: 12px; justify-content: space-between; height: auto; min-height: 0; padding: 0; border: 0; flex-wrap: nowrap; }
