@@ -66,9 +66,8 @@
 .preview-floor {
   position: relative;
   isolation: isolate;
-  /* Carry the floor through the stage's bottom spacing to the launch divider. */
+  /* The canvas includes the 22px stage gap, so the 3D view and floor end together. */
   margin: 0 -15px -22px;
-  padding-bottom: 22px;
   background: radial-gradient(ellipse at 50% 84%, #ff664818, transparent 48%), radial-gradient(ellipse at 50% 50%, #ffffff05, transparent 65%);
 }
 .preview-floor:before {
@@ -84,7 +83,7 @@
   transform-origin: center bottom;
   pointer-events: none;
 }
-#menu #preview-scene { position: relative; z-index: 1; height: clamp(290px, 38vh, 420px); touch-action: none; cursor: grab; }
+#menu #preview-scene { position: relative; z-index: 1; height: calc(clamp(290px, 38vh, 420px) + 22px); touch-action: none; cursor: grab; }
 #menu #preview-scene:active { cursor: grabbing; }
 .preview-hint { position: absolute; right: 0; bottom: 8px; font-size: 11px; color: var(--muted); pointer-events: none; margin: 0; }
 .lap-ghost-picker { grid-column:1 / -1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px 12px;margin-top:10px; }
@@ -218,7 +217,7 @@
 .host-setup > .section-title { margin-bottom: 24px; }
 .host-setup > .section-title h2 { font-size: 20px; }
 .host-setup > .section-title span { font-size: 11px; }
-#menu #multiplayer-panel #preview-scene { height: 290px; }
+#menu #multiplayer-panel #preview-scene { height: 312px; }
 #menu #multiplayer-panel .aircraft-stage { grid-template-columns: minmax(260px, 1fr) minmax(0, 1fr); gap: 20px; }
 #menu #multiplayer-panel .intro { margin-bottom: 24px; }
 #menu #multiplayer-panel .intro h1 { font-size: 36px; margin-top: 12px; }
@@ -249,7 +248,7 @@
 @media (min-width: 1151px) and (min-height: 850px) {
   /* Leave room for race details, the ghost picker and footer below the preview. */
   #menu #fly-panel .aircraft-stage { align-items: start; }
-  #menu #fly-panel #preview-scene { height: clamp(360px, calc(100svh - 510px), 560px); }
+  #menu #fly-panel #preview-scene { height: calc(clamp(360px, calc(100svh - 510px), 560px) + 22px); }
 }
 @media (max-width: 1050px) {
   .menu-body { grid-template-columns: 152px minmax(0, 1fr); }
@@ -278,7 +277,7 @@
   .sidebar-caption { display: none; }
   #menu main { padding: 24px 20px 0; }
   #menu .aircraft-stage, #menu #multiplayer-panel .aircraft-stage { grid-template-columns: 1fr; gap: 6px; }
-  #menu #preview-scene, #menu #multiplayer-panel #preview-scene { height: 260px; }
+  #menu #preview-scene, #menu #multiplayer-panel #preview-scene { height: 282px; }
   .preview-hint { bottom: 0; }
   #menu .aircraft-title p { max-width: none; }
   #menu .launch-controls, #menu #multiplayer-panel .launch-controls { grid-template-columns: 1fr 1fr; gap: 20px; }
