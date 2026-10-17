@@ -144,6 +144,7 @@
 }
 #menu .session-settings { grid-template-columns: .65fr 1fr; margin: 0 0 12px; gap: 10px; }
 #menu .session-settings select { font-size: 12px; padding: 10px 8px; border-radius: 5px; }
+#menu #airplane-note { grid-column: 1 / -1; font-size: 11px; line-height: 1.6; margin: 0; }
 #menu .primary { color: #16191c; background: var(--orange); border-radius: 5px; font-weight: 750; text-transform: uppercase; padding: 18px; }
 #menu .primary:hover { background: #ff7c62; }
 #menu .primary > span:last-child { color: #16191c; }

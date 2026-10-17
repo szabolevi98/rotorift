@@ -81,7 +81,7 @@
   "settings.invalidRates": "Ellenőrizd a rate-eket: a Max Rate legalább a Center Sensitivity értéke legyen; az Expo 0 és 1 közé eshet.",
   "records.eyebrow": "MÉG EGY KÖR",
   "records.title": "Döntsd meg a rekordod.",
-  "records.subtitle": "Külön kategória pályánként, drónonként és repülési módonként. A helyi és szerver által ellenőrzött idők külön jelennek meg.",
+  "records.subtitle": "Rekordok pálya, versenyútvonal és drón szerint. A repülési módok alapból együtt jelennek meg, külön módszűrővel. A helyi és szerver által ellenőrzött idők külön látszanak.",
   "records.local": "Saját rekord · ebben a böngészőben",
   "records.online": "Online ranglista",
   "records.empty": "Ebben a kategóriában még nincs befejezett kör.",
@@ -398,5 +398,18 @@
   "route.startFinish": "Start / cél",
   "settings.volume": "Hangerő",
   "records.allModes": "Minden repülési mód",
-  "error.colorTaken": "Ezt a színt már használja egy másik pilóta."
+  "error.colorTaken": "Ezt a színt már használja egy másik pilóta.",
+  "drone.rift-t15": "1,5 m tanulórepülő · 3S",
+  "spec.wingspan": "Szárnyfesztáv",
+  "airplane.manual": "Kézi",
+  "airplane.note": "Kísérleti repülő · helyi szabad repülés, indulás a levegőből. Játszótér és drónversenyek egyelőre nem támogatottak. Húzd le a gázt, majd adj gázt az armoláshoz.",
+  "airplane.controls": "Repülő irányítása",
+  "airplane.controlHint": "Mode 2: bal gáz/oldalkormány, jobb magassági/csűrő. Bot előre: orr le. Itt kormánykitérést állítasz, nem drón rate-et.",
+  "airplane.travel": "Kormánykitérés",
+  "airplane.expo": "Bot expo",
+  "airplane.airspeed": "Légsebesség {speed} km/h",
+  "airplane.stall": "ÁTESÉS · engedd le az orrát",
+  "airplane.crashed": "ÜTKÖZÉS · indítsd újra a repülőt",
+  "airplane.effects": "Repülőnél akkumulátor és szél. Drón-propwash, turtle és rotoronkénti sérülés nincs.",
+  "error.airplaneLocalOnly": "Ez a kísérleti repülő egyelőre helyi szabad repülésben használható."
 }

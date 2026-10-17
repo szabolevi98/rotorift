@@ -6,10 +6,10 @@ export const validRotorSpeeds = value => Array.isArray(value) && value.length===
   value.every(v=>Number.isFinite(v)&&v>=0&&v<=1);
 
 export class RotorMotion {
-  constructor() { this.reset(); }
-  reset() { this.phase = [0,0,0,0]; this.speed = [0,0,0,0]; this.fraction = [0,0,0,0]; }
+  constructor(count=4) { this.count=count;this.reset(); }
+  reset() { this.phase = Array(this.count).fill(0); this.speed = Array(this.count).fill(0); this.fraction = Array(this.count).fill(0); }
   update(dt, thrust, maximum, motors, running, reverse=false) {
-    for (let i=0;i<4;i++) {
+    for (let i=0;i<this.count;i++) {
       const fraction = running && maximum>0 ? Math.sqrt(Math.max(0,Math.min(1,Math.abs(thrust[i])/maximum))) : 0;
       this.fraction[i] = fraction;
       this.speed[i] = fraction * 22 * motors[i].direction * (reverse?-1:1);

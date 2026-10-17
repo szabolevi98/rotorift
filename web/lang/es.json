@@ -81,7 +81,7 @@
   "settings.invalidRates": "Revisa los rates: Max Rate debe ser al menos Center Sensitivity; Expo debe estar entre 0 y 1.",
   "records.eyebrow": "UNA VUELTA MÁS",
   "records.title": "Supera tu récord.",
-  "records.subtitle": "Categorías por mapa, dron y modo. Los tiempos locales y verificados por el servidor se muestran por separado.",
+  "records.subtitle": "Récords por mapa, circuito y aeronave. Los modos de vuelo se muestran juntos con filtro opcional. Los tiempos locales y verificados se separan.",
   "records.local": "Mejor marca personal · este navegador",
   "records.online": "Clasificación en línea",
   "records.empty": "Aún no hay vueltas completas en esta categoría.",
@@ -398,5 +398,18 @@
   "route.startFinish": "Salida / meta",
   "settings.volume": "Volumen",
   "records.allModes": "Todos los modos de vuelo",
-  "error.colorTaken": "Otro piloto ya utiliza este color."
+  "error.colorTaken": "Otro piloto ya utiliza este color.",
+  "drone.rift-t15": "Entrenador de 1,5 m · 3S",
+  "spec.wingspan": "Envergadura",
+  "airplane.manual": "Manual",
+  "airplane.note": "Avión experimental · vuelo libre local con inicio en el aire. Parque infantil y carreras de drones aún no disponibles. Baja y luego sube el acelerador para armar.",
+  "airplane.controls": "Controles del avión",
+  "airplane.controlHint": "Modo 2: acelerador/timón a la izquierda, elevador/alerones a la derecha. Palanca adelante baja el morro. Ajusta recorrido, no rates de dron.",
+  "airplane.travel": "Recorrido de superficies",
+  "airplane.expo": "Expo de palancas",
+  "airplane.airspeed": "Velocidad del aire {speed} km/h",
+  "airplane.stall": "PÉRDIDA · baja el morro",
+  "airplane.crashed": "ACCIDENTE · reinicia el avión",
+  "airplane.effects": "Avión: batería y viento. Sin propwash de quad, modo tortuga ni daños por rotor.",
+  "error.airplaneLocalOnly": "Este avión experimental solo está disponible en vuelo libre local."
 }

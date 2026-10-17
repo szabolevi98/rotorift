@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { DronePhysics, PHYSICS_DT } from "/shared/physics/drone.js";
+import { PHYSICS_DT } from "/shared/physics/drone.js";
+import {createAircraftPhysics,isFixedWing} from '/shared/physics/aircraft.js';
+import {animateTrainer} from '/shared/visual/fixed-wing-model.js';
 import { buildEnvironment } from "./environment.js";
 import { loadModel } from "./models.js";
 import { applyDroneColor, normalizeDroneColor } from "../../shared/visual/drone-colors.js";
@@ -100,7 +102,8 @@ export class Flight {
     this.camera.updateProjectionMatrix();
     this.atmosphere = createMapAtmosphere(this.renderer, this.scene, map.kind);
     this.sun.visible = false;
-    this.physics = new DronePhysics(RAPIER, this.world, config, map.spawn, { updateSceneQueries: false, simulation });
+    this.launchPosition=isFixedWing(config)?[0,config.launch.altitudeM,Math.min(map.size*.35,240)]:map.spawn;
+    this.physics = createAircraftPhysics(RAPIER, this.world, config, this.launchPosition, { updateSceneQueries: false, simulation });
     this.remoteCollisions = new RemoteCollisions(RAPIER, this.world, config);
     this.remotePlayers = [];
     this.physics.rates = rates;
@@ -110,7 +113,7 @@ export class Flight {
     this.visual = visual;
     this.propVisual = new PropellerVisual(visual,config);
     this.fpvProps = new FpvPropellers(visual,config,this.propVisual);
-    this.rotorMotion = new RotorMotion();
+    this.rotorMotion = new RotorMotion(config.motors.length);
     this.setColor(color);
     this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z));
     this.scene.add(this.visual);
@@ -141,7 +144,7 @@ export class Flight {
     this.physics?.effects.setOptions(normalizeSimulation(options));
     this.remoteCollisions?.update(this.remotePlayers ?? [], this.ownId, this.physics.effects.options.ghost);
   }
-  reset(position = this.map.spawn) {
+  reset(position = this.launchPosition ?? this.map.spawn) {
     if (!this.physics || !this.environment) return;
     this.physics.reset(position);
     this.lapGhost?.update(null);
@@ -200,8 +203,8 @@ export class Flight {
     this.place(this.current, this.accumulator / PHYSICS_DT);
     this.propVisual.update(this.physics.effects.propellers.blades);
     this.rotorMotion.update(dt,this.physics.motorThrust,this.config.motor.maxThrustN,this.config.motors,this.physics.armed&&(this.physics.turtleMode||input.throttle>0),this.physics.turtleMode);
-    for (const p of this.props)
-      p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
+    if(isFixedWing(this.config))animateTrainer(this.visual,this.physics.surfaces,this.rotorMotion.phase[0]);
+    else for (const p of this.props)p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
     this.sound?.update(this.rotorMotion.fraction, {
       enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: this.chase,
       speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
@@ -265,11 +268,14 @@ export class Flight {
     this.scene.remove(model);
     this.parkShadows?.releaseModel(model);
     const materials = new Set();
+    const geometries = new Set();
     model.traverse((object) => {
+      if(model.userData.proceduralAircraft&&object.geometry)geometries.add(object.geometry);
       if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) materials.add(material);
     });
     // These are instance-owned materials; the cached geometries stay reusable.
     for (const material of materials) material.dispose();
+    for(const geometry of geometries)geometry.dispose();
   }
   render(dt, analog = false) {
     this.fpvProps?.update(this.view,this.rotorMotion.fraction.map(v=>this.physics.armed?v*v*this.config.motor.maxThrustN:0));

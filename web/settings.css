@@ -14,6 +14,9 @@
 #settings-panel .settings-device-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
 #settings-panel .card { min-width: 0; padding: 20px; background: #ffffff03; border-radius: 8px; }
 #settings-panel .card h2 { font-size: 15px; margin: 0 0 17px; }
+#settings-panel #airplane-controls { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+#settings-panel #airplane-controls h2, #settings-panel #airplane-controls p { grid-column: 1 / -1; }
+@media (max-width: 600px) { #settings-panel #airplane-controls { grid-template-columns: 1fr; } }
 #settings-panel .card h3 { font-size: 13px; margin: 22px 0 12px; }
 #settings-panel .card label { margin: 12px 0; }
 #settings-panel .card .muted { margin: 10px 0 0; }

@@ -1,6 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { validateDrone, validateMap } from "../shared/physics/config.js";
+import { validateDrone, validateAirplane, validateMap } from "../shared/physics/config.js";
 import { loadRoutes, DATA_ROOT } from "./routes.js";
 import { resolveRoute } from "../shared/race/routes.js";
 import { mapPresentation, compareMaps } from "../shared/catalog/maps.js";
@@ -37,5 +37,8 @@ export async function loadCatalog(dataRoot = DATA_ROOT) {
     map.routes = await loadRoutes(map, dataRoot);
     if (map.routes.length) maps[i] = resolveRoute(map, map.routes[0].id);
   }
-  return { drones, maps };
+  let airplanes=[];
+  try{airplanes=await load('airplanes');}catch(error){if(error.code!=='ENOENT')throw error;}
+  for(const plane of airplanes){validateAirplane(plane);plane.configHash=createHash('sha256').update(JSON.stringify(plane)).digest('hex').slice(0,16);}
+  return { drones, maps, airplanes };
 }

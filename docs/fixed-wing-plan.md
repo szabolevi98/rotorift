@@ -1,10 +1,13 @@
 # Fixed-wing aircraft introduction plan
 
-Recorded: **2026-10-16**. Status: **proposal, not implemented**.
+Recorded: **2026-10-16**. Updated: **2026-10-17**. Status: **implementation started**.
 
-The current request authorizes planning. Aircraft development, a final aircraft
-design and public release remain future decisions. This document uses English
-for the public repository.
+The user approved implementation on 2026-10-17. The compatible foundation and
+first flyable **Rift T15** prototype are implemented; see [current scope and
+validation](rift-t15.md). The original plan below is retained as the roadmap.
+The current experimental release uses an airborne start only; phase 3 ground
+operations and later online/racing phases are not complete. This is a deliberate
+limited prototype release, not a claim that the phase 3 acceptance gate passed.
 
 ## Goal and first aircraft
 
@@ -204,13 +207,13 @@ tab switching, depleted battery and radio disconnection for each aircraft type.
 Before release, include actual radio flight feedback and a supported mobile-device
 performance pass; record any remaining model limitations in the documentation.
 
-## Decisions before implementation
+## Initial decisions (2026-10-17)
 
-1. Approve the trainer-first scope and select its physical reference envelope.
-2. Choose its original design/name and the first map's launch/landing strip.
-3. Set measurable tuning and performance targets for the chosen aircraft.
-4. Confirm whether the first public release stops at local free flight or includes
-   the later online milestone. Keep airplane races deferred until suitable routes exist.
+1. Original high-wing Rift T15: 1.5 m, 1.45 kg, 3S 3200 mAh, single electric motor.
+2. First map: Grove, airborne practice start. A verified runway is still future work.
+3. Initial measured checks and limitations are recorded in `rift-t15.md`.
+4. First release is explicitly experimental local free flight. Online rooms and
+   airplane races remain deferred until their acceptance checks and routes exist.
 
 No implementation time estimate is committed here. The main uncertainty is
 handling calibration and ground contact behavior; reassess effort after phase 2.

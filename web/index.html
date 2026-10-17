@@ -106,7 +106,8 @@
             <div class="departure-controls">
               <div class="session-settings">
                 <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
-                <label id="local-session-label"><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
+              <label id="local-session-label"><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
+              <p id="airplane-note" class="muted hidden" data-i18n="airplane.note"></p>
                 <label id="host-kind-label" class="hidden"><span class="dock-label" data-i18n="online.roomKind"></span><select id="room-kind"><option value="free" data-i18n="session.free"></option><option value="race" data-i18n="online.raceKind"></option></select></label>
                 <div id="lap-ghost-picker" class="lap-ghost-picker hidden">
                   <label><span class="dock-label" data-i18n="ghost.title"></span><select id="lap-ghost-choice"></select></label>
@@ -166,6 +167,12 @@
               <p id="radio-name" class="muted"></p>
             </div>
             <div class="settings-columns settings-bindings">
+              <section id="airplane-controls" class="card hidden">
+                <h2 data-i18n="airplane.controls"></h2>
+                <p class="muted" data-i18n="airplane.controlHint"></p>
+                <label><span data-i18n="airplane.travel"></span><input id="airplane-travel" type="range" min="20" max="100" value="70" /><output id="airplane-travel-output">70%</output></label>
+                <label><span data-i18n="airplane.expo"></span><input id="airplane-expo" type="range" min="0" max="80" value="30" /><output id="airplane-expo-output">30%</output></label>
+              </section>
               <section class="card">
                 <h2 data-i18n="settings.keys"></h2>
                 <div id="keyboard-bindings"></div>
@@ -356,6 +363,7 @@
       <div id="simulation-hud" aria-live="polite">
         <div id="damage-hud" class="hidden"></div>
         <div id="wind-hud" class="hidden"></div>
+        <div id="airplane-hud" class="hidden" role="status"></div>
       </div>
       <div id="race-hud"></div>
       <div id="lap-ghost-hud" class="hidden"></div>

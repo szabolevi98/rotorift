@@ -255,6 +255,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           return;
         }
         if (m.type === "create") {
+          if(catalog.airplanes?.some(plane=>plane.id===m.droneId)){send(p,'error',{code:'airplaneLocalOnly'});return;}
           if (m.simulation !== undefined && !validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
           if (rooms.size >= 100) {
             send(p, "error", { code: "roomFull" });

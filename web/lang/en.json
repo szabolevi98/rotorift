@@ -81,7 +81,7 @@
   "settings.invalidRates": "Check the rates: Max Rate must be at least Center Sensitivity; Expo is between 0 and 1.",
   "records.eyebrow": "ONE MORE LAP",
   "records.title": "Chase your best.",
-  "records.subtitle": "Separate categories for each map, aircraft and flight mode. Local times and server-verified times are shown separately.",
+  "records.subtitle": "Records by map, race route and aircraft. Flight modes are combined by default; use the mode filter to narrow the list. Local and server-verified times are shown separately.",
   "records.local": "Personal best · this browser",
   "records.online": "Online leaderboard",
   "records.empty": "No completed laps in this category yet.",
@@ -398,5 +398,18 @@
   "route.startFinish": "Start / finish",
   "settings.volume": "Volume",
   "records.allModes": "All flight modes",
-  "error.colorTaken": "Another pilot is already using this color."
+  "error.colorTaken": "Another pilot is already using this color.",
+  "drone.rift-t15": "1.5 m trainer · 3S",
+  "spec.wingspan": "Wingspan",
+  "airplane.manual": "Manual",
+  "airplane.note": "Experimental airplane · local free flight, airborne practice start. Playground and drone races are not supported yet. Lower throttle, then add power to arm.",
+  "airplane.controls": "Airplane controls",
+  "airplane.controlHint": "Mode 2: left throttle/rudder, right elevator/ailerons. Forward stick lowers the nose. These settings control surface travel, not drone rates.",
+  "airplane.travel": "Control surface travel",
+  "airplane.expo": "Stick expo",
+  "airplane.airspeed": "Airspeed {speed} km/h",
+  "airplane.stall": "STALL · lower the nose",
+  "airplane.crashed": "CRASHED · reset the aircraft",
+  "airplane.effects": "Airplane effects: battery and wind. Quad propwash, turtle and per-rotor damage do not apply.",
+  "error.airplaneLocalOnly": "This experimental airplane is available in local free flight only."
 }

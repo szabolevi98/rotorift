@@ -20,11 +20,22 @@ measured manufacturer RPM specifications.
 There are no downloaded samples, microphone requests, AudioWorklets or
 per-sample JavaScript callbacks. The native graph has four oscillator voices and
 one two-second mono noise buffer; updates do not allocate more audio nodes.
-The existing sound checkbox remains the user control.
+The sound checkbox and a saved **0–100% volume slider** under Settings → Video &
+audio control output (default 70%). The initial output was too quiet; master gain
+was increased on 2026-10-17. Zero volume mutes without creating another audio graph.
+The T15 additionally has a lower-frequency, single-active-voice/two-blade profile.
 
 Validation: three focused tests cover all five profiles, individual motor input,
 silence, chase level, damage, propwash, graph reuse, gesture resume and disposal.
-A Chromium OfflineAudioContext rendered all five profiles at 44.1 kHz with a
+A Chromium OfflineAudioContext rendered the original five profiles at 44.1 kHz with a
 zero/ramp/hover/punch/release sequence. Peaks were 0.051–0.065 (full scale 1),
 active RMS 0.010–0.012, and the final silence window was exactly zero. No audio
-graph errors were reported. Subjective character remains adjustable by listening.
+graph errors were reported. These levels describe the initial quiet version before
+the volume correction, not the current output. Subjective character remains
+adjustable by listening.
+
+After the volume correction, a native Chromium OfflineAudioContext check at
+44.1 kHz, full throttle and 100% volume measured five-drone peaks of 0.476–0.613
+and RMS 0.137–0.157; T15 peak 0.241, RMS 0.115. All six were below full scale 1,
+with no graph errors. This tests clean full-throttle level/headroom, not subjective
+sound quality or every damaged-rotor transient.

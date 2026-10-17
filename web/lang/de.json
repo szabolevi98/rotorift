@@ -81,7 +81,7 @@
   "settings.invalidRates": "Prüfe die Rates: Max Rate muss mindestens Center Sensitivity sein; Expo liegt zwischen 0 und 1.",
   "records.eyebrow": "NOCH EINE RUNDE",
   "records.title": "Jage deine Bestzeit.",
-  "records.subtitle": "Eigene Kategorien je Karte, Drohne und Flugmodus. Lokale und servergeprüfte Zeiten werden getrennt angezeigt.",
+  "records.subtitle": "Rekorde nach Karte, Strecke und Fluggerät. Flugmodi werden gemeinsam angezeigt und lassen sich filtern. Lokale und servergeprüfte Zeiten stehen getrennt.",
   "records.local": "Persönliche Bestzeit · dieser Browser",
   "records.online": "Online-Bestenliste",
   "records.empty": "Noch keine abgeschlossenen Runden in dieser Kategorie.",
@@ -398,5 +398,18 @@
   "route.startFinish": "Start / Ziel",
   "settings.volume": "Lautstärke",
   "records.allModes": "Alle Flugmodi",
-  "error.colorTaken": "Diese Farbe wird bereits von einem anderen Piloten verwendet."
+  "error.colorTaken": "Diese Farbe wird bereits von einem anderen Piloten verwendet.",
+  "drone.rift-t15": "1,5 m Schulflugzeug · 3S",
+  "spec.wingspan": "Spannweite",
+  "airplane.manual": "Manuell",
+  "airplane.note": "Experimentelles Flugzeug · lokaler Freiflug mit Start in der Luft. Spielplatz und Drohnenrennen werden noch nicht unterstützt. Gas senken, dann zum Scharfschalten erhöhen.",
+  "airplane.controls": "Flugzeugsteuerung",
+  "airplane.controlHint": "Mode 2: links Gas/Seitenruder, rechts Höhen-/Querruder. Knüppel vorwärts senkt die Nase. Ruderausschlag statt Drohnenraten.",
+  "airplane.travel": "Ruderausschlag",
+  "airplane.expo": "Knüppel-Expo",
+  "airplane.airspeed": "Fluggeschwindigkeit {speed} km/h",
+  "airplane.stall": "STRÖMUNGSABRISS · Nase senken",
+  "airplane.crashed": "ABSTURZ · Flugzeug zurücksetzen",
+  "airplane.effects": "Flugzeuge: Akku und Wind. Kein Quad-Propwash, Turtle-Modus oder Rotorschaden.",
+  "error.airplaneLocalOnly": "Dieses experimentelle Flugzeug ist nur im lokalen Freiflug verfügbar."
 }

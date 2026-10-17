@@ -1,6 +1,6 @@
 # Rotorift – fejlesztési terv
 
-## Aktuális állapot – 2026-10-16
+## Aktuális állapot – 2026-10-17
 
 Öt drón (65, 75, C3, X35, X5), négy pálya (Liget, Betonudvar, Játszótér,
 Skyline) és 11 választható versenyútvonal működik. Elkészült a multiplayer,
@@ -11,10 +11,15 @@ Az aktuális nyitott feladatokat és a mérési korlátokat a
 dátumozott bejegyzések történeti tervet őriznek; a régi drón-/pályaszámok és
 megvalósítási sorrend nem a jelenlegi flottát vagy teendőlistát jelölik.
 
-2026-10-16: külön terv készült a merevszárnyú RC repülők későbbi bevezetésére:
+2026-10-17: elkészült az első repülhető, külön aerodinamikás **Rift T15** prototípus
+(1,5 m felsőszárnyas tréner), helyi szabad repüléssel és levegőből indulással.
+Lásd: [rift-t15.md](rift-t15.md). A földi indulás, online repülés és repülős
+versenyek későbbi mérföldkövek.
+
+2026-10-16: külön terv készült a merevszárnyú RC repülők bevezetésére:
 [fixed-wing-plan.md](fixed-wing-plan.md). Egy elektromos trénergép, külön fizika,
-fokozatos helyi/online bevezetés és ellenőrzési feltételek. Egyelőre csak terv;
-a repülők megvalósítása és végleges típusa nincs jóváhagyva.
+fokozatos helyi/online bevezetés és ellenőrzési feltételek. A megvalósítást
+a felhasználó 2026-10-17-én jóváhagyta.
 
 2026-10-14-i flottabővítés: **Rift X35**, 3,5″ freestyle, 4S / 650 mAh,
 215 g, 160 mm motortáv. Felül akkumulátor, akciókamera és annak tartója nélkül.

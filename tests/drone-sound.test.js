@@ -21,8 +21,8 @@ function context() {
 const last = param => param.targets.at(-1).value;
 
 test('each current drone has a different acoustic profile; whoops have higher rotor frequencies than the X5',async()=>{
-  const {drones}=await loadCatalog();
-  assert.equal(Object.keys(DRONE_SOUND_PROFILES).length,drones.length);
+  const {drones,airplanes}=await loadCatalog();
+  assert.equal(Object.keys(DRONE_SOUND_PROFILES).length,drones.length+airplanes.length);
   const frequencies=[];
   for(const drone of drones){
     const ctx=context(),sound=new DroneSound(ctx,drone,{win:ctx.win});

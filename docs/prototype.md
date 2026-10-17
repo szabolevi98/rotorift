@@ -10,6 +10,7 @@ a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban ma
 | --- | --- |
 | Projektalap | Node.js HTTP/API/WebSocket szerver, Three.js és Rapier; működő VPS-kiadás az fpv.levente.net címen. |
 | Flotta | Öt repülhető drón: Rift 65, Rift 75, Rift C3, Rift X35, Rift X5; külön validált fizikai JSON és konfigurációhash. |
+| Első repülő | Rift T15: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi indulás; egyelőre helyi szabad repülés. |
 | Modellek | Öt saját GLB, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
 | Pályák | Liget/Grove, Betonudvar/Concrete Yard, Játszótér/Playground és Skyline; stabil belső azonosítók, öt nyelven megjelenített nevek. |
 | Útvonalak | Összesen 11 választható JSON-verseny: 3 Liget, 3 Betonudvar, 2 Játszótér, 3 Skyline. Freestyle-hoz nem kötelező útvonalat választani. |
@@ -76,7 +77,9 @@ nyolc külön fizikai eszköz és valódi internetkapcsolat egyidejű mérését
 ## Ténylegesen nyitott munka
 
 1. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
-   igénye indokolja; külön tervben szereplő, még el nem kezdett repülőtámogatás.
+   igénye indokolja. A repülőtámogatás elkezdődött: a Rift T15 külön fizikával,
+   helyi szabad repüléssel és légi indulással kipróbálható. A földi indulás,
+   repülős multiplayer és versenyzés későbbi mérföldkő, nem elkészült funkció.
 
 2026-10-17: a vállalt automatizált multiplayer-ellenőrzés kész. Nyolc kliens,
 négy pálya, 0–150 ms egyirányú késleltetés és jitter, vendég/host újracsatlakozás,
@@ -109,4 +112,4 @@ A pályák és modellek további javítása konkrét hibák vagy új igények al
 - [Turtle és drónonkénti kamera](turtle-camera.md)
 - [Rift 75 és Játszótér](pocket-park-and-rift75.md), [Rift X35](rift-x35.md), [Skyline](skyline.md)
 - [Elkészült megosztási kép](cover.md)
-- [Repülők későbbi bevezetésének terve](fixed-wing-plan.md)
+- [Rift T15 első repülhető prototípus](rift-t15.md), [repülőtámogatás terve](fixed-wing-plan.md)

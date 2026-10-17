@@ -27,8 +27,9 @@ export class DroneCameraRig {
     model.updateMatrixWorld(true);
     new THREE.Box3().setFromObject(model).getCenter(this.modelCenter);
     this.modelCenter.add(new THREE.Vector3(...config.visualOffsetM));
+    const size=config.wingspanM??config.motorDiagonalM;
     this.chaseOffset
-      .set(0, config.motorDiagonalM * 0.85, config.motorDiagonalM * 2.6)
+      .set(0, size * 0.85, size * 2.6)
       .add(this.modelCenter);
   }
 

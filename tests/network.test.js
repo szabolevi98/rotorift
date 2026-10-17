@@ -528,3 +528,11 @@ test('eight pilots receive unique colors, occupied colors are rejected and leavi
  host.send('leave');await guest.next(m=>m.type==='room'&&m.room.players.length===7);
  guest.send('appearance',{color:'coral'});await guest.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.color==='coral');
 });
+
+test('experimental trainer rooms are rejected explicitly while quad multiplayer remains available',async t=>{
+const {client}=await fixture(t),pilot=await client('Trainer pilot');
+pilot.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'free'});
+assert.equal((await pilot.next(m=>m.type==='error')).code,'airplaneLocalOnly');
+pilot.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'free'});
+assert.equal((await pilot.next(m=>m.type==='room')).room.droneId,'rift-x5');
+});

@@ -1,6 +1,7 @@
 // Tuned acoustic characters, not recordings or measured RPM specifications.
 // One reusable native Web Audio graph; no per-sample JavaScript or audio files.
 export const DRONE_SOUND_PROFILES = Object.freeze({
+  'rift-t15': {rotorHz:180,body:.7,blade:.7,air:.08,highpass:80,cutoff:3200,resonance:380,ductDb:0,gain:1.8,blades:2},
   'rift-65':  { rotorHz: 1400, body: .12, blade: 1, air: .035, highpass: 850, cutoff: 7800, resonance: 2900, ductDb: 3, gain: .80 },
   'rift-75':  { rotorHz: 1150, body: .18, blade: 1, air: .041, highpass: 650, cutoff: 7200, resonance: 2350, ductDb: 2.5, gain: .85 },
   'rift-c3':  { rotorHz: 760, body: .30, blade: .85, air: .052, highpass: 260, cutoff: 5500, resonance: 1350, ductDb: 4, gain: .90 },
@@ -15,7 +16,7 @@ function rotorWave(ctx, profile, rough = false) {
   imag[1] = profile.body * (rough ? 2 : 1);
   imag[2] = profile.body * (rough ? .8 : .25);
   for (let harmonic = 1; harmonic <= 8; harmonic++)
-    imag[harmonic * 3] = profile.blade / harmonic ** (rough ? 1.2 : 1.65);
+    imag[harmonic * (profile.blades??3)] = profile.blade / harmonic ** (rough ? 1.2 : 1.65);
   imag[7] += .045; // Small motor/electrical component beneath the blade-pass harmonics.
   return ctx.createPeriodicWave(real, imag);
 }

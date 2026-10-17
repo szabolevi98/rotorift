@@ -4,9 +4,11 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
 import { configureDronePolymer } from "../../shared/visual/drone-rendering.js";
 import { paintLoading } from "../loading.js";
+import {createTrainerModel} from '../../shared/visual/fixed-wing-model.js';
 const cache = new Map(),
   loader = new GLTFLoader();
 export async function loadModel(config, { isolateMaterials = false, onProgress } = {}) {
+  if(config.kind==='fixedWing'){onProgress?.({phase:'prepare'});return createTrainerModel();}
   let entry = cache.get(config.id);
   if (!entry) {
     entry = { listeners: new Set(), progress: { phase: "download", loaded: 0, total: 0 } };
@@ -175,8 +177,11 @@ export function isolateModelMaterials(model) {
 }
 export function disposeModelMaterials(model) {
   const materials = new Set();
+  const geometries = new Set();
   model?.traverse(object => {
+    if(model.userData.proceduralAircraft&&object.geometry)geometries.add(object.geometry);
     if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) materials.add(material);
   });
   for (const material of materials) material.dispose();
+  for(const geometry of geometries)geometry.dispose();
 }

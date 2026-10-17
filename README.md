@@ -5,7 +5,7 @@
 **FPV. On the go. Desktop or phone.**
 
 A lightweight FPV drone simulator that runs in your browser, with low-poly worlds,
-detailed procedural drones, Three.js rendering and Rapier rigid-body physics.
+detailed procedural aircraft, Three.js rendering and Rapier rigid-body physics.
 Fly with a compatible USB radio or controller, or try it with a keyboard.
 Node.js/WebSocket multiplayer and MySQL/MariaDB leaderboards support online sessions.
 
@@ -64,6 +64,15 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 | Rift C3 | 3-inch cinewhoop | 4S / 720 mAh |
 | Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
 | Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
+| Rift T15 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
+
+The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
+lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
+single-motor propulsion. Select it in Singleplayer for local free flight with an
+airborne practice start. It has its own control travel/expo, airspeed display,
+camera profile, animated surfaces, wingtip collisions, wind and battery simulation.
+Drone courses, online rooms, ground take-offs and showcase export are deferred;
+this is an initial flight prototype, not a calibrated real-aircraft replica.
 
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
@@ -202,7 +211,10 @@ by total time. Opening the menu pauses only your aircraft while other pilots con
 Gate 1 starts a lap. Pass every gate in order and in the correct direction, then
 cross gate 1 again to finish it. Reset starts a new attempt; an interruption or
 invalid state invalidates the current lap. Records are separated by map, route
-ID/version, aircraft/configuration hash, flight mode and simulation rules.
+ID/version, aircraft/configuration hash and simulation rules. The records page
+combines flight modes by default, shows each entry's mode, and offers an optional
+mode filter. Stored laps retain their mode so existing records and ghost selection
+remain compatible.
 
 Checkpoint deltas compare elapsed time at the same gate with the **best complete,
 valid lap of the current session**. They do not combine best sectors or use a
