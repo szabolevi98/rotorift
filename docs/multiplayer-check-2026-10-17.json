@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-17T19:07:52.335Z",
+  "passed": true,
+  "secondsPerMap": 30,
+  "environment": "Isolated local attachRooms server, in-memory persistence; eight scripted WebSocket clients, no browser rendering.",
+  "network": {
+    "oneWayBaseMs": [
+      0,
+      20,
+      40,
+      60,
+      80,
+      100,
+      120,
+      150
+    ],
+    "jitterMs": 20,
+    "skippedOutgoingStateFraction": 0.02,
+    "skippedIncomingSnapshotFraction": 0.03,
+    "tcpOrderingPreserved": true
+  },
+  "stages": [
+    {
+      "map": "liget",
+      "drone": "rift-x5",
+      "ghost": true,
+      "pilots": 8,
+      "durationSeconds": 30.92,
+      "snapshots": 3668,
+      "snapshotAgeP95Ms": 153,
+      "rttP95Ms": 320,
+      "eventLoopP95Ms": 17.06,
+      "processCpuMs": 3016,
+      "guestResumed": true,
+      "hostResumed": true,
+      "restartAndRules": true
+    },
+    {
+      "map": "betonudvar",
+      "drone": "rift-x5",
+      "ghost": false,
+      "pilots": 8,
+      "durationSeconds": 30.87,
+      "snapshots": 3630,
+      "snapshotAgeP95Ms": 154,
+      "rttP95Ms": 323,
+      "eventLoopP95Ms": 16.81,
+      "processCpuMs": 2437,
+      "guestResumed": true,
+      "hostResumed": true,
+      "restartAndRules": true
+    },
+    {
+      "map": "jatszoter",
+      "drone": "rift-65",
+      "ghost": true,
+      "pilots": 8,
+      "durationSeconds": 30.92,
+      "snapshots": 3626,
+      "snapshotAgeP95Ms": 155,
+      "rttP95Ms": 324,
+      "eventLoopP95Ms": 16.89,
+      "processCpuMs": 1782,
+      "guestResumed": true,
+      "hostResumed": true,
+      "restartAndRules": true
+    },
+    {
+      "map": "skyline",
+      "drone": "rift-x5",
+      "ghost": false,
+      "pilots": 8,
+      "durationSeconds": 30.96,
+      "snapshots": 3656,
+      "snapshotAgeP95Ms": 154,
+      "rttP95Ms": 319,
+      "eventLoopP95Ms": 16.86,
+      "processCpuMs": 1750,
+      "guestResumed": true,
+      "hostResumed": true,
+      "restartAndRules": true
+    }
+  ],
+  "collisions": [
+    {
+      "drone": "rift-65",
+      "peers": 7,
+      "ghost": {
+        "x": 1.2125953435897827,
+        "vx": 3.2951173782348633,
+        "pairs": 0,
+        "contacts": 0,
+        "impulse": 0
+      },
+      "solid": {
+        "x": -0.24034002423286438,
+        "vx": -0.43646153807640076,
+        "pairs": 16,
+        "contacts": 60,
+        "impulse": 0.08298812415159773
+      },
+      "lostForwardMomentumKgMps": 0.09702105182409286,
+      "passed": true
+    },
+    {
+      "drone": "rift-75",
+      "peers": 7,
+      "ghost": {
+        "x": 1.23891282081604,
+        "vx": 3.3887386322021484,
+        "pairs": 0,
+        "contacts": 0,
+        "impulse": 0
+      },
+      "solid": {
+        "x": -0.29042527079582214,
+        "vx": -0.5051921606063843,
+        "pairs": 43,
+        "contacts": 93,
+        "impulse": 0
+      },
+      "lostForwardMomentumKgMps": 0.17133295488357542,
+      "passed": true
+    },
+    {
+      "drone": "rift-c3",
+      "peers": 7,
+      "ghost": {
+        "x": 1.3052935600280762,
+        "vx": 3.6323699951171875,
+        "pairs": 0,
+        "contacts": 0,
+        "impulse": 0
+      },
+      "solid": {
+        "x": -0.05353366211056709,
+        "vx": 0.3059343695640564,
+        "pairs": 174,
+        "contacts": 264,
+        "impulse": 0.050471383961848915
+      },
+      "lostForwardMomentumKgMps": 1.0311950439214705,
+      "passed": true
+    },
+    {
+      "drone": "rift-x35",
+      "peers": 7,
+      "ghost": {
+        "x": 1.3078235387802124,
+        "vx": 3.641977310180664,
+        "pairs": 0,
+        "contacts": 0,
+        "impulse": 0
+      },
+      "solid": {
+        "x": 0.02943606674671173,
+        "vx": 0.3961731493473053,
+        "pairs": 74,
+        "contacts": 343,
+        "impulse": 1.0271251561571262
+      },
+      "lostForwardMomentumKgMps": 0.6978478945791722,
+      "passed": true
+    },
+    {
+      "drone": "rift-x5",
+      "peers": 7,
+      "ghost": {
+        "x": 1.3513294458389282,
+        "vx": 3.8085193634033203,
+        "pairs": 0,
+        "contacts": 0,
+        "impulse": 0
+      },
+      "solid": {
+        "x": -0.40859463810920715,
+        "vx": -0.6213001608848572,
+        "pairs": 33,
+        "contacts": 155,
+        "impulse": 3.970787082957827
+      },
+      "lostForwardMomentumKgMps": 3.012277276515961,
+      "passed": true
+    }
+  ],
+  "race": {
+    "pilots": 8,
+    "lapsEach": 3,
+    "validLapSaves": 24,
+    "resultSaves": 1,
+    "allFinished": true
+  },
+  "collisionRecheck": "Completed network evidence retained; collision checks rerun using contact impulses and velocity rather than requiring a ricochet to stay on one side."
+}

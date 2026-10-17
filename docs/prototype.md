@@ -69,15 +69,20 @@ akkumulátoráramok, légellenállás és propwash továbbra is hangolási becsl
 
 A szerver rajtot, kapukat, időket és mozgási korlátokat ellenőriz, de nem futtat
 minden pilótához teljes Rapier-visszaszimulálást. A ranglista nem csalásbiztos.
-A pilótaütközés simított távoli testekkel helyben számolódik, ezért késleltetéses
-és több eszközös vizsgálata továbbra is szükséges.
+A pilótaütközés simított távoli testekkel helyben számolódik. Az automatizált
+nyolcklienses hálózati és ötdrónos fizikai próba elkészült; ez nem helyettesíti
+nyolc külön fizikai eszköz és valódi internetkapcsolat egyidejű mérését.
 
 ## Ténylegesen nyitott munka
 
-1. **Multiplayer:** hosszabb nyolcpilótás, több eszközös és eltérő késleltetésű
-   repülés/verseny, visszacsatlakozás és bekapcsolt pilótaütközés tesztelése.
-2. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
+1. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
    igénye indokolja; külön tervben szereplő, még el nem kezdett repülőtámogatás.
+
+2026-10-17: a vállalt automatizált multiplayer-ellenőrzés kész. Nyolc kliens,
+négy pálya, 0–150 ms egyirányú késleltetés és jitter, vendég/host újracsatlakozás,
+szobaújraindítás, közös ghost szabály; külön versenyen nyolc célba érés és 24
+érvényes kör. Mind az öt drón fizikai ütközése hét távoli testtel ellenőrizve.
+Játékhiba nem került elő; a mérés határai: [multiplayer-testing.md](multiplayer-testing.md).
 
 A felhasználó döntése alapján az FPS-optimalizálás és a fizika finomhangolása
 folyamatos karbantartás, nem lezáratlan alapfeladat. A jelenlegi fizika nagyjából
@@ -98,6 +103,7 @@ A pályák és modellek további javítása konkrét hibák vagy új igények al
 - [FPS-jelentés és nézetváltás előkészítése](frame-diagnostics.md)
 - [Rádióprofilok](radio-setup.md), [tabos beállítások](settings-menu.md)
 - [Körszellemek és deltaidő](lap-ghosts.md)
+- [Nyolcklienses multiplayer-ellenőrzés](multiplayer-testing.md)
 - [Műhorizont és analóg kép](fpv-horizon.md)
 - [Drónonkénti motorhang](drone-audio.md)
 - [Turtle és drónonkénti kamera](turtle-camera.md)
