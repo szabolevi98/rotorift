@@ -38,8 +38,10 @@ négy pályát, öt nyelvet és multiplayert tartalmaz.
 külön 1S fizika; Játszótér / Pocket Park, a kis whoopokhoz épített pálya.
 Részletek: [pocket-park-and-rift75.md](pocket-park-and-rift75.md).
 Részletes állapot és ellenőrzések: [prototype.md](prototype.md).
-A teljes első kiadás elfogadási feltételei még nem mind teljesülnek;
-különösen a hardveres rádióteszt és a valódi repülési adatokkal végzett fizikai hangolás hátravan.
+2026-10-17: a mobilos touch és a rádiók hardveres ellenőrzése a felhasználó
+visszajelzése szerint kész. A fizika finomhangolása és az FPS-optimalizálás
+folyamatos karbantartás. Elkészült az öt drón saját motorhangja; a multiplayer
+további vizsgálatának aktuális állapota a prototype.md-ben követhető.
 
 ## 1. Cél és az eredeti első kiadás követelményei
 

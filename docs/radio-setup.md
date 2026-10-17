@@ -75,7 +75,7 @@ firmware-verzióban érhető el; ezért nem erre alapozzuk az egyetlen megoldás
 
 - Szimulált USB-sorrendek, zajos AUX kapcsolók, részleges bemenet,
   profilváltás, régi profil migrációja és négyirányú botfelismerés tesztelve.
-- Fizikai Pocket/TX15 és valódi Android USB-változatok még hardveres próbát igényelnek.
+- A felhasználó 2026-10-17-én a Pocket/TX15 és Android USB hardveres ellenőrzést késznek jelezte. Új firmware- vagy eszközeltérés esetén célzottan vizsgáljuk újra.
 - A preset nem tudja felülírni a rádió saját mixeit vagy az operációs rendszer
   által eldobott HID-adatot. Nem állítjuk, hogy minden rádiómodell módosítás nélkül működik.
 

@@ -1,6 +1,6 @@
 # Rotorift – aktuális állapot és ellenőrzések
 
-Frissítve: **2026-10-16**. Ez az oldal az aktuális megvalósítást és a ténylegesen
+Frissítve: **2026-10-17**. Ez az oldal az aktuális megvalósítást és a ténylegesen
 nyitott munkát foglalja össze. A korábbi prototípus fejlesztéstörténete a Gitben,
 a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban maradnak.
 
@@ -16,6 +16,8 @@ a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban ma
 | Fizika | 240 Hz-es fix lépés, külön motorválasz, tömeg/súlypont/tehetetlenség, légellenállás és előkészített pályaütközések. |
 | Repülési módok | Acro, Angle, Horizon; váltás repülés közben is. Mért kör közbeni módváltás érvényteleníti a kört. |
 | Bemenet | USB rádió/gamepad felismerés, mentett profil, csatornakiosztás, kalibráció, billentyűzetes tartalékvezérlés és felfutáskorlátozás. |
+| Touch és rádiópróba | Kontroller nélküli mobilos Mode 2 botok; a mobilos touch és a Pocket/TX15/Android hardverellenőrzést a felhasználó késznek jelezte 2026-10-17-én. |
+| Hang | Öt külön hangprofil, négy motor külön vezérelve, légzaj, duct-karakter, sérült prop és propwash hangváltozás; natív Web Audio. |
 | Beállítások | Tabos beállítások, mozgó botokkal működő 3D rádiósegéd, drónonkénti Actual Rates és kamera, opcionális auto-arm. |
 | Kamerák/HUD | Követőnézet, drónt mutató FPV és tiszta FPV; élő botjelzők, FPS/diagnosztika, nagy akkukártya, műhorizont és analóg effekt. |
 | Szimuláció | Opcionális akkufogyás/feszültségesés, LOW BATTERY/LAND NOW és teljesítménykorlát; külön lapátsérülések, propwash, négy szélállapot. |
@@ -72,20 +74,15 @@ A pilótaütközés simított távoli testekkel helyben számolódik, ezért ké
 
 ## Ténylegesen nyitott munka
 
-1. **Teljesítmény:** ritka FPS-beesések okának követése, hosszabb repülések és
-   összehasonlítható tesztek mind a négy pályán, asztali és mobil eszközökön.
-   A korábbi közeli whoop-CCD és nézetváltási shadermegakadások javítva; ez nem
-   bizonyítja, hogy minden lehetséges megakadás megszűnt.
-2. **Valódi hardver:** Pocket/TX15 és más elérhető rádiók, Android USB-kiosztás,
-   csatlakozás/bontás és kalibráció dokumentált, reprodukálható próbái.
-3. **Fizikai hitelesítés:** az öt konfiguráció összevetése valódi repülési és
-   akkumulátoradatokkal, ahol ezek hozzáférhetők.
-4. **Multiplayer:** hosszabb nyolcpilótás, több eszközös és eltérő késleltetésű
+1. **Multiplayer:** hosszabb nyolcpilótás, több eszközös és eltérő késleltetésű
    repülés/verseny, visszacsatlakozás és bekapcsolt pilótaütközés tesztelése.
-5. **Hang:** jelenleg egyszerű, gázfüggő szintetizált motorhang működik;
-   drónonként részletesebb hangzás későbbi kidolgozás marad.
-6. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
+2. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
    igénye indokolja; külön tervben szereplő, még el nem kezdett repülőtámogatás.
+
+A felhasználó döntése alapján az FPS-optimalizálás és a fizika finomhangolása
+folyamatos karbantartás, nem lezáratlan alapfeladat. A jelenlegi fizika nagyjából
+elfogadott; konkrét hibajelentés vagy új adat alapján javítjuk tovább. A mobilos
+touch és a rádiók hardveres próbája lezárt tétel.
 
 A visszacsatlakozás, futamújraindítás, eredményképernyő, megosztási kép,
 kapuszerkesztő, szellemek és deltaidő **elkészültek**, nem nyitott alapfunkciók.
@@ -102,6 +99,7 @@ A pályák és modellek további javítása konkrét hibák vagy új igények al
 - [Rádióprofilok](radio-setup.md), [tabos beállítások](settings-menu.md)
 - [Körszellemek és deltaidő](lap-ghosts.md)
 - [Műhorizont és analóg kép](fpv-horizon.md)
+- [Drónonkénti motorhang](drone-audio.md)
 - [Turtle és drónonkénti kamera](turtle-camera.md)
 - [Rift 75 és Játszótér](pocket-park-and-rift75.md), [Rift X35](rift-x35.md), [Skyline](skyline.md)
 - [Elkészült megosztási kép](cover.md)

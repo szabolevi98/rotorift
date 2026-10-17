@@ -159,6 +159,11 @@ Throttle holds on release; the other axes recenter. Pausing, resetting or an
 interrupted touch clears the input. Connecting a controller restores the compact
 stick display and uses the radio's calibrated axes.
 
+Each drone has a distinct procedural motor sound: four separately driven rotor
+voices, blade harmonics, filtered airflow and duct resonance. Sound follows motor
+mixing, damaged propellers and optional propwash, with no downloaded samples.
+See [drone audio](docs/drone-audio.md) for implementation and tuning limits.
+
 **Auto arm** is enabled by default under **Settings → Controls**. After launch,
 reset or resume, lower throttle to zero and then raise it to arm. Keyboard throttle
 starts at zero, so the first throttle increase arms the aircraft. Manual disarm

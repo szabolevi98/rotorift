@@ -23,6 +23,7 @@ import { advanceFixedSteps } from '../../shared/physics/fixed-step.js';
 import { LapGhostPilot } from './lap-ghost.js';
 import { AnalogVideo } from './analog-video.js';
 import { prepareFlightViews } from './prepare-views.js';
+import { DroneSound } from './drone-sound.js';
 export class Flight {
   constructor(canvas) {
     this.canvas = canvas;
@@ -63,6 +64,7 @@ export class Flight {
     await RAPIER.init();
   }
   async load(map, config, rates, mode, color = this.color ?? "coral", simulation, onProgress) {
+    this.mute();
     const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
     this.preparingViews = false;
@@ -91,6 +93,7 @@ export class Flight {
     this.environment = buildEnvironment(this.scene, this.world, RAPIER, map, { bakedCollisions });
     this.environment.highlight(0, false);
     this.config = config;
+    this.sound?.configure(config);
     this.map = map;
     this.boundary = new MapBoundary(map);
     this.camera.far = map.kind === "playground" ? PLAYGROUND_VIEW_DISTANCE : map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
@@ -199,22 +202,11 @@ export class Flight {
     this.rotorMotion.update(dt,this.physics.motorThrust,this.config.motor.maxThrustN,this.config.motors,this.physics.armed&&(this.physics.turtleMode||input.throttle>0),this.physics.turtleMode);
     for (const p of this.props)
       p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
-    if (this.sound) {
-      const total = this.physics.motorThrust.reduce((a, b) => a + Math.abs(b), 0),
-        fraction = total / (4 * this.config.motor.maxThrustN);
-      this.sound.osc.frequency.setTargetAtTime(
-        100 + fraction * 700,
-        this.sound.ctx.currentTime,
-        0.025,
-      );
-      this.sound.gain.gain.setTargetAtTime(
-        this.physics.armed && this.soundEnabled
-          ? 0.014 * Math.sqrt(fraction)
-          : 0,
-        this.sound.ctx.currentTime,
-        0.03,
-      );
-    }
+    this.sound?.update(this.rotorMotion.fraction, {
+      enabled: this.soundEnabled, armed: this.physics.armed, chase: this.chase,
+      speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
+      propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers.blades,
+    });
   }
   place(pose, alpha) {
     if (!this.visual) return;
@@ -325,21 +317,13 @@ export class Flight {
     }
   }
   startSound() {
-    if (this.sound) {
-      this.sound.ctx.resume();
-      return;
-    }
-    const ctx = new AudioContext(),
-      osc = ctx.createOscillator(),
-      gain = ctx.createGain();
-    osc.type = "sawtooth";
-    gain.gain.value = 0;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    this.sound = { ctx, osc, gain };
+    if (!this.soundEnabled) return;
+    const AudioContextClass = globalThis.AudioContext ?? globalThis.webkitAudioContext;
+    if (!AudioContextClass) return;
+    this.sound ??= new DroneSound(new AudioContextClass(), this.config);
+    this.sound.resume();
   }
   mute() {
-    this.sound?.gain.gain.setTargetAtTime(0, this.sound.ctx.currentTime, 0.01);
+    this.sound?.mute();
   }
 }
