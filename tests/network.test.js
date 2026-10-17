@@ -210,7 +210,8 @@ test("multiplayer admits eight pilot colors, rejects a ninth pilot and frees a s
   await host.next(m => m.type === "room" && m.room.players.length === 7);
   ninth.send("join", { code: room.code });
   const refilled = await ninth.next(m => m.type === "room" && m.room.players.length === 8);
-  assert.ok(refilled.room.players.some(p => p.id === ninth.id && p.color === "blue"));
+  assert.ok(refilled.room.players.some(p => p.id === ninth.id && p.color === colors[7]));
+  assert.equal(new Set(refilled.room.players.map(p=>p.color)).size,8);
 });
 
 test("only the host changes common simulation rules, clears readiness and transfers ownership on leave", async t => {
@@ -513,4 +514,17 @@ test("static routes serve bundled runtime and do not expose workspace configurat
     assert.ok([403, 404].includes(response.status));
     await response.text();
   }
+});
+
+test('eight pilots receive unique colors, occupied colors are rejected and leaving frees a color',async t=>{
+ const {client}=await fixture(t),pilots=[];
+ for(let i=0;i<8;i++)pilots.push(await client('Color '+i,'coral'));
+ const host=pilots[0];host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'free'});
+ const created=await host.next(m=>m.type==='room');
+ for(let i=1;i<8;i++){pilots[i].send('join',{code:created.room.code});await host.next(m=>m.type==='room'&&m.room.players.length===i+1);}
+ const snapshot=await host.next(m=>m.type==='room'&&m.room.players.length===8);
+ assert.equal(new Set(snapshot.room.players.map(p=>p.color)).size,8);
+ const guest=pilots[1];guest.send('appearance',{color:'coral'});assert.equal((await guest.next(m=>m.type==='error')).code,'colorTaken');
+ host.send('leave');await guest.next(m=>m.type==='room'&&m.room.players.length===7);
+ guest.send('appearance',{color:'coral'});await guest.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.color==='coral');
 });

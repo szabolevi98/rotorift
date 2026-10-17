@@ -26,7 +26,7 @@
   "session.time": "Contrarreloj",
   "session.onlineFree": "Vuelo libre en línea",
   "session.onlineRace": "Carrera en línea",
-  "session.hotlap": "Vuelta individual verificada",
+  "session.hotlap": "Contrarreloj · verificado en línea",
   "action.resume": "Continuar",
   "action.refresh": "Actualizar",
   "action.save": "Guardar",
@@ -395,5 +395,8 @@
   "route.diagram": "Trazado de la ruta: {name}",
   "route.topView": "Vista superior",
   "route.sideView": "Vista lateral",
-  "route.startFinish": "Salida / meta"
+  "route.startFinish": "Salida / meta",
+  "settings.volume": "Volumen",
+  "records.allModes": "Todos los modos de vuelo",
+  "error.colorTaken": "Otro piloto ya utiliza este color."
 }

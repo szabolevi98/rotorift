@@ -222,6 +222,7 @@ function refreshColors() {
   for (const button of document.querySelectorAll("[data-drone-color]")) {
     button.setAttribute("aria-pressed", String(button.dataset.droneColor === droneColor));
     button.setAttribute("aria-label", t("color." + button.dataset.droneColor));
+    button.disabled=!!room?.players.some(p=>p.id!==network.id&&p.color===button.dataset.droneColor);
   }
 }
 function setDroneColor(value) {
@@ -807,6 +808,7 @@ function renderLobby() {
   $("#lobby-status").textContent = t(room.phase === "lobby" ? "online.readyHint" : room.phase === "finished" ? "online.finished" : "online.inProgress");
   $("#ready").textContent = t(own?.ready ? "online.notReady" : "online.ready");
   $("#ready").disabled = room.phase !== "lobby";
+  $("#ready").classList.toggle("needs-ready", room.phase === "lobby" && !own?.ready);
   $("#start-room").disabled =
     room.phase !== "lobby" || room.host !== network.id || !room.players.every(player => player.ready && player.connected !== false);
   visible("#ready", room.phase === "lobby");
@@ -987,6 +989,9 @@ function receive(m) {
     const previousCode = room?.code;
     clearRoomRequest();
     room = m.room;
+    const assignedColor=room.players.find(p=>p.id===network.id)?.color;
+    if(assignedColor && assignedColor!==droneColor){droneColor=assignedColor;write('drone-color',droneColor);preview.setColor(droneColor);flight.setColor(droneColor);network.color=droneColor;}
+    refreshColors();
     if (flight.physics && loadedRoom === roomKey(room)) {
       if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
       const own = room.players.find(p => p.id === network.id);
@@ -1120,7 +1125,7 @@ async function showRecords() {
   }
   root.append(
     node("h2", "", t("records.local")),
-    node("p", "muted", time(read("records", {})[recordKey(m, c, mode, recordSimulation)])),
+    node("p", "muted", time(mode === 'all' ? Math.min(...FLIGHT_MODES.map(value=>read('records',{})[recordKey(m,c,value,recordSimulation)]??Infinity)) : read("records", {})[recordKey(m, c, mode, recordSimulation)])),
     node("p", "muted", t("simulation.recordsHint")),
   );
   root.append(node("h2", "", t("records.online")));
@@ -1142,15 +1147,16 @@ async function showRecords() {
         row.append(
           node("span", "", i + 1),
           node("span", "record-name", r.name),
+          node("span", "record-mode", (r.mode ?? mode).toUpperCase()),
           node("b", "", time(r.ms)),
         );
         root.append(row);
         if(i<10&&r.hasGhost){
           const choose=node('button','secondary small',t('ghost.choose'));
           choose.onclick=async()=>{
-            const context={map:m,drone:c,mode,simulation:recordSimulation};ghostSelection.choose(context,r.ghostId);
+            const recordMode=r.mode??mode,context={map:m,drone:c,mode:recordMode,simulation:recordSimulation};ghostSelection.choose(context,r.ghostId);
             selectMap(m.id);map=m;write('selected-race-'+m.id,m.routeId);
-            await selectDrone(c.id);$('#flight-mode').value=mode;$('#session').value=network.ready?'online-hotlap':'time';
+            await selectDrone(c.id);$('#flight-mode').value=recordMode;$('#session').value=network.ready?'online-hotlap':'time';
             write('solo-session',$('#session').value);panel('fly');refreshCatalogText();
           };
           row.append(choose);
@@ -1417,7 +1423,7 @@ function frame(now) {
   if(playing&&flight.lapGhost){
     const own=room?.players.find(p=>p.id===network.id),started=room?own?.lap.startedAt:lap.startedAt;
     const elapsed=started===null||started===undefined||!room&&lap.invalid?null:(room?network.now:simTime-PHYSICS_DT*1000+flight.accumulator*1000)-started;
-    flight.lapGhost.update(paused?null:elapsed,flight.physics.pose.p);
+    flight.lapGhost.update(paused?null:elapsed,flight.physics.pose.p,flight.canvas.clientWidth,flight.canvas.clientHeight);
   }
   if (!$("#settings-panel").classList.contains("hidden") && settingsTabs.selected === "radio") {
     radioGuide ??= new RadioGuide($("#radio-guide"), t);
@@ -1620,6 +1626,9 @@ function bindUI() {
       write('camera-profiles',cameraProfiles.profiles);
     }
     cameraSettings.sound = $("#sound").checked;
+    cameraSettings.volume = Number($("#sound-volume").value) / 100;
+    $("#volume-output").textContent = $("#sound-volume").value + '%';
+    flight.soundVolume = cameraSettings.volume;
     cameraSettings.horizon = $("#fpv-horizon-toggle").checked;
     cameraSettings.analog = $("#analog-video-toggle").checked;
     $('#angle-output').textContent=$('#camera-angle').value+'°';$('#fov-output').textContent=$('#camera-fov').value+'°';
@@ -1654,10 +1663,11 @@ function bindUI() {
   };
   $('#camera-reset').onclick=()=>{cameraProfiles.set($('#camera-drone').value,DEFAULT_CAMERA_PROFILE);write('camera-profiles',cameraProfiles.profiles);renderCameraProfile($('#camera-drone').value);applyAircraftCamera();};
   $("#sound").checked = cameraSettings.sound;
+  $("#sound-volume").value = Math.round((Number.isFinite(cameraSettings.volume) ? Math.max(0,Math.min(1,cameraSettings.volume)) : .7) * 100);
   $("#fpv-horizon-toggle").checked = cameraSettings.horizon === true;
   $("#analog-video-toggle").checked = cameraSettings.analog === true;
   for(const s of ['#camera-angle','#camera-fov'])$(s).oninput=()=>camera(true);
-  for (const s of ["#sound", "#fpv-horizon-toggle", "#analog-video-toggle"])$(s).oninput=()=>camera();
+  for (const s of ["#sound", "#sound-volume", "#fpv-horizon-toggle", "#analog-video-toggle"])$(s).oninput=()=>camera();
   camera();
   for (const s of ["#records-route", "#records-drone", "#records-mode"])
     $(s).onchange = showRecords;

@@ -26,7 +26,7 @@
   "session.time": "Contre-la-montre",
   "session.onlineFree": "Vol libre en ligne",
   "session.onlineRace": "Course en ligne",
-  "session.hotlap": "Tour solo vérifié",
+  "session.hotlap": "Contre-la-montre · vérifié en ligne",
   "action.resume": "Reprendre",
   "action.refresh": "Actualiser",
   "action.save": "Enregistrer",
@@ -395,5 +395,8 @@
   "route.diagram": "Tracé du parcours : {name}",
   "route.topView": "Vue de dessus",
   "route.sideView": "Vue de côté",
-  "route.startFinish": "Départ / arrivée"
+  "route.startFinish": "Départ / arrivée",
+  "settings.volume": "Volume",
+  "records.allModes": "Tous les modes de vol",
+  "error.colorTaken": "Cette couleur est déjà utilisée par un autre pilote."
 }

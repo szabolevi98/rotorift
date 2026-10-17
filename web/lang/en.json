@@ -26,7 +26,7 @@
   "session.time": "Time trial",
   "session.onlineFree": "Online free flight",
   "session.onlineRace": "Online race",
-  "session.hotlap": "Verified solo hotlap",
+  "session.hotlap": "Time trial · verified online",
   "action.resume": "Resume",
   "action.refresh": "Refresh",
   "action.save": "Save",
@@ -395,5 +395,8 @@
   "route.diagram": "Route diagram: {name}",
   "route.topView": "Top view",
   "route.sideView": "Side view",
-  "route.startFinish": "Start / finish"
+  "route.startFinish": "Start / finish",
+  "settings.volume": "Volume",
+  "records.allModes": "All flight modes",
+  "error.colorTaken": "Another pilot is already using this color."
 }

@@ -24,26 +24,33 @@ export class FpvPropellers {
       const material=new THREE.MeshBasicMaterial({color:source.color,vertexColors:true,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide});
       const disc=new THREE.Mesh(this.geometry,material);disc.name='FPV_rotor_exposure';disc.position.y=.0015;disc.visible=false;
       prop.add(disc);
-      this.rotors.push({disc,motor:prop.userData.motorIndex,entries:entries.map(entry=>({entry,castShadow:entry.mesh.castShadow}))});
+      this.rotors.push({disc,motor:prop.userData.motorIndex,entries:entries.map(entry=>{
+        const original=entry.mesh.material;
+        entry.mesh.material=Array.isArray(original)?original.map(m=>m.clone()):original.clone();
+        const materials=(Array.isArray(entry.mesh.material)?entry.mesh.material:[entry.mesh.material]).map(material=>({material,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite}));
+        return {entry,castShadow:entry.mesh.castShadow,original,materials};
+      })});
     });
   }
-  update(view, thrust) {
+  update(view, thrust, fractions) {
     for(const rotor of this.rotors) {
-      const spinning=view==='fpv' && thrust[rotor.motor]>this.maxThrust*.003;
+      const speed=fractions?.[rotor.motor]??Math.sqrt(Math.max(0,Math.min(1,thrust[rotor.motor]/this.maxThrust)));
+      const raw=Math.max(0,Math.min(1,(speed-.12)/.53));
+      const blur=view==='fpv'?raw*raw*(3-2*raw):0;
       const states=new Map(rotor.entries.map(({entry})=>[entry.blade,entry.state]));
       const remaining=[...states.values()].filter(state=>state!==3).length/3;
-      rotor.disc.visible=spinning&&remaining>0;
-      const speed=Math.sqrt(Math.max(0,Math.min(1,thrust[rotor.motor]/this.maxThrust)));
-      rotor.disc.material.opacity=(.04+.08*speed)*remaining;
-      for(const {entry,castShadow}of rotor.entries) {
-        entry.mesh.visible=!spinning&&entry.state!==3;
-        entry.mesh.castShadow=spinning?false:castShadow;
+      rotor.disc.visible=blur>0&&remaining>0;
+      rotor.disc.material.opacity=(.04+.12*speed)*remaining*blur;
+      for(const {entry,castShadow,materials}of rotor.entries) {
+        entry.mesh.visible=blur<.999&&entry.state!==3;
+        entry.mesh.castShadow=blur>0?false:castShadow;
+        for(const state of materials){state.material.opacity=state.opacity*(1-blur);state.material.transparent=blur>0||state.transparent;state.material.depthWrite=blur>0?false:state.depthWrite;}
       }
     }
   }
   dispose() {
     for(const rotor of this.rotors) {
-      for(const {entry,castShadow}of rotor.entries){entry.mesh.visible=entry.state!==3;entry.mesh.castShadow=castShadow;}
+      for(const {entry,castShadow,original,materials}of rotor.entries){entry.mesh.visible=entry.state!==3;entry.mesh.castShadow=castShadow;for(const {material}of materials)material.dispose();entry.mesh.material=original;}
       rotor.disc.removeFromParent();rotor.disc.material.dispose();
     }
     this.geometry.dispose();this.rotors.length=0;

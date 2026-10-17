@@ -42,6 +42,8 @@ test('motor-specific demands, zero throttle, disarm, sound off and camera view c
   const levels=sound.rotors.map(rotor=>last(rotor.gain.gain));
   assert.ok(levels.every((v,i)=>i===0||v>levels[i-1]));
   const fpv=last(sound.master.gain);
+  sound.update([.2,.4,.6,.8],{armed:true,volume:0});assert.equal(last(sound.master.gain),0);
+  sound.update([.2,.4,.6,.8],{armed:true,volume:.35});assert.equal(last(sound.master.gain),fpv/2);
   sound.update([.2,.4,.6,.8],{armed:true,chase:true});assert.ok(last(sound.master.gain)<fpv);
   for(const state of [{armed:false},{armed:true,enabled:false}]){
     sound.update([1,1,1,1],state);assert.equal(last(sound.master.gain),0);

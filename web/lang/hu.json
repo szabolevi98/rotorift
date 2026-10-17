@@ -26,7 +26,7 @@
   "session.time": "Időmérő",
   "session.onlineFree": "Online szabad repülés",
   "session.onlineRace": "Online verseny",
-  "session.hotlap": "Ellenőrzött egyéni időmérő",
+  "session.hotlap": "Időmérő · ellenőrzött online",
   "action.resume": "Folytatás",
   "action.refresh": "Frissítés",
   "action.save": "Mentés",
@@ -395,5 +395,8 @@
   "route.diagram": "Útvonalrajz: {name}",
   "route.topView": "Felülnézet",
   "route.sideView": "Oldalnézet",
-  "route.startFinish": "Start / cél"
+  "route.startFinish": "Start / cél",
+  "settings.volume": "Hangerő",
+  "records.allModes": "Minden repülési mód",
+  "error.colorTaken": "Ezt a színt már használja egy másik pilóta."
 }

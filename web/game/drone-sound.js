@@ -77,7 +77,7 @@ export class DroneSound {
   resume() {
     if (this.ctx.state !== 'running' && this.ctx.state !== 'closed') this.ctx.resume().catch(() => {});
   }
-  update(speeds, { enabled = true, armed = false, chase = false, speed = 0, vertical = 0, propwash = false, blades } = {}) {
+  update(speeds, { enabled = true, volume = .7, armed = false, chase = false, speed = 0, vertical = 0, propwash = false, blades } = {}) {
     const now = this.ctx.currentTime, profile = this.profile;
     let load = 0, roughness = 0;
     for (const [i, rotor] of this.rotors.entries()) {
@@ -95,7 +95,9 @@ export class DroneSound {
     const rush = Number.isFinite(speed) ? unit(Math.abs(speed) / 45) : 0;
     target(this.airGain.gain, profile.air * load ** 1.7 * (1 + rush * .4 + roughness * .9 + descent * .8), now, .035);
     target(this.filter.frequency, Math.min(this.ctx.sampleRate * .44, 900 + profile.cutoff * (.25 + load * .75)), now, .03);
-    target(this.master.gain, enabled && armed && load > .001 ? .48 * profile.gain * (chase ? .78 : 1) : 0, now, .012);
+    // Previous output peaked near -25 dB even at full throttle. Bring it into a
+    // useful listening range; bounded voices retain headroom at full volume.
+    target(this.master.gain, enabled && armed && load > .001 ? 4 * unit(volume) * profile.gain * (chase ? .78 : 1) : 0, now, .012);
   }
   mute() {
     const now = this.ctx.currentTime;

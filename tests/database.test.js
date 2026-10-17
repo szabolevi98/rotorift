@@ -124,4 +124,9 @@ test("MariaDB persists profiles and category records across reconnects without d
   const [rows] = await reopened.pool.query("SELECT payload FROM results");
   assert.equal(rows.length, 1);
   assert.equal(JSON.parse(rows[0].payload)[0].finishMs, 44000);
+  await reopened.saveLap(token,map,drone,'angle',9000);
+  const combined=await reopened.leaderboard(map,drone,'all');
+  assert.equal(combined.entries.find(e=>e.ghostId===ghostEntry.ghostId).mode,'angle');
+  assert.equal(combined.entries.find(e=>e.ghostId===ghostEntry.ghostId).ms,9000);
+  assert.equal((await reopened.leaderboard(map,drone,'acro')).entries.find(e=>e.ghostId===ghostEntry.ghostId).ms,11345);
 });

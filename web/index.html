@@ -265,6 +265,7 @@
             <section class="card">
               <h2 data-i18n="settings.tabs.video"></h2>
               <label><span data-i18n="settings.sound"></span><input id="sound" type="checkbox" checked /></label>
+              <label><span data-i18n="settings.volume"></span><input id="sound-volume" type="range" min="0" max="100" step="1" value="70" /><output id="volume-output">70%</output></label>
               <label><span data-i18n="settings.horizon"></span><input id="fpv-horizon-toggle" type="checkbox" /></label>
               <label><span data-i18n="settings.analogVideo"></span><input id="analog-video-toggle" type="checkbox" /></label>
               <p class="muted" data-i18n="settings.fpvEffectsHint"></p>
@@ -279,6 +280,7 @@
           </div>
           <div class="records-filters">
             <select id="records-map"></select><select id="records-route" aria-label="Race route"></select><select id="records-drone"></select><select id="records-mode">
+              <option value="all" data-i18n="records.allModes"></option>
               <option value="acro">Acro</option>
               <option value="angle">Angle</option>
               <option value="horizon">Horizon</option></select><button id="records-refresh" class="secondary" data-i18n="action.refresh"></button>
@@ -412,10 +414,10 @@
       <div class="pause-shell">
         <header class="pause-heading"><div><span class="eyebrow">ROTORIFT / FLIGHT</span><h1 id="pause-title"></h1><p id="pause-description"></p></div><button id="pause-back" class="secondary" type="button" data-i18n="pause.back"></button></header>
         <div id="pause-home"><p id="pause-note"></p><div class="pause-actions">
-          <button id="pause-resume" class="primary" type="button"><span data-i18n="action.resume"></span><kbd>ESC</kbd></button>
-          <button id="pause-reset" class="secondary" type="button" data-i18n="key.reset"></button>
-          <button id="pause-settings" class="secondary" type="button" data-i18n="nav.settings"></button>
-          <button id="pause-exit" class="text-button" type="button" data-i18n="pause.exit"></button>
+          <button id="pause-resume" class="primary" type="button"><span><span class="pause-icon" aria-hidden="true">▶</span><span data-i18n="action.resume"></span></span><kbd>ESC</kbd></button>
+          <button id="pause-reset" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">↺</span><span data-i18n="key.reset"></span></button>
+          <button id="pause-settings" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">⚙</span><span data-i18n="nav.settings"></span></button>
+          <button id="pause-exit" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">⌂</span><span data-i18n="pause.exit"></span></button>
         </div></div>
         <div id="pause-settings-slot"></div>
       </div>

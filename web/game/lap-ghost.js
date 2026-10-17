@@ -1,11 +1,15 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {sanitizeGhost,ghostPose} from '../../shared/race/ghost.js';
+import {DroneTrail} from './drone-trail.js';
 export class LapGhostPilot {
   constructor(scene,source,config,replay,label) {
     this.replay=sanitizeGhost(replay);this.label=label;this.config=config;
     this.model=new THREE.Group();this.model.name='Lap ghost';this.props=[];this.geometries=[];
-    this.material=new THREE.MeshBasicMaterial({color:0x85ffe4,transparent:true,opacity:.3,depthWrite:false,toneMapped:false});
+    this.material=new THREE.MeshBasicMaterial({color:0x85ffe4,transparent:true,opacity:.48,depthWrite:false,toneMapped:false});
+    this.trail=new DroneTrail(scene,'teal',config.maxSpeedMps);
+    this.trail.material.uniforms.trailColor.value.set(0x85ffe4);
+    this.trail.material.uniforms.width.value=4;
     // One body draw plus four rotor draws. Colored/material batches from the
     // detailed model do not need separate calls for a single-color ghost.
     source.updateMatrixWorld(true);const buckets=new Map();
@@ -28,15 +32,18 @@ export class LapGhostPilot {
     this.position=new THREE.Vector3();this.offset=new THREE.Vector3(...config.visualOffsetM);
     this.rotation=new THREE.Quaternion();this.lastMs=null;
   }
-  update(ms,playerPosition) {
+  update(ms,playerPosition,width=1280,height=720) {
     const pose=this.replay&&Number.isFinite(ms)?ghostPose(this.replay,ms):null;
     this.model.visible=!!pose;
-    if(!pose)return;
+    if(!pose){this.trail.clear();this.lastMs=null;return;}
+    if(this.lastMs!==null&&(ms<this.lastMs||ms-this.lastMs>350))this.trail.clear();
+    this.lastMs=ms;
+    this.trail.update(pose.p,ms/1000,0,width,height);
     this.position.set(...pose.p);this.rotation.set(pose.q.x,pose.q.y,pose.q.z,pose.q.w);
     this.model.position.copy(this.offset).applyQuaternion(this.rotation).add(this.position);
     this.model.quaternion.copy(this.rotation);
     if(playerPosition&&this.position.distanceTo(new THREE.Vector3(...playerPosition))<this.config.motorDiagonalM*.65)this.model.visible=false;
     for(const prop of this.props)prop.rotation.y=ms*.014*this.config.motors[prop.userData.motorIndex].direction;
   }
-  dispose(){this.model.removeFromParent();this.material.dispose();for(const geometry of this.geometries)geometry.dispose();}
+  dispose(){this.trail.dispose();this.model.removeFromParent();this.material.dispose();for(const geometry of this.geometries)geometry.dispose();}
 }

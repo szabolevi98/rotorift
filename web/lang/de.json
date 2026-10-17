@@ -26,7 +26,7 @@
   "session.time": "Zeitfahren",
   "session.onlineFree": "Online freier Flug",
   "session.onlineRace": "Online Rennen",
-  "session.hotlap": "Geprüfte Einzelrunde",
+  "session.hotlap": "Zeitfahren · online verifiziert",
   "action.resume": "Fortsetzen",
   "action.refresh": "Aktualisieren",
   "action.save": "Speichern",
@@ -395,5 +395,8 @@
   "route.diagram": "Streckenverlauf: {name}",
   "route.topView": "Draufsicht",
   "route.sideView": "Seitenansicht",
-  "route.startFinish": "Start / Ziel"
+  "route.startFinish": "Start / Ziel",
+  "settings.volume": "Lautstärke",
+  "records.allModes": "Alle Flugmodi",
+  "error.colorTaken": "Diese Farbe wird bereits von einem anderen Piloten verwendet."
 }

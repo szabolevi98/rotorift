@@ -152,11 +152,11 @@ export class Database {
     if (!this.available) return { available: false, entries: [] };
     try {
       const [rows] = await this.pool.execute(
-        `SELECT p.public_id AS ghostId, ranked.id AS recordId, p.nick AS name, ranked.duration_ms AS ms, ranked.created_at AS date, ranked.hasGhost
-         FROM (SELECT id,player_id,duration_ms,created_at,(ghost_data IS NOT NULL) AS hasGhost,ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY duration_ms ASC,(ghost_data IS NULL) ASC,created_at ASC,id ASC) AS rankInPlayer
-               FROM laps WHERE map_id=? AND route_id=? AND route_version=? AND drone_id=? AND config_hash=? AND flight_mode=? AND simulation_key=?) ranked
+        `SELECT p.public_id AS ghostId, ranked.id AS recordId, p.nick AS name, ranked.flight_mode AS mode, ranked.duration_ms AS ms, ranked.created_at AS date, ranked.hasGhost
+         FROM (SELECT id,player_id,flight_mode,duration_ms,created_at,(ghost_data IS NOT NULL) AS hasGhost,ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY duration_ms ASC,(ghost_data IS NULL) ASC,created_at ASC,id ASC) AS rankInPlayer
+               FROM laps WHERE map_id=? AND route_id=? AND route_version=? AND drone_id=? AND config_hash=? AND (?='all' OR flight_mode=?) AND simulation_key=?) ranked
          JOIN players p ON p.id=ranked.player_id WHERE ranked.rankInPlayer=1 ORDER BY ms ASC,date ASC,ghostId ASC LIMIT 30`,
-        [map.id, map.routeId ?? "", map.routeVersion, drone.id, drone.configHash, mode, simulationKey(simulation)],
+        [map.id, map.routeId ?? "", map.routeVersion, drone.id, drone.configHash, mode, mode, simulationKey(simulation)],
       );
       return { available: true, entries: rows };
     } catch {

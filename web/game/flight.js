@@ -203,7 +203,7 @@ export class Flight {
     for (const p of this.props)
       p.rotation.y = this.rotorMotion.phase[p.userData.motorIndex];
     this.sound?.update(this.rotorMotion.fraction, {
-      enabled: this.soundEnabled, armed: this.physics.armed, chase: this.chase,
+      enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: this.chase,
       speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
       propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers.blades,
     });

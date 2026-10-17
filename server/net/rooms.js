@@ -6,7 +6,7 @@ import { length, sub } from "../../shared/physics/math.js";
 import { MapBoundary } from "../../shared/world/boundary.js";
 import { canRace, withoutRaceRoute } from "../../shared/race/map-modes.js";
 import { resolveRoute } from "../../shared/race/routes.js";
-import { normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
+import { DRONE_COLORS, normalizeDroneColor, validDroneColor } from "../../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, FLIGHT_MODES, normalizeSimulation, validSimulation, simulationKey } from "../../shared/simulation/options.js";
 import { freshPropellers, validPropellers } from "../../shared/physics/propellers.js";
 import { STOPPED_ROTORS, validRotorSpeeds } from "../../shared/visual/rotor-motion.js";
@@ -240,6 +240,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         }
         if (m.type === "appearance") {
           if (!validDroneColor(m.color)) { send(p, "error", { code: "invalidColor" }); return; }
+          if(p.room && [...p.room.players.values()].some(other=>other!==p&&other.color===m.color)) {send(p,"error",{code:"colorTaken"});return;}
           p.color = m.color;
           if (p.room) broadcast(p.room);
           return;
@@ -317,6 +318,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             return;
           }
           leave(p);
+          if([...r.players.values()].some(other=>other.color===p.color))p.color=Object.keys(DRONE_COLORS).find(color=>![...r.players.values()].some(other=>other.color===color));
           r.players.set(p.id, p);
           p.mode = r.mode;
           p.room = r;

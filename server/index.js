@@ -53,7 +53,7 @@ export async function createServer({database}={}) {
             (d) => d.id === url.searchParams.get("drone"),
           ),
           mode = url.searchParams.get("mode");
-        if (!map || !drone || !["acro", "angle", "horizon"].includes(mode))
+        if (!map || !drone || !(url.pathname==='/api/leaderboard'?["all","acro", "angle", "horizon"]:["acro", "angle", "horizon"]).includes(mode))
           return json(res, { error: "Invalid category" }, 400);
         const key = url.searchParams.get("simulation") ?? "00010";
         if (!/^[01]{4}[0-3]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
