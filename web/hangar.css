@@ -66,7 +66,9 @@
 .preview-floor {
   position: relative;
   isolation: isolate;
-  margin: 0 -15px;
+  /* Carry the floor through the stage's bottom spacing to the launch divider. */
+  margin: 0 -15px -22px;
+  padding-bottom: 22px;
   background: radial-gradient(ellipse at 50% 84%, #ff664818, transparent 48%), radial-gradient(ellipse at 50% 50%, #ffffff05, transparent 65%);
 }
 .preview-floor:before {
@@ -79,6 +81,7 @@
   background-image: linear-gradient(#ffffff07 1px, transparent 1px), linear-gradient(90deg, #ffffff07 1px, transparent 1px);
   background-size: 32px 32px;
   transform: perspective(320px) rotateX(58deg);
+  transform-origin: center bottom;
   pointer-events: none;
 }
 #menu #preview-scene { position: relative; z-index: 1; height: clamp(290px, 38vh, 420px); touch-action: none; cursor: grab; }
