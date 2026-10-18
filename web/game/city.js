@@ -53,7 +53,7 @@ export function buildCity(scene,world,RAPIER,map) {
   // physics still activates individual shapes only near the aircraft.
   const p=createConstructionParts(scene,world,RAPIER,{batchSize:Infinity}),{box,cylinder,beam,model,part}=p;
   p.root.name='Skyline_city_district';
-  for(const [name,color]of Object.entries({asphalt:0x434b50,sidewalk:0xb1b2aa,roof:0x636d72,curb:0xd1d0c4,
+  for(const [name,color]of Object.entries({asphalt:0x434b50,sidewalk:0xb1b2aa,roof:0x636d72,podium:0x55636b,curb:0xd1d0c4,
     darkGlass:0x314d5c,cream:0xddd3b4,taxi:0xe7b341,leaf:0x68815a,trunk:0x786552,water:0x5f9aaf,signal:0x91bba6,grass:0x80a15d}))
     p.palette[name]=new THREE.MeshStandardMaterial({color,roughness:name==='darkGlass'?.36:.86,metalness:name==='darkGlass'?.25:0});
   p.palette.blueTower=facade(0x8daab7);p.palette.silverTower=facade(0xb8c2c3);
@@ -129,14 +129,14 @@ export function buildCity(scene,world,RAPIER,map) {
   model('Crown_tower_podium',[CITY_HERO.x,.18,CITY_HERO.z],0,()=>{
     // A solid two-storey base supports the tower. Only the central 10 x 6 m
     // north/south passage stays open, with matching analytic wall/roof shapes.
-    for(const x of [-22.5,22.5])box([35,12,72],[x,6,0],'cream');
-    box([10,6,72],[0,9,0],'cream');
-    box([80,.7,72],[0,12.35,0],'concrete');
+    for(const x of [-22.5,22.5])box([35,12,72],[x,6,0],'podium');
+    box([10,6,72],[0,9,0],'podium');
+    box([80,.7,72],[0,12.35,0],'roof');
     for(const side of [-1,1]){
       for(const x of [-35,-25,-15,15,25,35])for(const y of [2.5,8.7])
         box([7.2,3.4,.08],[x,y,side*36.05],'darkGlass',false);
-      for(const x of [-22.5,22.5])box([35,.25,.24],[x,5.7,side*36.1],'concrete',false);
-      box([10,.25,1.6],[0,6.15,side*36.6],'concrete');
+      for(const x of [-22.5,22.5])box([35,.25,.24],[x,5.7,side*36.1],'roof',false);
+      box([10,.25,1.6],[0,6.15,side*36.6],'roof');
     }
     for(const [w,d,bottom,top]of [[48,46,12.7,157],[38,36,157,195],[24,26,195,217]]){
       box([w,top-bottom,d],[0,(top+bottom)/2,0],'silverTower');parapet(w,d,top);
