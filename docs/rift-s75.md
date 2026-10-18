@@ -52,3 +52,7 @@ the prepared Grove map, remote collision dimensions and synchronized pusher
 animation. The eight-client network test includes all seven aircraft types.
 These are software checks, not real-aircraft flight-log calibration or a test
 of seven physical controllers and independent internet connections.
+
+The fairing root is recessed inside the pod and its separate accent stripe is
+removed. Only the upper white nacelle moves 8 mm aft into the mount; motor,
+propeller, collision proxies and flight configuration keep their positions.

@@ -75,6 +75,7 @@ test("S75 is a distinct 750 mm / 2S pusher, with lightweight finite geometry and
 test("full pusher sweep clears wing, pod, tail and motor pod; FPV lens looks out of the nose", () => {
   const model = createScoutModel({ batchStatic: false }),
     prop = model.getObjectByName("S75_pusher_propeller");
+  const motor = config.motors[0].positionM;
   for (const name of [
     "S75_main_wing",
     "S75_wing_root",
@@ -101,8 +102,8 @@ test("full pusher sweep clears wing, pod, tail and motor pod; FPV lens looks out
         const ray = new THREE.Raycaster(
           new THREE.Vector3(
             Math.cos((a * Math.PI) / 12) * r,
-            0.125 + Math.sin((a * Math.PI) / 12) * r,
-            0.137,
+            motor[1] + Math.sin((a * Math.PI) / 12) * r,
+            motor[2] - 0.005,
           ),
           new THREE.Vector3(0, 0, 1),
           0,
@@ -114,6 +115,32 @@ test("full pusher sweep clears wing, pod, tail and motor pod; FPV lens looks out
           name + " blocks the propeller",
         );
       }
+  }
+  const pod = model.getObjectByName("S75_rounded_foam_pod"),
+    pylon = model.getObjectByName("S75_motor_pylon");
+  const priorSide = pod.material.side;
+  pod.material.side = THREE.DoubleSide;
+  try {
+    // The entire bottom ring must be inside the pod, rather than floating above
+    // its tapered aft skin or exposing a flat cap on either side.
+    for (let i = 0; i < 20; i++)
+      for (const direction of [-1, 1]) {
+        const base = new THREE.Vector3()
+          .fromBufferAttribute(pylon.geometry.attributes.position, i)
+          .applyMatrix4(pylon.matrixWorld);
+        const ray = new THREE.Raycaster(
+          base,
+          new THREE.Vector3(0, direction, 0),
+          0,
+          0.2,
+        );
+        assert.ok(
+          ray.intersectObject(pod).length,
+          "motor fairing base leaves the pod",
+        );
+      }
+  } finally {
+    pod.material.side = priorSide;
   }
   const lens = model.getObjectByName("S75_FPV_lens");
   assert.ok(config.cameraOffsetM[2] < lens.position.z);

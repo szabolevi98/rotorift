@@ -62435,17 +62435,18 @@ function createScoutModel({ batchStatic = true } = {}) {
   // A swept fairing grows out of the wing saddle and blends into a horizontal
   // nacelle. Its rounded nose covers the mount; the brushless bell stays exposed.
   const pylonSections = [
-    [0.026, 0.019, 0.059, 0.052],
+    [-0.006, 0.012, 0.049, 0.035],
+    [0.014, 0.017, 0.055, 0.043],
     [0.046, 0.017, 0.064, 0.05],
     [0.07, 0.014, 0.075, 0.043],
     [0.092, 0.012, 0.093, 0.033],
-    [0.112, 0.0115, 0.107, 0.024],
-    [0.125, 0.011, 0.11, 0.02],
+    [0.112, 0.0115, 0.102, 0.018],
+    [0.125, 0.01, 0.105, 0.012],
   ];
   const pylonSection = sectionCurve(pylonSections);
   const pylonRows = Array.from(
-    { length: 17 },
-    (_, i) => 0.026 + (0.099 * i) / 16,
+    { length: 21 },
+    (_, i) => -0.006 + (0.131 * i) / 20,
   );
   const pylonPoint = (y, a, offset = 0) => {
     const [width, z, depth] = pylonSection(y);
@@ -62462,25 +62463,6 @@ function createScoutModel({ batchStatic = true } = {}) {
     foam,
     "S75_motor_pylon",
   );
-  for (const side of [-1, 1]) {
-    const paint = [];
-    for (let i = 0; i < pylonRows.length - 2; i++) {
-      const ya = pylonRows[i],
-        yb = pylonRows[i + 1],
-        offset = side > 0 ? 0 : Math.PI,
-        a = offset + side * 0.4,
-        b = offset + side * 0.6;
-      const p = [
-        pylonPoint(ya, a, 0.00035),
-        pylonPoint(ya, b, 0.00035),
-        pylonPoint(yb, b, 0.00035),
-        pylonPoint(yb, a, 0.00035),
-      ];
-      paint.push(p[0], p[1], p[2], p[0], p[2], p[3]);
-    }
-    const stripe = triangles(paint, accent, "S75_swept_motor_fairing_livery");
-    stripe.material.side = THREE.DoubleSide;
-  }
   const nacelleSection = sectionCurve([
     [0.075, 0],
     [0.08, 0.006],
@@ -62489,7 +62471,7 @@ function createScoutModel({ batchStatic = true } = {}) {
     [0.11, 0.014],
     [0.114, 0.0125],
   ]);
-  solid(
+  const nacelle = solid(
     Array.from({ length: 13 }, (_, i) => {
       const z = 0.075 + (0.039 * i) / 12,
         r = nacelleSection(z)[0];
@@ -62502,6 +62484,8 @@ function createScoutModel({ batchStatic = true } = {}) {
     foam,
     "S75_streamlined_motor_nacelle",
   );
+  // Recess only the upper white cowl into the pylon. Motor and prop stay put.
+  nacelle.position.z = 0.008;
   const motor = mesh(
     new THREE.CylinderGeometry(0.012, 0.012, 0.019, 20),
     ink,
