@@ -33,7 +33,7 @@ function flight() {
 test("S75 is a distinct 750 mm / 2S pusher, with lightweight finite geometry and working control hinges", () => {
   assert.equal(config.wingspanM, 0.75);
   assert.equal(config.battery.cells, 2);
-  assert.notEqual(config.configHash, catalog.airplanes[0].configHash);
+  assert.notEqual(config.configHash, catalog.airplanes.find(c=>c.id==='rift-t15').configHash);
   const model = createAirplaneModel(config),
     box = new THREE.Box3().setFromObject(model, true),
     size = box.getSize(new THREE.Vector3());

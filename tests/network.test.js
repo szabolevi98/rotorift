@@ -552,7 +552,7 @@ test('eight trainer pilots synchronize typed animations, reconnect to their slot
   for(const pilot of pilots)pilot.send('ready',{ready:true});
   await host.next(m=>m.type==='room'&&m.room.players.length===8&&m.room.players.every(p=>p.ready));host.send('start');
   const flying=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
-  const config=catalog.airplanes[0],animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.3,roll:.2,yaw:.1}},opts={runId:flying.runId,configHash:config.configHash,mode:'manual',simulationKey:simulationKey(flying.simulation),animation};
+  const config=catalog.airplanes.find(c=>c.id==='rift-t15'),animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.3,roll:.2,yaw:.1}},opts={runId:flying.runId,configHash:config.configHash,mode:'manual',simulationKey:simulationKey(flying.simulation),animation};
   for(let i=0;i<8;i++)await pilots[i].state(flying.players[i].p,opts);
   const active=(await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.animation?.engine===.6))).room;
   for(const p of active.players){assert.deepEqual(p.animation,animation);for(const key of ['propellers','rotorSpeeds','turtleMode'])assert.equal(key in p,false);}
@@ -572,7 +572,7 @@ test('manual airplane hotlaps save a pose ghost and rejects incompatible drone c
   p.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'hotlap'});assert.equal((await p.next(m=>m.type==='error')).code,'incompatibleRoute');
   p.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'hotlap'});await p.next(m=>m.type==='room');p.send('start');
   const room=(await p.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
-  const opts={runId:room.runId,configHash:catalog.airplanes[0].configHash,mode:'manual',simulationKey:simulationKey(room.simulation),animation:{kind:'fixedWing',engine:.4,surfaces:{pitch:0,roll:0,yaw:0}}};
+  const opts={runId:room.runId,configHash:catalog.airplanes.find(c=>c.id==='rift-t15').configHash,mode:'manual',simulationKey:simulationKey(room.simulation),animation:{kind:'fixedWing',engine:.4,surfaces:{pitch:0,roll:0,yaw:0}}};
   for(const point of [[0,1,-.5],[0,1,.5],[0,1,2.5],[0,1,1.5],[0,1,-.5],[0,1,.5]])await p.state(point,opts);
   const lap=await p.next(m=>m.type==='lap');assert.equal(lap.valid,true);assert.equal(lap.saved,true);assert.ok(lap.replay.frames.length>=3);
   assert.equal(db.laps[0][2].id,'rift-t15');assert.equal(db.laps[0][3],'manual');assert.ok(db.laps[0][6].frames.length>=3);
@@ -597,7 +597,7 @@ test('stabilized airplane hotlaps store their own mode and live switching invali
 
 test('mixed free flight supports eight personal aircraft, typed states, late join, reconnect and restart', async t => {
   const {client,catalog}=await fixture(t,{kind:'park',size:700},{countdownMs:20});
-  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes[0],...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-s75'),catalog.drones[0]];
+  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-t15'),...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-s75'),catalog.drones[0]];
   const pilots=[];
   for(let i=0;i<8;i++)pilots.push(await client('Mixed '+i,'coral',{protocol:4}));
   const host=pilots[0],old=await client('Old client','blue',{protocol:3});
@@ -616,7 +616,7 @@ test('mixed free flight supports eight personal aircraft, typed states, late joi
   // animation union and launch pose, then changes back to a tinywhoop.
   pilots[2].send('ready',{ready:true});
   await pilots[2].next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[2].id)?.ready);
-  pilots[2].send('aircraft',{droneId:catalog.airplanes[0].id,mode:'manual',launchMethod:'air'});
+  pilots[2].send('aircraft',{droneId:catalog.airplanes.find(c=>c.id==='rift-t15').id,mode:'manual',launchMethod:'air'});
   const changed=(await pilots[2].next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[2].id)?.droneId==='rift-t15')).room.players.find(p=>p.id===pilots[2].id);
   assert.equal(changed.ready,false);assert.equal(changed.p[1],65);assert.ok(changed.animation);assert.equal('propellers' in changed,false);
   pilots[2].send('aircraft',{droneId:configs[2].id,mode:'angle'});

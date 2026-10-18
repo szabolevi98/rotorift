@@ -8,7 +8,7 @@ import {createAircraftPhysics,aircraftCapabilities} from '../shared/physics/airc
 import {createTrainerModel,animateTrainer} from '../shared/visual/fixed-wing-model.js';
 import {advanceFixedSteps} from '../shared/physics/fixed-step.js';
 await RAPIER.init();
-const {airplanes}=await loadCatalog(),config=airplanes[0];
+const {airplanes}=await loadCatalog(),config=airplanes.find(c=>c.id==='rift-t15');
 const controls={pitch:0,roll:0,yaw:0,throttle:0};
 function flight(){const world=new RAPIER.World({x:0,y:-9.81,z:0});return {world,physics:createAircraftPhysics(RAPIER,world,config,[0,100,0],{updateSceneQueries:false})};}
 test('trainer configuration, capabilities and geometry are independent of the five quadcopters',()=>{

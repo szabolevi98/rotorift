@@ -12,7 +12,7 @@ import { PrebakedCollisions } from "../web/game/prebaked-collisions.js";
 import { parkSurfaceHeight } from "../shared/world/park-layout.js";
 await RAPIER.init();
 const { airplanes, maps } = await loadCatalog(),
-  config = airplanes[0],
+  config = airplanes.find(c=>c.id==='rift-t15'),
   map = { ...maps.find((m) => m.id === "liget"), gates: [] };
 test("Grove south promenade supports stable ground parking and an actual prepared-map takeoff", async () => {
   const raw = gunzipSync(

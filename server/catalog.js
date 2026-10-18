@@ -42,7 +42,7 @@ export async function loadCatalog(dataRoot = DATA_ROOT) {
   }
   let airplanes=[];
   try{airplanes=await load('airplanes');}catch(error){if(error.code!=='ENOENT')throw error;}
-  const airplaneOrder=["rift-t15","rift-s75"];
+  const airplaneOrder=["rift-s75","rift-t15"];
   airplanes.sort((a,b)=>airplaneOrder.indexOf(a.id)-airplaneOrder.indexOf(b.id));
   for (const plane of airplanes) {
     validateAirplane(plane);

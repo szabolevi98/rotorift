@@ -4,7 +4,7 @@ import { createTrainerModel } from "../shared/visual/fixed-wing-model.js";
 import { createAircraftVisual } from "../web/game/aircraft-visual.js";
 import { loadCatalog } from "../server/catalog.js";
 const { airplanes } = await loadCatalog(),
-  config = airplanes[0];
+  config = airplanes.find(c=>c.id==='rift-t15');
 
 test("airplane prop motion and exposure rise progressively, stop at zero and match remotely", () => {
   const model = createTrainerModel(),
