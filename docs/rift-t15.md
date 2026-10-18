@@ -8,7 +8,8 @@ control response are unchanged.
 
 - Local free flight on Grove, Concrete Yard and Skyline; Playground is excluded.
 - Airborne practice launch at 65 m and 15 m/s, or ground launch on the Grove south
-  promenade in free flight. Mode 2 steering: rudder on the left, elevator/ailerons
+  promenade in free flight. Manual or Stabilized mode, selectable before launch and through the mode
+  action during flight. Mode 2 steering: rudder on the left, elevator/ailerons
   on the right. Add power and gently pull back once airspeed builds. Ground reset
   parks the aircraft; airborne reset restores its heading and initial velocity.
 - Airplane-only rooms, up to eight pilots: unique colors, wide launch slots,
@@ -35,7 +36,7 @@ calibration. The current configuration is `experimental-estimate`.
 | Battery / motor | 3S 3200 mAh / one 14 N static-thrust electric motor |
 | Propeller | 10-inch, two blades |
 | Launch | Airborne 65 m / 15 m/s, course heading when racing; Grove ground start in free flight |
-| Controls / mode | Mode 2, Manual surface control |
+| Controls / mode | Mode 2, Manual or Stabilized surface control |
 
 ## Implementation
 
@@ -157,3 +158,26 @@ ailerons, hinges, servo linkages, navigation lenses and the upper strut attachme
 follow the new position; the camera and FPV viewpoint retain their forward
 clearance. Version 2 separates records for this revised collision configuration.
 Aerodynamic coefficients, mass and control tuning are unchanged.
+
+## Self-level stabilization · 2026-10-18
+
+Both airplanes now offer `stabilized` alongside `manual`. It uses the current
+attitude and angular rates to drive bounded elevator/aileron servo targets.
+Neutral pitch/roll commands a level attitude; full stick requests 20° pitch and
+35° bank. These are target angles, not hard pose clamps: lag, momentum and low
+airspeed still affect recovery. Gyro rates are projected into attitude rates so
+banked turns do not produce false pitch corrections. Rudder and throttle remain
+manual. There is no added recovery force, altitude hold or stall prevention.
+
+The Manual path, old configuration hashes and saved records remain unchanged.
+Keyboard/radio/touch mode actions are enabled for airplanes. Live mode switching
+invalidates the current lap; server categories and pose ghosts retain the mode.
+The records page can show/filter Stabilized. Five language dictionaries include
+its name and control explanation. Automated tests cover neutral/inverted
+recovery, bounded stick demands, zero-airflow limitations, mode continuity,
+refresh-rate independence, online hotlaps and ghost-category separation.
+
+This is an original simulator controller. Real-world references include the
+manufacturer's [SAFE/AS3X description](https://www.horizonhobby.com/airplanes/rc-airplanes-by-skill-level/skill-level-2/):
+AS3X damps disturbances; SAFE additionally provides self-level and attitude limits.
+We do not claim to reproduce a proprietary controller or its aircraft calibration.

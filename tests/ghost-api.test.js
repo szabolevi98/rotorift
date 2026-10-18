@@ -26,6 +26,9 @@ test('airplane records and public pose ghosts use Manual and compatible routes w
   assert.equal((await fetch(base+'/api/leaderboard?'+query)).status,200);
   query.set('mode','all');assert.equal((await fetch(base+'/api/leaderboard?'+query)).status,200);query.set('mode','manual');
   const ghost=await(await fetch(base+'/api/ghost?'+query)).json();assert.ok(ghost.category.includes('rift-t15:'));assert.ok(ghost.category.endsWith(':manual'));assert.equal(ghost.replay.frames.length,2);
+  query.set('mode','stabilized');assert.equal((await fetch(base+'/api/leaderboard?'+query)).status,200);
+  const assisted=await(await fetch(base+'/api/ghost?'+query)).json();assert.ok(assisted.category.endsWith(':stabilized'));assert.notEqual(assisted.category,ghost.category);
+  query.set('mode','manual');
   assert.ok(calls.every(c=>c.map.routeId==='wing_1'&&c.aircraft.kind==='fixedWing'));
   for(const [key,value]of [['route','race_1'],['mode','acro'],['drone','rift-x5'],['simulation','01110']]){const invalid=new URLSearchParams(query);invalid.set(key,value);assert.equal((await fetch(base+'/api/ghost?'+invalid)).status,400);}
 });

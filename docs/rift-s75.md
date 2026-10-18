@@ -11,7 +11,7 @@ our own **2S brushless** design, not a scale copy or a calibrated AeroScout mode
 | Wing area / reference chord | 0.091 m² / 122 mm |
 | Battery | 2S / 650 mAh |
 | Motor / propeller | One brushless pusher, 2.5 N static thrust / 5-inch two-blade prop |
-| Controls | Manual, ailerons / elevator / rudder; 60% travel and 35% expo |
+| Controls | Manual or Stabilized; ailerons / elevator / rudder; 60% travel and 35% expo |
 | Airborne practice launch | 40 m / 9 m/s |
 | Ground launch | Grove south promenade, free flight |
 
@@ -27,6 +27,10 @@ surfaces have independent hinges. Static parts batch by material. The same
 procedural factory supplies the hangar, flight, ghosts, remote aircraft and
 showcase. Run `node scripts/export-trainer.mjs --scout` for the standalone GLB,
 and `npm run showcase:build` after changing its appearance.
+
+Stabilized mode returns pitch and bank to level on neutral right stick, using
+the real servo/aerodynamic pipeline. Full stick requests 20° pitch / 35° bank;
+throttle remains manual and there is no altitude hold. Manual remains available.
 
 Both planes share the aerodynamic solver and visual animation adapter, with
 separate configurations and model factories. Structural dimensions live in

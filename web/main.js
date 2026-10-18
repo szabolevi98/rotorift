@@ -291,7 +291,7 @@ function refreshSessionBanner() {
   const active = playing && paused && (!room || (["countdown", "flying"].includes(room.phase) && !room.players.find(p=>p.id===network.id)?.finished));
   visible("#active-session", active);
   if (active && flight?.config) $("#active-session-description").textContent =
-    `${mapName(flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : "");
+    `${mapName(flight.map.id)} · ${flight.config.name} · ${flightModeLabel(flight.physics.mode).toUpperCase()}` + (room ? ` · ${room.code}` : "");
 }
 function pause() {
   if (!playing || paused) return;
@@ -395,6 +395,9 @@ function saveLocal(ms) {
   records[key] = Math.min(ms, records[key] ?? Infinity);
   write("records", records);
 }
+function flightModeLabel(mode) {
+  return ['manual','stabilized'].includes(mode)?t('airplane.'+mode):mode[0].toUpperCase()+mode.slice(1);
+}
 async function selectDrone(id) {
   const previous = config;
   config =
@@ -403,7 +406,7 @@ async function selectDrone(id) {
   write("selected-drone", config.id);
   renderKeys();
   const modes=aircraftModes(config),priorMode=$('#flight-mode').value;
-  $('#flight-mode').replaceChildren(...modes.map(mode=>new Option(mode==='manual'?t('airplane.manual'):mode[0].toUpperCase()+mode.slice(1),mode)));
+  $('#flight-mode').replaceChildren(...modes.map(mode=>new Option(flightModeLabel(mode),mode)));
   if(modes.includes(priorMode))$('#flight-mode').value=priorMode;
   visible('#airplane-note',isFixedWing(config));visible('#airplane-controls',isFixedWing(config));
   if(isFixedWing(config)){const saved=read('airplane-controls',{});for(const [key,fallback]of [['travel',70],['expo',30]]){const value=Number.isFinite(saved[key])?Math.round(saved[key]*100):fallback;$('#airplane-'+key).value=value;$('#airplane-'+key+'-output').textContent=value+'%';}}
@@ -475,7 +478,7 @@ function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
   dronePicker.update(catalog.aircraft.map(d => ({value:d.id,label:d.name,detail:t("drone." + d.id)})), config?.id);
   mapPicker.update(catalog.maps.filter(m=>mixedAircraftSetup()||supportsMap(config,m)).map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
-  const manual=$('#flight-mode').querySelector('option[value="manual"]');if(manual)manual.textContent=t('airplane.manual');
+  for(const option of $('#flight-mode').options)option.textContent=flightModeLabel(option.value);
   if (config) {
     $("#selected-name").textContent = config.name;
     $("#selected-description").textContent = t("drone." + config.id);
@@ -682,7 +685,7 @@ function renderInputUI() {
   bindings.replaceChildren();
   const options = availableBindings(controller.pad, controller.profile);
   for (const name of RADIO_ACTIONS) {
-    if(isFixedWing(config)&&['turtle','mode'].includes(name))continue;
+    if(isFixedWing(config)&&['turtle'].includes(name))continue;
     const row = node("div", "radio-action-row"), select = node("select");
     select.setAttribute("aria-label", t("settings.buttonBinding", { action: t("key." + name) }));
     select.append(new Option(t("settings.unassigned"), ""));
@@ -717,7 +720,7 @@ function renderKeys() {
   const container = $("#keyboard-bindings");
   container.replaceChildren();
   for (const [action, code] of Object.entries(controller.keys)) {
-    if(isFixedWing(config)&&['turtle','hover','mode'].includes(action))continue;
+    if(isFixedWing(config)&&['turtle','hover'].includes(action))continue;
     const row = node("div", "key-row"),
       i = node("input");
     i.readOnly = true;
@@ -772,7 +775,7 @@ function renderRooms() {
     button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
     const summary = node("div", "room-summary");
     summary.append(node("strong", "", r.code), node("span", "", mapName(r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
-    summary.append(node("span", "", r.mixedAircraft ? t('online.mixedAircraft') : (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
+    summary.append(node("span", "", r.mixedAircraft ? t('online.mixedAircraft') : (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + flightModeLabel(r.mode).toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
       summary,
       button,
@@ -829,7 +832,7 @@ function renderLobbyAircraft(own) {
   lobbyAircraftSignature=signature;
   select.replaceChildren(...catalog.aircraft.map(d=>new Option(d.name+' · '+t('drone.'+d.id),d.id)));
   select.value=own.droneId;
-  $('#lobby-mode').replaceChildren(...aircraftModes(aircraft).map(mode=>new Option(mode==='manual'?t('airplane.manual'):mode[0].toUpperCase()+mode.slice(1),mode)));
+  $('#lobby-mode').replaceChildren(...aircraftModes(aircraft).map(mode=>new Option(flightModeLabel(mode),mode)));
   $('#lobby-mode').value=own.mode;
   const launch=$('#lobby-launch');
   launch.value=own.launchMethod??'air';
@@ -851,13 +854,13 @@ function renderLobby() {
   $("#lobby-description").textContent =
     mapName(room.mapId) +
     " · " +
-    (room.mixedAircraft ? t('online.mixedAircraft') : catalog.aircraft.find((d) => d.id === room.droneId)?.name + " · " + room.mode.toUpperCase()) + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
+    (room.mixedAircraft ? t('online.mixedAircraft') : catalog.aircraft.find((d) => d.id === room.droneId)?.name + " · " + flightModeLabel(room.mode).toUpperCase()) + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
   $("#lobby-players").replaceChildren();
   for (const p of room.players) {
     const row = node("div", "player-row");
     row.append(
       pilotName(p, p.name + (p.id === room.host ? " / " + t("online.host") : "")),
-      node('span','player-aircraft',(catalog.aircraft.find(d=>d.id===(p.droneId??room.droneId))?.name??'')+' · '+p.mode.toUpperCase()),
+      node('span','player-aircraft',(catalog.aircraft.find(d=>d.id===(p.droneId??room.droneId))?.name??'')+' · '+flightModeLabel(p.mode).toUpperCase()),
       node("span", "", p.connected === false ? t("online.pilotReconnecting") : room.phase === "lobby" ? t(p.ready ? "online.ready" : "online.notReady")
         : t(p.finished ? "results.finished" : room.phase === "finished" ? "results.dnf" : "results.racing")),
     );
@@ -1213,7 +1216,7 @@ async function showRecords() {
         row.append(
           node("span", "", i + 1),
           node("span", "record-name", r.name),
-          node("span", "record-mode", (r.mode ?? mode).toUpperCase()),
+          node("span", "record-mode", flightModeLabel(r.mode ?? mode).toUpperCase()),
           node("b", "", time(r.ms)),
         );
         root.append(row);
@@ -1277,8 +1280,8 @@ function hud() {
   const viewLabel = t("hud.view." + flight.view);
   $("#hud-view").textContent = viewLabel + " ↻";
   $("#hud-view").setAttribute("aria-label", t("key.view") + " · " + viewLabel);
-  $("#hud-mode").textContent = flight.physics.mode.toUpperCase() + " ↻";
-  $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flight.physics.mode.toUpperCase());
+  $("#hud-mode").textContent = flightModeLabel(flight.physics.mode).toUpperCase() + " ↻";
+  $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flightModeLabel(flight.physics.mode).toUpperCase());
   $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);
   $("#hud-mode").disabled = !!room && (room.phase !== "flying" || own?.finished);
   $("#hud-input").textContent = t(
@@ -1381,7 +1384,7 @@ function hud() {
         node(
           "span",
           "",
-          room.kind === "free" ? p.mode.toUpperCase() : p.lap.completed +
+          room.kind === "free" ? flightModeLabel(p.mode).toUpperCase() : p.lap.completed +
             " / " +
             time(p.finished ? p.finishMs : p.lap.bestMs),
         ),
@@ -1392,7 +1395,7 @@ function hud() {
 }
 function flightHelpContent() {
   const radio = controller.usingRadio;
-  const supported=action=>!isFixedWing(flight?.config)||!['turtle','hover','mode'].includes(action);
+  const supported=action=>!isFixedWing(flight?.config)||!['turtle','hover'].includes(action);
   if (controller.usingTouch) return {
     source: t('input.touch'), note: t('hud.helpTouch'),
     rows: ['arm', 'reset', 'view', 'mode', 'turtle', 'menu'].filter(supported).map(action => [t('key.' + action), [t('hud.touchButton')]]),
@@ -1566,7 +1569,7 @@ function bindUI() {
     leave: endFlight,
   }, () => ({
     online: !!room,
-    description: `${mapName(flight.map.id)} · ${flight.config.name} · ${flight.physics.mode.toUpperCase()}` + (room ? ` · ${room.code}` : ""),
+    description: `${mapName(flight.map.id)} · ${flight.config.name} · ${flightModeLabel(flight.physics.mode).toUpperCase()}` + (room ? ` · ${room.code}` : ""),
     canReset: !room || (room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
   }));
   flightHelp = new FlightHelp(t, flightHelpContent);

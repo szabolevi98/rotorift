@@ -3,6 +3,7 @@ import { stepPhysicsWorld } from "./world-step.js";
 import { AirplaneEffects } from "./fixed-wing-effects.js";
 import { addFixedWingColliders } from "./fixed-wing-colliders.js";
 import { array, vector, rotate, inverse, clamp } from "./math.js";
+import { airplaneSurfaceTargets } from "./airplane-stabilization.js";
 import { aerodynamicLoads } from "./aerodynamics.js";
 
 export class FixedWingPhysics {
@@ -24,6 +25,7 @@ export class FixedWingPhysics {
     this.effects = new AirplaneEffects(config, simulation);
     this.motorThrust = [0];
     this.surfaces = { pitch: 0, roll: 0, yaw: 0 };
+    this.surfaceTargets = { pitch: 0, roll: 0, yaw: 0 };
     this.controlProfile = { ...config.controls };
     this.loads = { force: [0, 0, 0], torque: [0, 0, 0] };
     this.body = world.createRigidBody(
@@ -71,11 +73,18 @@ export class FixedWingPhysics {
         inverse(q),
       ),
       controls = this.controlProfile;
+    const targets = airplaneSurfaceTargets(
+      c,
+      this.mode,
+      input,
+      q,
+      w,
+      local,
+      controls,
+      this.surfaceTargets,
+    );
     for (const axis of ["pitch", "roll", "yaw"]) {
-      const stick = clamp(input[axis] ?? 0, -1, 1),
-        target =
-          (stick * (1 - controls.expo) + stick ** 3 * controls.expo) *
-          controls.travel;
+      const target = targets[axis];
       this.surfaces[axis] +=
         (target - this.surfaces[axis]) *
         (1 - Math.exp(-dt / controls.servoSeconds));

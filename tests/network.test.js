@@ -579,6 +579,22 @@ test('manual airplane hotlaps save a pose ghost and rejects incompatible drone c
 });
 
 
+test('stabilized airplane hotlaps store their own mode and live switching invalidates the active lap',async t=>{
+  const {client,catalog,db}=await fixture(t,{kind:'park',size:700,aircraftKinds:['fixedWing']},{countdownMs:20});
+  const p=await client('Stabilized pilot','teal',{protocol:4});
+  p.send('create',{mapId:'test-route',droneId:'rift-s75',mode:'stabilized',kind:'hotlap'});
+  const created=(await p.next(m=>m.type==='room')).room;assert.equal(created.mode,'stabilized');p.send('start');
+  const room=(await p.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+  const config=catalog.airplanes.find(c=>c.id==='rift-s75');
+  const opts={runId:room.runId,configHash:config.configHash,mode:'stabilized',simulationKey:simulationKey(room.simulation),animation:{kind:'fixedWing',engine:.4,surfaces:{pitch:.1,roll:-.1,yaw:0}}};
+  for(const point of [[0,1,-.5],[0,1,.5],[0,1,2.5],[0,1,1.5],[0,1,-.5],[0,1,.5]]){await delay(35);await p.state(point,opts);}
+  const lap=await p.next(m=>m.type==='lap');assert.equal(lap.valid,true);assert.equal(lap.saved,true);
+  assert.equal(db.laps[0][2].id,'rift-s75');assert.equal(db.laps[0][3],'stabilized');assert.ok(db.laps[0][6].frames.length>=3);
+  p.send('mode',{mode:'manual'});
+  const switched=(await p.next(m=>m.type==='room'&&m.room.players[0].mode==='manual')).room.players[0];assert.equal(switched.lap.invalid,true);
+  p.send('mode',{mode:'stabilized'});await p.next(m=>m.type==='room'&&m.room.players[0].mode==='stabilized');
+});
+
 test('mixed free flight supports eight personal aircraft, typed states, late join, reconnect and restart', async t => {
   const {client,catalog}=await fixture(t,{kind:'park',size:700},{countdownMs:20});
   const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes[0],...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-s75'),catalog.drones[0]];

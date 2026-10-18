@@ -69,7 +69,13 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
-single-motor propulsion. It supports local/online free flight, mixed drone/airplane rooms
+single-motor propulsion. Both airplanes offer Manual and Stabilized modes.
+Stabilized uses the control surfaces to return pitch and bank to level when the
+right stick is released, with 20° pitch and 35° bank demands. Throttle stays
+manual; there is no altitude hold, stall prevention or automatic landing. Press
+**M**, use the HUD mode button or assign a radio action to switch in flight.
+Switching invalidates the current timed lap; records/ghosts retain their mode.
+The T15 supports local/online free flight, mixed drone/airplane rooms
 for up to eight pilots, two dedicated Grove circuits, records and pose ghosts.
 Choose an airborne practice start, or a ground start on the Grove south promenade
 in free flight. It has separate control travel/expo, animated surfaces, wingtip

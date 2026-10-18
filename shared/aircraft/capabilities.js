@@ -15,7 +15,7 @@ const QUAD = Object.freeze({
 });
 const AIRPLANE = Object.freeze({
   kind: "fixedWing",
-  modes: ["manual"],
+  modes: ["manual", "stabilized"],
   racing: true,
   multiplayer: true,
   propDamage: false,
