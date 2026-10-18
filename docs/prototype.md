@@ -10,8 +10,8 @@ a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban ma
 | --- | --- |
 | Projektalap | Node.js HTTP/API/WebSocket szerver, Three.js és Rapier; működő VPS-kiadás az fpv.levente.net címen. |
 | Flotta | Öt repülhető drón: Rift 65, Rift 75, Rift C3, Rift X35, Rift X5; külön validált fizikai JSON és konfigurációhash. |
-| Első repülő | Rift T15: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi és ligeti földi indulás, nyolcfős szobák, versenyek és szellemek. |
-| Modellek | Öt drón-GLB és közös forrásból exportált T15, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
+| Első repülő | Rift Aero 150: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi és ligeti földi indulás, nyolcfős szobák, versenyek és szellemek. |
+| Modellek | Öt drón-GLB és közös forrásból exportált Aero 75 és Aero 150, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
 | Pályák | Liget/Grove, Betonudvar/Concrete Yard, Játszótér/Playground és Skyline; stabil belső azonosítók, öt nyelven megjelenített nevek. |
 | Útvonalak | Összesen 13 JSON-verseny: 3 drónos és 2 repülős Liget, 3 Betonudvar, 2 Játszótér, 3 Skyline. Freestyle-hoz nem kötelező útvonalat választani. |
 | Fizika | 240 Hz-es fix lépés, külön motorválasz, tömeg/súlypont/tehetetlenség, légellenállás és előkészített pályaütközések. |
@@ -77,7 +77,7 @@ nyolc külön fizikai eszköz és valódi internetkapcsolat egyidejű mérését
 ## Ténylegesen nyitott munka
 
 1. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
-   igénye indokolja. A T15 alapfunkciói, földi indulása, multiplayer- és
+   igénye indokolja. A Aero 150 alapfunkciói, földi indulása, multiplayer- és
    verseny/szellem-támogatása elkészült. A valós eszközös finomhangolás és a
    késleltetésfüggő ütközések további próbái folyamatos ellenőrzésnek számítanak.
 
@@ -112,4 +112,4 @@ A pályák és modellek további javítása konkrét hibák vagy új igények al
 - [Turtle és drónonkénti kamera](turtle-camera.md)
 - [Rift 75 és Játszótér](pocket-park-and-rift75.md), [Rift X35](rift-x35.md), [Skyline](skyline.md)
 - [Elkészült megosztási kép](cover.md)
-- [Rift T15 első repülhető prototípus](rift-t15.md), [repülőtámogatás terve](fixed-wing-plan.md)
+- [Rift Aero 150 első repülhető prototípus](rift-t15.md), [repülőtámogatás terve](fixed-wing-plan.md)

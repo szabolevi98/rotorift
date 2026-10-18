@@ -1,7 +1,7 @@
 {
   "id": "rift-s75",
   "kind": "fixedWing",
-  "name": "Rift S75",
+  "name": "Rift Aero 75",
   "version": 1,
   "category": "parkflyer",
   "tuningStatus": "experimental-estimate",

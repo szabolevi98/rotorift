@@ -1,4 +1,7 @@
-# Rift T15 — fixed-wing trainer
+# Rift Aero 150 — fixed-wing trainer
+
+Display name: **Rift Aero 150**. The internal `rift-t15` ID and source/asset paths
+remain stable for existing settings, rooms, records and ghosts.
 
 Introduced 2026-10-17; ground/online/racing support added 2026-10-18. The user
 accepted the airborne handling before this extension; its force model and default
@@ -24,7 +27,7 @@ control response are unchanged.
 
 The airplane is an original design, not an Apprentice replica. Its medium trainer
 envelope was informed by the manufacturer's [Apprentice STS manual](https://www.horizonhobby.com/on/demandware.static/-/Sites-horizon-master/default/Manuals/EFL3700-Manual-EN.pdf)
-(1.5 m span, approximately 0.332 m² wing area and a 3S power system). The T15 uses
+(1.5 m span, approximately 0.332 m² wing area and a 3S power system). The Aero 150 uses
 estimated mass/inertia, forces and control coefficients; none are real flight-log
 calibration. The current configuration is `experimental-estimate`.
 

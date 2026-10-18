@@ -4,6 +4,9 @@ import { validateDrone, validateAirplane, validateMap } from "../shared/physics/
 import { loadRoutes, DATA_ROOT } from "./routes.js";
 import { resolveRoute } from "../shared/race/routes.js";
 import { mapPresentation, compareMaps } from "../shared/catalog/maps.js";
+// These original labels are part of already-published configuration hashes.
+// A display-only rename must keep existing record/ghost categories intact.
+const airplaneHashNames = { "rift-t15": "Rift T15", "rift-s75": "Rift S75" };
 export async function loadCatalog(dataRoot = DATA_ROOT) {
   const load = async (dir) =>
     Promise.all(
@@ -41,6 +44,13 @@ export async function loadCatalog(dataRoot = DATA_ROOT) {
   try{airplanes=await load('airplanes');}catch(error){if(error.code!=='ENOENT')throw error;}
   const airplaneOrder=["rift-t15","rift-s75"];
   airplanes.sort((a,b)=>airplaneOrder.indexOf(a.id)-airplaneOrder.indexOf(b.id));
-  for(const plane of airplanes){validateAirplane(plane);plane.configHash=createHash('sha256').update(JSON.stringify(plane)).digest('hex').slice(0,16);}
+  for (const plane of airplanes) {
+    validateAirplane(plane);
+    const hashConfig = { ...plane, name: airplaneHashNames[plane.id] ?? plane.name };
+    plane.configHash = createHash("sha256")
+      .update(JSON.stringify(hashConfig))
+      .digest("hex")
+      .slice(0, 16);
+  }
   return { drones, maps, airplanes };
 }

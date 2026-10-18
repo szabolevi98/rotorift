@@ -23,7 +23,7 @@ one two-second mono noise buffer; updates do not allocate more audio nodes.
 The sound checkbox and a saved **0–100% volume slider** under Settings → Video &
 audio control output (default 70%). The initial output was too quiet; master gain
 was increased on 2026-10-17. Zero volume mutes without creating another audio graph.
-The T15 additionally has a lower-frequency, single-active-voice/two-blade profile.
+The Aero 150 additionally has a lower-frequency, single-active-voice/two-blade profile.
 
 Validation: three focused tests cover all five profiles, individual motor input,
 silence, chase level, damage, propwash, graph reuse, gesture resume and disposal.
@@ -36,6 +36,6 @@ adjustable by listening.
 
 After the volume correction, a native Chromium OfflineAudioContext check at
 44.1 kHz, full throttle and 100% volume measured five-drone peaks of 0.476–0.613
-and RMS 0.137–0.157; T15 peak 0.241, RMS 0.115. All six were below full scale 1,
+and RMS 0.137–0.157; Aero 150 peak 0.241, RMS 0.115. All six were below full scale 1,
 with no graph errors. This tests clean full-throttle level/headroom, not subjective
 sound quality or every damaged-rotor transient.

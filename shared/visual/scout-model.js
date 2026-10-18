@@ -7,7 +7,7 @@ import { batchAirplaneShell } from "./airplane-model-utils.js";
 // boom keep both the nose camera and the complete propeller sweep unobstructed.
 export function createScoutModel({ batchStatic = true } = {}) {
   const root = new THREE.Group();
-  root.name = "Rift_S75";
+  root.name = "Rift_Aero_75";
   root.userData.proceduralAircraft = true;
   const material = (color, roughness = 0.7, metalness = 0) =>
     new THREE.MeshStandardMaterial({ color, roughness, metalness });

@@ -1,4 +1,7 @@
-# Rift S75 — small pusher parkflyer
+# Rift Aero 75 — small pusher parkflyer
+
+Display name: **Rift Aero 75**. The internal `rift-s75` ID and source/asset paths
+remain stable for existing settings, rooms, records and ghosts.
 
 Introduced 2026-10-18. An original 750 mm foam-style aircraft inspired by the
 rounded pod, high wing and elevated pusher layout of the Mini AeroScout. This is
@@ -37,12 +40,12 @@ throttle remains manual and there is no altitude hold. Manual remains available.
 Both planes share the aerodynamic solver and visual animation adapter, with
 separate configurations and model factories. Structural dimensions live in
 `shared/aircraft/airframe.js`, including aircraft-specific wheel positions,
-ground clearance, wing/tail colliders and S75 boom/motor/fin proxies. Ground
-steering torque scales with airframe mass and length; T15 response is preserved.
+ground clearance, wing/tail colliders and Aero 75 boom/motor/fin proxies. Ground
+steering torque scales with airframe mass and length; Aero 150 response is preserved.
 
-The S75 supports both Grove airplane circuits, local and verified records,
+The Aero 75 supports both Grove airplane circuits, local and verified records,
 ghosts, battery and wind, and mixed eight-pilot free-flight rooms with drones
-and the T15. Solo Playground flights remain excluded, as for the T15; mixed
+and the Aero 150. Solo Playground flights remain excluded, as for the Aero 150; mixed
 online free flight permits any aircraft on every map. Quad-only prop damage,
 propwash and turtle mode remain unavailable on airplanes.
 

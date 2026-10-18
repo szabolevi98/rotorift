@@ -69,7 +69,7 @@ or the subjective fairness of simultaneous collisions across real internet
 connections. The local kinematic collision architecture remains unchanged.
 
 
-## T15 extension — 2026-10-18
+## Aero 150 extension — 2026-10-18
 
 `tests/network.test.js` additionally runs eight protocol-3 trainer clients, shared
 rules with unsupported quad effects disabled, unique colors, 1.5 m wing clearance
@@ -80,7 +80,7 @@ public ghosts and incompatible route/effect rejection.
 
 The fixed-wing physics tests separately compare solid wing contacts with ghost
 pass-through and remove the proxy bodies afterwards. Two actual local browser
-clients also joined the same T15 ground-start room and rendered the remote
+clients also joined the same Aero 150 ground-start room and rendered the remote
 colored aircraft without console errors. This is functional validation; background
 browser throttling is not an FPS benchmark, and the eight-client automation is
 not a test of eight rendering browsers or eight independent internet connections.
@@ -93,7 +93,7 @@ state. New free-flight rooms allow all drones and both airplanes together on any
 map, including late joining a running flight. Races and legacy rooms retain a
 common aircraft; old clients must refresh before joining mixed rooms.
 
-The eight-client integration test uses all seven aircraft types (five drones, T15 and S75), both ground and
+The eight-client integration test uses all seven aircraft types (five drones, Aero 150 and Aero 75), both ground and
 air starts, independent modes, unique colors, rotor damage and airplane control
 surfaces. It also checks lobby aircraft changes/readiness, invalid model/hash
 rejection, live room discovery, late join, reconnect and restart. A plane-hosted

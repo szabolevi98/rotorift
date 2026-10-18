@@ -7,11 +7,11 @@ const map = JSON.parse(
 const round = (n) => Math.round(n * 1000) / 1000;
 const descriptions = {
   wing_1: {
-    en: "A broad aerial circuit above Grove, with roomy gates and gentle turns for the T15.",
-    hu: "Tágas légi kör a Liget felett, széles kapukkal és nyugodt fordulókkal a T15 számára.",
-    de: "Eine weite Luftrunde über Grove mit großen Toren und sanften Kurven für die T15.",
-    fr: "Un grand circuit aérien au-dessus du parc, avec de larges portes et des virages doux pour le T15.",
-    es: "Un circuito aéreo amplio sobre Grove, con puertas grandes y curvas suaves para el T15.",
+    en: "A broad aerial circuit above Grove, with roomy gates and gentle turns for the Aero 150.",
+    hu: "Tágas légi kör a Liget felett, széles kapukkal és nyugodt fordulókkal az Aero 150 számára.",
+    de: "Eine weite Luftrunde über Grove mit großen Toren und sanften Kurven für die Aero 150.",
+    fr: "Un grand circuit aérien au-dessus du parc, avec de larges portes et des virages doux pour l’Aero 150.",
+    es: "Un circuito aéreo amplio sobre Grove, con puertas grandes y curvas suaves para el Aero 150.",
   },
   wing_2: {
     en: "A rising and falling figure eight above the lakes. Cross the centre at different heights and keep room for each turn.",

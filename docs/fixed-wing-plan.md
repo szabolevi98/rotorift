@@ -2,14 +2,14 @@
 
 Recorded: **2026-10-16**. Updated: **2026-10-18**. Status: **trainer and small pusher implemented**.
 
-The approved T15 now includes separate flight/effects/visual implementations,
+The approved Aero 150 now includes separate flight/effects/visual implementations,
 ground and airborne launch, eight-pilot airplane rooms, reconnect/restart,
 airplane circuits, records/ghosts and shared showcase/GLB export. See
 [current scope and validation](rift-t15.md). The original phased design below
 is retained as the rationale, rather than an outstanding task list. Real-device
 and real-network tuning remains ongoing; automated tests do not certify handling.
 
-The smaller [Rift S75](rift-s75.md) now adds an original 750 mm / 2S pusher,
+The smaller [Rift Aero 75](rift-s75.md) now adds an original 750 mm / 2S pusher,
 with its own visual factory, structure and tuning, sharing the fixed-wing solver.
 
 ## Goal and first aircraft
@@ -21,7 +21,7 @@ The airplane needs its own flight model, not a modified quadcopter motor mixer.
 Start with one original, low-poly, high-wing trainer with a single electric motor,
 ailerons, elevator, rudder and fixed landing gear. A conventional trainer offers
 clear control surfaces and a useful baseline for take-off, glide and landing tests.
-The selected T15 envelope is documented in `rift-t15.md`; do not invent a claim of
+The selected Aero 150 envelope is documented in `rift-t15.md`; do not invent a claim of
 matching a specific real aircraft.
 
 The first public release should support local free flight, an airborne practice
@@ -216,7 +216,7 @@ performance pass; record any remaining model limitations in the documentation.
 
 ## Initial decisions (2026-10-17)
 
-1. Original high-wing Rift T15: 1.5 m, 1.45 kg, 3S 3200 mAh, single electric motor.
+1. Original high-wing Rift Aero 150: 1.5 m, 1.45 kg, 3S 3200 mAh, single electric motor.
 2. First map: Grove, airborne practice start and ground start on its south promenade.
 3. Initial measured checks and limitations are recorded in `rift-t15.md`.
 4. The first release was local free flight. On 2026-10-18 the ground, online,

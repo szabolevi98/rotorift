@@ -37,7 +37,7 @@ test("S75 is a distinct 750 mm / 2S pusher, with lightweight finite geometry and
   const model = createAirplaneModel(config),
     box = new THREE.Box3().setFromObject(model, true),
     size = box.getSize(new THREE.Vector3());
-  assert.equal(model.name, "Rift_S75");
+  assert.equal(model.name, "Rift_Aero_75");
   assert.ok(Math.abs(size.x - 0.75) < 0.001);
   assert.ok(Math.abs(size.z - 0.55) < 0.01);
   let tris = 0,

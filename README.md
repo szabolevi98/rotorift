@@ -64,10 +64,10 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 | Rift C3 | 3-inch cinewhoop | 4S / 720 mAh |
 | Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
 | Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
-| Rift T15 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
-| Rift S75 · experimental | 750 mm pusher parkflyer | 2S / 650 mAh |
+| Rift Aero 150 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
+| Rift Aero 75 · experimental | 750 mm pusher parkflyer | 2S / 650 mAh |
 
-The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
+The [Rift Aero 150](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
 single-motor propulsion. Both airplanes offer Manual and Stabilized modes.
 Stabilized uses the control surfaces to return pitch and bank to level when the
@@ -75,7 +75,7 @@ right stick is released, with 20° pitch and 35° bank demands. Throttle stays
 manual; there is no altitude hold, stall prevention or automatic landing. Press
 **M**, use the HUD mode button or assign a radio action to switch in flight.
 Switching invalidates the current timed lap; records/ghosts retain their mode.
-The T15 supports local/online free flight, mixed drone/airplane rooms
+The Aero 150 supports local/online free flight, mixed drone/airplane rooms
 for up to eight pilots, two dedicated Grove circuits, records and pose ghosts.
 Choose an airborne practice start, or a ground start on the Grove south promenade
 in free flight. It has separate control travel/expo, animated surfaces, wingtip
@@ -84,11 +84,11 @@ in the showcase and export it as GLB. Handling remains an experimental estimate;
 it is not a calibrated real-aircraft replica. Drone-only courses and solo Playground
 flights are excluded for the trainer; mixed online free flight allows any aircraft on any map.
 
-The [Rift S75](docs/rift-s75.md) adds a smaller 750 mm, 230 g foam-style
+The [Rift Aero 75](docs/rift-s75.md) adds a smaller 750 mm, 230 g foam-style
 parkflyer with a raised brushless pusher, rounded pod and nose camera. Its own
 2S configuration, airframe colliders, launch height and acoustic profile share
 the fixed-wing solver and existing airplane circuits. It also joins mixed rooms
-with every drone and the T15.
+with every drone and the Aero 150.
 
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
@@ -383,7 +383,7 @@ After map changes, rebuild collisions, run `node scripts/build-race-guides.mjs`
 and rebuild the showcase.
 
 `node scripts/author-airplane-races.mjs` rebuilds the two trainer circuits.
-`node scripts/export-trainer.mjs` exports the shared procedural T15 as GLB.
+`node scripts/export-trainer.mjs` exports the shared procedural Aero 150 as GLB.
 
 `node scripts/author-races.mjs` rebuilds the nine long authored courses from their
 landmark-based designs, checks gate clearance and regenerates their guides. It

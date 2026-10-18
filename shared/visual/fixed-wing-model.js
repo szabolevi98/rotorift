@@ -10,7 +10,7 @@ import { configureDronePolymer } from "./drone-rendering.js";
 // The shaped shell and flush paint retain a small solid-material mesh budget.
 export function createTrainerModel({ batchStatic = true } = {}) {
   const root = new THREE.Group();
-  root.name = "Rift_T15";
+  root.name = "Rift_Aero_150";
   root.userData.proceduralAircraft = true;
   const material = (color, roughness = 0.65, metalness = 0) =>
     new THREE.MeshStandardMaterial({ color, roughness, metalness });

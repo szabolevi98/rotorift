@@ -24,5 +24,5 @@ await writeFile(
   Buffer.from(binary),
 );
 console.log(
-  `${scout ? "S75" : "T15"} GLB: ${Math.round(binary.byteLength / 1024)} KiB`,
+  `${scout ? "Rift Aero 75" : "Rift Aero 150"} GLB: ${Math.round(binary.byteLength / 1024)} KiB`,
 );

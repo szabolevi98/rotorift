@@ -482,7 +482,7 @@ function refreshCatalogText() {
   if (config) {
     $("#selected-name").textContent = config.name;
     $("#selected-description").textContent = t("drone." + config.id);
-    $("#model-number").textContent = "R / " + config.name.replace("Rift ", "");
+    $("#model-number").textContent = "R / " + config.name.replace("Rift ", "").replace("Aero ", "A");
     const specs = $("#drone-specs");
     specs.replaceChildren();
     for (const [value, label] of [
