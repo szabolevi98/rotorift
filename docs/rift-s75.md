@@ -22,6 +22,8 @@ Wind, battery sag, attitude and control settings change those results.
 
 The front camera looks out of the rounded pod. The motor sits on a raised aft
 pylon, with enough clearance for the full propeller disc above the tail boom.
+The motor now sits in a horizontal nacelle on a swept fairing blended into the
+wing saddle. The cabin has a curved glazing boundary and a flush dark seal.
 Canopy and foam use one continuous skin; the colored wing and tail control
 surfaces have independent hinges. Static parts batch by material. The same
 procedural factory supplies the hangar, flight, ghosts, remote aircraft and

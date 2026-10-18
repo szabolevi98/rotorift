@@ -81,6 +81,7 @@ test("full pusher sweep clears wing, pod, tail and motor pod; FPV lens looks out
     "S75_rounded_foam_pod",
     "S75_tapered_tail_boom",
     "S75_motor_pylon",
+    "S75_streamlined_motor_nacelle",
     "S75_horizontal_stabilizer",
     "S75_rounded_vertical_fin",
   ]) {

@@ -62088,23 +62088,63 @@ function createScoutModel({ batchStatic = true } = {}) {
     g.computeVertexNormals();
     return mesh(g, mat, name, parent);
   }
-  // Analytic smooth shell; the canopy is part of this skin, never a floating box.
-  const profile = (z) => {
-    const t = (z + 0.215) / 0.355,
-      s = Math.sin(Math.PI * Math.max(0, Math.min(1, t)));
-    const width = 0.038 * Math.pow(Math.max(0, s), 0.72);
-    const height = 0.032 * Math.pow(Math.max(0, s), 0.78);
-    const canopy =
-      0.021 * Math.exp(-(((z + 0.104) / 0.07) ** 4)) +
-      0.033 * Math.exp(-(((z + 0.021) / 0.052) ** 4));
-    return { width, height, canopy };
-  };
+  // Shape-preserving cubic sections keep the nose, cabin and wing saddle one
+  // continuous shell. Glazing boundaries are explicit curved edges of that skin.
+  function sectionCurve(rows) {
+    const slopes = rows.map((row, j) =>
+      row.slice(1).map((_, k) => {
+        const left = rows[Math.max(0, j - 1)],
+          right = rows[Math.min(rows.length - 1, j + 1)];
+        const d0 = j
+          ? (row[k + 1] - left[k + 1]) / (row[0] - left[0])
+          : (right[k + 1] - row[k + 1]) / (right[0] - row[0]);
+        const d1 =
+          j === rows.length - 1
+            ? d0
+            : (right[k + 1] - row[k + 1]) / (right[0] - row[0]);
+        return d0 * d1 > 0 ? (2 * d0 * d1) / (d0 + d1) : 0;
+      }),
+    );
+    return (at) => {
+      let i = rows.findIndex((row) => row[0] >= at) - 1;
+      i = at >= rows.at(-1)[0] ? rows.length - 2 : Math.max(0, i);
+      const a = rows[i],
+        b = rows[i + 1],
+        h = b[0] - a[0],
+        t = Math.max(0, Math.min(1, (at - a[0]) / h));
+      return a
+        .slice(1)
+        .map(
+          (v, k) =>
+            (2 * t ** 3 - 3 * t * t + 1) * v +
+            (t ** 3 - 2 * t * t + t) * h * slopes[i][k] +
+            (-2 * t ** 3 + 3 * t * t) * b[k + 1] +
+            (t ** 3 - t * t) * h * slopes[i + 1][k],
+        );
+    };
+  }
+  const bodySection = sectionCurve([
+    [-0.215, 0, 0, 0],
+    [-0.205, 0.012, 0.014, 0.009],
+    [-0.18, 0.023, 0.026, 0.018],
+    [-0.158, 0.03, 0.043, 0.025],
+    [-0.125, 0.035, 0.059, 0.03],
+    [-0.09, 0.036, 0.07, 0.032],
+    [-0.05, 0.036, 0.069, 0.031],
+    [-0.015, 0.033, 0.066, 0.029],
+    [0.025, 0.029, 0.057, 0.026],
+    [0.065, 0.024, 0.039, 0.022],
+    [0.1, 0.017, 0.022, 0.016],
+    [0.14, 0, 0, 0],
+  ]);
+  const profileCache = new Map();
   function skin(z, angle, offset = 0) {
-    const { width, height, canopy } = profile(z),
+    if (!profileCache.has(z)) profileCache.set(z, bodySection(z));
+    const [width, roof, belly] = profileCache.get(z),
       sin = Math.sin(angle);
     return [
       (width + offset) * Math.cos(angle),
-      (height + offset) * sin + canopy * Math.max(0, sin) ** 2,
+      (sin >= 0 ? roof + offset : belly + offset) * sin,
       z,
     ];
   }
@@ -62118,39 +62158,74 @@ function createScoutModel({ batchStatic = true } = {}) {
     );
     return a.cross(b).normalize().toArray();
   }
-  const body = [],
-    canopy = [],
-    bodyNormals = [],
-    canopyNormals = [];
-  for (let row = 0; row < 40; row++)
-    for (let i = 0; i < 32; i++) {
-      const za = -0.215 + (0.355 * row) / 40,
-        zb = -0.215 + (0.355 * (row + 1)) / 40,
-        a = (i * Math.PI * 2) / 32,
-        b = ((i + 1) * Math.PI * 2) / 32,
-        z = (za + zb) / 2,
-        angle = (a + b) / 2;
-      const glassPatch = z > -0.179 && z < -0.055 && Math.sin(angle) > 0.48;
-      const target = glassPatch ? canopy : body;
-      const p = [skin(za, a), skin(za, b), skin(zb, b), skin(zb, a)];
-      target.push(p[0], p[1], p[2], p[0], p[2], p[3]);
-      const normalTarget = glassPatch ? canopyNormals : bodyNormals;
-      const normals = [
-        skinNormal(za, a),
-        skinNormal(za, b),
-        skinNormal(zb, b),
-        skinNormal(zb, a),
-      ];
-      normalTarget.push(...[0, 1, 2, 0, 2, 3].flatMap((i) => normals[i]));
+  const shell = new Map([
+    [foam, { positions: [], normals: [] }],
+    [glass, { positions: [], normals: [] }],
+    [ink, { positions: [], normals: [] }],
+  ]);
+  const glassStart = -0.178,
+    glassEnd = -0.033;
+  const stations = [
+    ...new Set([
+      ...Array.from({ length: 41 }, (_, i) => -0.215 + (0.355 * i) / 40),
+      glassStart,
+      glassEnd,
+    ]),
+  ].sort((a, b) => a - b);
+  function bands(z) {
+    const t = (z - glassStart) / (glassEnd - glassStart),
+      width = 1.1 * Math.sqrt(Math.max(0, 1 - (2 * t - 1) ** 2));
+    const low = Math.PI / 2 - width,
+      high = Math.PI / 2 + width,
+      rim = Math.min(0.025, width * 0.2);
+    return [
+      [0, low, 6, foam],
+      [low, low + rim, 1, ink],
+      [low + rim, high - rim, 12, glass],
+      [high - rim, high, 1, ink],
+      [high, Math.PI, 6, foam],
+      [Math.PI, 2 * Math.PI, 12, foam],
+    ];
+  }
+  for (let row = 0; row < stations.length - 1; row++) {
+    const za = stations[row],
+      zb = stations[row + 1],
+      aa = bands(za),
+      bb = bands(zb);
+    for (let band = 0; band < aa.length; band++) {
+      const [a0, a1, count, mat] = aa[band],
+        [b0, b1] = bb[band],
+        target = shell.get(mat);
+      for (let i = 0; i < count; i++) {
+        const a = a0 + ((a1 - a0) * i) / count,
+          b = a0 + ((a1 - a0) * (i + 1)) / count,
+          c = b0 + ((b1 - b0) * i) / count,
+          d = b0 + ((b1 - b0) * (i + 1)) / count;
+        const p = [skin(za, a), skin(za, b), skin(zb, d), skin(zb, c)],
+          n = [
+            skinNormal(za, a),
+            skinNormal(za, b),
+            skinNormal(zb, d),
+            skinNormal(zb, c),
+          ];
+        for (const j of [0, 1, 2, 0, 2, 3]) {
+          target.positions.push(p[j]);
+          target.normals.push(...n[j]);
+        }
+      }
     }
-  triangles(body, foam, "S75_rounded_foam_pod").geometry.setAttribute(
-    "normal",
-    new THREE.Float32BufferAttribute(bodyNormals, 3),
-  );
-  triangles(canopy, glass, "S75_flush_canopy").geometry.setAttribute(
-    "normal",
-    new THREE.Float32BufferAttribute(canopyNormals, 3),
-  );
+  }
+  for (const [mat, name] of [
+    [foam, "S75_rounded_foam_pod"],
+    [glass, "S75_flush_canopy"],
+    [ink, "S75_canopy_seal"],
+  ]) {
+    const part = shell.get(mat);
+    triangles(part.positions, mat, name).geometry.setAttribute(
+      "normal",
+      new THREE.Float32BufferAttribute(part.normals, 3),
+    );
+  }
   // Flush flowing cheek paint with a narrow navy underline, on both sides.
   for (const side of [-1, 1])
     for (const [mat, base, width] of [
@@ -62357,39 +62432,110 @@ function createScoutModel({ batchStatic = true } = {}) {
     rudder,
   );
 
-  // Raised motor nacelle, brushless bell, ventilation slots, real cable ends.
-  const pylon = mesh(
-    new THREE.SphereGeometry(1, 16, 10),
+  // A swept fairing grows out of the wing saddle and blends into a horizontal
+  // nacelle. Its rounded nose covers the mount; the brushless bell stays exposed.
+  const pylonSections = [
+    [0.026, 0.019, 0.059, 0.052],
+    [0.046, 0.017, 0.064, 0.05],
+    [0.07, 0.014, 0.075, 0.043],
+    [0.092, 0.012, 0.093, 0.033],
+    [0.112, 0.0115, 0.107, 0.024],
+    [0.125, 0.011, 0.11, 0.02],
+  ];
+  const pylonSection = sectionCurve(pylonSections);
+  const pylonRows = Array.from(
+    { length: 17 },
+    (_, i) => 0.026 + (0.099 * i) / 16,
+  );
+  const pylonPoint = (y, a, offset = 0) => {
+    const [width, z, depth] = pylonSection(y);
+    return [
+      (width + offset) * Math.cos(a),
+      y,
+      z - (depth + offset) * Math.sin(a),
+    ];
+  };
+  solid(
+    pylonRows.map((y) =>
+      Array.from({ length: 20 }, (_, j) => pylonPoint(y, (j * Math.PI) / 10)),
+    ),
     foam,
     "S75_motor_pylon",
   );
-  pylon.position.set(0, 0.077, 0.077);
-  pylon.scale.set(0.014, 0.052, 0.036);
+  for (const side of [-1, 1]) {
+    const paint = [];
+    for (let i = 0; i < pylonRows.length - 2; i++) {
+      const ya = pylonRows[i],
+        yb = pylonRows[i + 1],
+        offset = side > 0 ? 0 : Math.PI,
+        a = offset + side * 0.4,
+        b = offset + side * 0.6;
+      const p = [
+        pylonPoint(ya, a, 0.00035),
+        pylonPoint(ya, b, 0.00035),
+        pylonPoint(yb, b, 0.00035),
+        pylonPoint(yb, a, 0.00035),
+      ];
+      paint.push(p[0], p[1], p[2], p[0], p[2], p[3]);
+    }
+    const stripe = triangles(paint, accent, "S75_swept_motor_fairing_livery");
+    stripe.material.side = THREE.DoubleSide;
+  }
+  const nacelleSection = sectionCurve([
+    [0.075, 0],
+    [0.08, 0.006],
+    [0.089, 0.012],
+    [0.1, 0.0145],
+    [0.11, 0.014],
+    [0.114, 0.0125],
+  ]);
+  solid(
+    Array.from({ length: 13 }, (_, i) => {
+      const z = 0.075 + (0.039 * i) / 12,
+        r = nacelleSection(z)[0];
+      return Array.from({ length: 20 }, (_, j) => [
+        r * Math.cos((j * Math.PI) / 10),
+        0.125 + r * Math.sin((j * Math.PI) / 10),
+        z,
+      ]);
+    }),
+    foam,
+    "S75_streamlined_motor_nacelle",
+  );
   const motor = mesh(
-    new THREE.CylinderGeometry(0.012, 0.012, 0.026, 16),
+    new THREE.CylinderGeometry(0.012, 0.012, 0.019, 20),
     ink,
     "S75_brushless_motor",
   );
   motor.rotation.x = Math.PI / 2;
-  motor.position.set(0, 0.125, 0.118);
-  for (const side of [-1, 1])
-    for (let i = 0; i < 3; i++) {
-      rod(
-        [side * 0.011, 0.124 + (i - 1) * 0.003, 0.111],
-        [side * 0.011, 0.124 + (i - 1) * 0.003, 0.122],
-        0.0007,
-        metal,
-        "S75_motor_cooling_slot",
-      );
-    }
-  for (let i = 0; i < 3; i++)
+  motor.position.set(0, 0.125, 0.121);
+  const collar = mesh(
+    new THREE.CylinderGeometry(0.0124, 0.0124, 0.002, 20),
+    metal,
+    "S75_motor_mount_ring",
+  );
+  collar.rotation.x = Math.PI / 2;
+  collar.position.set(0, 0.125, 0.112);
+  for (let i = 0; i < 8; i++) {
+    const a = (i * Math.PI) / 4;
     rod(
-      [-0.004 + i * 0.004, 0.107, 0.107],
-      [-0.004 + i * 0.004, 0.064, 0.061],
-      0.0009,
+      [Math.cos(a) * 0.0122, 0.125 + Math.sin(a) * 0.0122, 0.119],
+      [Math.cos(a) * 0.0122, 0.125 + Math.sin(a) * 0.0122, 0.126],
+      0.00055,
+      metal,
+      "S75_motor_cooling_slot",
+    );
+  }
+  // The leads enter the motor base and disappear through a small fairing exit.
+  for (let i = 0; i < 3; i++) {
+    rod(
+      [-0.003 + i * 0.003, 0.114, 0.111],
+      [-0.003 + i * 0.003, 0.105, 0.103],
+      0.0008,
       i === 0 ? accent : ink,
       "S75_motor_lead",
     );
+  }
   rod(
     [0, 0.125, 0.129],
     [0, 0.125, 0.145],
