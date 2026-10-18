@@ -4,14 +4,14 @@ import { readFile, stat } from "node:fs/promises";
 import { loadCatalog } from "../server/catalog.js";
 import { validateDrone, validateMap } from "../shared/physics/config.js";
 import { canRace } from "../shared/race/map-modes.js";
-test("catalog contains five valid drone models and four maps with explicit race availability", async () => {
+test("catalog contains six valid drone models and four maps with explicit race availability", async () => {
   const { drones, maps } = await loadCatalog();
-  assert.equal(drones.length, 5);
+  assert.equal(drones.length, 6);
   assert.equal(maps.length, 4);
   assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter','skyline']);
   assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground','skyline']);
-  assert.equal(new Set(drones.map((d) => d.configHash)).size, 5);
-  assert.deepEqual(drones.map(d=>d.id),["rift-65","rift-75","rift-c3","rift-x35","rift-x5"]);
+  assert.equal(new Set(drones.map((d) => d.configHash)).size, 6);
+  assert.deepEqual(drones.map(d=>d.id),["rift-65","rift-75","rift-c3","rift-x35","rift-x5","rift-r5"]);
   for (const c of drones) {
     assert.equal(validateDrone(c), c);
     assert.ok(

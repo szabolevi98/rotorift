@@ -1,9 +1,11 @@
 # Rotorift – fejlesztési terv
 
-## Aktuális állapot – 2026-10-18
+2026-10-19: elkészült a 400 mm / 1S Rift Aero 40 mikro warbird és az 5″ / 6S Rift R5 versenydrón. A flotta hat drónból és három repülőből áll; mindkét új gép a közös katalógust, showcase-t és multiplayer-folyamatot használja.
 
-Öt drón (65, 75, C3, X35, X5), négy pálya (Liget, Betonudvar, Játszótér,
-Skyline), az Aero 75 és Aero 150 repülő, valamint 13 választható versenyútvonal működik. Elkészült a multiplayer,
+## Aktuális állapot – 2026-10-19
+
+Hat drón (65, 75, C3, X35, X5, R5), négy pálya (Liget, Betonudvar, Játszótér,
+Skyline), az Aero 40, Aero 75 és Aero 150 repülő, valamint 17 választható versenyútvonal működik. Elkészült a multiplayer,
 visszacsatlakozás, futamújraindítás, eredményképernyő, saját/globális szellemek,
 deltaidő, kapuszerkesztő, SVG-útvonalrészletek és a megosztási kép is.
 Az aktuális nyitott feladatokat és a mérési korlátokat a

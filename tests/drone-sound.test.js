@@ -31,8 +31,8 @@ test('each current drone has a different acoustic profile; whoops have higher ro
     assert.ok(last(sound.master.gain)>0);
     sound.dispose();
   }
-  assert.equal(new Set(frequencies).size,5);
-  assert.ok(frequencies.every((f,i)=>i===0||f<frequencies[i-1]));
+  assert.equal(new Set(frequencies).size,drones.length);
+  assert.ok(frequencies.slice(0,5).every((f,i)=>i===0||f<frequencies[i-1]));
 });
 
 test('motor-specific demands, zero throttle, disarm, sound off and camera view control the actual audio gains',()=>{

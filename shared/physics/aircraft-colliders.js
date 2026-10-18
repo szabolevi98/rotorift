@@ -6,6 +6,7 @@ export function guardTuning(config) {
 export function addAircraftColliders(RAPIER, world, body, config) {
   const add = desc => world.createCollider(desc.setDensity(0).setFriction(config.friction).setRestitution(config.restitution),body);
   const bodyCollider = add(RAPIER.ColliderDesc.cuboid(...config.bodyHalfExtentsM));
+  const frameColliders = (config.frameParts ?? []).map(part => add(RAPIER.ColliderDesc.cuboid(...part.halfExtentsM).setTranslation(...part.positionM)));
   const propColliders = config.motors.map(m=>add(RAPIER.ColliderDesc.cylinder(.0015,config.propDiameterM*.48).setTranslation(...m.positionM)));
   const guard = guardTuning(config), guardColliders=[];
   // Convex arcs leave the rotor interior open. A solid cylinder would protect
@@ -19,5 +20,5 @@ export function addAircraftColliders(RAPIER, world, body, config) {
     const desc=RAPIER.ColliderDesc.convexHull(new Float32Array(vertices));
     guardColliders.push(add(desc.setTranslation(motor.positionM[0],motor.positionM[1]+guard.offsetYM,motor.positionM[2])));
   }
-  return {bodyCollider,propColliders,guardColliders};
+  return {bodyCollider,propColliders,guardColliders,frameColliders};
 }

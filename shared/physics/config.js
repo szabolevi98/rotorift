@@ -74,6 +74,9 @@ export function validateDrone(c) {
     throw Error("Invalid battery");
   for (const k of ["linearDrag", "quadraticDrag", "angularDrag"])
     if (!Number.isFinite(c[k]) || c[k] < 0) throw Error("Invalid drag");
+  if(c.frameParts !== undefined && (!Array.isArray(c.frameParts) || c.frameParts.length>8 || c.frameParts.some(part=>
+    !Array.isArray(part.halfExtentsM) || part.halfExtentsM.length!==3 || !part.halfExtentsM.every(v=>positive(v)&&v<1) ||
+    !Array.isArray(part.positionM) || part.positionM.length!==3 || !part.positionM.every(v=>Number.isFinite(v)&&Math.abs(v)<1))))throw Error('Invalid frame parts');
   if (!c.simulation?.battery || !["idleCurrentA", "maxCurrentA", "resistanceOhm"].every(k => positive(c.simulation.battery[k])) ||
       !positive(c.simulation.propwashStrength) || c.simulation.propwashStrength > 0.5)
     throw Error("Invalid simulation tuning");

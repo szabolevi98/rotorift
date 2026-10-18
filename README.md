@@ -11,7 +11,7 @@ Node.js/WebSocket multiplayer and MySQL/MariaDB leaderboards support online sess
 
 **[Play Rotorift](https://fpv.levente.net/)** · **[Explore the showcase](https://szabolevi98.github.io/rotorift/)** · **[Deployment guide](DEPLOY.md)**
 
-Rotorift is a playable prototype. The five drone configurations have automated
+Rotorift is a playable prototype. The six drone configurations have automated
 flight measurements, but matching specific real aircraft requires further tuning
 against flight logs. Hardware compatibility also depends on the radio, firmware,
 operating system and browser.
@@ -64,9 +64,12 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 | Rift C3 | 3-inch cinewhoop | 4S / 720 mAh |
 | Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
 | Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
+| Rift R5 | 5-inch racing, upper fin / underslung pack | 6S / 1050 mAh |
 | Rift Aero 40 · experimental | 400 mm P-51D-inspired micro warbird | 1S / 400 mAh |
 | Rift Aero 75 · experimental | 750 mm pusher parkflyer | 2S / 650 mAh |
 | Rift Aero 150 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
+
+The [Rift R5](docs/rift-r5.md) adds a compact 5-inch / 6S racing airframe, a top shark fin and an underslung pack. It is lighter and accelerates faster than X5; the current calm, nominal-voltage measurement gives about 218 km/h sustainable level cruise.
 
 The [Rift Aero 150](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
@@ -314,7 +317,7 @@ Further details:
 
 ## Showcase and race editor
 
-The English showcase combines five drone models and three airplanes with all four map viewers. It runs
+The English showcase combines six drone models and three airplanes with all four map viewers. It runs
 on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 `http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
 The game itself requires a separate Node server.

@@ -11,10 +11,11 @@ export function batchAirplaneShell(root, prefix = "T15") {
       : object.geometry.clone();
     geometry.applyMatrix4(object.matrix);
     if (!batches.has(object.material))
-      batches.set(object.material, { positions: [], normals: [], parts: [] });
+      batches.set(object.material, { positions: [], normals: [], uvs: [], parts: [] });
     const batch = batches.get(object.material);
     batch.positions.push(...geometry.attributes.position.array);
     batch.normals.push(...geometry.attributes.normal.array);
+    if(object.material.map)batch.uvs.push(...(geometry.attributes.uv?.array ?? new Float32Array(geometry.attributes.position.count*2)));
     batch.parts.push(object.name);
     root.remove(object);
     geometry.dispose();
@@ -31,6 +32,7 @@ export function batchAirplaneShell(root, prefix = "T15") {
       "normal",
       new THREE.Float32BufferAttribute(batch.normals, 3),
     );
+    if(batch.uvs.length)geometry.setAttribute('uv',new THREE.Float32BufferAttribute(batch.uvs,2));
     const object = new THREE.Mesh(geometry, material);
     object.name = prefix + "_static_shell_" + index++;
     object.userData.parts = batch.parts;

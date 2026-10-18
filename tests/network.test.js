@@ -597,7 +597,7 @@ for(const aircraftId of ['rift-s75','rift-a40'])test(aircraftId+' stabilized hot
 
 test('mixed free flight supports eight personal aircraft, typed states, late join, reconnect and restart', async t => {
   const {client,catalog}=await fixture(t,{kind:'park',size:700},{countdownMs:20});
-  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-t15'),...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-s75'),catalog.airplanes.find(c=>c.id==='rift-a40')];
+  const configs=['rift-x5','rift-t15','rift-65','rift-r5','rift-c3','rift-x35','rift-s75','rift-a40'].map(id=>[...catalog.drones,...catalog.airplanes].find(c=>c.id===id));
   const pilots=[];
   for(let i=0;i<8;i++)pilots.push(await client('Mixed '+i,'coral',{protocol:4}));
   const host=pilots[0],old=await client('Old client','blue',{protocol:3});

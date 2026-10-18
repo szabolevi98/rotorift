@@ -5,10 +5,13 @@ import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
 import { configureDronePolymer } from "../../shared/visual/drone-rendering.js";
 import { paintLoading } from "../loading.js";
 import {createAirplaneModel} from '../../shared/visual/airplane-models.js';
+import {createRacingModel} from '../../shared/visual/racing-model.js';
+const proceduralQuads = {'rift-r5':createRacingModel};
 const cache = new Map(),
   loader = new GLTFLoader();
 export async function loadModel(config, { isolateMaterials = false, onProgress } = {}) {
   if(config.kind==='fixedWing'){onProgress?.({phase:'prepare'});return createAirplaneModel(config);}
+  if(proceduralQuads[config.id]){onProgress?.({phase:'prepare'});return proceduralQuads[config.id]();}
   let entry = cache.get(config.id);
   if (!entry) {
     entry = { listeners: new Set(), progress: { phase: "download", loaded: 0, total: 0 } };
@@ -178,10 +181,15 @@ export function isolateModelMaterials(model) {
 export function disposeModelMaterials(model) {
   const materials = new Set();
   const geometries = new Set();
+  const textures = new Set();
   model?.traverse(object => {
     if(model.userData.proceduralAircraft&&object.geometry)geometries.add(object.geometry);
-    if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) materials.add(material);
+    if (object.isMesh) for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+      materials.add(material);
+      if(model.userData.proceduralAircraft && material.map)textures.add(material.map);
+    }
   });
   for (const material of materials) material.dispose();
   for(const geometry of geometries)geometry.dispose();
+  for(const texture of textures)texture.dispose();
 }

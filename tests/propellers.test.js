@@ -6,6 +6,7 @@ import {DronePhysics,PHYSICS_DT} from "../shared/physics/drone.js";
 import {PropellerDamage,freshPropellers,validPropellers,propellerState} from "../shared/physics/propellers.js";
 import {FlightEffects} from "../shared/physics/flight-effects.js";
 import {hoverThrottle} from "../shared/physics/propulsion.js";
+import {guardTuning} from '../shared/physics/aircraft-colliders.js';
 await RAPIER.init();
 const {drones}=await loadCatalog(),x5=drones.find(c=>c.id==='rift-x5');
 const neutral={roll:0,pitch:0,yaw:0,throttle:0};
@@ -28,18 +29,18 @@ test('weak contact does not damage props; disabling and reset replace all blades
  fx.impact(2,30,0,true);assert.equal(fx.motorEfficiency(2),0);
  fx.setOptions({propDamage:false});assert.deepEqual(fx.propellers.blades,freshPropellers());assert.equal(fx.motorEfficiency(2),1);
 });
-test('an actual local obstacle strikes only the front left X5 rotor',()=>{
+for(const config of drones.filter(c=>['rift-x5','rift-r5'].includes(c.id)))test(config.id+' actual local obstacle strikes only the front left rotor',()=>{
  const world=new RAPIER.World({x:0,y:0,z:0});
  try{
-  const drone=new DronePhysics(RAPIER,world,x5,[0,1,0],{updateSceneQueries:false,simulation:{propDamage:true}});
-  world.createCollider(RAPIER.ColliderDesc.cuboid(.008,.03,.010).setTranslation(-.19,.98,-.076));
+  const drone=new DronePhysics(RAPIER,world,config,[0,1,0],{updateSceneQueries:false,simulation:{propDamage:true}}),motor=config.motors[0].positionM;
+  world.createCollider(RAPIER.ColliderDesc.cuboid(.008,.03,.010).setTranslation(motor[0]-config.propDiameterM/2-.035,1+motor[1],motor[2]));
   drone.armed=true;drone.body.setLinvel({x:-8,y:0,z:0},true);
   for(let i=0;i<24;i++)drone.step(neutral);
   assert.ok(drone.effects.propellers.blades[0].some(v=>v>0));
   assert.deepEqual(drone.effects.propellers.blades.slice(1),[[0,0,0],[0,0,0],[0,0,0]]);
  }finally{world.free();}
 });
-for(const config of drones.filter(c=>c.category!=='freestyle'))test(`${config.id}: ring protects a side hit, but a narrow obstacle inside the ring hits a blade`,()=>{
+for(const config of drones.filter(c=>guardTuning(c)))test(`${config.id}: ring protects a side hit, but a narrow obstacle inside the ring hits a blade`,()=>{
  function scenario(inside){
   const world=new RAPIER.World({x:0,y:0,z:0});
   try{

@@ -104,3 +104,5 @@ A Rapier test resolves the remote aircraft independently from the local aircraft
 checks the trainer wingtip and different quad prop radii, replaces a proxy after
 an aircraft change, and removes proxies in ghost mode or for unknown aircraft.
 These are automated software checks, not eight physical controllers/devices.
+
+The 2026-10-19 aircraft expansion adds Aero 40 and R5 to the ordinary catalog. The eight-client mixed-aircraft lifecycle test now includes both alongside Aero 75, Aero 150 and four earlier drones; it checks typed animation, individual simulation capabilities, late join, reconnect and restart. Aero 40 also completes a separate stabilized verified hotlap/record test. This remains a scripted local test, not evidence of eight physical controllers.

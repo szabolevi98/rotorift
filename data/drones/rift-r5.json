@@ -1,0 +1,73 @@
+{
+  "id": "rift-r5",
+  "name": "Rift R5",
+  "version": 1,
+  "category": "racing",
+  "tuningStatus": "initial-estimate",
+  "massKg": 0.485,
+  "motorDiagonalM": 0.21836,
+  "propDiameterM": 0.127,
+  "maxSpeedMps": 65,
+  "inertiaKgM2": [0.00095, 0.0015, 0.00095],
+  "centerOfMassM": [0, -0.012, 0],
+  "bodyHalfExtentsM": [0.019, 0.017, 0.047],
+  "frameParts": [
+    {
+      "halfExtentsM": [0.0175, 0.017, 0.034],
+      "positionM": [0, -0.0335, 0.003]
+    },
+    { "halfExtentsM": [0.002, 0.025, 0.018], "positionM": [0, 0.045, -0.013] }
+  ],
+  "visualOffsetM": [0, 0, 0],
+  "cameraOffsetM": [0, 0.0171, -0.053],
+  "motor": {
+    "maxThrustN": 13.8,
+    "thrustExponent": 1.9,
+    "riseSeconds": 0.018,
+    "fallSeconds": 0.025,
+    "yawTorquePerNewtonM": 0.015
+  },
+  "motors": [
+    { "positionM": [-0.0825, 0.018, -0.0715], "direction": 1 },
+    { "positionM": [0.0825, 0.018, -0.0715], "direction": -1 },
+    { "positionM": [-0.0825, 0.018, 0.0715], "direction": -1 },
+    { "positionM": [0.0825, 0.018, 0.0715], "direction": 1 }
+  ],
+  "battery": {
+    "cells": 6,
+    "nominalVoltage": 22.8,
+    "capacityMah": 1050,
+    "fullCellVoltage": 4.2
+  },
+  "linearDrag": 0.011,
+  "quadraticDrag": 0.0148,
+  "angularDrag": 0.00009,
+  "controller": {
+    "rateGain": [55, 34, 55],
+    "rateDamping": [0.8, 0.65, 0.8],
+    "derivativeFilterSeconds": 0.012,
+    "levelGain": 7,
+    "angleLimitDeg": 50
+  },
+  "friction": 0.7,
+  "restitution": 0.12,
+  "simulation": {
+    "battery": {
+      "idleCurrentA": 0.65,
+      "maxCurrentA": 115,
+      "resistanceOhm": 0.03,
+      "linearCurrentFraction": 0.7,
+      "polarizationOhm": 0.012,
+      "recoverySeconds": 3,
+      "reserveFraction": 0.07
+    },
+    "propeller": {
+      "bendSpeedMps": 2.5,
+      "chipSpeedMps": 6,
+      "breakSpeedMps": 12,
+      "maxTipSpeedMps": 155
+    },
+    "propwashStrength": 0.19
+  },
+  "model": "/assets/models/rift-r5.glb"
+}

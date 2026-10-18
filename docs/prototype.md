@@ -1,6 +1,6 @@
 # Rotorift – aktuális állapot és ellenőrzések
 
-Frissítve: **2026-10-18**. Ez az oldal az aktuális megvalósítást és a ténylegesen
+Frissítve: **2026-10-19**. Ez az oldal az aktuális megvalósítást és a ténylegesen
 nyitott munkát foglalja össze. A korábbi prototípus fejlesztéstörténete a Gitben,
 a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban maradnak.
 
@@ -9,18 +9,18 @@ a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban ma
 | Terület | Aktuális megvalósítás |
 | --- | --- |
 | Projektalap | Node.js HTTP/API/WebSocket szerver, Three.js és Rapier; működő VPS-kiadás az fpv.levente.net címen. |
-| Flotta | Öt repülhető drón: Rift 65, Rift 75, Rift C3, Rift X35, Rift X5; külön validált fizikai JSON és konfigurációhash. |
-| Első repülő | Rift Aero 150: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi és ligeti földi indulás, nyolcfős szobák, versenyek és szellemek. |
-| Modellek | Öt drón-GLB és közös forrásból exportált Aero 75 és Aero 150, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
+| Flotta | Hat repülhető drón: Rift 65, Rift 75, Rift C3, Rift X35, Rift X5, Rift R5; külön validált fizikai JSON és konfigurációhash. |
+| Repülők | Rift Aero 40 (400 mm / 1S mikro warbird), Aero 75 (750 mm / 2S tolólégcsavaros kisgép) és Aero 150: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi és ligeti földi indulás, nyolcfős szobák, versenyek és szellemek. |
+| Modellek | Hat drón-GLB és közös forrásból exportált Aero 40, Aero 75 és Aero 150, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
 | Pályák | Liget/Grove, Betonudvar/Concrete Yard, Játszótér/Playground és Skyline; stabil belső azonosítók, öt nyelven megjelenített nevek. |
-| Útvonalak | Összesen 13 JSON-verseny: 3 drónos és 2 repülős Liget, 3 Betonudvar, 2 Játszótér, 3 Skyline. Freestyle-hoz nem kötelező útvonalat választani. |
+| Útvonalak | Összesen 17 JSON-verseny: Liget, Betonudvar és Skyline mind 3 drónos és 2 repülős, valamint 2 Játszótér. Freestyle-hoz nem kötelező útvonalat választani. |
 | Fizika | 240 Hz-es fix lépés, külön motorválasz, tömeg/súlypont/tehetetlenség, légellenállás és előkészített pályaütközések. |
-| Repülési módok | Drónok: Acro, Angle, Horizon; repülő: Manual; váltás repülés közben is. Mért kör közbeni módváltás érvényteleníti a kört. |
+| Repülési módok | Drónok: Acro, Angle, Horizon; repülők: Manual és Stabilized; váltás repülés közben is. Mért kör közbeni módváltás érvényteleníti a kört. |
 | Bemenet | USB rádió/gamepad felismerés, mentett profil, csatornakiosztás, kalibráció, billentyűzetes tartalékvezérlés és felfutáskorlátozás. |
 | Touch és rádiópróba | Kontroller nélküli mobilos Mode 2 botok; a mobilos touch és a Pocket/TX15/Android hardverellenőrzést a felhasználó késznek jelezte 2026-10-17-én. |
-| Hang | Öt külön hangprofil, négy motor külön vezérelve, légzaj, duct-karakter, sérült prop és propwash hangváltozás; natív Web Audio. |
+| Hang | Kilenc külön hangprofil, a drónok négy motorja külön vezérelve, légzaj, duct-karakter, sérült prop és propwash hangváltozás; natív Web Audio. |
 | Beállítások | Tabos beállítások, mozgó botokkal működő 3D rádiósegéd, drónonkénti Actual Rates és kamera, opcionális auto-arm. |
-| Kamerák/HUD | Követőnézet, drónt mutató FPV és tiszta FPV; élő botjelzők, FPS/diagnosztika, nagy akkukártya, műhorizont és analóg effekt. |
+| Kamerák/HUD | Követőnézet, gépet mutató FPV és tiszta FPV, repülőknél fix földi/tetőpilóta és zoom; élő botjelzők, FPS/diagnosztika, nagy akkukártya, műhorizont és analóg effekt. |
 | Szimuláció | Opcionális akkufogyás/feszültségesés, LOW BATTERY/LAND NOW és teljesítménykorlát; külön lapátsérülések, propwash, négy szélállapot. |
 | Multiplayer | Legfeljebb nyolc pilóta, szobalista/kód, lobby, szerveres rajt, szín/nyomvonal, host által választott közös opciók és választható pilótaütközés. |
 | Futaméletciklus | Automatikus visszatérés ugyanabba a szobába 60 másodperces foglalással, új futam ugyanabban a szobában, külön eredményképernyő és DNF. |

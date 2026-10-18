@@ -7,6 +7,7 @@ measured manufacturer RPM specifications.
 - Rift 65: high, light rotor buzz; Rift 75: a slightly lower and fuller whoop.
 - Rift C3: lower rotor pitch and a stronger duct resonance.
 - Rift X35: sharper open-prop character; Rift X5: deeper body and broader airflow.
+- Rift R5: sharper 5-inch racing buzz, a higher rotor character and broader airflow than X5.
 - Four independently driven oscillators follow the same motor-speed fractions as
   the visible propellers, including the flight controller's motor mixing and lag.
 - Blade-pass harmonics, a small motor component, filtered airflow and slight

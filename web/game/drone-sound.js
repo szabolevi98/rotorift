@@ -9,6 +9,7 @@ export const DRONE_SOUND_PROFILES = Object.freeze({
   'rift-c3':  { rotorHz: 760, body: .30, blade: .85, air: .052, highpass: 260, cutoff: 5500, resonance: 1350, ductDb: 4, gain: .90 },
   'rift-x35': { rotorHz: 660, body: .38, blade: 1, air: .060, highpass: 180, cutoff: 6800, resonance: 1100, ductDb: 0, gain: .95 },
   'rift-x5':  { rotorHz: 530, body: .52, blade: 1, air: .073, highpass: 110, cutoff: 6200, resonance: 850, ductDb: 0, gain: 1 },
+  'rift-r5':  { rotorHz: 590, body: .40, blade: 1.05, air: .078, highpass: 150, cutoff: 6900, resonance: 980, ductDb: 0, gain: 1 },
 });
 const unit = value => Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 const target = (param, value, time, response = .018) => param.setTargetAtTime(value, time, response);

@@ -23,7 +23,7 @@ export async function loadCatalog(dataRoot = DATA_ROOT) {
     );
   const drones = await load("drones"),
     maps = await load("maps");
-  const droneOrder=["rift-65","rift-75","rift-c3","rift-x35","rift-x5"];
+  const droneOrder=["rift-65","rift-75","rift-c3","rift-x35","rift-x5","rift-r5"];
   drones.sort((a,b)=>droneOrder.indexOf(a.id)-droneOrder.indexOf(b.id));
   maps.sort(compareMaps);
   for (const d of drones) {
