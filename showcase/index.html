@@ -61300,6 +61300,14 @@ function createTrainerModel({ batchStatic = true } = {}) {
       z,
     );
   };
+  const angleAtHeight = (z, y) => {
+    const [, h, center, top] = sectionAt(z);
+    const exponent =
+      1 - Math.min(1, Math.max(0, (top - center - h) / 0.05)) * 0.55;
+    return Math.asin(
+      Math.max(0, Math.min(1, (y - center) / (top - center))) ** (1 / exponent),
+    );
+  };
   const skinNormal = (z, angle) => {
     const dz = skinPoint(Math.min(0.558, z + 0.00001), angle).sub(
       skinPoint(Math.max(-0.465, z - 0.00001), angle),
@@ -61421,10 +61429,18 @@ function createTrainerModel({ batchStatic = true } = {}) {
   bodyStrip(frontZ, fixed(Math.PI), fixed(Math.PI * 2), 16);
   closedBand(frontEnd, -0.195, 2);
   function sideWindow(start, end, name) {
-    const zs = stations(start, end, 12),
-      center = 0.72;
-    const lower = (z) => center - windowHalf(z, start, end, 0.36),
-      upper = (z) => center + windowHalf(z, start, end, 0.36);
+    const zs = stations(start, end, 12);
+    // Define the pane in actual height, not polar angle: rounded shoulders
+    // otherwise squeeze the glazing into a shallow, sloping roof window.
+    const edge = (z, side) => {
+      const sill = 0.032,
+        head = Math.min(0.112, sectionAt(z)[3] - 0.009);
+      const y =
+        (sill + head) / 2 + side * windowHalf(z, start, end, (head - sill) / 2);
+      return angleAtHeight(z, y);
+    };
+    const lower = (z) => edge(z, -1),
+      upper = (z) => edge(z, 1);
     bodyStrip(zs, fixed(0), lower, 4);
     skinStrip(zs, lower, upper, 8, glass, name + "_right");
     bodyStrip(zs, upper, (z) => Math.PI - upper(z), 12);
@@ -61500,7 +61516,11 @@ function createTrainerModel({ batchStatic = true } = {}) {
       "T15_fuselage_cheatline_" + side,
       0.0005,
     );
-    const handle = skinPoint(-0.06, side > 0 ? 0.27 : Math.PI - 0.27);
+    const handleAngle = angleAtHeight(-0.06, 0.022);
+    const handle = skinPoint(
+      -0.06,
+      side > 0 ? handleAngle : Math.PI - handleAngle,
+    );
     box(
       [0.003, 0.003, 0.018],
       handle.toArray(),
