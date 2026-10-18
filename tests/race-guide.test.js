@@ -161,6 +161,31 @@ test('Cranes & Twin Shafts approaches the hangar through its open end instead of
   }finally{environment.dispose();}
 });
 
+test('neon corners stay rounded on large aircraft gates and do not fold on shallow gates',()=>{
+  for(const [width,height]of [[6,4],[30,18],[4,.6],[.7,.6]]){
+    const group=createNeonGate({p:[0,0,0],n:[0,0,1],width,height},0);
+    try{
+      for(const mesh of group.children.filter(o=>o.isMesh)){
+        const {position,normal}=mesh.geometry.attributes,index=mesh.geometry.index;
+        const angles=new Set(),w=width/2,h=height/2,r=Math.min(.28,w*.13,h*.13);
+        for(let i=0;i<position.count;i++){
+          const x=position.getX(i)-(w-r),y=position.getY(i)-(h-r);
+          if(x>1e-6&&y>1e-6&&Math.abs(position.getZ(i))<1e-6)
+            angles.add(Math.round(Math.atan2(y,x)*1000));
+        }
+        assert.ok(angles.size>=7,`${width} x ${height}: a large frame must retain intermediate corner sections`);
+        const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),out=new THREE.Vector3();
+        for(let i=0;i<index.count;i+=3){
+          a.fromBufferAttribute(position,index.getX(i));b.fromBufferAttribute(position,index.getX(i+1));c.fromBufferAttribute(position,index.getX(i+2));
+          out.fromBufferAttribute(normal,index.getX(i));
+          assert.ok(b.sub(a).cross(c.sub(a)).dot(out)>0,`${width} x ${height}: no collapsed or inverted faces at the bends`);
+        }
+        assert.ok(index.count/3<768,'smoother bends do not increase the previous tube triangle budget');
+      }
+    }finally{group.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});}
+  }
+});
+
 test('floating neon gates have a closed collision frame and depth-tested luminous cores without lights',()=>{
   const gate={p:[0,10,0],n:[0,0,-1],width:6,height:4},group=createNeonGate(gate,0,{active:true});
   const parts=gateFrameParts(gate);assert.equal(parts.length,4);assert.equal(parts[3][1][1],-2);
