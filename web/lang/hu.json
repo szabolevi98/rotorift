@@ -416,5 +416,10 @@
   "airplane.launchGround": "A földről · ligeti sétány",
   "error.clientTooOld": "Frissítsd az oldalt a repülős szobához.",
   "error.incompatibleRoute": "Ez az útvonal vagy pálya nem támogatja a választott gépet.",
-  "error.invalidLaunch": "Földi indulás a Liget szabad repülésében választható."
+  "error.invalidLaunch": "Földi indulás a Liget szabad repülésében választható.",
+  "online.mixedAircraft": "Vegyes gépek · Mindenki sajátot választ",
+  "online.yourAircraft": "Saját géped",
+  "online.mixedHint": "Mindenki saját drónt vagy repülőt választhat. Folyamatban lévő repüléshez is csatlakozhatsz.",
+  "error.invalidAircraft": "Válassz érvényes gépet és repülési módot.",
+  "error.aircraftLocked": "Gépet a szabad repülés lobbijában választhatsz."
 }

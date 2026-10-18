@@ -314,3 +314,10 @@
 #menu .drone-picker{grid-template-columns:repeat(5,minmax(0,1fr))}
 #menu .drone-card{min-width:0}
 @media(max-width:1050px){#menu .drone-card{padding:8px 6px}#menu .drone-card strong{font-size:13px}}
+
+#menu #lobby-aircraft-setup{margin-bottom:20px}
+.lobby-aircraft-fields{display:grid;grid-template-columns:minmax(200px,2fr) minmax(120px,1fr) minmax(160px,1fr);gap:18px;align-items:end}
+.lobby-aircraft-fields label{min-width:0}
+.lobby-aircraft-fields select{width:100%}
+.player-aircraft{flex:1;color:var(--muted);text-align:right}
+@media(max-width:700px){.lobby-aircraft-fields{grid-template-columns:1fr}.player-row{flex-wrap:wrap}.player-aircraft{flex-basis:100%;text-align:left;order:3}}

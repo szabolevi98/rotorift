@@ -92,3 +92,30 @@ test('route selection preserves old drone preferences and isolates airplane cour
     assert.ok(route.gates.every(g=>g.width>=18&&g.height>=14));assert.equal(routeSupportsAircraft(route,quad),false);
   }
 });
+
+
+test('mixed remote collision proxies use each aircraft dimensions and rebuild after a model change',async()=>{
+  const {drones,airplanes}=await loadCatalog(),catalog=new Map([...drones,...airplanes].map(c=>[c.id,c]));
+  const quad=drones.find(c=>c.id==='rift-x5'),tiny=drones.find(c=>c.id==='rift-65');
+  const world=new RAPIER.World({x:0,y:0,z:0}),remote=new RemoteCollisions(RAPIER,world,quad,p=>catalog.get(p.droneId));
+  const player=(id,c,x)=>({id,droneId:c.id,p:[x,30,0],q:{x:0,y:0,z:0,w:1},resetId:1});
+  try{
+    const players=[player('plane',config,0),player('tiny',tiny,4),player('quad',quad,8)];
+    remote.update(players,'self',false);
+    assert.equal(remote.bodies.size,3);
+    for(const p of players)assert.equal(remote.bodies.get(p.id).userData.config.id,p.droneId);
+    assert.equal(remote.bodies.get('plane').userData.propColliders.length,0);
+    const tinyBody=remote.bodies.get('tiny'),quadBody=remote.bodies.get('quad');
+    assert.ok(tinyBody.userData.propColliders[0].shape.radius<quadBody.userData.propColliders[0].shape.radius);
+    // A ray through the wingtip hits an aircraft much wider than our own quad.
+    world.updateSceneQueries();
+    const hit=world.castRay(new RAPIER.Ray({x:.6,y:31,z:0},{x:0,y:-1,z:0}),2,true);
+    assert.equal(hit?.collider.parent().handle,remote.bodies.get('plane').handle);
+    remote.update([player('tiny',config,4)],'self',false);
+    assert.notEqual(remote.bodies.get('tiny'),tinyBody);
+    assert.equal(remote.bodies.get('tiny').userData.config.kind,'fixedWing');
+    assert.equal(world.bodies.len(),1);
+    remote.update([{...player('tiny',config,4),droneId:'unknown'}],'self',false);assert.equal(world.bodies.len(),0);
+    remote.update(players,'self',true);assert.equal(remote.bodies.size,0);assert.equal(world.bodies.len(),0);
+  }finally{remote.dispose();world.free();}
+});

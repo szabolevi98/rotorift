@@ -25,7 +25,8 @@ import { AnalogVideo } from './analog-video.js';
 import { prepareFlightViews } from './prepare-views.js';
 import { DroneSound } from './drone-sound.js';
 export class Flight {
-  constructor(canvas) {
+  constructor(canvas, aircraftCatalog = []) {
+    this.aircraftCatalog = new Map(aircraftCatalog.map(config => [config.id,config]));
     this.canvas = canvas;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
@@ -103,7 +104,7 @@ export class Flight {
     this.launchPose=aircraftLaunch(config,map,{method:launchMethod});
     this.launchPosition=this.launchPose.p;
     this.physics = createAircraftPhysics(RAPIER, this.world, config, this.launchPosition, { updateSceneQueries: false, simulation, launchPose:this.launchPose });
-    this.remoteCollisions = new RemoteCollisions(RAPIER, this.world, config);
+    this.remoteCollisions = new RemoteCollisions(RAPIER, this.world, config, player => this.remoteConfig(player));
     this.remotePlayers = [];
     this.physics.rates = rates;
     this.physics.mode = mode;
@@ -219,19 +220,27 @@ export class Flight {
     this.visual.visible = this.view !== "fpv-clean";
     this.cameraRig.update(pos, q);
   }
+  remoteConfig(player) {
+    return player.droneId ? this.aircraftCatalog.get(player.droneId) : this.config;
+  }
   async remote(player) {
+    const config = this.remoteConfig(player);
     let remote = this.remotes.get(player.id);
+    if(remote && remote.config !== config) {
+      this.removeModel(remote.model);remote.trail.dispose();this.remotes.delete(player.id);remote=null;
+    }
+    if(!config)return;
     if (!remote) {
       const version = this.remoteVersion;
-      remote = { model: null, target: player, trail: new DroneTrail(this.scene, player.color, this.config.maxSpeedMps), initialized: false };
+      remote = { config, model: null, target: player, trail: new DroneTrail(this.scene, player.color, config.maxSpeedMps), initialized: false };
       this.remotes.set(player.id, remote);
-      const model = await loadModel(this.config, { isolateMaterials: true });
+      const model = await loadModel(config, { isolateMaterials: true });
       if (version !== this.remoteVersion || this.remotes.get(player.id) !== remote) {
         this.removeModel(model);
         return;
       }
       remote.model = model;
-      remote.animation = createAircraftVisual(model,this.config,{remote:true});
+      remote.animation = createAircraftVisual(model,config,{remote:true});
       applyDroneColor(model, remote.target.color);
       this.scene.add(model);
     } else {
@@ -293,7 +302,7 @@ export class Flight {
           r.target.q.w,
         ),
         p = new THREE.Vector3(...r.target.p).add(
-          new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q),
+          new THREE.Vector3(...r.config.visualOffsetM).applyQuaternion(q),
         );
       if (!r.initialized || r.resetId !== r.target.resetId) {
         r.model.position.copy(p); r.model.quaternion.copy(q); r.trail.clear();
@@ -302,7 +311,7 @@ export class Flight {
         r.model.position.lerp(p, 1 - Math.exp(-dt * 18));
         r.model.quaternion.slerp(q, 1 - Math.exp(-dt * 18));
       }
-      const tail = new THREE.Vector3(0, 0.015, (this.config.lengthM??this.config.motorDiagonalM) * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
+      const tail = new THREE.Vector3(0, 0.015, (r.config.lengthM??r.config.motorDiagonalM) * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
       r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
     this.parkShadows?.update({ dynamic: this.view !== "fpv-clean" || this.remotes.size > 0 });

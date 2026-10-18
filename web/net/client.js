@@ -47,7 +47,7 @@ export class Network {
         "/ws",
     );
     ws.onopen = () => {
-      if (this.ws === ws) this.send("hello", { name: this.name, token: read("profile", null), color: this.color, protocol: 3, resume: this.resumption?.token });
+      if (this.ws === ws) this.send("hello", { name: this.name, token: read("profile", null), color: this.color, protocol: 4, resume: this.resumption?.token });
     };
     ws.onmessage = (e) => {
       if (this.ws !== ws) return;

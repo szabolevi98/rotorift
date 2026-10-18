@@ -416,5 +416,10 @@
   "airplane.launchGround": "Au sol · promenade de Grove",
   "error.clientTooOld": "Actualisez la page pour rejoindre un salon pour avions.",
   "error.incompatibleRoute": "Ce circuit ou cette carte ne prend pas en charge cet appareil.",
-  "error.invalidLaunch": "Le départ au sol est disponible en vol libre à Grove."
+  "error.invalidLaunch": "Le départ au sol est disponible en vol libre à Grove.",
+  "online.mixedAircraft": "Appareils variés · Libre choix",
+  "online.yourAircraft": "Votre appareil",
+  "online.mixedHint": "Chacun choisit son drone ou son avion. Vous pouvez aussi rejoindre un vol en cours.",
+  "error.invalidAircraft": "Choisissez un appareil et un mode de vol valides.",
+  "error.aircraftLocked": "Le choix de l’appareil est disponible dans le salon de vol libre."
 }

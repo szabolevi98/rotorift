@@ -84,3 +84,23 @@ clients also joined the same T15 ground-start room and rendered the remote
 colored aircraft without console errors. This is functional validation; background
 browser throttling is not an FPS benchmark, and the eight-client automation is
 not a test of eight rendering browsers or eight independent internet connections.
+
+
+## Mixed free flight · 2026-10-18
+
+Protocol 4 adds per-player aircraft IDs, modes, launch methods and typed visual
+state. New free-flight rooms allow all drones and the airplane together on any
+map, including late joining a running flight. Races and legacy rooms retain a
+common aircraft; old clients must refresh before joining mixed rooms.
+
+The eight-client integration test uses all six aircraft types, both ground and
+air starts, independent modes, unique colors, rotor damage and airplane control
+surfaces. It also checks lobby aircraft changes/readiness, invalid model/hash
+rejection, live room discovery, late join, reconnect and restart. A plane-hosted
+Playground room verifies that drone prop damage/propwash remain enabled globally
+and are only masked by unsupported aircraft. Race rooms still pin their aircraft.
+
+A Rapier test resolves the remote aircraft independently from the local aircraft,
+checks the trainer wingtip and different quad prop radii, replaces a proxy after
+an aircraft change, and removes proxies in ghost mode or for unknown aircraft.
+These are automated software checks, not eight physical controllers/devices.

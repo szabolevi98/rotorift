@@ -86,17 +86,11 @@
   document.getElementById('catalog-count').textContent=`${ready} available · ${MODEL_CATALOG.length-ready} coming soon`;
   for(const model of MODEL_CATALOG){
     const available=model.status==='ready'&&typeof model.create==='function';
-    const button=document.createElement('button');button.type='button';button.className='model-card';
-    button.dataset.model=model.id;button.disabled=!available;
-    button.setAttribute('aria-pressed',String(model.id===currentModel.id));
-    button.setAttribute('aria-label',`${model.name}, ${model.category}${available?'':', Coming soon'}`);
-    const badge=document.createElement('span');badge.className='model-badge';badge.textContent=model.badge;
-    const info=document.createElement('span');info.className='model-info';
-    const name=document.createElement('strong');name.textContent=model.name;
-    const category=document.createElement('span');category.textContent=model.category;info.append(name,category);
-    const status=document.createElement('span');status.className='model-status';status.textContent=available?'View ↗':'Coming soon';
-    button.append(badge,info,status);button.addEventListener('click',()=>selectModel(model));picker.append(button);
+    const option=new Option(`${model.name} · ${model.category}${available?'':' · Coming soon'}`,model.id);
+    option.disabled=!available;picker.append(option);
   }
+  picker.addEventListener('change',()=>selectModel(MODEL_CATALOG.find(model=>model.id===picker.value)));
+
   function updateModelInfo(model){
     document.getElementById('model-color-label').textContent=model.colorLabel || 'TPU accessories';
     for(const [id,text] of Object.entries({
@@ -112,10 +106,7 @@
     });
     document.getElementById('model-specs').replaceChildren(...rows);
     stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
-    picker.querySelectorAll('[data-model]').forEach(button=>{
-      const active=button.dataset.model===model.id;button.setAttribute('aria-pressed',String(active));
-      if(!button.disabled)button.querySelector('.model-status').textContent=active?'Selected':'View ↗';
-    });
+    picker.value=model.id;
     const batteryToggle=document.getElementById('battery');
     batteryToggle.disabled=drone.batteryParts.length===0;batteryToggle.checked=!batteryToggle.disabled;
     batteryToggle.closest('label').classList.toggle('unavailable',batteryToggle.disabled);
@@ -125,7 +116,7 @@
     actionToggle.closest('label').classList.toggle('unavailable',actionToggle.disabled);
   }
   function selectModel(model){
-    if(exporting||model.status!=='ready'||typeof model.create!=='function')return;
+    if(exporting||!model||model.status!=='ready'||typeof model.create!=='function'){picker.value=currentModel.id;return;}
     if(model.id===currentModel.id){setView('hero');return;}
     try{
       let next=modelCache.get(model.id);
@@ -149,7 +140,7 @@
       Object.assign(key.shadow.camera,{left:-.32*scale,right:.32*scale,top:.32*scale,bottom:-.32*scale,far:1.6*scale});
       key.shadow.camera.updateProjectionMatrix();
       updateModelInfo(model);setView('hero',true);
-    }catch(error){document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
+    }catch(error){picker.value=currentModel.id;document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
   }
   updateModelInfo(currentModel);
   document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{

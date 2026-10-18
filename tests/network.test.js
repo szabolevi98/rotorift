@@ -9,6 +9,7 @@ import { loadCatalog } from "../server/catalog.js";
 import { serveStatic } from "../server/static.js";
 import { DRONE_COLORS } from "../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, simulationKey } from "../shared/simulation/options.js";
+import { aircraftSimulation } from "../shared/aircraft/capabilities.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fixture(t, mapOverrides = {}, roomOptions = {}) {
   const catalog = await loadCatalog();
@@ -575,4 +576,86 @@ test('manual airplane hotlaps save a pose ghost and rejects incompatible drone c
   for(const point of [[0,1,-.5],[0,1,.5],[0,1,2.5],[0,1,1.5],[0,1,-.5],[0,1,.5]])await p.state(point,opts);
   const lap=await p.next(m=>m.type==='lap');assert.equal(lap.valid,true);assert.equal(lap.saved,true);assert.ok(lap.replay.frames.length>=3);
   assert.equal(db.laps[0][2].id,'rift-t15');assert.equal(db.laps[0][3],'manual');assert.ok(db.laps[0][6].frames.length>=3);
+});
+
+
+test('mixed free flight supports eight personal aircraft, typed states, late join, reconnect and restart', async t => {
+  const {client,catalog}=await fixture(t,{kind:'park',size:700},{countdownMs:20});
+  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes[0],...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes[0],catalog.drones[0]];
+  const pilots=[];
+  for(let i=0;i<8;i++)pilots.push(await client('Mixed '+i,'coral',{protocol:4}));
+  const host=pilots[0],old=await client('Old client','blue',{protocol:3});
+  host.send('create',{mapId:'test-route',kind:'free',droneId:configs[0].id,mode:'acro',simulation:{...DEFAULT_SIMULATION,propDamage:true,propwash:true,ghost:false}});
+  const created=(await host.next(m=>m.type==='room')).room;
+  assert.equal(created.mixedAircraft,true);
+  old.send('join',{code:created.code});assert.equal((await old.next(m=>m.type==='error')).code,'clientTooOld');
+  old.send('list');assert.equal((await old.next(m=>m.type==='rooms')).rooms.length,0);
+  // Leave the last pilot out until the shared flight has started.
+  for(let i=1;i<7;i++){
+    pilots[i].send('join',{code:created.code,droneId:configs[i].id,mode:configs[i].kind==='fixedWing'?'manual':'angle',launchMethod:i===1?'ground':'air'});
+    await pilots[i].next(m=>m.type==='room'&&m.room.players.length===i+1);
+  }
+  pilots[2].send('aircraft',{droneId:'missing',mode:'acro'});assert.equal((await pilots[2].next(m=>m.type==='error')).code,'invalidAircraft');
+  // Changing aircraft clears only this pilot's readiness, uses its own mode,
+  // animation union and launch pose, then changes back to a tinywhoop.
+  pilots[2].send('ready',{ready:true});
+  await pilots[2].next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[2].id)?.ready);
+  pilots[2].send('aircraft',{droneId:catalog.airplanes[0].id,mode:'manual',launchMethod:'air'});
+  const changed=(await pilots[2].next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[2].id)?.droneId==='rift-t15')).room.players.find(p=>p.id===pilots[2].id);
+  assert.equal(changed.ready,false);assert.equal(changed.p[1],65);assert.ok(changed.animation);assert.equal('propellers' in changed,false);
+  pilots[2].send('aircraft',{droneId:configs[2].id,mode:'angle'});
+  await pilots[2].next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[2].id)?.droneId===configs[2].id);
+  for(const p of pilots.slice(0,7))p.send('ready',{ready:true});
+  await host.next(m=>m.type==='room'&&m.room.players.length===7&&m.room.players.every(p=>p.ready));host.send('start');
+  const first=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+  pilots[7].send('list');assert.equal((await pilots[7].next(m=>m.type==='rooms')).rooms[0].mixedAircraft,true);
+  pilots[7].send('join',{code:created.code,droneId:configs[7].id,mode:'angle'});
+  const flying=(await pilots[7].next(m=>m.type==='room'&&m.room.players.length===8)).room;
+  assert.equal(flying.phase,'flying');assert.equal(flying.runId,first.runId);
+  assert.equal(new Set(flying.players.map(p=>p.color)).size,8);
+  const animation={kind:'fixedWing',engine:.65,surfaces:{pitch:.2,roll:-.3,yaw:.1}};
+  for(let i=0;i<8;i++){
+    const own=flying.players.find(p=>p.id===pilots[i].id),c=configs[i];
+    assert.equal(own.droneId,c.id);assert.equal(own.mode,i===0?'acro':c.kind==='fixedWing'?'manual':'angle');
+    await pilots[i].state(own.p,{runId:flying.runId,mode:own.mode,configHash:c.configHash,simulationKey:simulationKey(aircraftSimulation(c,flying.simulation)),...(c.kind==='fixedWing'?{animation}:{rotorSpeeds:[.2,.3,.4,.5],propellers:[[1,0,0],[0,0,0],[0,0,0],[0,0,0]]})});
+  }
+  const active=(await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.aircraftKind==='fixedWing'?p.animation?.engine===.65:p.rotorSpeeds?.[0]===.2))).room;
+  for(const p of active.players){if(p.aircraftKind==='fixedWing'){assert.deepEqual(p.animation,animation);assert.equal('rotorSpeeds' in p,false);}else{assert.equal(p.propellers[0][0],1);assert.equal('animation' in p,false);}}
+  const wing=active.players.find(p=>p.id===pilots[1].id),badPosition=[...wing.p];badPosition[1]+=.1;
+  await pilots[1].state(badPosition,{runId:active.runId,mode:'manual',configHash:configs[0].configHash,simulationKey:simulationKey(aircraftSimulation(configs[1],active.simulation)),animation});
+  const rejected=(await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===wing.id)?.lap.invalid)).room.players.find(p=>p.id===wing.id);
+  assert.deepEqual(rejected.p,wing.p,'the host aircraft hash cannot impersonate a plane');
+  pilots[1].send('aircraft',{droneId:configs[0].id,mode:'acro'});assert.equal((await pilots[1].next(m=>m.type==='error')).code,'aircraftLocked');
+  pilots[1].ws.terminate();await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===wing.id)?.connected===false);
+  const resumed=await client('Restored plane','blue',{protocol:4,resume:pilots[1].welcome.resume});
+  assert.equal(resumed.id,wing.id);
+  const recovered=(await resumed.next(m=>m.type==='room')).room.players.find(p=>p.id===wing.id);
+  assert.equal(recovered.droneId,'rift-t15');assert.equal(recovered.mode,'manual');assert.equal(recovered.launchMethod,'ground');assert.deepEqual(recovered.p,wing.p);
+  host.send('restart');
+  const lobby=(await host.next(m=>m.type==='room'&&m.room.phase==='lobby'&&m.room.players.length===8&&m.room.runId!==active.runId&&m.room.players.find(p=>p.id===wing.id)?.resetId>recovered.resetId)).room;
+  for(let i=0;i<8;i++){const p=lobby.players.find(p=>p.id===pilots[i].id);assert.equal(p.droneId,configs[i].id);assert.equal(p.mode,active.players.find(v=>v.id===p.id).mode);assert.equal(p.ready,false);}
+});
+
+test('a plane host preserves drone effects in mixed free flight and any aircraft can use Playground',async t=>{
+  const {client}=await fixture(t,{kind:'playground',size:84},{countdownMs:20});
+  const host=await client('Plane host','coral',{protocol:4}),guest=await client('Drone guest','yellow',{protocol:4});
+  host.send('create',{mapId:'test-route',kind:'free',droneId:'rift-t15',mode:'manual',simulation:{...DEFAULT_SIMULATION,propDamage:true,propwash:true}});
+  const room=(await host.next(m=>m.type==='room')).room;
+  assert.equal(room.simulation.propDamage,true);assert.equal(room.simulation.propwash,true);
+  guest.send('join',{code:room.code,droneId:'rift-65',mode:'horizon'});
+  await guest.next(m=>m.type==='room'&&m.room.players.length===2);
+  host.send('rules',{simulation:{...room.simulation,wind:'strong'}});
+  const rules=(await guest.next(m=>m.type==='room'&&m.room.simulation.wind==='strong')).room;
+  assert.equal(rules.simulation.propDamage,true);assert.equal(rules.simulation.propwash,true);
+  host.send('aircraft',{droneId:'rift-t15',mode:'manual',launchMethod:'ground'});assert.equal((await host.next(m=>m.type==='error')).code,'invalidLaunch');
+});
+
+test('races still pin a common aircraft even when protocol-4 guests selected another model',async t=>{
+  const {client}=await fixture(t,{}, {countdownMs:20});const host=await client('Race host','coral',{protocol:4}),guest=await client('Plane selection','yellow',{protocol:4});
+  host.send('create',{mapId:'test-route',kind:'race',droneId:'rift-x5',mode:'acro'});const room=(await host.next(m=>m.type==='room')).room;
+  assert.equal(room.mixedAircraft,false);
+  guest.send('join',{code:room.code,droneId:'rift-t15',mode:'manual'});
+  const own=(await guest.next(m=>m.type==='room'&&m.room.players.length===2)).room.players.find(p=>p.id===guest.id);
+  assert.equal(own.droneId,'rift-x5');assert.equal(own.mode,'acro');
+  guest.send('aircraft',{droneId:'rift-t15',mode:'manual'});assert.equal((await guest.next(m=>m.type==='error')).code,'aircraftLocked');
 });

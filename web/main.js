@@ -159,7 +159,9 @@ function keepPersonalGhost(ms,replay){
 let resultsShown = null;
 let resultsSignature = "";
 let recordsVersion=0;
-const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) : null;
+const roomKey = r => r ? r.code + ":" + (r.runId ?? r.startsAt) + ':' + (r.players.find(p=>p.id===network?.id)?.droneId ?? r.droneId) : null;
+const mixedAircraftSetup = () => room?.mixedAircraft || $('#menu').dataset.panel === 'multiplayer' && $('#room-kind').value === 'free';
+const aircraftChoice = () => ({droneId:config.id,mode:$('#flight-mode').value,launchMethod:'air'});
 const touchInput = matchMedia("(hover: none) and (pointer: coarse)");
 let roomsRefreshAt = 0;
 const rateProfiles = read("rates", {}),
@@ -211,10 +213,11 @@ function refreshSimulationControls() {
     const view = simulationView(context, simulation, room, network?.id);
     const aircraft = id === 'lobby-simulation' && room
       ? catalog.aircraft.find(item => item.id === room.droneId) : config;
+    const mixed = context === 'lobby' ? room?.mixedAircraft : context === 'host' && mixedAircraftSetup();
     for (const input of root.querySelectorAll("[data-sim-option]")) {
       const key = input.dataset.simOption;
       input.disabled = view.locked;
-      if(['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
+      if(!mixed&&['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
       input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
       input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
       if (key === "wind") {
@@ -223,7 +226,7 @@ function refreshSimulationControls() {
       } else input.checked = view.options[key];
     }
     const note = root.querySelector(".simulation-note");
-    if (note) note.textContent = t(isFixedWing(aircraft)?'airplane.effects':view.note);
+    if (note) note.textContent = t(!mixed&&isFixedWing(aircraft)?'airplane.effects':view.note);
   }
 }
 function refreshColors() {
@@ -269,6 +272,8 @@ function panel(name) {
     el.classList.toggle("hidden", el.id !== name + "-panel");
   refreshMenuNavigation();
   updateSessionOptions();
+  if(config&&map&&!supportsMap(config,map)&&!mixedAircraftSetup())selectMap('liget');
+  else if(config)refreshCatalogText();
   refreshSessionBanner();
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   if (name === "records") showRecords();
@@ -402,7 +407,7 @@ async function selectDrone(id) {
   if(modes.includes(priorMode))$('#flight-mode').value=priorMode;
   visible('#airplane-note',isFixedWing(config));visible('#airplane-controls',isFixedWing(config));
   if(isFixedWing(config)){const saved=read('airplane-controls',{});for(const [key,fallback]of [['travel',70],['expo',30]]){const value=Number.isFinite(saved[key])?Math.round(saved[key]*100):fallback;$('#airplane-'+key).value=value;$('#airplane-'+key+'-output').textContent=value+'%';}}
-  if(isFixedWing(config)&&map?.kind==='playground')selectMap('liget');
+  if(isFixedWing(config)&&map?.kind==='playground'&&!mixedAircraftSetup())selectMap('liget');
   selectMap(map?.id??catalog.maps[0].id);
   const selected = config, task = loading.begin("loading.model", { name: selected.name }, { overlay: !!preview.model });
   try {
@@ -421,7 +426,7 @@ async function selectDrone(id) {
   } finally { task.end(); }
 }
 function selectMap(id) {
-  if(isFixedWing(config)&&catalog.maps.find(m=>m.id===id)?.kind==='playground')id='liget';
+  if(!mixedAircraftSetup()&&isFixedWing(config)&&catalog.maps.find(m=>m.id===id)?.kind==='playground')id='liget';
   const base = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
   map = selectAircraftRoute(base,config,read(routePreferenceKey(base,config),base.routeId));
   fillRoutes($("#race-route"), base, map.routeId);
@@ -469,7 +474,7 @@ function refreshRouteDetails() {
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
   dronePicker.update(catalog.aircraft.map(d => ({value:d.id,label:d.name,detail:t("drone." + d.id)})), config?.id);
-  mapPicker.update(catalog.maps.filter(m=>supportsMap(config,m)).map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
+  mapPicker.update(catalog.maps.filter(m=>mixedAircraftSetup()||supportsMap(config,m)).map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
   const manual=$('#flight-mode').querySelector('option[value="manual"]');if(manual)manual.textContent=t('airplane.manual');
   if (config) {
     $("#selected-name").textContent = config.name;
@@ -763,11 +768,11 @@ function renderRooms() {
   for (const r of rooms) {
     const row = node("div", "room-row"),
       button = node("button", "secondary", t("online.join"));
-    button.onclick = () => requestRoom("join", { code: r.code });
+    button.onclick = () => requestRoom("join", { code: r.code, ...aircraftChoice() });
     button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
     const summary = node("div", "room-summary");
     summary.append(node("strong", "", r.code), node("span", "", mapName(r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
-    summary.append(node("span", "", (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
+    summary.append(node("span", "", r.mixedAircraft ? t('online.mixedAircraft') : (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
       summary,
       button,
@@ -802,7 +807,7 @@ function createRoom() {
   const kind = $("#room-kind").value;
   if (kind === "race" && !canRace(map)) { notice(t("error.raceUnavailable")); return; }
   requestRoom("create", { mapId: map.id, routeId: map.routeId, droneId: config.id,
-    mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation:aircraftSimulation(config,simulation),launchMethod:$("#aircraft-launch").value });
+    mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation:kind==='free'?simulation:aircraftSimulation(config,simulation),launchMethod:$("#aircraft-launch").value });
 }
 function endFlight() {
   if (room) { network.send("leave"); return; }
@@ -814,26 +819,52 @@ function endFlight() {
   localGhostRecorder.clear();lapGhostLoad++;void flight.setLapGhost(null);
   visible("#hud", false); visible("#menu", true); panel("fly");
 }
+let lobbyAircraftSignature = '';
+function renderLobbyAircraft(own) {
+  visible('#lobby-aircraft-setup', !!room.mixedAircraft);
+  if(!room.mixedAircraft || !own)return;
+  const aircraft=catalog.aircraft.find(d=>d.id===own.droneId),select=$('#lobby-aircraft');
+  const signature=[room.code,own.droneId,own.mode,own.launchMethod,room.phase,document.documentElement.lang].join('|');
+  if(signature===lobbyAircraftSignature)return;
+  lobbyAircraftSignature=signature;
+  select.replaceChildren(...catalog.aircraft.map(d=>new Option(d.name+' · '+t('drone.'+d.id),d.id)));
+  select.value=own.droneId;
+  $('#lobby-mode').replaceChildren(...aircraftModes(aircraft).map(mode=>new Option(mode==='manual'?t('airplane.manual'):mode[0].toUpperCase()+mode.slice(1),mode)));
+  $('#lobby-mode').value=own.mode;
+  const launch=$('#lobby-launch');
+  launch.value=own.launchMethod??'air';
+  launch.querySelector('[value="ground"]').disabled=!groundLaunchAvailable(aircraft,catalog.maps.find(m=>m.id===room.mapId));
+  visible('#lobby-launch-label',isFixedWing(aircraft));
+  for(const input of [select,$('#lobby-mode'),launch])input.disabled=room.phase!=='lobby';
+}
+function changeLobbyAircraft() {
+  const own=room?.players.find(p=>p.id===network.id);
+  if(!room?.mixedAircraft || room.phase!=='lobby' || !own)return;
+  const aircraft=catalog.aircraft.find(d=>d.id===$('#lobby-aircraft').value),modes=aircraftModes(aircraft);
+  const mode=modes.includes($('#lobby-mode').value)?$('#lobby-mode').value:modes[0];
+  const launchMethod=isFixedWing(aircraft)&&groundLaunchAvailable(aircraft,catalog.maps.find(m=>m.id===room.mapId))?$('#lobby-launch').value:'air';
+  network.send('aircraft',{droneId:aircraft.id,mode,launchMethod});
+}
 function renderLobby() {
   if (!room) return;
   $("#lobby-code").textContent = room.code;
   $("#lobby-description").textContent =
     mapName(room.mapId) +
     " · " +
-    catalog.aircraft.find((d) => d.id === room.droneId)?.name +
-    " · " +
-    room.mode.toUpperCase() + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
+    (room.mixedAircraft ? t('online.mixedAircraft') : catalog.aircraft.find((d) => d.id === room.droneId)?.name + " · " + room.mode.toUpperCase()) + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
   $("#lobby-players").replaceChildren();
   for (const p of room.players) {
     const row = node("div", "player-row");
     row.append(
       pilotName(p, p.name + (p.id === room.host ? " / " + t("online.host") : "")),
+      node('span','player-aircraft',(catalog.aircraft.find(d=>d.id===(p.droneId??room.droneId))?.name??'')+' · '+p.mode.toUpperCase()),
       node("span", "", p.connected === false ? t("online.pilotReconnecting") : room.phase === "lobby" ? t(p.ready ? "online.ready" : "online.notReady")
         : t(p.finished ? "results.finished" : room.phase === "finished" ? "results.dnf" : "results.racing")),
     );
     $("#lobby-players").append(row);
   }
   const own = room.players.find((p) => p.id === network.id);
+  renderLobbyAircraft(own);
   $("#lobby-status").textContent = t(room.phase === "lobby" ? "online.readyHint" : room.phase === "finished" ? "online.finished" : "online.inProgress");
   $("#ready").textContent = t(own?.ready ? "online.notReady" : "online.ready");
   $("#ready").disabled = room.phase !== "lobby";
@@ -894,19 +925,19 @@ async function loadRoom(r) {
   flight.mute();
   void fullscreen?.enterFlight();
   const task = loading.begin("loading.flight", { name: mapName(r.mapId) });
-  const roomConfig = catalog.aircraft.find((d) => d.id === r.droneId);
+  const own = r.players.find(p=>p.id===network.id);
+  const roomConfig = catalog.aircraft.find((d) => d.id === (own?.droneId ?? r.droneId));
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
   const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
     routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates, guide:r.route.guide,aircraftKinds:r.route.aircraftKinds } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
   flightHelp?.setOpen(false);
-  $("#flight-mode").value = r.mode;
+  $("#flight-mode").value = own?.mode ?? r.mode;
   try {
-    const own = r.players.find(p=>p.id===network.id);
     if(config.id!==roomConfig.id)await selectDrone(roomConfig.id);
     await paintLoading();
     diagnostics?.reset();
-    const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress,{launchMethod:r.launchMethod});
+    const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, aircraftSimulation(roomConfig,r.simulation), task.progress,{launchMethod:own?.launchMethod ?? r.launchMethod});
     if (loaded === false) return;
     applyAircraftCamera();
     renderCameraProfile(roomConfig.id);
@@ -1023,7 +1054,8 @@ function receive(m) {
     if(assignedColor && assignedColor!==droneColor){droneColor=assignedColor;write('drone-color',droneColor);preview.setColor(droneColor);flight.setColor(droneColor);network.color=droneColor;}
     refreshColors();
     if (flight.physics && loadedRoom === roomKey(room)) {
-      if (simulationKey(flight.physics.effects.options) !== simulationKey(room.simulation)) flight.setSimulation(room.simulation);
+      const options=aircraftSimulation(flight.config,room.simulation);
+      if (simulationKey(flight.physics.effects.options) !== simulationKey(options)) flight.setSimulation(options);
       const own = room.players.find(p => p.id === network.id);
       if (own?.mode) { const changed=flight.physics.mode!==own.mode;flight.physics.mode = own.mode; $("#flight-mode").value = own.mode;if(changed)void configureLapGhost(); }
       flight.updateRemotes(room.players.filter(p=>p.connected!==false), network.id);
@@ -1561,7 +1593,7 @@ function bindUI() {
   };
   $('#flight-mode').onchange=refreshGhostChoices;
   $("#room-kind").value = read("room-kind", "free");
-  $("#room-kind").onchange = () => { write("room-kind", $("#room-kind").value); updateSessionOptions(); };
+  $("#room-kind").onchange = () => { write("room-kind", $("#room-kind").value); selectMap(map.id); };
   $("#public-room").checked = read("public-room", true);
   $("#public-room").onchange = () => write("public-room", $("#public-room").checked);
   $("#session").value = read("solo-session", "free");
@@ -1593,7 +1625,8 @@ function bindUI() {
   $("#room-code").oninput = () => {
     $("#room-code").value = $("#room-code").value.toUpperCase().replace(/[^A-Z0-9]/g, ""); updateStatus();
   };
-  $("#join-room").onclick = () => requestRoom("join", { code: $("#room-code").value.trim().toUpperCase() });
+  $("#join-room").onclick = () => requestRoom("join", { code: $("#room-code").value.trim().toUpperCase(), ...aircraftChoice() });
+  for(const id of ['#lobby-aircraft','#lobby-mode','#lobby-launch'])$(id).onchange=changeLobbyAircraft;
   $("#room-code").onkeydown = (event) => {
     if (event.key === "Enter" && !$("#join-room").disabled) { event.preventDefault(); $("#join-room").click(); }
   };
@@ -1748,7 +1781,7 @@ try {
   catalog.aircraft=allAircraft(catalog);
   for(const plane of catalog.airplanes??[])if(!cameraProfiles.profiles[plane.id])cameraProfiles.set(plane.id,{angle:0,fov:100});
   preview = new Preview($("#preview-scene"));
-  flight = new Flight($("#game-scene"));
+  flight = new Flight($("#game-scene"), catalog.aircraft);
   controller = new Controller(action);
   controller.touch = new TouchSticks($('#stick-hud'), $('#hud'));
   network = new Network(receive);

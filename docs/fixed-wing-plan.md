@@ -162,10 +162,15 @@ the unchanged four-rotor format. Aircraft visual adapters handle the two types
 without fake drone rotors.
 Reject incompatible clients/aircraft cleanly; do not accept arbitrary JSON state.
 
-For initial online testing, use airplane-only rooms. Mixed freestyle rooms and
-airplane-airplane collisions require separate size/speed/latency testing. The host
-still controls shared simulation options. Hide or explicitly reject unsupported
-options; do not silently pretend that quad propwash or damage simulation is active.
+Implemented 2026-10-18: protocol-4 free-flight rooms support mixed aircraft. Each
+pilot has an aircraft ID, mode, launch method, validated configuration hash and typed
+animation. Remote visuals and collision proxies resolve that pilot’s configuration,
+including wing span and per-propeller damage. Late join, reconnect and restart
+preserve personal aircraft. Legacy rooms remain homogeneous; racing still pins
+one aircraft. The host controls shared simulation rules, with unsupported effects
+masked per aircraft rather than removed from the room when a plane hosts.
+Eight simulated clients and mixed collision geometry are covered by integration
+tests; this does not replace a long real-device and latency trial.
 
 Airplane racing needs separately authored/validated routes with enough wingtip
 clearance, turn space, recovery distance and appropriate gate direction. Existing

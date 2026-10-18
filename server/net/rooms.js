@@ -25,6 +25,12 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   const send = (p, type, data = {}) => {
     if (p.ws.readyState === 1) p.ws.send(JSON.stringify({ type, ...data }));
   };
+  const aircraftOf = (p, r) => p.aircraft ?? r.drone;
+  const optionsOf = (p, r) => aircraftSimulation(aircraftOf(p, r), r.simulation);
+  const compatibleClient = (r, protocol) => r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3;
+  // Free-flight rules belong to the room; each aircraft applies only the
+  // effects it supports. A plane host must not disable drone effects for guests.
+  const roomOptions = (r, options) => r.mixedAircraft ? normalizeSimulation(options) : aircraftSimulation(r.drone, options);
   const snapshot = (r) => ({
     code: r.code,
     kind: r.kind,
@@ -35,6 +41,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     routeId: r.map.routeId,
     route: r.kind === "free" ? null : { id: r.map.routeId, name: r.map.routeName ?? r.map.routeId, version: r.map.routeVersion, spawn: r.map.spawn, gates: r.map.gates, guide:r.map.guide,aircraftKinds:r.map.aircraftKinds },
     droneId: r.drone.id,
+    mixedAircraft: r.mixedAircraft,
     aircraftKind:isFixedWing(r.drone)?"fixedWing":"quadrotor",
     launchMethod:r.launchMethod,
     mode: r.mode,
@@ -47,6 +54,9 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       id: p.id,
       name: p.name,
       color: p.color,
+      droneId: aircraftOf(p,r).id,
+      aircraftKind: isFixedWing(aircraftOf(p,r)) ? 'fixedWing' : 'quadrotor',
+      launchMethod: p.launchMethod ?? r.launchMethod,
       mode: p.mode,
       resetId: p.resetId,
       ready: p.ready,
@@ -55,7 +65,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       p: p.pose?.p,
       q: p.pose?.q,
       v:p.pose?.v,
-      ...(isFixedWing(r.drone)?{animation:airplaneAnimation(r.drone,p.animation,r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600)}:{
+      ...(isFixedWing(aircraftOf(p,r))?{animation:airplaneAnimation(aircraftOf(p,r),p.animation,r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600)}:{
         propellers:p.propellers??freshPropellers(),
         rotorSpeeds:r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600?p.rotorSpeeds:STOPPED_ROTORS,
         turtleMode:r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600&&p.turtleMode===true,
@@ -109,8 +119,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     broadcast(r);
   };
   const reset = (p, r, keepBest = false) => {
-    if(isFixedWing(r.drone)){p.animation=stoppedAirplaneAnimation();delete p.propellers;delete p.rotorSpeeds;delete p.turtleMode;}
-    else {p.propellers = freshPropellers();p.rotorSpeeds = STOPPED_ROTORS;p.turtleMode = false;}
+    if(isFixedWing(aircraftOf(p,r))){p.animation=stoppedAirplaneAnimation();delete p.propellers;delete p.rotorSpeeds;delete p.turtleMode;}
+    else {delete p.animation;p.propellers = freshPropellers();p.rotorSpeeds = STOPPED_ROTORS;p.turtleMode = false;}
     p.rotorsAt = null;
     p.resetId = (p.resetId ?? 0) + 1;
     p.boundary = new MapBoundary(r.map);
@@ -125,17 +135,18 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     p.seq = -1;
     p.at = null;
     const slot = [...r.players.keys()].indexOf(p.id);
-    p.pose = aircraftLaunch(r.drone,r.map,{slot,method:r.launchMethod});
+    p.pose = aircraftLaunch(aircraftOf(p,r),r.map,{slot,method:p.launchMethod ?? r.launchMethod});
   };
   const list = () =>
     [...rooms.values()]
-      .filter((r) => r.public && r.phase === "lobby")
+      .filter((r) => r.public && (r.phase === "lobby" || r.mixedAircraft && r.phase === "flying"))
       .map((r) => ({
         code: r.code,
         mapId: r.map.id,
         routeId: r.map.routeId,
         routeName: r.map.routeName,
         droneId: r.drone.id,
+        mixedAircraft: r.mixedAircraft,
         kind: r.kind,
         players: r.players.size,
         mode: r.mode,
@@ -175,14 +186,14 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             const previous = typeof m.resume === "string" ? resumable.get(m.resume) : null;
             const canResume = previous?.room && (previous.connected || previous.reconnectUntil > Date.now())
               && (!previous.connected || m.resume === previous.resume);
-            if (canResume && isFixedWing(previous.room.drone) && m.protocol !== 3) {
+            if (canResume && !compatibleClient(previous.room, m.protocol ?? 1)) {
               send(p, "error", { code: "clientTooOld" }); return;
             }
             if (canResume) {
               clients.delete(p);
               const oldSocket = previous.ws;
               p = previous; p.ws = ws; p.connected = true; p.alive = true; p.reconnectUntil = null;
-              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3].includes(m.protocol) ? m.protocol : 1;
+              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4].includes(m.protocol) ? m.protocol : 1;
               // A duplicated tab must not keep taking over the recovered socket.
               // Retain the presented key only while disconnected, in case the
               // new welcome packet itself is lost during an unstable connection.
@@ -208,7 +219,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
             if (ws.readyState !== 1) return;
-            p.protocol = [2,3].includes(m.protocol) ? m.protocol : 1;
+            p.protocol = [2,3,4].includes(m.protocol) ? m.protocol : 1;
             p.resume = randomBytes(24).toString("hex");
             resumable.set(p.resume, p);
             send(p, "welcome", {
@@ -249,7 +260,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           return;
         }
         if (m.type === "list") {
-          send(p, "rooms", { rooms: list().filter(room => p.protocol >= 3 || !isFixedWing(findAircraft(catalog, room.droneId))) });
+          send(p, "rooms", { rooms: list().filter(room => compatibleClient({mixedAircraft:room.mixedAircraft,drone:findAircraft(catalog,room.droneId)},p.protocol)) });
           return;
         }
         if (m.type === "leave") {
@@ -274,7 +285,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           )
             return;
           if(isFixedWing(drone)&&p.protocol<3){send(p,'error',{code:'clientTooOld'});return;}
-          if(!supportsMap(drone,map)||m.kind!=='free'&&!routeSupportsAircraft(map,drone)){send(p,'error',{code:'incompatibleRoute'});return;}
+          const mixedAircraft = m.kind === 'free' && p.protocol >= 4;
+          if(!mixedAircraft&&!supportsMap(drone,map)||m.kind!=='free'&&!routeSupportsAircraft(map,drone)){send(p,'error',{code:'incompatibleRoute'});return;}
           if(m.launchMethod!==undefined&&!['air','ground'].includes(m.launchMethod)){send(p,'error',{code:'invalidLaunch'});return;}
           if(m.launchMethod==='ground'&&isFixedWing(drone)&&(m.kind!=='free'||!groundLaunchAvailable(drone,map))){send(p,'error',{code:'invalidLaunch'});return;}
           if (m.kind !== "free" && !canRace(map)) {
@@ -288,8 +300,9 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             kind: m.kind,
             map,
             drone,
+            mixedAircraft,
             mode: m.mode,
-            simulation: aircraftSimulation(drone,m.simulation),
+            simulation: mixedAircraft ? normalizeSimulation(m.simulation) : aircraftSimulation(drone,m.simulation),
             launchMethod:isFixedWing(drone)&&m.kind==='free'?m.launchMethod??'air':'air',
             laps: 3,
             public: m.public !== false && m.kind !== "hotlap",
@@ -302,6 +315,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           rooms.set(code, r);
           r.players.set(p.id, p);
           p.mode = r.mode;
+          p.aircraft = drone;
+          p.launchMethod = r.launchMethod;
           p.room = r;
           p.ready = m.kind === "hotlap";
           reset(p, r);
@@ -315,7 +330,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             return;
           }
           if (
-            r.phase !== "lobby" ||
+            !(r.phase === "lobby" || r.mixedAircraft && r.phase === "flying") ||
             r.players.size >= (r.kind === "hotlap" ? 1 : 8)
           ) {
             send(p, "error", { code: "roomFull" });
@@ -325,11 +340,18 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             send(p, "error", { code: "alreadyJoined" });
             return;
           }
-          if(isFixedWing(r.drone)&&p.protocol<3){send(p,'error',{code:'clientTooOld'});return;}
+          if(!compatibleClient(r,p.protocol)){send(p,'error',{code:'clientTooOld'});return;}
+          const aircraft = r.mixedAircraft && m.droneId !== undefined ? findAircraft(catalog,m.droneId) : r.drone;
+          const mode = r.mixedAircraft ? m.mode ?? aircraftModes(aircraft)[0] : r.mode;
+          const launchMethod = r.mixedAircraft ? m.launchMethod ?? 'air' : r.launchMethod;
+          if(!aircraft || !aircraftModes(aircraft).includes(mode)){send(p,'error',{code:'invalidAircraft'});return;}
+          if(!['air','ground'].includes(launchMethod) || isFixedWing(aircraft) && launchMethod==='ground' && !groundLaunchAvailable(aircraft,r.map)){send(p,'error',{code:'invalidLaunch'});return;}
           leave(p);
           if([...r.players.values()].some(other=>other.color===p.color))p.color=Object.keys(DRONE_COLORS).find(color=>![...r.players.values()].some(other=>other.color===color));
           r.players.set(p.id, p);
-          p.mode = r.mode;
+          p.mode = mode;
+          p.aircraft = aircraft;
+          p.launchMethod = launchMethod;
           p.room = r;
           p.ready = false;
           reset(p, r);
@@ -338,15 +360,24 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         }
         const r = p.room;
         if (!r) return;
+        if(m.type === 'aircraft') {
+          if(!r.mixedAircraft || r.phase !== 'lobby'){send(p,'error',{code:'aircraftLocked'});return;}
+          const aircraft = findAircraft(catalog,m.droneId);
+          if(!aircraft || !aircraftModes(aircraft).includes(m.mode)){send(p,'error',{code:'invalidAircraft'});return;}
+          const launchMethod = m.launchMethod ?? 'air';
+          if(!['air','ground'].includes(launchMethod) || isFixedWing(aircraft) && launchMethod==='ground' && !groundLaunchAvailable(aircraft,r.map)){send(p,'error',{code:'invalidLaunch'});return;}
+          p.aircraft=aircraft;p.mode=m.mode;p.launchMethod=launchMethod;p.ready=false;
+          reset(p,r);broadcast(r);return;
+        }
         if (m.type === "rules") {
           if (r.host !== p.id) { send(p, "error", { code: "hostOnly" }); return; }
           if (r.phase !== "lobby") { send(p, "error", { code: "rulesLocked" }); return; }
           if (!validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
-          r.simulation = aircraftSimulation(r.drone,m.simulation);
+          r.simulation = roomOptions(r,m.simulation);
           for (const player of r.players.values()) player.ready = false;
           broadcast(r); return;
         }
-        if (m.type === "mode" && aircraftModes(r.drone).includes(m.mode) && r.phase === "flying" && !p.finished) {
+        if (m.type === "mode" && aircraftModes(aircraftOf(p,r)).includes(m.mode) && r.phase === "flying" && !p.finished) {
           if (p.mode !== m.mode) { p.mode = m.mode; p.lap.invalid = true; clearLapReference(p.lap);p.ghostBestMs=null;p.ghostRecorder?.clear(); }
           broadcast(r); return;
         }
@@ -380,7 +411,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             send(p, "error", { code: "finishFirst" }); return;
           }
           r.phase = "lobby"; r.startsAt = null; r.raceId = randomUUID(); r.results = null; r.participants = new Map();
-          for (const player of r.players.values()) { player.ready = false; player.mode = r.mode; reset(player, r); }
+          for (const player of r.players.values()) { player.ready = false; if(!r.mixedAircraft)player.mode = r.mode; reset(player, r); }
           broadcast(r); return;
         }
         if (m.type === "reset" && r.phase === "flying") {
@@ -398,6 +429,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         )
           return;
         const now = Date.now();
+        const aircraft = aircraftOf(p,r), options = optionsOf(p,r);
         if (m.t < now - 2000 || m.t > now + 250) return;
         if (
           !Array.isArray(m.p) ||
@@ -412,15 +444,16 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         const qlen = Math.hypot(m.q.x, m.q.y, m.q.z, m.q.w);
         if (
           Math.abs(qlen - 1) > 0.05 ||
-          length(m.p) > Math.max(500, (r.map.size ?? 0) + (r.map.boundary?.returnAfterSeconds ?? 0) * r.drone.maxSpeedMps * 1.5) ||
-          length(m.v) > r.drone.maxSpeedMps * 1.5
+          length(m.p) > Math.max(500, (r.map.size ?? 0) + (r.map.boundary?.returnAfterSeconds ?? 0) * aircraft.maxSpeedMps * 1.5) ||
+          length(m.v) > aircraft.maxSpeedMps * 1.5
         ) {
           p.lap.invalid = true;
           return;
         }
-        if(isFixedWing(r.drone)){
+        if(isFixedWing(aircraft)){
           if(!validAirplaneAnimation(m.animation)||m.propellers!==undefined||m.rotorSpeeds!==undefined||m.turtleMode!==undefined)return;
         }
+        else if(m.animation !== undefined)return;
         if(m.propellers !== undefined && !validPropellers(m.propellers)) return;
         if(m.rotorSpeeds !== undefined && !validRotorSpeeds(m.rotorSpeeds)) return;
         if(m.turtleMode !== undefined && typeof m.turtleMode !== 'boolean')return;
@@ -429,10 +462,10 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         if (dt !== null && dt <= 0) return;
         const travel = previous ? length(sub(m.p, previous)) : 0;
         const validTravel =
-          dt !== null && dt <= 2 && travel <= r.drone.maxSpeedMps * dt + 1.0;
+          dt !== null && dt <= 2 && travel <= aircraft.maxSpeedMps * dt + 1.0;
         if (dt !== null && !validTravel) p.lap.invalid = true;
-        if (m.configHash !== r.drone.configHash || m.mode !== p.mode ||
-            (m.simulationKey ?? simulationKey(DEFAULT_SIMULATION)) !== simulationKey(r.simulation)) {
+        if (m.configHash !== aircraft.configHash || m.mode !== p.mode ||
+            (m.simulationKey ?? simulationKey(DEFAULT_SIMULATION)) !== simulationKey(options)) {
           p.lap.invalid = true;
           return;
         }
@@ -452,9 +485,9 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);
         const ghostLaps=validTravel&&r.kind!=='free'?p.ghostRecorder.segment(p.pose,{p:m.p,q:m.q},p.at,m.t,events):[];
-        if(isFixedWing(r.drone))p.animation=airplaneAnimation(r.drone,m.animation,!m.interrupted);
+        if(isFixedWing(aircraft))p.animation=airplaneAnimation(aircraft,m.animation,!m.interrupted);
         else {
-          p.propellers=r.simulation.propDamage&&validPropellers(m.propellers)?m.propellers.map(blades=>[...blades]):freshPropellers();
+          p.propellers=options.propDamage&&validPropellers(m.propellers)?m.propellers.map(blades=>[...blades]):freshPropellers();
           p.rotorSpeeds=m.interrupted||m.rotorSpeeds===undefined?STOPPED_ROTORS:[...m.rotorSpeeds];
           p.turtleMode=!m.interrupted&&m.turtleMode===true;
         }

@@ -5,8 +5,8 @@ import { validPropellers,propellerCollisionRadius } from "../../shared/physics/p
 import {isFixedWing} from '../../shared/aircraft/capabilities.js';
 import {addFixedWingColliders} from '../../shared/physics/fixed-wing-colliders.js';
 export class RemoteCollisions {
-  constructor(RAPIER, world, config) {
-    this.RAPIER = RAPIER; this.world = world; this.config = config; this.bodies = new Map();
+  constructor(RAPIER, world, config, resolveAircraft = () => config) {
+    this.RAPIER = RAPIER; this.world = world; this.config = config; this.resolveAircraft = resolveAircraft; this.bodies = new Map();
   }
   update(players, ownId, ghost) {
     const wanted = new Map(ghost ? [] : players.filter(p => p.id !== ownId && p.p && p.q).map(p => [p.id, p]));
@@ -14,20 +14,25 @@ export class RemoteCollisions {
       this.world.removeRigidBody(body); this.bodies.delete(id);
     }
     for (const [id, player] of wanted) {
+      const config = this.resolveAircraft(player);
       let body = this.bodies.get(id);
+      if(body && (!config || body.userData.config !== config)) {
+        this.world.removeRigidBody(body);this.bodies.delete(id);body=null;
+      }
+      if(!config)continue;
       const q = player.q, p = { x: player.p[0], y: player.p[1], z: player.p[2] };
       if (!body) {
         body = this.world.createRigidBody(this.RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(...player.p).setRotation(q));
         this.bodies.set(id, body);
-        const {propColliders=[]}=isFixedWing(this.config)?addFixedWingColliders(this.RAPIER,this.world,body,this.config):addAircraftColliders(this.RAPIER,this.world,body,this.config);
-        body.userData = { resetId: player.resetId,propColliders,radii:[] };
+        const {propColliders=[]}=isFixedWing(config)?addFixedWingColliders(this.RAPIER,this.world,body,config):addAircraftColliders(this.RAPIER,this.world,body,config);
+        body.userData = { config, resetId: player.resetId,propColliders,radii:[] };
       }
       if (body.userData.resetId !== player.resetId || Math.hypot(body.translation().x - p.x, body.translation().y - p.y, body.translation().z - p.z) > 3) {
         body.setTranslation(p, true); body.setRotation(q, true); body.userData.resetId = player.resetId;
       }
       body.userData.target = { p, q };
       if(validPropellers(player.propellers))for(const [index,collider]of body.userData.propColliders.entries()){
-        const radius=propellerCollisionRadius(this.config,player.propellers[index]);
+        const radius=propellerCollisionRadius(config,player.propellers[index]);
         if(body.userData.radii[index]!==radius){collider.setShape(new this.RAPIER.Cylinder(.0015,radius));body.userData.radii[index]=radius;}
       }
     }

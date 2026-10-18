@@ -68,14 +68,14 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
-single-motor propulsion. It supports local/online free flight, airplane-only rooms
+single-motor propulsion. It supports local/online free flight, mixed drone/airplane rooms
 for up to eight pilots, two dedicated Grove circuits, records and pose ghosts.
 Choose an airborne practice start, or a ground start on the Grove south promenade
 in free flight. It has separate control travel/expo, animated surfaces, wingtip
 and landing-gear collisions, wind and battery simulation. Explore the same model
 in the showcase and export it as GLB. Handling remains an experimental estimate;
-it is not a calibrated real-aircraft replica. Playground and drone-only courses
-are excluded for the trainer.
+it is not a calibrated real-aircraft replica. Drone-only courses and solo Playground
+flights are excluded for the trainer; mixed online free flight allows any aircraft on any map.
 
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
@@ -207,6 +207,12 @@ Simulation options remain visible; in a room, only the host can change them befo
 launch. They are locked for guests and after the session starts.
 
 Rooms support **up to eight pilots**; online solo time trials are single-player.
+In **Free flight**, each pilot chooses their own aircraft and flight mode in the
+lobby: tinywhoops, freestyle drones and the trainer can fly together. Planes choose
+an airborne start or a ground start where available. Public free-flight rooms stay
+joinable during flight. Reconnect and restart preserve each pilot’s aircraft.
+Race and verified time-trial rooms retain one common aircraft.
+
 Pilots mark themselves ready, and the host starts a three-second countdown.
 The live scoreboard uses server-tracked laps and times. Race finishers are ranked
 by total time. Opening the menu pauses only your aircraft while other pilots continue.

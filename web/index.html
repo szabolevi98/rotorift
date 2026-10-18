@@ -303,6 +303,14 @@
             <p id="lobby-description"></p>
             <p id="lobby-status" role="status"></p>
           </div>
+          <section id="lobby-aircraft-setup" class="card hidden">
+            <div class="lobby-aircraft-fields">
+              <label><span data-i18n="online.yourAircraft"></span><select id="lobby-aircraft"></select></label>
+              <label><span data-i18n="fly.mode"></span><select id="lobby-mode"></select></label>
+              <label id="lobby-launch-label"><span data-i18n="airplane.launch"></span><select id="lobby-launch"><option value="air" data-i18n="airplane.launchAir"></option><option value="ground" data-i18n="airplane.launchGround"></option></select></label>
+            </div>
+            <p class="prototype-note" data-i18n="online.mixedHint"></p>
+          </section>
           <div id="lobby-players" class="card"></div>
           <section class="simulation-controls simulation-dock">
             <h2 class="dock-label" data-i18n="simulation.title"></h2>

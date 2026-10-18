@@ -416,5 +416,10 @@
   "airplane.launchGround": "From the ground · Grove promenade",
   "error.clientTooOld": "Refresh the page to join an airplane room.",
   "error.incompatibleRoute": "This route or map does not support the selected aircraft.",
-  "error.invalidLaunch": "Ground launches are available in Grove free flight."
+  "error.invalidLaunch": "Ground launches are available in Grove free flight.",
+  "online.mixedAircraft": "Mixed aircraft · Choose your own",
+  "online.yourAircraft": "Your aircraft",
+  "online.mixedHint": "Everyone can choose their own drone or airplane. You can also join while others are flying.",
+  "error.invalidAircraft": "Choose a valid aircraft and flight mode.",
+  "error.aircraftLocked": "Aircraft selection is available in the free-flight lobby."
 }

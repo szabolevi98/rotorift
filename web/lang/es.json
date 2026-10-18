@@ -416,5 +416,10 @@
   "airplane.launchGround": "Desde el suelo · paseo de Grove",
   "error.clientTooOld": "Actualiza la página para entrar en una sala de aviones.",
   "error.incompatibleRoute": "Esta ruta o mapa no admite la aeronave seleccionada.",
-  "error.invalidLaunch": "La salida desde el suelo está disponible en vuelo libre en Grove."
+  "error.invalidLaunch": "La salida desde el suelo está disponible en vuelo libre en Grove.",
+  "online.mixedAircraft": "Aeronaves mixtas · Elige la tuya",
+  "online.yourAircraft": "Tu aeronave",
+  "online.mixedHint": "Cada piloto elige su dron o avión. También puedes unirte a un vuelo en curso.",
+  "error.invalidAircraft": "Elige una aeronave y un modo de vuelo válidos.",
+  "error.aircraftLocked": "Puedes elegir aeronave en la sala de vuelo libre."
 }
