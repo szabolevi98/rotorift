@@ -108,7 +108,11 @@ export class FixedWingPhysics {
       loads.force[2] -=
         groundVelocity[2] * c.massKg * (this.armed ? 0.06 : 0.35);
       loads.torque[1] -=
-        this.surfaces.yaw * Math.max(0, -groundVelocity[2]) * 0.1;
+        this.surfaces.yaw *
+        Math.max(0, -groundVelocity[2]) *
+        0.1 *
+        (c.massKg / 1.45) *
+        (c.lengthM / 1.08);
     }
     b.resetForces(true);
     b.resetTorques(true);

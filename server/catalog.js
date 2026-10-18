@@ -39,6 +39,8 @@ export async function loadCatalog(dataRoot = DATA_ROOT) {
   }
   let airplanes=[];
   try{airplanes=await load('airplanes');}catch(error){if(error.code!=='ENOENT')throw error;}
+  const airplaneOrder=["rift-t15","rift-s75"];
+  airplanes.sort((a,b)=>airplaneOrder.indexOf(a.id)-airplaneOrder.indexOf(b.id));
   for(const plane of airplanes){validateAirplane(plane);plane.configHash=createHash('sha256').update(JSON.stringify(plane)).digest('hex').slice(0,16);}
   return { drones, maps, airplanes };
 }

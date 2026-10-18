@@ -1,0 +1,55 @@
+{
+  "id": "rift-s75",
+  "kind": "fixedWing",
+  "name": "Rift S75",
+  "version": 1,
+  "category": "parkflyer",
+  "tuningStatus": "experimental-estimate",
+  "massKg": 0.23,
+  "wingspanM": 0.75,
+  "lengthM": 0.55,
+  "propDiameterM": 0.127,
+  "maxSpeedMps": 22,
+  "inertiaKgM2": [0.004, 0.0075, 0.005],
+  "centerOfMassM": [0, 0, 0],
+  "bodyHalfExtentsM": [0.029, 0.031, 0.105],
+  "visualOffsetM": [0, 0, 0],
+  "cameraOffsetM": [0, 0.033, -0.189],
+  "motor": {
+    "maxThrustN": 2.5,
+    "thrustExponent": 1.5,
+    "riseSeconds": 0.1,
+    "fallSeconds": 0.08,
+    "pitchSpeedMps": 22
+  },
+  "motors": [{ "positionM": [0, 0.125, 0.142], "direction": -1 }],
+  "battery": {
+    "cells": 2,
+    "nominalVoltage": 7.4,
+    "capacityMah": 650,
+    "fullCellVoltage": 4.2
+  },
+  "aero": {
+    "areaM2": 0.091,
+    "chordM": 0.122,
+    "liftSlope": 4.6,
+    "liftZero": 0.28,
+    "stallAngleRad": 0.3,
+    "dragZero": 0.042,
+    "inducedDrag": 0.07,
+    "pitchStability": 0.8,
+    "pitchTrim": 0.014
+  },
+  "controls": { "travel": 0.6, "expo": 0.35, "servoSeconds": 0.08 },
+  "launch": { "speedMps": 9, "altitudeM": 40 },
+  "simulation": {
+    "battery": {
+      "idleCurrentA": 0.15,
+      "maxCurrentA": 8,
+      "resistanceOhm": 0.055,
+      "reserveFraction": 0.07
+    }
+  },
+  "friction": 0.5,
+  "restitution": 0.05
+}

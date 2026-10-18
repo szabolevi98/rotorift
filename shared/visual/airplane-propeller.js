@@ -14,7 +14,7 @@ export class AirplanePropellerExposure {
         blade.material = original.clone();
         this.blades.push({ blade, original, castShadow: blade.castShadow });
       }
-      const geometry = new THREE.RingGeometry(0.018, radius, 64, 4);
+      const geometry = new THREE.RingGeometry(radius * 0.14, radius, 64, 4);
       const colors = [],
         positions = geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) {
@@ -37,7 +37,7 @@ export class AirplanePropellerExposure {
         side: THREE.DoubleSide,
       });
       const disc = new THREE.Mesh(geometry, material);
-      disc.name = "T15_propeller_exposure";
+      disc.name = prop.name + "_exposure";
       disc.visible = false;
       prop.add(disc);
       this.discs.push(disc);

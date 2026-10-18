@@ -1,6 +1,6 @@
 # Fixed-wing aircraft introduction plan
 
-Recorded: **2026-10-16**. Updated: **2026-10-18**. Status: **initial trainer features implemented**.
+Recorded: **2026-10-16**. Updated: **2026-10-18**. Status: **trainer and small pusher implemented**.
 
 The approved T15 now includes separate flight/effects/visual implementations,
 ground and airborne launch, eight-pilot airplane rooms, reconnect/restart,
@@ -8,6 +8,9 @@ airplane circuits, records/ghosts and shared showcase/GLB export. See
 [current scope and validation](rift-t15.md). The original phased design below
 is retained as the rationale, rather than an outstanding task list. Real-device
 and real-network tuning remains ongoing; automated tests do not certify handling.
+
+The smaller [Rift S75](rift-s75.md) now adds an original 750 mm / 2S pusher,
+with its own visual factory, structure and tuning, sharing the fixed-wing solver.
 
 ## Goal and first aircraft
 

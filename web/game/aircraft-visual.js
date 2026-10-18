@@ -9,7 +9,7 @@ import {
   RotorMotion,
   RemoteRotorMotion,
 } from "../../shared/visual/rotor-motion.js";
-import { animateTrainer } from "../../shared/visual/fixed-wing-model.js";
+import { animateFixedWingModel } from "../../shared/visual/airplane-model-utils.js";
 import {
   AirplanePropellerExposure,
   AIRPLANE_VISUAL_ROTOR_SPEED,
@@ -92,7 +92,7 @@ class AirplaneVisual {
       this.config.motors,
       physics.armed && input.throttle > 0,
     );
-    animateTrainer(this.model, physics.surfaces, this.motion.phase[0]);
+    animateFixedWingModel(this.model, physics.surfaces, this.motion.phase[0]);
     this.exposure.update(this.motion.fraction[0]);
   }
   updateRemote(dt, player) {
@@ -107,7 +107,7 @@ class AirplaneVisual {
         ? player.animation
         : stoppedAirplaneAnimation();
     this.motion.update(dt, [state.engine ** 2], 1, this.config.motors, true);
-    animateTrainer(this.model, state.surfaces, this.motion.phase[0]);
+    animateFixedWingModel(this.model, state.surfaces, this.motion.phase[0]);
     this.exposure.update(this.motion.fraction[0]);
   }
   prepareView() {}

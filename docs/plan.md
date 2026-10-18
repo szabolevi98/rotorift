@@ -14,7 +14,8 @@ megvalósítási sorrend nem a jelenlegi flottát vagy teendőlistát jelölik.
 2026-10-17: elkészült az első repülhető, külön aerodinamikás **Rift T15** prototípus
 (1,5 m felsőszárnyas tréner), helyi szabad repüléssel és levegőből indulással.
 2026-10-18: földi indulás, nyolcfős repülős szobák, két repülős verseny,
-rekordok/szellemek és showcase/GLB export is elkészült. Lásd: [rift-t15.md](rift-t15.md).
+rekordok/szellemek és showcase/GLB export is elkészült. Lásd: [rift-t15.md](rift-t15.md). A kisebb, 750 mm / 2S tolólégcsavaros
+[Rift S75](rift-s75.md) is repülhető, vegyes multiplayerben is.
 
 2026-10-16: külön terv készült a merevszárnyú RC repülők bevezetésére:
 [fixed-wing-plan.md](fixed-wing-plan.md). Egy elektromos trénergép, külön fizika,

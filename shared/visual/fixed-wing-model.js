@@ -2,7 +2,8 @@ import * as THREE from "three";
 import {
   TRAINER_GEAR,
   TRAINER_WING_SHIFT,
-} from "../physics/fixed-wing-colliders.js";
+} from "../aircraft/airframe.js";
+import { batchAirplaneShell, animateFixedWingModel } from "./airplane-model-utils.js";
 import { configureDronePolymer } from "./drone-rendering.js";
 
 // One metre-scale source for flight, remote aircraft, ghosts and GLB/showcase.
@@ -817,58 +818,8 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     );
   }
   root.updateMatrixWorld(true);
-  if (batchStatic) batchTrainerShell(root);
+  if (batchStatic) batchAirplaneShell(root);
   return root;
 }
-// Static details share one draw per material. Hinges and the propeller remain
-// independent; adding a vent or a wheel hub does not add another flight draw.
-function batchTrainerShell(root) {
-  const batches = new Map();
-  for (const object of [...root.children]) {
-    if (!object.isMesh) continue;
-    const geometry = object.geometry.index
-      ? object.geometry.toNonIndexed()
-      : object.geometry.clone();
-    geometry.applyMatrix4(object.matrix);
-    if (!batches.has(object.material))
-      batches.set(object.material, { positions: [], normals: [], parts: [] });
-    const batch = batches.get(object.material);
-    batch.positions.push(...geometry.attributes.position.array);
-    batch.normals.push(...geometry.attributes.normal.array);
-    batch.parts.push(object.name);
-    root.remove(object);
-    geometry.dispose();
-    object.geometry.dispose();
-  }
-  let index = 0;
-  for (const [material, batch] of batches) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(batch.positions, 3),
-    );
-    geometry.setAttribute(
-      "normal",
-      new THREE.Float32BufferAttribute(batch.normals, 3),
-    );
-    const object = new THREE.Mesh(geometry, material);
-    object.name = "T15_static_shell_" + index++;
-    object.userData.parts = batch.parts;
-    object.castShadow = object.receiveShadow = true;
-    root.add(object);
-  }
-  root.updateMatrixWorld(true);
-}
-export function animateTrainer(model, surfaces, phase) {
-  model.traverse((object) => {
-    if (object.userData.propeller) object.rotation.z = phase;
-    if (object.userData.surface === "aileron") {
-      object.rotation.set(0, 0, object.userData.hingeTilt ?? 0);
-      object.rotateX(-surfaces.roll * object.userData.side * 0.45);
-    }
-    if (object.userData.surface === "elevator")
-      object.rotation.x = surfaces.pitch * 0.4;
-    if (object.userData.surface === "rudder")
-      object.rotation.y = surfaces.yaw * 0.4;
-  });
-}
+// Backward-compatible name for the original trainer animation API.
+export function animateTrainer(...args) { animateFixedWingModel(...args); }

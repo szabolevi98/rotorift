@@ -65,6 +65,7 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 | Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
 | Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
 | Rift T15 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
+| Rift S75 · experimental | 750 mm pusher parkflyer | 2S / 650 mAh |
 
 The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
@@ -76,6 +77,12 @@ and landing-gear collisions, wind and battery simulation. Explore the same model
 in the showcase and export it as GLB. Handling remains an experimental estimate;
 it is not a calibrated real-aircraft replica. Drone-only courses and solo Playground
 flights are excluded for the trainer; mixed online free flight allows any aircraft on any map.
+
+The [Rift S75](docs/rift-s75.md) adds a smaller 750 mm, 230 g foam-style
+parkflyer with a raised brushless pusher, rounded pod and nose camera. Its own
+2S configuration, airframe colliders, launch height and acoustic profile share
+the fixed-wing solver and existing airplane circuits. It also joins mixed rooms
+with every drone and the T15.
 
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
@@ -290,7 +297,7 @@ Further details:
 
 ## Showcase and race editor
 
-The English showcase combines five drone models with all four map viewers. It runs
+The English showcase combines five drone models and two airplanes with all four map viewers. It runs
 on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 `http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
 The game itself requires a separate Node server.
@@ -337,8 +344,8 @@ the start/finish gate:
 | Grove | Grove Grand Tour | 2.27 km | 28 | Pavilion passage, lakes and woodland perimeter |
 | Grove | Twin Lakes Flow | 1.74 km | 28 | Under the footbridge, over the jetty and through the boathouse |
 | Grove | Pavilion Peaks | 1.85 km | 26 | Covered arcade, upper pavilion gallery and a single outdoor dive gate with recovery space |
-| Grove | Grove Air Circuit · T15 | 1.41 km | 16 | Wide, level airplane circuit at 52 m |
-| Grove | Lakeside Figure Eight · T15 | 1.56 km | 24 | Broad climbing and descending airplane turns |
+| Grove | Grove Air Circuit · airplanes | 1.41 km | 16 | Wide, level airplane circuit at 52 m |
+| Grove | Lakeside Figure Eight · airplanes | 1.56 km | 24 | Broad climbing and descending airplane turns |
 | Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
 | Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
 | Construction Yard | Cranes & Twin Shafts | 1.70 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |

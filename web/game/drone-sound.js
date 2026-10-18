@@ -1,6 +1,7 @@
 // Tuned acoustic characters, not recordings or measured RPM specifications.
 // One reusable native Web Audio graph; no per-sample JavaScript or audio files.
 export const DRONE_SOUND_PROFILES = Object.freeze({
+  'rift-s75': {rotorHz:330,body:.42,blade:.85,air:.065,highpass:140,cutoff:4400,resonance:660,ductDb:0,gain:1.8,blades:2},
   'rift-t15': {rotorHz:180,body:.7,blade:.7,air:.08,highpass:80,cutoff:3200,resonance:380,ductDb:0,gain:1.8,blades:2},
   'rift-65':  { rotorHz: 1400, body: .12, blade: 1, air: .035, highpass: 850, cutoff: 7800, resonance: 2900, ductDb: 3, gain: .80 },
   'rift-75':  { rotorHz: 1150, body: .18, blade: 1, air: .041, highpass: 650, cutoff: 7200, resonance: 2350, ductDb: 2.5, gain: .85 },

@@ -4,11 +4,11 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { tagDroneColorMaterials } from "../../shared/visual/drone-colors.js";
 import { configureDronePolymer } from "../../shared/visual/drone-rendering.js";
 import { paintLoading } from "../loading.js";
-import {createTrainerModel} from '../../shared/visual/fixed-wing-model.js';
+import {createAirplaneModel} from '../../shared/visual/airplane-models.js';
 const cache = new Map(),
   loader = new GLTFLoader();
 export async function loadModel(config, { isolateMaterials = false, onProgress } = {}) {
-  if(config.kind==='fixedWing'){onProgress?.({phase:'prepare'});return createTrainerModel();}
+  if(config.kind==='fixedWing'){onProgress?.({phase:'prepare'});return createAirplaneModel(config);}
   let entry = cache.get(config.id);
   if (!entry) {
     entry = { listeners: new Set(), progress: { phase: "download", loaded: 0, total: 0 } };

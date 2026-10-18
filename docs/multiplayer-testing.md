@@ -89,11 +89,11 @@ not a test of eight rendering browsers or eight independent internet connections
 ## Mixed free flight · 2026-10-18
 
 Protocol 4 adds per-player aircraft IDs, modes, launch methods and typed visual
-state. New free-flight rooms allow all drones and the airplane together on any
+state. New free-flight rooms allow all drones and both airplanes together on any
 map, including late joining a running flight. Races and legacy rooms retain a
 common aircraft; old clients must refresh before joining mixed rooms.
 
-The eight-client integration test uses all six aircraft types, both ground and
+The eight-client integration test uses all seven aircraft types (five drones, T15 and S75), both ground and
 air starts, independent modes, unique colors, rotor damage and airplane control
 surfaces. It also checks lobby aircraft changes/readiness, invalid model/hash
 rejection, live room discovery, late join, reconnect and restart. A plane-hosted

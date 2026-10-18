@@ -1,11 +1,5 @@
-// Shared by the visual wing and its collision proxy. Negative Z is forward.
-export const TRAINER_WING_SHIFT = -0.025;
-
-export const TRAINER_GEAR = Object.freeze([
-  [-0.21, -0.22, 0.08],
-  [0.21, -0.22, 0.08],
-  [0, -0.22, -0.38],
-]);
+import { aircraftAirframe } from "../aircraft/airframe.js";
+export { TRAINER_GEAR, TRAINER_WING_SHIFT } from "../aircraft/airframe.js";
 
 export function addFixedWingColliders(RAPIER, world, body, config) {
   const add = (half, position) =>
@@ -17,16 +11,17 @@ export function addFixedWingColliders(RAPIER, world, body, config) {
         .setRestitution(config.restitution),
       body,
     );
+  const frame = aircraftAirframe(config);
   const bodyCollider = add(config.bodyHalfExtentsM, [0, 0, 0]);
-  const noseCollider = add([0.04, 0.04, 0.08], [0, 0.015, -0.49]);
-  const wingCollider = add(
-    [config.wingspanM / 2, 0.018, 0.112],
-    [0, 0.115, -0.02 + TRAINER_WING_SHIFT],
+  const noseCollider = add(frame.nose.half, frame.nose.p);
+  const wingCollider = add(frame.wing.half, frame.wing.p);
+  const tailCollider = add(frame.tail.half, frame.tail.p);
+  const extraColliders = (frame.extra ?? []).map((part) =>
+    add(part.half, part.p),
   );
-  const tailCollider = add([0.25, 0.012, 0.075], [0, 0.045, 0.46]);
-  const gearColliders = TRAINER_GEAR.map((position) =>
+  const gearColliders = frame.gear.map((position) =>
     world.createCollider(
-      RAPIER.ColliderDesc.ball(0.06)
+      RAPIER.ColliderDesc.ball(frame.wheelRadius)
         .setTranslation(...position)
         .setDensity(0)
         .setFriction(0.08)
@@ -39,6 +34,7 @@ export function addFixedWingColliders(RAPIER, world, body, config) {
     noseCollider,
     wingCollider,
     tailCollider,
+    extraColliders,
     gearColliders,
   };
 }

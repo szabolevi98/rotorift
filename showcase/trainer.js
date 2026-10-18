@@ -1,15 +1,20 @@
 // Reuse the flight model: the showroom never maintains a second airplane mesh.
 function createRiftT15() {
-  const root = createTrainerModel();
-  const exposure = new AirplanePropellerExposure(root);
-  root.position.y = 0.28;
+  return createShowcaseAirplane(createTrainerModel(), 0.28, 0.127, 1);
+}
+function createRiftS75() {
+  return createShowcaseAirplane(createScoutModel(), 0.115, 0.0635, -1);
+}
+function createShowcaseAirplane(root, groundHeight, propRadius, direction) {
+  const exposure = new AirplanePropellerExposure(root, propRadius);
+  root.position.y = groundHeight;
   const materials = new Set(),
     propellers = [];
   let meshes = 0,
     triangles = 0;
   root.traverse((object) => {
     if (object.userData.propeller)
-      propellers.push({ group: object, direction: 1, axis: "z" });
+      propellers.push({ group: object, direction, axis: "z" });
     if (!object.isMesh) return;
     meshes++;
     triangles +=

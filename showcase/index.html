@@ -61097,49 +61097,103 @@ function createRiftX35({cameraMount='cage'}={}) {
     setColor(hex){materials.tpu.color.set(hex);materials.tpuDetail.color.set(hex).multiplyScalar(.55);applyBatteryLabelColor(root,hex);}};
 }
 
-// Shared by the visual wing and its collision proxy. Negative Z is forward.
+// Metre-scale structural dimensions shared by rendering, physics and launch.
+// Coordinates: Y up, negative Z forward. The T15 defaults preserve its handling.
 const TRAINER_WING_SHIFT = -0.025;
-
 const TRAINER_GEAR = Object.freeze([
   [-0.21, -0.22, 0.08],
   [0.21, -0.22, 0.08],
   [0, -0.22, -0.38],
 ]);
+const SCOUT_GEAR = Object.freeze([
+  [-0.1, -0.09, 0.018],
+  [0.1, -0.09, 0.018],
+  [0, -0.09, -0.155],
+]);
+const AIRFRAMES = {
+  "rift-t15": {
+    nose: { half: [0.04, 0.04, 0.08], p: [0, 0.015, -0.49] },
+    wing: {
+      half: [0.75, 0.018, 0.112],
+      p: [0, 0.115, -0.02 + TRAINER_WING_SHIFT],
+    },
+    tail: { half: [0.25, 0.012, 0.075], p: [0, 0.045, 0.46] },
+    gear: TRAINER_GEAR,
+    wheelRadius: 0.06,
+    groundClearance: 0.285,
+  },
+  "rift-s75": {
+    nose: { half: [0.027, 0.028, 0.055], p: [0, 0, -0.15] },
+    wing: { half: [0.375, 0.021, 0.065], p: [0, 0.075, -0.03] },
+    tail: { half: [0.135, 0.007, 0.05], p: [0, 0.017, 0.285] },
+    extra: [
+      { half: [0.009, 0.009, 0.08], p: [0, -0.002, 0.18] },
+      { half: [0.014, 0.025, 0.03], p: [0, 0.108, 0.105] },
+      { half: [0.004, 0.048, 0.033], p: [0, 0.065, 0.275] },
+    ],
+    gear: SCOUT_GEAR,
+    wheelRadius: 0.025,
+    groundClearance: 0.12,
+  },
+};
+function aircraftAirframe(config) {
+  const frame = AIRFRAMES[config.id];
+  if (!frame) throw new Error("Missing airframe dimensions: " + config.id);
+  return frame;
+}
 
-function addFixedWingColliders(RAPIER, world, body, config) {
-  const add = (half, position) =>
-    world.createCollider(
-      RAPIER.ColliderDesc.cuboid(...half)
-        .setTranslation(...position)
-        .setDensity(0)
-        .setFriction(config.friction)
-        .setRestitution(config.restitution),
-      body,
+
+// Static details share one draw per material. Hinges and the propeller remain
+// independent; adding a vent or a wheel hub does not add another flight draw.
+function batchAirplaneShell(root, prefix = "T15") {
+  const batches = new Map();
+  for (const object of [...root.children]) {
+    if (!object.isMesh) continue;
+    const geometry = object.geometry.index
+      ? object.geometry.toNonIndexed()
+      : object.geometry.clone();
+    geometry.applyMatrix4(object.matrix);
+    if (!batches.has(object.material))
+      batches.set(object.material, { positions: [], normals: [], parts: [] });
+    const batch = batches.get(object.material);
+    batch.positions.push(...geometry.attributes.position.array);
+    batch.normals.push(...geometry.attributes.normal.array);
+    batch.parts.push(object.name);
+    root.remove(object);
+    geometry.dispose();
+    object.geometry.dispose();
+  }
+  let index = 0;
+  for (const [material, batch] of batches) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(batch.positions, 3),
     );
-  const bodyCollider = add(config.bodyHalfExtentsM, [0, 0, 0]);
-  const noseCollider = add([0.04, 0.04, 0.08], [0, 0.015, -0.49]);
-  const wingCollider = add(
-    [config.wingspanM / 2, 0.018, 0.112],
-    [0, 0.115, -0.02 + TRAINER_WING_SHIFT],
-  );
-  const tailCollider = add([0.25, 0.012, 0.075], [0, 0.045, 0.46]);
-  const gearColliders = TRAINER_GEAR.map((position) =>
-    world.createCollider(
-      RAPIER.ColliderDesc.ball(0.06)
-        .setTranslation(...position)
-        .setDensity(0)
-        .setFriction(0.08)
-        .setRestitution(0.05),
-      body,
-    ),
-  );
-  return {
-    bodyCollider,
-    noseCollider,
-    wingCollider,
-    tailCollider,
-    gearColliders,
-  };
+    geometry.setAttribute(
+      "normal",
+      new THREE.Float32BufferAttribute(batch.normals, 3),
+    );
+    const object = new THREE.Mesh(geometry, material);
+    object.name = prefix + "_static_shell_" + index++;
+    object.userData.parts = batch.parts;
+    object.castShadow = object.receiveShadow = true;
+    root.add(object);
+  }
+  root.updateMatrixWorld(true);
+}
+function animateFixedWingModel(model, surfaces, phase) {
+  model.traverse((object) => {
+    if (object.userData.propeller) object.rotation.z = phase;
+    if (object.userData.surface === "aileron") {
+      object.rotation.set(0, 0, object.userData.hingeTilt ?? 0);
+      object.rotateX(-surfaces.roll * object.userData.side * 0.45);
+    }
+    if (object.userData.surface === "elevator")
+      object.rotation.x = surfaces.pitch * 0.4;
+    if (object.userData.surface === "rudder")
+      object.rotation.y = surfaces.yaw * 0.4;
+  });
 }
 
 
@@ -61955,60 +62009,481 @@ function createTrainerModel({ batchStatic = true } = {}) {
     );
   }
   root.updateMatrixWorld(true);
-  if (batchStatic) batchTrainerShell(root);
+  if (batchStatic) batchAirplaneShell(root);
   return root;
 }
-// Static details share one draw per material. Hinges and the propeller remain
-// independent; adding a vent or a wheel hub does not add another flight draw.
-function batchTrainerShell(root) {
-  const batches = new Map();
-  for (const object of [...root.children]) {
-    if (!object.isMesh) continue;
-    const geometry = object.geometry.index
-      ? object.geometry.toNonIndexed()
-      : object.geometry.clone();
-    geometry.applyMatrix4(object.matrix);
-    if (!batches.has(object.material))
-      batches.set(object.material, { positions: [], normals: [], parts: [] });
-    const batch = batches.get(object.material);
-    batch.positions.push(...geometry.attributes.position.array);
-    batch.normals.push(...geometry.attributes.normal.array);
-    batch.parts.push(object.name);
-    root.remove(object);
-    geometry.dispose();
-    object.geometry.dispose();
-  }
-  let index = 0;
-  for (const [material, batch] of batches) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(batch.positions, 3),
+// Backward-compatible name for the original trainer animation API.
+function animateTrainer(...args) { animateFixedWingModel(...args); }
+
+
+// Original 750 mm foam parkflyer. A rounded pod, raised pusher and slim tail
+// boom keep both the nose camera and the complete propeller sweep unobstructed.
+function createScoutModel({ batchStatic = true } = {}) {
+  const root = new THREE.Group();
+  root.name = "Rift_S75";
+  root.userData.proceduralAircraft = true;
+  const material = (color, roughness = 0.7, metalness = 0) =>
+    new THREE.MeshStandardMaterial({ color, roughness, metalness });
+  const foam = material("#edece2"),
+    accent = material("#ff6648", 0.5),
+    ink = material("#243b43"),
+    glass = material("#284d61", 0.2, 0.2),
+    metal = material("#a8b4b6", 0.35, 0.55),
+    rubber = material("#282e30", 0.95);
+  accent.userData.droneColorRole = "base";
+  configureDronePolymer(accent);
+  const mesh = (geometry, mat, name, parent = root) => {
+    const m = new THREE.Mesh(geometry, mat);
+    m.name = name;
+    m.castShadow = m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  };
+  function rod(a, b, r, mat, name, parent = root) {
+    const start = new THREE.Vector3(...a),
+      end = new THREE.Vector3(...b),
+      delta = end.sub(start);
+    const m = mesh(
+      new THREE.CylinderGeometry(r, r, delta.length(), 8),
+      mat,
+      name,
+      parent,
     );
-    geometry.setAttribute(
-      "normal",
-      new THREE.Float32BufferAttribute(batch.normals, 3),
+    m.position.copy(start).addScaledVector(delta, 0.5);
+    m.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      delta.normalize(),
     );
-    const object = new THREE.Mesh(geometry, material);
-    object.name = "T15_static_shell_" + index++;
-    object.userData.parts = batch.parts;
-    object.castShadow = object.receiveShadow = true;
-    root.add(object);
+    return m;
   }
-  root.updateMatrixWorld(true);
-}
-function animateTrainer(model, surfaces, phase) {
-  model.traverse((object) => {
-    if (object.userData.propeller) object.rotation.z = phase;
-    if (object.userData.surface === "aileron") {
-      object.rotation.set(0, 0, object.userData.hingeTilt ?? 0);
-      object.rotateX(-surfaces.roll * object.userData.side * 0.45);
+  function solid(rings, mat, name, parent = root) {
+    const n = rings[0].length,
+      indices = [];
+    for (let j = 0; j < rings.length - 1; j++)
+      for (let i = 0; i < n; i++) {
+        const a = j * n + i,
+          b = j * n + ((i + 1) % n);
+        indices.push(a, b, b + n, a, b + n, a + n);
+      }
+    for (let i = 1; i < n - 1; i++) {
+      indices.push(0, i + 1, i);
+      const a = (rings.length - 1) * n;
+      indices.push(a, a + i, a + i + 1);
     }
-    if (object.userData.surface === "elevator")
-      object.rotation.x = surfaces.pitch * 0.4;
-    if (object.userData.surface === "rudder")
-      object.rotation.y = surfaces.yaw * 0.4;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(rings.flat(2), 3),
+    );
+    g.setIndex(indices);
+    g.computeVertexNormals();
+    return mesh(g, mat, name, parent);
+  }
+  function triangles(vertices, mat, name, parent = root) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices.flat(), 3),
+    );
+    g.computeVertexNormals();
+    return mesh(g, mat, name, parent);
+  }
+  // Analytic smooth shell; the canopy is part of this skin, never a floating box.
+  const profile = (z) => {
+    const t = (z + 0.215) / 0.355,
+      s = Math.sin(Math.PI * Math.max(0, Math.min(1, t)));
+    const width = 0.038 * Math.pow(Math.max(0, s), 0.72);
+    const height = 0.032 * Math.pow(Math.max(0, s), 0.78);
+    const canopy =
+      0.021 * Math.exp(-(((z + 0.104) / 0.07) ** 4)) +
+      0.033 * Math.exp(-(((z + 0.021) / 0.052) ** 4));
+    return { width, height, canopy };
+  };
+  function skin(z, angle, offset = 0) {
+    const { width, height, canopy } = profile(z),
+      sin = Math.sin(angle);
+    return [
+      (width + offset) * Math.cos(angle),
+      (height + offset) * sin + canopy * Math.max(0, sin) ** 2,
+      z,
+    ];
+  }
+  function skinNormal(z, angle) {
+    z = Math.max(-0.21499, Math.min(0.13999, z));
+    const a = new THREE.Vector3(...skin(z, angle + 0.001)).sub(
+      new THREE.Vector3(...skin(z, angle - 0.001)),
+    );
+    const b = new THREE.Vector3(...skin(z + 0.000001, angle)).sub(
+      new THREE.Vector3(...skin(z - 0.000001, angle)),
+    );
+    return a.cross(b).normalize().toArray();
+  }
+  const body = [],
+    canopy = [],
+    bodyNormals = [],
+    canopyNormals = [];
+  for (let row = 0; row < 40; row++)
+    for (let i = 0; i < 32; i++) {
+      const za = -0.215 + (0.355 * row) / 40,
+        zb = -0.215 + (0.355 * (row + 1)) / 40,
+        a = (i * Math.PI * 2) / 32,
+        b = ((i + 1) * Math.PI * 2) / 32,
+        z = (za + zb) / 2,
+        angle = (a + b) / 2;
+      const glassPatch = z > -0.179 && z < -0.055 && Math.sin(angle) > 0.48;
+      const target = glassPatch ? canopy : body;
+      const p = [skin(za, a), skin(za, b), skin(zb, b), skin(zb, a)];
+      target.push(p[0], p[1], p[2], p[0], p[2], p[3]);
+      const normalTarget = glassPatch ? canopyNormals : bodyNormals;
+      const normals = [
+        skinNormal(za, a),
+        skinNormal(za, b),
+        skinNormal(zb, b),
+        skinNormal(zb, a),
+      ];
+      normalTarget.push(...[0, 1, 2, 0, 2, 3].flatMap((i) => normals[i]));
+    }
+  triangles(body, foam, "S75_rounded_foam_pod").geometry.setAttribute(
+    "normal",
+    new THREE.Float32BufferAttribute(bodyNormals, 3),
+  );
+  triangles(canopy, glass, "S75_flush_canopy").geometry.setAttribute(
+    "normal",
+    new THREE.Float32BufferAttribute(canopyNormals, 3),
+  );
+  // Flush flowing cheek paint with a narrow navy underline, on both sides.
+  for (const side of [-1, 1])
+    for (const [mat, base, width] of [
+      [accent, -0.05, 0.13],
+      [ink, -0.2, 0.045],
+    ]) {
+      const points = [];
+      for (let i = 0; i < 32; i++) {
+        const za = -0.197 + (0.31 * i) / 32,
+          zb = -0.197 + (0.31 * (i + 1)) / 32;
+        const angle = (z) =>
+          base + 0.22 * Math.sin(((z + 0.197) / 0.31) * Math.PI);
+        const a = angle(za),
+          b = angle(zb),
+          shift = side < 0 ? Math.PI : 0;
+        const p = [
+          skin(za, shift + side * a, 0.00025),
+          skin(zb, shift + side * b, 0.00025),
+          skin(zb, shift + side * (b + width), 0.00025),
+          skin(za, shift + side * (a + width), 0.00025),
+        ];
+        points.push(p[0], p[1], p[2], p[0], p[2], p[3]);
+      }
+      const stripe = triangles(points, mat, "S75_swept_cheek_livery");
+      stripe.material.side = THREE.DoubleSide;
+    }
+  solid(
+    [0.07, 0.12, 0.2, 0.285, 0.325].map((z, i) =>
+      Array.from({ length: 16 }, (_, j) => {
+        const r = [0.018, 0.014, 0.009, 0.006, 0.003][i],
+          a = (j * Math.PI) / 8;
+        return [r * Math.cos(a), -0.002 + r * Math.sin(a), z];
+      }),
+    ),
+    foam,
+    "S75_tapered_tail_boom",
+  );
+
+  // Cambered airfoil with rounded tips and mild dihedral. Each aileron has its
+  // own trailing segment and hinge, sharing the exact neutral airfoil contour.
+  const wingY = (x) => 0.069 + Math.abs(x) * 0.055;
+  function wingPoint(x, u, top, tail = false) {
+    const span = tail ? 0.135 : 0.375,
+      f = Math.abs(x) / span;
+    const chord = (tail ? 0.1 : 0.136) * (1 - 0.17 * f ** 3),
+      leading = (tail ? 0.235 : -0.098) + 0.018 * f ** 3;
+    const thickness =
+      (tail ? 0.006 : 0.013) * Math.max(0, Math.sin(Math.PI * u)) ** 0.65;
+    const camber = tail ? 0 : 0.0035 * Math.sin(Math.PI * u);
+    return [
+      x,
+      (tail ? 0.017 : wingY(x)) + camber + ((top ? 1 : -1) * thickness) / 2,
+      leading + chord * u,
+    ];
+  }
+  function airfoil(
+    x0,
+    x1,
+    u0,
+    u1,
+    mat,
+    name,
+    { parent = root, tail = false, origin = [0, 0, 0] } = {},
+  ) {
+    if (x0 > x1) [x0, x1] = [x1, x0];
+    const rings = [];
+    for (let row = 0; row <= 8; row++) {
+      const x = x0 + ((x1 - x0) * row) / 8,
+        ring = [];
+      for (const top of [true, false])
+        for (let j = 0; j <= 12; j++) {
+          const u = top ? u0 + ((u1 - u0) * j) / 12 : u1 - ((u1 - u0) * j) / 12;
+          ring.push(wingPoint(x, u, top, tail).map((v, k) => v - origin[k]));
+        }
+      rings.push(ring);
+    }
+    return solid(rings, mat, name, parent);
+  }
+  for (const side of [-1, 1]) {
+    const end = side * 0.375,
+      aileronStart = side * 0.14;
+    airfoil(0, aileronStart, 0, 1, foam, "S75_wing_root");
+    airfoil(aileronStart, end, 0, 0.76, foam, "S75_main_wing");
+    const origin = wingPoint(side * 0.255, 0.764, false),
+      hinge = new THREE.Group();
+    hinge.name = "S75_aileron_" + side;
+    hinge.position.set(...origin);
+    hinge.userData = {
+      surface: "aileron",
+      side,
+      hingeTilt: side * Math.atan(0.055),
+    };
+    // Geometry includes dihedral; the hinge-local coordinates remove its tilt.
+    root.add(hinge);
+    hinge.rotation.z = hinge.userData.hingeTilt;
+    const panel = airfoil(
+      aileronStart,
+      end,
+      0.768,
+      1,
+      accent,
+      "S75_aileron_panel",
+      { parent: hinge, origin },
+    );
+    panel.geometry.rotateZ(-hinge.rotation.z);
+    for (const [start, finish, mat] of [
+      [0.29, 0.334, ink],
+      [0.341, 0.375, accent],
+    ]) {
+      const points = [];
+      for (let i = 0; i < 6; i++)
+        for (let j = 0; j < 8; j++) {
+          const xa = side * (start + ((finish - start) * i) / 6),
+            xb = side * (start + ((finish - start) * (i + 1)) / 6),
+            ua = 0.04 + (0.7 * j) / 8,
+            ub = 0.04 + (0.7 * (j + 1)) / 8,
+            p = [
+              wingPoint(xa, ua, true),
+              wingPoint(xb, ua, true),
+              wingPoint(xb, ub, true),
+              wingPoint(xa, ub, true),
+            ];
+          p.forEach((v) => (v[1] += 0.0003));
+          points.push(p[0], p[1], p[2], p[0], p[2], p[3]);
+        }
+      const paint = triangles(points, mat, "S75_wingtip_swept_paint");
+      paint.material.side = THREE.DoubleSide;
+    }
+    // Flush small servo, horn and linkage, rather than decorative floating rods.
+    const servo = mesh(
+      new THREE.BoxGeometry(0.012, 0.004, 0.018),
+      ink,
+      "S75_aileron_servo",
+    );
+    servo.position.set(side * 0.21, wingY(0.21) + 0.009, -0.014);
+    rod(
+      [side * 0.21, wingY(0.21) + 0.011, -0.006],
+      [side * 0.21, wingY(0.21) + 0.01, 0.024],
+      0.0007,
+      metal,
+      "S75_aileron_pushrod",
+    );
+  }
+  airfoil(-0.135, 0.135, 0, 0.7, foam, "S75_horizontal_stabilizer", {
+    tail: true,
   });
+  const elevator = new THREE.Group();
+  elevator.name = "S75_elevator";
+  elevator.position.set(0, 0.017, 0.305);
+  elevator.userData.surface = "elevator";
+  root.add(elevator);
+  airfoil(-0.135, 0.135, 0.71, 1, accent, "S75_elevator_panel", {
+    parent: elevator,
+    tail: true,
+    origin: [0, 0.017, 0.305],
+  });
+  // Rounded dorsal fin and rudder profile extruded only a few millimetres.
+  function fin(points, mat, name, parent = root) {
+    const shape = new THREE.Shape();
+    shape.moveTo(...points[0]);
+    for (let i = 1; i < points.length; i++) shape.lineTo(...points[i]);
+    shape.closePath();
+    const g = new THREE.ExtrudeGeometry(shape, {
+      depth: 0.004,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      steps: 1,
+      bevelSize: 0.0015,
+      bevelThickness: 0.001,
+    });
+    // Shape coordinates are Z/Y, extrusion along X.
+    g.rotateY(-Math.PI / 2);
+    g.translate(0.002, 0, 0);
+    return mesh(g, mat, name, parent);
+  }
+  fin(
+    [
+      [0.226, 0.014],
+      [0.242, 0.036],
+      [0.266, 0.094],
+      [0.276, 0.109],
+      [0.293, 0.111],
+      [0.305, 0.101],
+      [0.305, 0.015],
+    ],
+    foam,
+    "S75_rounded_vertical_fin",
+  );
+  const rudder = new THREE.Group();
+  rudder.name = "S75_rudder";
+  rudder.position.set(0, 0.017, 0.306);
+  rudder.userData.surface = "rudder";
+  root.add(rudder);
+  fin(
+    [
+      [0.001, 0],
+      [0.001, 0.084],
+      [0.014, 0.077],
+      [0.026, 0.012],
+      [0.026, 0],
+    ],
+    accent,
+    "S75_rudder_panel",
+    rudder,
+  );
+
+  // Raised motor nacelle, brushless bell, ventilation slots, real cable ends.
+  const pylon = mesh(
+    new THREE.SphereGeometry(1, 16, 10),
+    foam,
+    "S75_motor_pylon",
+  );
+  pylon.position.set(0, 0.077, 0.077);
+  pylon.scale.set(0.014, 0.052, 0.036);
+  const motor = mesh(
+    new THREE.CylinderGeometry(0.012, 0.012, 0.026, 16),
+    ink,
+    "S75_brushless_motor",
+  );
+  motor.rotation.x = Math.PI / 2;
+  motor.position.set(0, 0.125, 0.118);
+  for (const side of [-1, 1])
+    for (let i = 0; i < 3; i++) {
+      rod(
+        [side * 0.011, 0.124 + (i - 1) * 0.003, 0.111],
+        [side * 0.011, 0.124 + (i - 1) * 0.003, 0.122],
+        0.0007,
+        metal,
+        "S75_motor_cooling_slot",
+      );
+    }
+  for (let i = 0; i < 3; i++)
+    rod(
+      [-0.004 + i * 0.004, 0.107, 0.107],
+      [-0.004 + i * 0.004, 0.064, 0.061],
+      0.0009,
+      i === 0 ? accent : ink,
+      "S75_motor_lead",
+    );
+  rod(
+    [0, 0.125, 0.129],
+    [0, 0.125, 0.145],
+    0.002,
+    metal,
+    "S75_short_prop_shaft",
+  );
+  const prop = new THREE.Group();
+  prop.name = "S75_pusher_propeller";
+  prop.position.set(0, 0.125, 0.142);
+  prop.userData.propeller = true;
+  root.add(prop);
+  for (const sign of [-1, 1]) {
+    const rings = [];
+    for (const [r, w, sweep] of [
+      [0.006, 0.003, 0],
+      [0.018, 0.007, 0.002],
+      [0.035, 0.009, 0.004],
+      [0.052, 0.007, 0.006],
+      [0.0635, 0.0006, 0.005],
+    ]) {
+      rings.push(
+        Array.from({ length: 8 }, (_, j) => {
+          const a = (j * Math.PI) / 4,
+            across = Math.cos(a) * w;
+          return [
+            sign * (sweep + across),
+            sign * r,
+            Math.sin(a) * 0.001 + across * (0.65 - r * 5),
+          ];
+        }),
+      );
+    }
+    solid(rings, ink, "S75_twisted_pusher_blade", prop);
+  }
+  const hub = mesh(
+    new THREE.SphereGeometry(0.005, 12, 8),
+    metal,
+    "S75_prop_locknut",
+  );
+  hub.position.set(0, 0.125, 0.146);
+  hub.scale.z = 0.65;
+  // Three sprung wire legs. Wheel centres are the same points used by physics.
+  for (const [i, p] of SCOUT_GEAR.entries()) {
+    const anchor =
+      i === 2 ? [0, -0.022, -0.145] : [Math.sign(p[0]) * 0.023, -0.024, 0.014];
+    rod(anchor, p, 0.0018, metal, "S75_wire_gear");
+    const wheel = mesh(
+      new THREE.CylinderGeometry(0.025, 0.025, 0.012, 20),
+      rubber,
+      "S75_lightweight_wheel",
+    );
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(...p);
+    const axle = mesh(
+      new THREE.CylinderGeometry(0.01, 0.01, 0.013, 12),
+      foam,
+      "S75_wheel_hub",
+    );
+    axle.rotation.z = Math.PI / 2;
+    axle.position.set(...p);
+    rod(
+      [p[0] - 0.007, p[1], p[2]],
+      [p[0] + 0.007, p[1], p[2]],
+      0.002,
+      metal,
+      "S75_wheel_axle",
+    );
+  }
+  // Small FPV module in the nose, ahead of all opaque skin along its view axis.
+  const camera = mesh(
+    new THREE.CylinderGeometry(0.006, 0.007, 0.012, 12),
+    ink,
+    "S75_FPV_camera",
+  );
+  camera.rotation.x = Math.PI / 2;
+  camera.position.set(0, 0.033, -0.18);
+  const lens = mesh(
+    new THREE.CircleGeometry(0.0048, 12),
+    glass,
+    "S75_FPV_lens",
+  );
+  lens.rotation.y = Math.PI;
+  lens.position.set(0, 0.033, -0.1865);
+  rod(
+    [0.013, 0.028, 0.038],
+    [0.014, 0.055, 0.052],
+    0.0007,
+    ink,
+    "S75_receiver_antenna",
+  );
+  root.updateMatrixWorld(true);
+  if (batchStatic) batchAirplaneShell(root, "S75");
+  return root;
 }
 
 
@@ -62026,7 +62501,7 @@ class AirplanePropellerExposure {
         blade.material = original.clone();
         this.blades.push({ blade, original, castShadow: blade.castShadow });
       }
-      const geometry = new THREE.RingGeometry(0.018, radius, 64, 4);
+      const geometry = new THREE.RingGeometry(radius * 0.14, radius, 64, 4);
       const colors = [],
         positions = geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) {
@@ -62049,7 +62524,7 @@ class AirplanePropellerExposure {
         side: THREE.DoubleSide,
       });
       const disc = new THREE.Mesh(geometry, material);
-      disc.name = "T15_propeller_exposure";
+      disc.name = prop.name + "_exposure";
       disc.visible = false;
       prop.add(disc);
       this.discs.push(disc);
@@ -62090,16 +62565,21 @@ class AirplanePropellerExposure {
 
 // Reuse the flight model: the showroom never maintains a second airplane mesh.
 function createRiftT15() {
-  const root = createTrainerModel();
-  const exposure = new AirplanePropellerExposure(root);
-  root.position.y = 0.28;
+  return createShowcaseAirplane(createTrainerModel(), 0.28, 0.127, 1);
+}
+function createRiftS75() {
+  return createShowcaseAirplane(createScoutModel(), 0.115, 0.0635, -1);
+}
+function createShowcaseAirplane(root, groundHeight, propRadius, direction) {
+  const exposure = new AirplanePropellerExposure(root, propRadius);
+  root.position.y = groundHeight;
   const materials = new Set(),
     propellers = [];
   let meshes = 0,
     triangles = 0;
   root.traverse((object) => {
     if (object.userData.propeller)
-      propellers.push({ group: object, direction: 1, axis: "z" });
+      propellers.push({ group: object, direction, axis: "z" });
     if (!object.isMesh) return;
     meshes++;
     triangles +=
@@ -62149,6 +62629,8 @@ MODEL_CATALOG.sort((a,b)=>['rift-65','rift-75','rift-c3','rift-x35','rift-x5'].i
 
 MODEL_CATALOG.push({id:'rift-t15',status:'ready',name:'Rift T15',badge:'T15',category:'1.5 m trainer · 3S',create:createRiftT15,filename:'rotorift-rift-t15.glb',title:'Rift',suffix:'T15.',eyebrow:'ORIGINAL MODEL · FIXED-WING TRAINER',tagline:'A new way to find your line.',heading:'Room to spread your wings.',description:'A high-wing trainer with a 1.5 m wingspan, tricycle landing gear and moving ailerons, elevator and rudder. The same lightweight model used in flight.',edition:'006 / TRAINER',mark:'R / T15',cameraScale:5.5,colorLabel:'Airframe accents',specs:[{label:'Wingspan',value:'1.5',detail:'m'},{label:'Battery',value:'3S',detail:'/ 3 200 mAh'},{label:'Take-off mass',value:'1.45',detail:'kg'},{label:'Propeller',value:'10″',detail:'/ 2 blades'}]});
 
+MODEL_CATALOG.push({id:'rift-s75',status:'ready',name:'Rift S75',badge:'S75',category:'750 mm pusher parkflyer · 2S',create:createRiftS75,filename:'rotorift-rift-s75.glb',title:'Rift',suffix:'S75.',eyebrow:'ORIGINAL MODEL · 750 MM PARKFLYER',tagline:'Little wings. Open skies.',heading:'Small, light, ready to explore.',description:'A rounded foam pod, gentle wing dihedral and a raised brushless pusher propeller. A 750 mm parkflyer with moving ailerons, elevator and rudder, wire landing gear and an unobstructed nose camera.',edition:'007 / PARKFLYER',mark:'R / S75',cameraScale:2.75,colorLabel:'Airframe accents',specs:[{label:'Wingspan',value:'750',detail:'mm'},{label:'Battery',value:'2S',detail:'/ 650 mAh'},{label:'Take-off mass',value:'230',detail:'g'},{label:'Propeller',value:'5″',detail:'/ pusher · 2 blades'}]});
+
 // Render a readable shutter-speed representation instead of sampling real RPM
 // at the display refresh rate (which can make a fast rotor look stopped or
 // reverse). Physics keeps its independent full-speed phase for blade strikes.
@@ -62182,7 +62664,7 @@ class RemoteRotorMotion extends RotorMotion {
   }
 }
 
-const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rift-x35":1.62,"rift-x5":1.5,"rift-t15":1.5};
+const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rift-x35":1.62,"rift-x5":1.5,"rift-t15":1.5,"rift-s75":1.5};
 (() => {
   'use strict';
   const canvas = document.getElementById('scene');

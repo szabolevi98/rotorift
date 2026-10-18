@@ -1,3 +1,4 @@
+import { aircraftAirframe } from "./airframe.js";
 import { isFixedWing } from "./capabilities.js";
 import { parkSurfaceHeight } from "../world/park-layout.js";
 
@@ -18,7 +19,13 @@ export function aircraftLaunch(config, map, { method = "air", slot = 0 } = {}) {
     const x = slot % 2 === 0 ? -1 : 1,
       z = 300 + Math.floor(slot / 2) * 4;
     return {
-      p: [x, parkSurfaceHeight(x, z) + 0.065 + 0.285, z],
+      p: [
+        x,
+        parkSurfaceHeight(x, z) +
+          0.065 +
+          aircraftAirframe(config).groundClearance,
+        z,
+      ],
       q: { x: 0, y: 0, z: 0, w: 1 },
       v: [0, 0, 0],
       method: "ground",

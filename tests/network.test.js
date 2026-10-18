@@ -581,7 +581,7 @@ test('manual airplane hotlaps save a pose ghost and rejects incompatible drone c
 
 test('mixed free flight supports eight personal aircraft, typed states, late join, reconnect and restart', async t => {
   const {client,catalog}=await fixture(t,{kind:'park',size:700},{countdownMs:20});
-  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes[0],...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes[0],catalog.drones[0]];
+  const configs=[catalog.drones.find(d=>d.id==='rift-x5'),catalog.airplanes[0],...catalog.drones.filter(d=>d.id!=='rift-x5'),catalog.airplanes.find(c=>c.id==='rift-s75'),catalog.drones[0]];
   const pilots=[];
   for(let i=0;i<8;i++)pilots.push(await client('Mixed '+i,'coral',{protocol:4}));
   const host=pilots[0],old=await client('Old client','blue',{protocol:3});
