@@ -62604,9 +62604,11 @@ function createScoutModel({ batchStatic = true } = {}) {
   );
   lens.rotation.y = Math.PI;
   lens.position.set(0, 0.033, -0.1865);
+  // A short, aft-swept whip on the tail boom, clear of the motor fairing
+  // and behind the pusher's swept disc. Its root is seated in the foam.
   rod(
-    [0.013, 0.028, 0.038],
-    [0.014, 0.055, 0.052],
+    [0, 0.008, 0.18],
+    [0, 0.034, 0.195],
     0.0007,
     ink,
     "S75_receiver_antenna",
