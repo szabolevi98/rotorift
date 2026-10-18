@@ -61162,7 +61162,13 @@ function createTrainerModel({ batchStatic = true } = {}) {
     object.position.set(...p);
     return object;
   };
-  function loft(rings, mat, name, parent = root) {
+  function loft(
+    rings,
+    mat,
+    name,
+    parent = root,
+    { capStart = true, capEnd = true } = {},
+  ) {
     const positions = rings.flat(2),
       indices = [],
       n = rings[0].length;
@@ -61173,9 +61179,9 @@ function createTrainerModel({ batchStatic = true } = {}) {
         indices.push(a, b, b + n, a, b + n, a + n);
       }
     for (let j = 1; j < n - 1; j++) {
-      indices.push(0, j + 1, j);
+      if (capStart) indices.push(0, j + 1, j);
       const end = (rings.length - 1) * n;
-      indices.push(end, end + j, end + j + 1);
+      if (capEnd) indices.push(end, end + j, end + j + 1);
     }
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
@@ -61223,8 +61229,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
     Math.sin((i * Math.PI) / 8),
   ]);
   const fuselageSections = [
-    [-0.515, 0.024, 0.03, 0.012],
-    [-0.47, 0.046, 0.045, 0.012],
+    [-0.465, 0.047, 0.046, 0.013],
     [-0.38, 0.06, 0.06, 0.009],
     [-0.29, 0.067, 0.072, 0.005],
     [-0.15, 0.068, 0.075, 0],
@@ -61237,10 +61242,16 @@ function createTrainerModel({ batchStatic = true } = {}) {
   ];
   loft(
     fuselageSections.map(([z, w, h, y]) =>
-      oval.map(([a, b]) => [a * w, y + b * h, z]),
+      oval.map(([a, b]) => [
+        a * w,
+        z >= -0.29 && z <= 0.13 ? Math.min(0.034, y + b * h) : y + b * h,
+        z,
+      ]),
     ),
     white,
     "T15_fuselage",
+    root,
+    { capStart: false },
   );
   // Separate fitted cowl, with lower cooling intake and visible motor hub.
   loft(
@@ -61251,6 +61262,8 @@ function createTrainerModel({ batchStatic = true } = {}) {
     ].map(([z, w, h]) => oval.map(([a, b]) => [a * w, 0.013 + b * h, z])),
     accent,
     "T15_moulded_cowl",
+    root,
+    { capEnd: false },
   );
   box(
     [0.031, 0.013, 0.004],
@@ -61260,14 +61273,31 @@ function createTrainerModel({ batchStatic = true } = {}) {
     "T15_cooling_intake",
   );
   for (const side of [-1, 1])
-    for (let i = 0; i < 3; i++)
-      box(
-        [0.002, 0.016, 0.011],
-        [side * (0.046 + i * 0.001), 0.005, -0.454 + i * 0.019],
+    for (let i = 0; i < 3; i++) {
+      const point = (z, y) => {
+          const t = (z + 0.465) / (0.465 - 0.38),
+            w = 0.047 + (0.06 - 0.047) * t,
+            h = 0.046 + (0.06 - 0.046) * t,
+            center = 0.013 + (0.009 - 0.013) * t;
+          const f = Math.abs(y - center) / (h * Math.sin(Math.PI / 8));
+          return [
+            side * (w * (1 - f + f * Math.cos(Math.PI / 8)) + 0.0007),
+            y,
+            z,
+          ];
+        },
+        z = -0.453 + i * 0.019;
+      panel(
+        [
+          point(z, -0.003),
+          point(z, 0.009),
+          point(z + 0.009, 0.009),
+          point(z + 0.009, -0.003),
+        ],
         navy,
-        root,
         "T15_cowl_vent",
       );
+    }
   rod([0, 0.015, -0.516], [0, 0.015, -0.55], 0.011, metal);
   // Shaped cabin: sloped windscreen and trapezoid side windows, rather than a box.
   const cabinRings = [
@@ -61276,51 +61306,114 @@ function createTrainerModel({ batchStatic = true } = {}) {
     [-0.075, 0.054, 0.128],
     [0.045, 0.044, 0.07],
   ];
-  loft(
-    cabinRings.map(([z, w, y]) => [
-      [w, 0.028, z],
-      [w, y - 0.012, z],
-      [w * 0.78, y, z],
-      [-w * 0.78, y, z],
-      [-w, y - 0.012, z],
-      [-w, 0.028, z],
-    ]),
-    white,
-    "T15_cabin_shell",
-  );
-  panel(
-    [
-      [-0.047, 0.066, -0.294],
-      [0.047, 0.066, -0.294],
-      [0.043, 0.119, -0.224],
-      [-0.043, 0.119, -0.224],
-    ],
-    glass,
-    "T15_windscreen",
-  );
-  rod([0, 0.067, -0.294], [0, 0.12, -0.224], 0.0025, white);
+  const cabinAt = (z) => {
+    const hi = cabinRings.findIndex((row) => row[0] >= z),
+      a = cabinRings[Math.max(0, hi - 1)],
+      b = cabinRings[hi];
+    const t = a === b ? 0 : (z - a[0]) / (b[0] - a[0]);
+    return { z, w: a[1] + (b[1] - a[1]) * t, top: a[2] + (b[2] - a[2]) * t };
+  };
+  const cabinPoint = (z, side, y) => [side * cabinAt(z).w, y, z];
+  // Glazing replaces shell faces, rather than intersecting a second white hull.
+  const roofPoint = (u, t) => {
+    const a = cabinRings[0],
+      b = cabinRings[1];
+    return [
+      u * 0.78 * (a[1] + (b[1] - a[1]) * t),
+      a[2] + (b[2] - a[2]) * t,
+      a[0] + (b[0] - a[0]) * t,
+    ];
+  };
+  const us = [-1, -0.91, -0.025, 0.025, 0.91, 1],
+    ts = [0, 0.12, 0.9, 1];
+  for (let i = 0; i < us.length - 1; i++)
+    for (let j = 0; j < ts.length - 1; j++) {
+      const glazed = j === 1 && i !== 0 && i !== 2 && i !== us.length - 2;
+      panel(
+        [
+          roofPoint(us[i], ts[j]),
+          roofPoint(us[i + 1], ts[j]),
+          roofPoint(us[i + 1], ts[j + 1]),
+          roofPoint(us[i], ts[j + 1]),
+        ],
+        glazed ? glass : white,
+        glazed ? "T15_windscreen" : "T15_windscreen_frame",
+      );
+    }
+  for (let i = 1; i < cabinRings.length - 1; i++) {
+    const a = cabinAt(cabinRings[i][0]),
+      b = cabinAt(cabinRings[i + 1][0]);
+    panel(
+      [
+        [-a.w * 0.78, a.top, a.z],
+        [a.w * 0.78, a.top, a.z],
+        [b.w * 0.78, b.top, b.z],
+        [-b.w * 0.78, b.top, b.z],
+      ],
+      white,
+      "T15_cabin_roof",
+    );
+  }
+  for (const z of [cabinRings[0][0], cabinRings.at(-1)[0]]) {
+    const c = cabinAt(z);
+    panel(
+      [
+        [c.w, 0.028, z],
+        [c.w, c.top - 0.012, z],
+        [c.w * 0.78, c.top, z],
+        [-c.w * 0.78, c.top, z],
+        [-c.w, c.top - 0.012, z],
+        [-c.w, 0.028, z],
+      ],
+      white,
+      "T15_cabin_end",
+    );
+  }
   for (const side of [-1, 1]) {
-    panel(
-      [
-        [side * 0.0558, 0.043, -0.274],
-        [side * 0.0558, 0.111, -0.214],
-        [side * 0.0558, 0.111, -0.145],
-        [side * 0.0558, 0.043, -0.145],
-      ],
-      glass,
-      "T15_front_side_window",
-    );
-    panel(
-      [
-        [side * 0.0558, 0.043, -0.132],
-        [side * 0.0558, 0.111, -0.132],
-        [side * 0.055, 0.111, -0.079],
-        [side * 0.049, 0.071, 0.006],
-        [side * 0.049, 0.043, 0.006],
-      ],
-      glass,
-      "T15_rear_side_window",
-    );
+    const cabinStations = [
+      -0.305, -0.284, -0.222, -0.14, -0.132, -0.075, 0.006, 0.045,
+    ];
+    for (let i = 0; i < cabinStations.length - 1; i++) {
+      const a = cabinAt(cabinStations[i]),
+        b = cabinAt(cabinStations[i + 1]),
+        glazed =
+          a.z >= -0.284 && b.z <= 0.006 && !(a.z >= -0.14 && b.z <= -0.132);
+      const lower = 0.043;
+      panel(
+        [
+          cabinPoint(a.z, side, 0.028),
+          cabinPoint(b.z, side, 0.028),
+          cabinPoint(b.z, side, lower),
+          cabinPoint(a.z, side, lower),
+        ],
+        white,
+        "T15_cabin_sill",
+      );
+      panel(
+        [
+          cabinPoint(a.z, side, lower),
+          cabinPoint(b.z, side, lower),
+          cabinPoint(b.z, side, b.top - 0.012),
+          cabinPoint(a.z, side, a.top - 0.012),
+        ],
+        glazed ? glass : white,
+        glazed
+          ? b.z <= -0.14
+            ? "T15_front_side_window"
+            : "T15_rear_side_window"
+          : "T15_window_pillar",
+      );
+      panel(
+        [
+          cabinPoint(a.z, side, a.top - 0.012),
+          cabinPoint(b.z, side, b.top - 0.012),
+          [side * b.w * 0.78, b.top, b.z],
+          [side * a.w * 0.78, a.top, a.z],
+        ],
+        white,
+        "T15_cabin_roof_rail",
+      );
+    }
     rod(
       [side * 0.057, 0.034, -0.284],
       [side * 0.057, 0.034, 0.01],
@@ -61387,7 +61480,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
       airfoil.map(([z, h]) => [
         x,
         wingY(x) + h * (Math.abs(x) > 0.735 ? 0.7 : 1),
-        z * wingScale(x),
+        z === 0.066 ? 0.0645 : z * wingScale(x),
       ]),
     ),
     white,
@@ -61410,7 +61503,9 @@ function createTrainerModel({ batchStatic = true } = {}) {
           return [
             side * x,
             height(a) * (1 - t) + height(b) * t + 0.0007,
-            top[k][0] * (wingScale(a) * (1 - t) + wingScale(b) * t),
+            top[k][0] === 0.066
+              ? 0.0645
+              : top[k][0] * (wingScale(a) * (1 - t) + wingScale(b) * t),
           ];
         };
         const points = [
@@ -61455,23 +61550,35 @@ function createTrainerModel({ batchStatic = true } = {}) {
     const hinge = new THREE.Group();
     hinge.name =
       side < 0 ? "T15_left_aileron_hinge" : "T15_right_aileron_hinge";
-    hinge.position.set(side * 0.48, wingY(0.48), 0.066);
-    hinge.userData = { surface: "aileron", side };
+    hinge.position.set(side * 0.48, wingY(0.48), 0.0653);
+    hinge.userData = {
+      surface: "aileron",
+      side,
+      hingeTilt: side * Math.atan(0.052),
+    };
+    hinge.rotation.z = hinge.userData.hingeTilt;
     root.add(hinge);
     const flapProfile = [
-      [0, 0.001],
+      [0, 0.002],
+      [0.055, 0.001],
       [0.055, -0.001],
-      [0.055, -0.007],
-      [0, -0.006],
+      [0, -0.002],
     ];
     loft(
-      [-0.205, 0.205].map((x) =>
-        flapProfile.map(([z, y]) => [x, y + side * x * 0.052, z]),
-      ),
+      [-0.205, 0.205].map((x) => flapProfile.map(([z, y]) => [x, y, z])),
       accent,
       "T15_aileron",
       hinge,
     );
+    for (const x of [0.32, 0.63])
+      rod(
+        [side * x - 0.004, wingY(x), 0.0649],
+        [side * x + 0.004, wingY(x), 0.0649],
+        0.0018,
+        white,
+        root,
+        "T15_aileron_hinge_pin",
+      );
     rod(
       [side * 0.075, -0.025, 0.036],
       [side * 0.46, wingY(0.46) - 0.006, 0.015],
@@ -61521,37 +61628,57 @@ function createTrainerModel({ batchStatic = true } = {}) {
       [0.22, 1],
       [0.255, 0.8],
     ].map(([x, s]) =>
-      tailProfile.map(([z, y]) => [x, 0.044 + y, 0.424 + z * s]),
+      tailProfile.map(([z, y]) => [
+        x,
+        0.044 + y,
+        z === 0.048 ? 0.472 : 0.424 + z * s,
+      ]),
     ),
     white,
     "T15_stabilizer",
   );
   const elevator = new THREE.Group();
   elevator.name = "T15_elevator_hinge";
-  elevator.position.set(0, 0.044, 0.474);
+  elevator.position.set(0, 0.044, 0.473);
   elevator.userData.surface = "elevator";
   root.add(elevator);
-  loft(
+  // A central relief leaves room for the fuselage/rudder during elevator travel.
+  for (const spans of [
     [
       [-0.25, 0.8],
-      [0, 1],
+      [-0.022, 1],
+    ],
+    [
+      [0.022, 1],
       [0.25, 0.8],
-    ].map(([x, s]) => [
-      [x, 0.002, 0],
-      [x, 0.002, 0.052 * s],
-      [x, -0.004, 0.052 * s],
-      [x, -0.004, 0],
-    ]),
-    accent,
-    "T15_elevator",
-    elevator,
-  );
+    ],
+  ])
+    loft(
+      spans.map(([x, s]) => [
+        [x, 0.004, 0],
+        [x, 0.001, 0.052 * s],
+        [x, -0.003, 0.052 * s],
+        [x, -0.004, 0],
+      ]),
+      accent,
+      "T15_elevator",
+      elevator,
+    );
+  for (const x of [-0.15, 0.15])
+    rod(
+      [x - 0.004, 0.044, 0.4725],
+      [x + 0.004, 0.044, 0.4725],
+      0.0018,
+      white,
+      root,
+      "T15_elevator_hinge_pin",
+    );
   const finShape = new THREE.Shape();
   finShape.moveTo(0.34, 0.04);
   finShape.quadraticCurveTo(0.379, 0.077, 0.405, 0.18);
   finShape.quadraticCurveTo(0.416, 0.218, 0.444, 0.221);
-  finShape.lineTo(0.498, 0.2);
-  finShape.lineTo(0.51, 0.044);
+  finShape.lineTo(0.508, 0.2);
+  finShape.lineTo(0.508, 0.044);
   finShape.closePath();
   const fin = mesh(
     new THREE.ExtrudeGeometry(finShape, {
@@ -61559,7 +61686,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
       bevelEnabled: true,
       bevelSegments: 1,
       steps: 1,
-      bevelSize: 0.002,
+      bevelSize: 0.0005,
       bevelThickness: 0.002,
       curveSegments: 6,
     }),
@@ -61571,14 +61698,14 @@ function createTrainerModel({ batchStatic = true } = {}) {
   fin.position.x = 0.006;
   const rudder = new THREE.Group();
   rudder.name = "T15_rudder_hinge";
-  rudder.position.set(0, 0.044, 0.513);
+  rudder.position.set(0, 0.05, 0.5095);
   rudder.userData.surface = "rudder";
   root.add(rudder);
   loft(
     [
       [0, 0.006],
-      [0.14, 0.007],
-      [0.154, 0.005],
+      [0.135, 0.007],
+      [0.148, 0.005],
     ].map(([y, w]) => [
       [w, y, 0],
       [w, y, 0.039],
@@ -61589,6 +61716,15 @@ function createTrainerModel({ batchStatic = true } = {}) {
     "T15_rudder",
     rudder,
   );
+  for (const y of [0.08, 0.16])
+    rod(
+      [0, y - 0.004, 0.509],
+      [0, y + 0.004, 0.509],
+      0.0018,
+      white,
+      root,
+      "T15_rudder_hinge_pin",
+    );
   // Correct-length sprung gear struts meet the axle, with dished hubs/tyres.
   for (const [x, y, z] of TRAINER_GEAR) {
     const forkOffset = x === 0 ? 0.014 : 0.018;
@@ -61751,8 +61887,10 @@ function batchTrainerShell(root) {
 function animateTrainer(model, surfaces, phase) {
   model.traverse((object) => {
     if (object.userData.propeller) object.rotation.z = phase;
-    if (object.userData.surface === "aileron")
-      object.rotation.x = -surfaces.roll * object.userData.side * 0.45;
+    if (object.userData.surface === "aileron") {
+      object.rotation.set(0, 0, object.userData.hingeTilt ?? 0);
+      object.rotateX(-surfaces.roll * object.userData.side * 0.45);
+    }
     if (object.userData.surface === "elevator")
       object.rotation.x = surfaces.pitch * 0.4;
     if (object.userData.surface === "rudder")

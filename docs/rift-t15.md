@@ -113,6 +113,13 @@ side windows, tapered fuselage with conformal livery, airfoil-shaped wing tips,
 separate hinged control surfaces, shaped propeller blades, fitted cowl/vents,
 correct-length gear braces and recessed wheel hubs. It retains the accepted
 1.5 m wingspan and existing physical configuration. Static shell parts batch by
-material; the complete model uses about 3.4k triangles and 14 mesh draws before
+material; the complete model uses about 3.5k triangles and 15 mesh draws before
 shadow passes, with independently animated propeller and four control surfaces.
 The same source rebuilds the game, showcase and exported GLB.
+
+
+The fit correction uses shared cowl/fuselage edges, actual glazing faces instead
+of overlays through the white cabin, and aligned control-surface hinges. Aileron
+axes follow the wing dihedral; the elevator includes central rudder clearance.
+`tests/fixed-wing-model-fit.test.js` ray-checks every glazing triangle in original
+and batched geometry and measures hinge attachment at neutral and full travel.
