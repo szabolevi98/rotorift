@@ -17,3 +17,5 @@ The real [Volantex P-51D 400 mm](https://exhobby.com/products/volantexrc-p51d-mu
 `data/airplanes/rift-a40.json` owns tuning; `shared/visual/warbird-model.js` is the single mesh source for flight, remote pilots, ghosts and showcase. `node scripts/export-trainer.mjs --warbird` rebuilds its GLB. Static geometry is batched by material; moving controls and their paint remain separate. Glazing replaces the body skin instead of covering a second shell.
 
 Focused tests cover real dimensions and selector order, finite geometry/draw budget, unobstructed glazing before/after batching, local/remote propeller and control animation, gliding, control signs and frame-cadence independence. Handling remains an experimental estimate.
+
+Revision 2 halves the aileron authority to make the micro airframe's roll response manageable alongside Aero 75 and Aero 150. This applies equally to keyboard, radio and touch controls in Manual and Stabilized modes; elevator and rudder tuning are unchanged. Its physics hash changes with this tuning, so earlier records and ghosts remain separate.

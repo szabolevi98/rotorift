@@ -50,7 +50,8 @@ export function createWarbirdModel({ batchStatic = true } = {}) {
         0,
         1,
       );
-    const bump = 0.0215 * Math.sin(Math.PI * t) ** 1.45;
+    // A single teardrop crown, with tangent joins at both ends of the deck.
+    const bump = (0.0205 * t ** 2 * (1 - t) ** 3) / 0.03456;
     return new THREE.Vector3(
       (w + offset) * Math.cos(angle),
       cy + (h + offset + (Math.sin(angle) > 0 ? bump : 0)) * Math.sin(angle),
@@ -104,7 +105,12 @@ export function createWarbirdModel({ batchStatic = true } = {}) {
     );
   const windowEdge = (z) => {
     const t = (z - canopyStart) / (canopyEnd - canopyStart);
-    return Math.PI / 2 - 1.08 * Math.sqrt(Math.max(0, 1 - (2 * t - 1) ** 4));
+    const [, h, cy] = body(z);
+    const crown = skin(z, Math.PI / 2).y - cy;
+    // Keep the sill near the fuselage shoulder instead of lifting it with
+    // the dome. This gives the bubble a clean outline from the side as well.
+    const sill = h - 0.0035 * Math.sin(Math.PI * t);
+    return Math.asin(THREE.MathUtils.clamp(sill / crown, 0, 1));
   };
   const zs = samples(canopyStart, canopyEnd, 32);
   strip(zs, constant(0), windowEdge, 8, silver, "A40_cabin_shoulder_right");
@@ -179,14 +185,6 @@ export function createWarbirdModel({ batchStatic = true } = {}) {
       );
     }
   }
-  tube(
-    samples(windowEdge(-0.024), Math.PI - windowEdge(-0.024), 20).map((a) =>
-      skin(-0.024, a, 0.0002).toArray(),
-    ),
-    0.00045,
-    silver,
-    "A40_windscreen_arch",
-  );
   // The cowl ring and spinner meet within 0.7 mm; no protruding axle.
   const ring = (z, r, y = 0.001) =>
     samples(0, Math.PI * 2, 31)
@@ -454,9 +452,9 @@ export function createWarbirdModel({ batchStatic = true } = {}) {
       [0.044, 0.008, 0.007],
     ].map(([z, w, d]) => [
       [w, -0.013, z],
-      [w, -0.013 - d, z],
-      [-w, -0.013 - d, z],
       [-w, -0.013, z],
+      [-w, -0.013 - d, z],
+      [w, -0.013 - d, z],
     ]),
     silver,
     "A40_belly_radiator",

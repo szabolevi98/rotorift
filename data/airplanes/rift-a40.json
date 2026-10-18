@@ -2,7 +2,7 @@
   "id": "rift-a40",
   "kind": "fixedWing",
   "name": "Rift Aero 40",
-  "version": 1,
+  "version": 2,
   "category": "warbird",
   "tuningStatus": "experimental-estimate",
   "massKg": 0.062,
@@ -33,7 +33,8 @@
     "dragZero": 0.04,
     "inducedDrag": 0.075,
     "pitchStability": 0.82,
-    "pitchTrim": 0.012
+    "pitchTrim": 0.012,
+    "rollAuthority": 0.5
   },
   "controls": {"travel": 0.55, "expo": 0.35, "servoSeconds": 0.075},
   "launch": {"speedMps": 8, "altitudeM": 35},

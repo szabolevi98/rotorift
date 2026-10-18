@@ -42,7 +42,9 @@ export function aerodynamicLoads(
   out.torque[2] =
     pressure *
     config.wingspanM *
-    (-0.18 * surfaces.roll - 0.06 * beta - 0.55 * r * spanRate);
+    (-0.18 * (a.rollAuthority ?? 1) * surfaces.roll -
+      0.06 * beta -
+      0.55 * r * spanRate);
   out.airspeed = speed;
   out.alpha = alpha;
   out.stall = clamp((Math.abs(alpha) - a.stallAngleRad + 0.04) / 0.16, 0, 1);

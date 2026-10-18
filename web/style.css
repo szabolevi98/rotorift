@@ -890,6 +890,9 @@ footer {
   justify-content: center;
   gap: 15px;
   z-index: 30;
+  pointer-events: auto;
+  touch-action: none;
+  overscroll-behavior: contain;
   color: var(--muted);
   font-size: 13px;
 }
@@ -936,7 +939,7 @@ html.pause-menu-open { overflow: hidden; }
 html.loading-visible { overflow: hidden; }
 .loading-card { width: min(380px, 85vw); display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
 .loading-card strong { color: var(--ink); font-size: 20px; font-weight: 700; }
-#boot.loading-overlay { background: #080a102b; }
+#boot.loading-overlay { background: #090c1299; }
 #boot.loading-overlay .loading-card {
   width: min(360px, 90vw);
   display: grid;

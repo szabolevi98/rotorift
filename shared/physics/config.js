@@ -6,6 +6,7 @@ export function validateAirplane(c) {
   if(!c.inertiaKgM2.every(positive)||!c.bodyHalfExtentsM.every(positive))throw Error('Invalid airplane mass geometry');
   for(const [section,keys]of [['aero',['areaM2','chordM','liftSlope','stallAngleRad','dragZero','inducedDrag','pitchStability']],['motor',['maxThrustN','thrustExponent','riseSeconds','fallSeconds','pitchSpeedMps']],['battery',['cells','nominalVoltage','capacityMah','fullCellVoltage']],['controls',['travel','servoSeconds']],['launch',['speedMps','altitudeM']]])for(const key of keys)if(!positive(c[section]?.[key]))throw Error('Invalid airplane '+section+'.'+key);
   if(c.controls.travel>1||!Number.isFinite(c.controls.expo)||c.controls.expo<0||c.controls.expo>1||!Number.isFinite(c.aero.liftZero)||!Number.isFinite(c.aero.pitchTrim)||!Number.isInteger(c.battery.cells))throw Error('Invalid airplane tuning');
+  if(c.aero.rollAuthority!==undefined&&!positive(c.aero.rollAuthority))throw Error('Invalid airplane aero.rollAuthority');
   if(c.motors?.length!==1||!vec(c.motors[0].positionM)||![1,-1].includes(c.motors[0].direction))throw Error('Invalid airplane propulsion');
   if(!positive(c.friction)||!Number.isFinite(c.restitution)||c.restitution<0||c.restitution>1)throw Error('Invalid airplane contact');
   for(const key of ['idleCurrentA','maxCurrentA','resistanceOhm','reserveFraction'])if(!positive(c.simulation?.battery?.[key]))throw Error('Invalid airplane battery');

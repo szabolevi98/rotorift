@@ -135,6 +135,63 @@ test("propeller, hinged paint and all four control surfaces animate in local and
   disposeModelMaterials(remoteModel);
 });
 
+test("radiator walls face outward and enclose the belly scoop before and after batching", () => {
+  for (const model of [
+    createWarbirdModel({ batchStatic: false }),
+    createWarbirdModel(),
+  ]) {
+    model.updateMatrixWorld(true);
+    for (const [origin, direction, axis, sign] of [
+      [[0, -0.05, 0.015], [0, 1, 0], "y", -1],
+      [[0.04, -0.022, 0.015], [-1, 0, 0], "x", 1],
+      [[-0.04, -0.022, 0.015], [1, 0, 0], "x", -1],
+      [[0, -0.018, 0.06], [0, 0, -1], "z", 1],
+    ]) {
+      const hit = new THREE.Raycaster(
+        new THREE.Vector3(...origin),
+        new THREE.Vector3(...direction),
+        0,
+        0.06,
+      ).intersectObject(model, true)[0];
+      assert.ok(hit, "the outside of the scoop must be solid");
+      assert.equal(hit.object.material.color.getHexString(), "b9c4c6");
+      assert.ok(hit.face.normal[axis] * sign > 0.7);
+    }
+    const mouth = new THREE.Raycaster(
+      new THREE.Vector3(0, -0.019, -0.025),
+      new THREE.Vector3(0, 0, 1),
+      0,
+      0.03,
+    ).intersectObject(model, true)[0];
+    assert.equal(mouth?.object.material.color.getHexString(), "253137");
+    disposeModelMaterials(model);
+  }
+});
+
+test("micro warbird full-stick roll stays near the larger airplanes instead of twice their rate", () => {
+  const rates = [];
+  for (const c of catalog.airplanes) {
+    const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+    try {
+      const p = new FixedWingPhysics(RAPIER, world, c, [0, 100, 0], {
+        updateSceneQueries: false,
+      });
+      p.armed = true;
+      let peak = 0;
+      for (let i = 0; i < 240; i++) {
+        p.step({ roll: 1, throttle: 0.6 });
+        peak = Math.max(peak, (Math.hypot(...p.pose.w) * 180) / Math.PI);
+      }
+      rates.push(peak);
+    } finally {
+      world.free();
+    }
+  }
+  assert.ok(rates[0] > 200 && rates[0] < 380, String(rates));
+  for (const larger of rates.slice(1))
+    assert.ok(rates[0] < larger * 1.15, String(rates));
+});
+
 test("micro warbird glides, responds to all axes, and has consistent powered flight at different display cadences", () => {
   const idle = { pitch: 0, roll: 0, yaw: 0, throttle: 0 },
     paths = [];
