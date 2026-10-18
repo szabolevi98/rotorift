@@ -126,15 +126,23 @@ export function buildCity(scene,world,RAPIER,map) {
     }
     if(b.fireEscape)escape(b);
   });
-  model('Crown_tower_open_podium',[CITY_HERO.x,.18,CITY_HERO.z],0,()=>{
-    for(const x of [-34,-12,12,34])for(const z of [-27,27])box([1.3,12,1.3],[x,6,z],'concrete');
-    box([80,.7,72],[0,12.35,0],'cream');
+  model('Crown_tower_podium',[CITY_HERO.x,.18,CITY_HERO.z],0,()=>{
+    // A solid two-storey base supports the tower. Only the central 10 x 6 m
+    // north/south passage stays open, with matching analytic wall/roof shapes.
+    for(const x of [-22.5,22.5])box([35,12,72],[x,6,0],'cream');
+    box([10,6,72],[0,9,0],'cream');
+    box([80,.7,72],[0,12.35,0],'concrete');
+    for(const side of [-1,1]){
+      for(const x of [-35,-25,-15,15,25,35])for(const y of [2.5,8.7])
+        box([7.2,3.4,.08],[x,y,side*36.05],'darkGlass',false);
+      for(const x of [-22.5,22.5])box([35,.25,.24],[x,5.7,side*36.1],'concrete',false);
+      box([10,.25,1.6],[0,6.15,side*36.6],'concrete');
+    }
     for(const [w,d,bottom,top]of [[48,46,12.7,157],[38,36,157,195],[24,26,195,217]]){
       box([w,top-bottom,d],[0,(top+bottom)/2,0],'silverTower');parapet(w,d,top);
     }
     box([8,5,8],[0,219.5,0],'roof');cylinder(.55,22,[0,233,0],'steel');
     for(const yy of [226,232,238])box([4,.14,.14],[0,yy,0],'white',false);
-    for(const x of [-32,32])box([2.4,1.5,14],[x,.75,0],'concrete');
   });
   model('Open_skywalk',[CITY_SKYWALK.x,CITY_SKYWALK.y,CITY_SKYWALK.z],0,()=>{
     box([14.4,.36,6],[0,0,0],'steel');box([14.4,.18,6],[0,6,0],'cream');

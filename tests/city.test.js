@@ -23,6 +23,7 @@ test('Skyline has street-aligned blocks, deliberate landmarks and a bounded low-
     assert.equal(citySurfaceHeight(0,120),.18);
     assert.ok(city.root.userData.batches<60,'thousands of details share material/geometry instance batches');
     assert.ok(city.root.userData.landmarks.some(p=>p.name==='Five_level_open_parking_garage'));
+    assert.ok(city.root.userData.landmarks.some(p=>p.name==='Crown_tower_podium'));
     assert.equal(CITY_DETAIL_COURTS.length,22);
     for(const name of ['Service_alley_','Street_pocket_'])assert.equal(city.root.userData.landmarks.filter(p=>p.name.startsWith(name)).length,22);
     for(const name of ['Recycling_dumpster','Delivery_pallet','Utility_cabinet','Bicycle_stands','Sidewalk_bench'])assert.ok(city.root.userData.landmarks.some(p=>p.name===name));
@@ -66,7 +67,15 @@ for(const baked of [false,true])test(`${baked?'baked':'source'} Skyline: avenues
     const ray=(p,d,length)=>world.castRay(new RAPIER.Ray({x:p[0],y:p[1],z:p[2]},{x:d[0],y:d[1],z:d[2]}),length,true);
     assert.equal(ray([60,2,290],[0,0,-1],580),null,'main avenue');
     assert.equal(ray([-290,2,60],[1,0,0],580),null,'cross street');
-    assert.equal(ray([0,5,-70],[0,0,-1],100),null,'tower podium');
+    for(const x of [-4,0,4])for(const direction of [-1,1])
+      assert.equal(ray([x,5,-120-direction*50],[0,0,direction],100),null,'covered podium passage is open in both directions');
+    for(const x of [-30,-10,10,30])assert.ok(ray([x,5,-70],[0,0,-1],100),'podium wings support the tower down to the pavement');
+    const ceiling=ray([0,3,-120],[0,1,0],10);
+    assert.ok(ceiling&&Math.abs(3+ceiling.timeOfImpact-6.18)<.001,'passage has a solid six-metre ceiling');
+    for(const direction of [-1,1]){
+      const wall=ray([0,3,-120],[direction,0,0],10);
+      assert.ok(wall&&Math.abs(wall.timeOfImpact-5)<.001,'passage has solid side walls');
+    }
     assert.equal(ray([0,49.8,-8],[0,0,1],16),null,'open sides of elevated skywalk');
     assert.equal(ray([0,53.6,-8],[0,0,1],16),null,'raised skywalk roof leaves the taller race gate open');
     assert.equal(ray([-144,2.6,162],[0,0,-1],84),null,'ground-level garage bay');

@@ -65,8 +65,8 @@ const PLAYGROUND_VIEWS={
 const CITY_VIEWS={
   overview:['Skyline district',[455,390,480],[0,60,0]],
   avenue:['Avenue and crown tower',[60,9,250],[60,9,-120]],
-  crown:['Crown tower and open podium',[112,96,-32],[0,112,-120]],
-  podium:['Fly-through podium',[35,6,-58],[0,5,-120]],
+  crown:['Crown tower and podium',[112,96,-32],[0,112,-120]],
+  podium:['Covered podium passage',[48,13,-49],[0,6,-120]],
   skywalk:['High-level skywalk',[3,51,35],[0,49.8,0]],
   rooftops:['Water tanks and rooftop lines',[285,84,190],[240,54,240]],
   garage:['Open parking garage',[-53,29,186],[-120,10,120]],

@@ -3,7 +3,7 @@
   "code": "skyline",
   "name": "Skyline",
   "kind": "city",
-  "version": 1,
+  "version": 2,
   "size": 600,
   "spawn": [60, 0.15, 250],
   "routeId": "race_1",
