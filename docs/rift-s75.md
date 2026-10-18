@@ -52,7 +52,7 @@ propwash and turtle mode remain unavailable on airplanes.
 Automated checks cover finite geometry, propeller/camera clearance, flight and
 glide, 30/60/120/144 Hz display cadence, battery/reset, ground parking/takeoff on
 the prepared Grove map, remote collision dimensions and synchronized pusher
-animation. The eight-client network test includes all seven aircraft types.
+animation. The eight-client network test includes drone and airplane types.
 These are software checks, not real-aircraft flight-log calibration or a test
 of seven physical controllers and independent internet connections.
 

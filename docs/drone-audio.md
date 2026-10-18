@@ -23,7 +23,7 @@ one two-second mono noise buffer; updates do not allocate more audio nodes.
 The sound checkbox and a saved **0–100% volume slider** under Settings → Video &
 audio control output (default 70%). The initial output was too quiet; master gain
 was increased on 2026-10-17. Zero volume mutes without creating another audio graph.
-The Aero 150 additionally has a lower-frequency, single-active-voice/two-blade profile.
+The Aero 150, Aero 75 and Aero 40 each have their own single-active-voice/two-blade profile; the micro warbird has a lighter, higher character than the large trainer.
 
 Validation: three focused tests cover all five profiles, individual motor input,
 silence, chase level, damage, propwash, graph reuse, gesture resume and disposal.

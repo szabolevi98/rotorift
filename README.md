@@ -64,12 +64,13 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 | Rift C3 | 3-inch cinewhoop | 4S / 720 mAh |
 | Rift X35 | 3.5-inch freestyle | 4S / 650 mAh |
 | Rift X5 | 5-inch freestyle | 6S / 1300 mAh |
-| Rift Aero 150 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
+| Rift Aero 40 · experimental | 400 mm P-51D-inspired micro warbird | 1S / 400 mAh |
 | Rift Aero 75 · experimental | 750 mm pusher parkflyer | 2S / 650 mAh |
+| Rift Aero 150 · experimental | 1.5 m high-wing RC trainer | 3S / 3200 mAh |
 
 The [Rift Aero 150](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
-single-motor propulsion. Both airplanes offer Manual and Stabilized modes.
+single-motor propulsion. All airplanes offer Manual and Stabilized modes.
 Stabilized uses the control surfaces to return pitch and bank to level when the
 right stick is released, with 20° pitch and 35° bank demands. Throttle stays
 manual; there is no altitude hold, stall prevention or automatic landing. Press
@@ -94,6 +95,8 @@ with every drone and the Aero 150.
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
 is 28.6%, with a near-level top speed of 153.6 km/h.
+
+The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspired by the P-51D: a tractor propeller, flush curved canopy, low tapered wing, taildragger gear and animated surfaces. It uses the same fixed-wing physics, race routes and mixed multiplayer support.
 
 - **Grove:** a rolling 700 × 700 m park with a fly-through central pavilion,
   connected upper gallery and stairs, paths, tree groups and open freestyle space.
@@ -311,7 +314,7 @@ Further details:
 
 ## Showcase and race editor
 
-The English showcase combines five drone models and two airplanes with all four map viewers. It runs
+The English showcase combines five drone models and three airplanes with all four map viewers. It runs
 on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 `http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
 The game itself requires a separate Node server.

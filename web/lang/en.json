@@ -399,6 +399,7 @@
   "settings.volume": "Volume",
   "records.allModes": "All flight modes",
   "error.colorTaken": "Another pilot is already using this color.",
+  "drone.rift-a40": "400 mm micro warbird · 1S",
   "drone.rift-s75": "750 mm pusher parkflyer · 2S",
   "drone.rift-t15": "1.5 m trainer · 3S",
   "spec.wingspan": "Wingspan",

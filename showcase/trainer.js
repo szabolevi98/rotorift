@@ -1,4 +1,7 @@
 // Reuse the flight model: the showroom never maintains a second airplane mesh.
+function createRiftA40() {
+  return createShowcaseAirplane(createWarbirdModel(), 0.071, 0.064, 1);
+}
 function createRiftT15() {
   return createShowcaseAirplane(createTrainerModel(), 0.28, 0.127, 1);
 }

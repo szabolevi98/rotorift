@@ -298,7 +298,7 @@ test("mixed remote S75 and T15 use different collision dimensions and matching p
       resetId: 1,
     }));
     remote.update(players, "self", false);
-    assert.equal(remote.bodies.size, 2);
+    assert.equal(remote.bodies.size, catalog.airplanes.length);
     const local = createAircraftVisual(createScoutModel(), config),
       other = createAircraftVisual(createScoutModel(), config);
     const physics = {

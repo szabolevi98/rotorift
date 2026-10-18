@@ -19,9 +19,9 @@ export function addFixedWingColliders(RAPIER, world, body, config) {
   const extraColliders = (frame.extra ?? []).map((part) =>
     add(part.half, part.p),
   );
-  const gearColliders = frame.gear.map((position) =>
+  const gearColliders = frame.gear.map((position, index) =>
     world.createCollider(
-      RAPIER.ColliderDesc.ball(frame.wheelRadius)
+      RAPIER.ColliderDesc.ball(frame.wheelRadii?.[index] ?? frame.wheelRadius)
         .setTranslation(...position)
         .setDensity(0)
         .setFriction(0.08)

@@ -37,6 +37,8 @@ const script = [
   read('freestyle35.js'),
   read('../shared/aircraft/airframe.js').replace(/^export /gm, ''),
   read('../shared/visual/airplane-model-utils.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
+  read('../shared/visual/aircraft-mesh-utils.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
+  read('../shared/visual/warbird-model.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
   read('../shared/visual/fixed-wing-model.js').replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, ''),
   read('../shared/visual/scout-model.js').replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, ''),
   read('../shared/visual/airplane-propeller.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
