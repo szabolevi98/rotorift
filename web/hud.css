@@ -19,6 +19,10 @@
 #hud .hud-brand { display: block; font-size: 11px; color: #fff9; }
 #hud-session { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #hud .hud-actions { flex: none; gap: 6px; }
+.pilot-camera-tools { position:absolute;top:76px;right:var(--hud-edge);display:flex;align-items:center;gap:8px;pointer-events:auto;padding:6px 8px;background:#11151be8;border:1px solid #ffffff28;border-radius:7px;font-size:10px; }
+.pilot-camera-tools button { min-width:40px;min-height:40px;padding:0;border:1px solid #ffffff28;border-radius:5px;background:#ffffff0c;color:#fff;font-size:20px;touch-action:manipulation; }
+.pilot-camera-tools output { min-width:30px;text-align:center;font-variant-numeric:tabular-nums; }
+@media(max-width:700px) { .pilot-camera-tools {top:72px;max-width:calc(100vw - 24px);} #pilot-camera-hint {max-width:140px;line-height:1.4;} }
 #hud .hud-top button { background: #11151bd9; border: 1px solid #ffffff28; border-radius: 7px; min-height: 44px; font-size: 11px; }
 #hud button:hover { background: #29313be8; }
 #hud button:focus-visible { outline: 2px solid #ff997c; outline-offset: 3px; }
@@ -40,6 +44,7 @@
 #hud .telemetry b { display: block; font-size: 28px; line-height: 1.2; margin: 3px 0; font-weight: 600; }
 #hud .telemetry small { font-size: 9px; opacity: .8; white-space: nowrap; }
 #hud .crosshair { transform: translate(-50%, -50%); }
+#hud:has(#pilot-camera-tools:not(.hidden)) .crosshair { visibility: hidden; }
 #hud { z-index: 2; }
 .fpv-horizon { position: absolute; top: 50%; left: 50%; width: min(48vw, 82vh, 920px); transform: translate(-50%, -50%); overflow: hidden; pointer-events: none; }
 #turtle-hud { position:absolute;top:22%;left:50%;transform:translateX(-50%);width:min(440px,85vw);padding:12px 16px;background:#241910ed;border:1px solid #ffbe75;border-radius:8px;color:#ffe0ab;text-align:center;font-size:13px;pointer-events:none; }

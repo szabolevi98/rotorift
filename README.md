@@ -126,7 +126,13 @@ The old `/map-preview.html` address redirects to its map tab.
 
 - **Acro, Angle and Horizon**, switchable during flight.
 - **Chase, FPV with the aircraft visible, and clean FPV** views.
-- Camera angle and field of view settings for each drone.
+- Airplanes also offer **Ground pilot** view in the **V** / HUD camera cycle.
+  Each entry places a stationary observer at eye height on the terrain or usable
+  roof beneath the airplane. Nearby safe footing is used around edges, props and
+  water. The camera smoothly pans and tilts to follow the airplane without banking.
+  Zoom with the mouse wheel or the on-screen **− / +** controls. Switch away and
+  back to choose a new pilot point. FPV video effects and horizon stay off in this view.
+- Camera angle and field of view settings for each aircraft.
 - Optional artificial horizon and analog video effects, including noise,
   color bleed and brief line glitches, available in FPV for solo and online flying.
 - Optional battery simulation, individual propeller damage, propwash and wind.

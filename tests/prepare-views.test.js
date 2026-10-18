@@ -56,3 +56,13 @@ test('cancelled aircraft load cannot restore or render over a newer scene', asyn
   assert.equal(await prepareFlightViews(flight,{current:()=>valid}),false);
   assert.equal(flight.view,'fpv');assert.equal(renders.length,0);
 });
+
+test('shader preparation preserves the stationary pilot point and restores direct rendering',async()=>{
+  const {flight,renders}=setup('pilot'),point={x:7,y:21.7,z:-10,clone(){return {...this};}};
+  flight.cameraRig={pilotPosition:point};
+  const setView=flight.setView;let restored;
+  flight.setView=function(view,options){setView.call(this,view);if(view==='pilot')restored=options?.pilotPosition;};
+  await prepareFlightViews(flight,{analog:true});
+  assert.equal(flight.view,'pilot');assert.equal(restored.x,7);assert.notEqual(restored,point);
+  assert.equal(renders.at(-1).analog,false);
+});

@@ -32,8 +32,8 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
   root.add(pad);
   return {
     root,
-    update: (position, velocity) => {
-      environment?.update(position, velocity);
+    update: (position, velocity, observerPosition) => {
+      environment?.update(position, velocity, observerPosition);
       bakedCollisions?.update(position, velocity);
     },
     heightAt: (x, z) => park ? parkSurfaceHeight(x, z) : environment.heightAt(x, z),

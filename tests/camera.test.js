@@ -100,3 +100,53 @@ test("both FPV views share the optical mount; visible drone mode keeps nearby fr
   closeVector(camera.position,clean);assert.ok(camera.quaternion.angleTo(rotation)<1e-7);
   rig.setView("chase");assert.equal(rig.chase,true);assert.equal(camera.near,.012);
 });
+
+async function airplaneSetup() {
+  const config=JSON.parse(await readFile(new URL('../data/airplanes/rift-t15.json',import.meta.url)));
+  const model=new THREE.Mesh(new THREE.BoxGeometry(1.5,.3,1));
+  const camera=new THREE.PerspectiveCamera(),rig=new DroneCameraRig(camera),picks=[];
+  rig.configure(config,model,()=>0,position=>{picks.push(position.clone());return new THREE.Vector3(position.x,1.7,position.z);});
+  rig.update(new THREE.Vector3(4,40,8),new THREE.Quaternion());
+  return {camera,rig,picks};
+}
+
+test('ground pilot stays fixed, tracks the airplane without rolling, and relocates only on re-entry',async()=>{
+  const {camera,rig,picks}=await airplaneSetup();
+  assert.equal(rig.setView('pilot'),true);const anchor=camera.position.clone();
+  assert.equal(picks.length,1);assert.equal(rig.fpv,false);
+  for(const position of [new THREE.Vector3(30,12,-50),new THREE.Vector3(4,150,8),new THREE.Vector3(-200,9,100)]){
+    for(let i=0;i<120;i++)rig.update(position,new THREE.Quaternion().setFromEuler(new THREE.Euler(.6,1.5,-1)),1/60);
+    closeVector(camera.position,anchor);
+    assert.ok(camera.getWorldDirection(new THREE.Vector3()).dot(position.clone().sub(anchor).normalize())>.999);
+    const attitude=new THREE.Euler().setFromQuaternion(camera.quaternion,'YXZ');
+    assert.ok(Math.abs(attitude.z)<1e-9,'airplane bank must not roll the pilot camera');
+    assert.ok(camera.quaternion.toArray().every(Number.isFinite));
+  }
+  assert.equal(picks.length,1);
+  rig.setView('chase');rig.setView('pilot');
+  assert.equal(picks.length,2);closeVector(camera.position,new THREE.Vector3(-200,1.7,100));
+});
+
+test('pilot tracking cadence and independent zoom do not alter FPV settings or drone camera cycles',async()=>{
+  const rotations=[];
+  for(const hz of [30,60,144]){
+    const {camera,rig}=await airplaneSetup();rig.setSettings(28,112);rig.setView('pilot');
+    for(let i=0;i<hz;i++)rig.update(new THREE.Vector3(50,30,-90),new THREE.Quaternion(),1/hz);
+    rotations.push(camera.quaternion.clone());
+    rig.zoomPilot(-10000);assert.ok(camera.fov<35);
+    for(let i=0;i<50;i++)rig.zoomPilot(-240);assert.equal(camera.fov,10);
+    for(let i=0;i<50;i++)rig.zoomPilot(240);assert.equal(camera.fov,65);
+    rig.setView('fpv-clean');assert.equal(camera.fov,112);assert.equal(rig.angle,28);
+  }
+  assert.ok(rotations.every(q=>q.angleTo(rotations[0])<1e-7));
+  const {rig}=await setup('rift-65');assert.equal(rig.views.includes('pilot'),false);
+  assert.equal(rig.setView('pilot'),false);assert.equal(rig.view,'fpv-clean');
+});
+
+test('failed pilot placement keeps the previous camera, and loading a drone exits pilot view',async()=>{
+  const {camera,rig}=await airplaneSetup();rig.pickPilotPosition=()=>null;
+  const before=camera.position.clone();assert.equal(rig.setView('pilot'),false);closeVector(camera.position,before);
+  rig.pickPilotPosition=()=>new THREE.Vector3(0,1.7,0);rig.setView('pilot');
+  const drone=(await setup('rift-65')).config;rig.configure(drone,new THREE.Group());rig.update(new THREE.Vector3(0,3,0),new THREE.Quaternion());
+  assert.equal(rig.view,'chase');assert.equal(rig.pilotPosition,null);
+});

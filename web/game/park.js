@@ -443,7 +443,7 @@ export function buildPark(scene, world, RAPIER, map) {
   const distantTerrain = new THREE.Mesh(new THREE.BufferGeometry(), palette.grass);
   distantTerrain.name = "park-distant-terrain";
   distantTerrain.receiveShadow = true; root.add(distantTerrain);
-  let centerKey = "", center = null;
+  let centerKey = "", center = null, physicsCenter = null;
   function createChunk(cx, cz) {
     const group = new THREE.Group(), colliderHandles = [], colliderDescs = [], rng = chunkRandom(cx, cz);
     const terrainGeometry = makeParkTerrain(cx, cz);
@@ -514,7 +514,7 @@ export function buildPark(scene, world, RAPIER, map) {
       if (kind === "tuft") grass = mesh;
     }
     root.add(group);
-    return { group, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz, treeCount: objects.trunk.length + objects.pineTrunk.length };
+    return { group, terrain, terrainGeometry, colliderHandles, colliderDescs, grass, cx, cz, treeCount: objects.trunk.length + objects.pineTrunk.length };
   }
   function deactivatePhysics(chunk) {
     for (const handle of chunk.colliderHandles) {
@@ -529,31 +529,38 @@ export function buildPark(scene, world, RAPIER, map) {
     chunk.group.traverse((o) => { if (o.isInstancedMesh) o.dispose(); });
     chunk.terrainGeometry.dispose();
   }
-  function update(position, velocity) {
+  function update(position, velocity, observerPosition = null) {
     collisionRegions.update(position, velocity);
     waterMaterial.uniforms.time.value = performance.now() / 1000;
     landmarks.update(waterMaterial.uniforms.time.value);
     // A resting drone can jitter across a grid edge by fractions of a mm.
     // Keep a buffer so that noise never unloads/rebuilds an entire chunk row.
-    const keepX = center && position[0] >= center.cx * PARK_CHUNK_SIZE - 16
-      && position[0] <= (center.cx + 1) * PARK_CHUNK_SIZE + 16;
-    const keepZ = center && position[2] >= center.cz * PARK_CHUNK_SIZE - 16
-      && position[2] <= (center.cz + 1) * PARK_CHUNK_SIZE + 16;
-    const cx = keepX ? center.cx : Math.floor(position[0] / PARK_CHUNK_SIZE);
-    const cz = keepZ ? center.cz : Math.floor(position[2] / PARK_CHUNK_SIZE);
-    const key = `${cx}:${cz}`;
+    const renderPosition = observerPosition ?? position;
+    const axis = (p,old) => old !== undefined && p >= old*PARK_CHUNK_SIZE-16 && p <= (old+1)*PARK_CHUNK_SIZE+16 ? old : Math.floor(p/PARK_CHUNK_SIZE);
+    const cx = axis(renderPosition[0],center?.cx), cz = axis(renderPosition[2],center?.cz);
+    const px = axis(position[0],physicsCenter?.cx), pz = axis(position[2],physicsCenter?.cz);
+    const key = `${cx}:${cz}/${px}:${pz}`;
     if (centerKey === key) return;
     centerKey = key;
+    if (center?.cx !== cx || center?.cz !== cz) {
+      distantTerrain.geometry.dispose();
+      distantTerrain.geometry = makeParkDistantTerrain(cx, cz);
+    }
     center = { cx, cz };
-    distantTerrain.geometry.dispose();
-    distantTerrain.geometry = makeParkDistantTerrain(cx, cz);
+    physicsCenter = { cx:px, cz:pz };
+    // Keep scenery around a stationary pilot, while physics still follows the
+    // airplane. Only nine extra chunks are needed when those areas separate.
     const wanted = new Set();
-    for (let x = cx - 3; x <= cx + 3; x++) for (let z = cz - 3; z <= cz + 3; z++) {
-      const id = `${x}:${z}`; wanted.add(id);
+    for (const [x0,z0,radius] of [[cx,cz,3],[px,pz,1]])
+      for (let x=x0-radius;x<=x0+radius;x++)for(let z=z0-radius;z<=z0+radius;z++)wanted.add(`${x}:${z}`);
+    for (const id of wanted) {
+      const [x,z] = id.split(':').map(Number);
       if (!chunks.has(id)) chunks.set(id, createChunk(x, z));
       const chunk = chunks.get(id);
-      const nearby = Math.abs(x - cx) <= 1 && Math.abs(z - cz) <= 1;
-      if (chunk.grass) chunk.grass.visible = nearby;
+      const nearby = Math.abs(x-px)<=1 && Math.abs(z-pz)<=1;
+      // Distant terrain already fills this area; do not overlap a second skin.
+      chunk.terrain.visible = Math.abs(x-cx)<=3 && Math.abs(z-cz)<=3;
+      if (chunk.grass) chunk.grass.visible = Math.abs(x-cx)<=1 && Math.abs(z-cz)<=1;
       if (world && nearby && !chunk.colliderHandles.length)
         for (const desc of chunk.colliderDescs) chunk.colliderHandles.push(world.createCollider(desc).handle);
       else if (!nearby && chunk.colliderHandles.length) deactivatePhysics(chunk);

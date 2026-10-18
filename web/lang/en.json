@@ -162,7 +162,7 @@
   "key.arm": "Arm / disarm",
   "key.reset": "Reset aircraft",
   "key.menu": "Menu / resume",
-  "key.view": "Chase / FPV with drone / clean FPV",
+  "key.view": "Change camera view",
   "hud.view.chase": "Chase",
   "hud.view.fpv": "FPV · drone",
   "hud.view.fpv-clean": "FPV · clean",
@@ -423,5 +423,10 @@
   "online.yourAircraft": "Your aircraft",
   "online.mixedHint": "Everyone can choose their own drone or airplane. You can also join while others are flying.",
   "error.invalidAircraft": "Choose a valid aircraft and flight mode.",
-  "error.aircraftLocked": "Aircraft selection is available in the free-flight lobby."
+  "error.aircraftLocked": "Aircraft selection is available in the free-flight lobby.",
+  "hud.view.pilot": "Ground pilot",
+  "hud.pilotHint": "Fixed pilot point · scroll to zoom",
+  "hud.zoomIn": "Zoom in",
+  "hud.zoomOut": "Zoom out",
+  "hud.pilotUnavailable": "No safe pilot position was found nearby."
 }

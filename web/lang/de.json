@@ -162,7 +162,7 @@
   "key.arm": "Scharf / entschärfen",
   "key.reset": "Drohne zurücksetzen",
   "key.menu": "Menü / fortsetzen",
-  "key.view": "Verfolgerkamera / FPV mit Drohne / freies FPV",
+  "key.view": "Kameraansicht wechseln",
   "hud.view.chase": "Verfolger",
   "hud.view.fpv": "FPV · Drohne",
   "hud.view.fpv-clean": "FPV · frei",
@@ -423,5 +423,10 @@
   "online.yourAircraft": "Dein Fluggerät",
   "online.mixedHint": "Jeder wählt seine eigene Drohne oder sein Flugzeug. Der Beitritt ist auch während des Flugs möglich.",
   "error.invalidAircraft": "Wähle ein gültiges Fluggerät und einen Flugmodus.",
-  "error.aircraftLocked": "Fluggeräte können in der Freiflug-Lobby gewählt werden."
+  "error.aircraftLocked": "Fluggeräte können in der Freiflug-Lobby gewählt werden.",
+  "hud.view.pilot": "Bodenpilot",
+  "hud.pilotHint": "Fester Pilotenstandort · Mausrad zum Zoomen",
+  "hud.zoomIn": "Vergrößern",
+  "hud.zoomOut": "Verkleinern",
+  "hud.pilotUnavailable": "In der Nähe wurde kein sicherer Pilotenstandort gefunden."
 }

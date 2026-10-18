@@ -73,7 +73,9 @@ calibration. The current configuration is `experimental-estimate`.
   keep drone access but must refresh for airplane rooms.
 - Original low-poly airframe, separate animated ailerons/elevator/rudder and tractor
   propeller. Preview and flight release the instance-owned procedural geometry.
-- FPV, visible-airframe FPV and chase views, per-aircraft camera profile, airspeed
+- FPV, visible-airframe FPV, chase and stationary ground-pilot views. Ground-pilot
+  mode selects safe terrain/roof footing below the airplane on each entry, tracks
+  without camera roll and supports wheel or HUD zoom. Per-aircraft camera profile, airspeed
   display and modeled angle-of-attack stall warning. Arming controls the motor;
   disarming does not freeze the wings or prevent gliding.
 

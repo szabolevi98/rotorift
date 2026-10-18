@@ -8,7 +8,8 @@ import { buildEnvironment } from "./environment.js";
 import { loadModel, disposeModelMaterials } from "./models.js";
 import { applyDroneColor, normalizeDroneColor } from "../../shared/visual/drone-colors.js";
 import { DroneTrail } from "./drone-trail.js";
-import { DroneCameraRig, CAMERA_VIEWS } from "./camera-rig.js";
+import { DroneCameraRig } from "./camera-rig.js";
+import { PilotPositionPicker } from './pilot-position.js';
 import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
@@ -53,6 +54,11 @@ export class Flight {
     this.camera.position.set(0, 10, 30);
     this.camera.lookAt(0, 0, 0);
     this.cameraRig = new DroneCameraRig(this.camera);
+    canvas.addEventListener('wheel', event => {
+      if (!this.active || this.view !== 'pilot' || this.preparingViews) return;
+      event.preventDefault();
+      this.cameraRig.zoomPilot(event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1));
+    }, { passive: false });
     this.accumulator = 0;
     this.active = false;
     this.chase = false;
@@ -92,6 +98,7 @@ export class Flight {
     const bakedCollisions = await loadPrebakedCollisions(RAPIER, loadWorld, map, () => version===this.loadVersion, onProgress);
     if(version!==this.loadVersion){bakedCollisions?.dispose();return false;}
     this.environment = buildEnvironment(this.scene, this.world, RAPIER, map, { bakedCollisions });
+    this.pilotPicker = config.kind === 'fixedWing' ? new PilotPositionPicker(RAPIER,this.world,map,(x,z)=>this.environment.heightAt(x,z)) : null;
     this.environment.highlight(0, false);
     this.config = config;
     this.sound?.configure(config);
@@ -114,7 +121,9 @@ export class Flight {
     this.aircraftVisual = createAircraftVisual(visual,config);
     this.aircraftVisual.bindPhysics(this.physics);
     this.setColor(color);
-    this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z));
+    this.cameraRig.configure(config, this.visual, (x,z)=>this.environment.heightAt(x,z), position=>this.pilotPicker?.find(position.toArray()));
+    this.view = this.cameraRig.view;
+    this.chase = this.cameraRig.chase;
     this.scene.add(this.visual);
     this.accumulator = 0;
     this.previous = this.physics.pose;
@@ -148,18 +157,20 @@ export class Flight {
     this.lapGhost?.update(null);
     this.aircraftVisual.reset(this.physics);
     this.boundary.reset();
-    this.environment.update(position);
+    this.environment.update(position,undefined,this.view === 'pilot' ? this.cameraRig.pilotPosition?.toArray() : null);
     this.accumulator = 0;
     this.previous = this.current = this.physics.pose;
     this.place(this.current, 1);
   }
-  setView(view) {
-    this.cameraRig.setView(view);
+  get fpv() { return this.cameraRig.fpv; }
+  setView(view, options) {
+    const changed = this.cameraRig.setView(view,options);
     this.view = this.cameraRig.view;
     this.chase = this.cameraRig.chase;
     if (this.visual) this.visual.visible = this.view !== "fpv-clean";
+    return changed;
   }
-  cycleView() { this.setView(CAMERA_VIEWS[(CAMERA_VIEWS.indexOf(this.view) + 1) % CAMERA_VIEWS.length]); }
+  cycleView() { const views=this.cameraRig.views;return this.setView(views[(views.indexOf(this.view)+1)%views.length]); }
   getAnalogVideo() { return this.analogVideo ??= new AnalogVideo(this.renderer); }
   async prepareViews(options = {}) {
     const version = this.loadVersion;
@@ -179,7 +190,7 @@ export class Flight {
   step(dt, input, update, metrics = null) {
     if (!this.active) return;
     const worldStart = metrics ? performance.now() : 0;
-    this.environment.update(this.physics.pose.p, this.physics.pose.v);
+    this.environment.update(this.physics.pose.p, this.physics.pose.v, this.view === 'pilot' ? this.cameraRig.pilotPosition?.toArray() : null);
     const physicsStart = metrics ? performance.now() : 0;
     if(metrics)metrics.maxPhysicsStepMs=0;
     const steps = advanceFixedSteps(this, dt, () => {
@@ -197,15 +208,15 @@ export class Flight {
       metrics.steps = steps;
       metrics.droppedMs = Math.max(0, dt - .1) * 1000;
     }
-    this.place(this.current, this.accumulator / PHYSICS_DT);
+    this.place(this.current, this.accumulator / PHYSICS_DT, dt);
     this.aircraftVisual.update(dt,this.physics,input);
     this.sound?.update(this.aircraftVisual.motorSpeeds, {
-      enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: this.chase,
+      enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: !this.fpv,
       speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
       propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers?.blades,
     });
   }
-  place(pose, alpha) {
+  place(pose, alpha, dt = 0) {
     if (!this.visual) return;
     const a = this.previous ?? pose,
       pos = new THREE.Vector3(...a.p).lerp(new THREE.Vector3(...pose.p), alpha),
@@ -218,7 +229,7 @@ export class Flight {
       .add(new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q));
     this.visual.quaternion.copy(q);
     this.visual.visible = this.view !== "fpv-clean";
-    this.cameraRig.update(pos, q);
+    this.cameraRig.update(pos, q, dt);
   }
   remoteConfig(player) {
     return player.droneId ? this.aircraftCatalog.get(player.droneId) : this.config;

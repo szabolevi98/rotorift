@@ -14,6 +14,7 @@ export async function compileForTarget(renderer, scene, camera, target = null) {
 
 export async function prepareFlightViews(flight, { analog = false, current = () => true } = {}) {
   const originalView = flight.view;
+  const pilotPosition = flight.cameraRig?.pilotPosition?.clone();
   try {
     if (!current()) return false;
     // The clean FPV view hides the model. Reveal it while registering CSM
@@ -38,8 +39,8 @@ export async function prepareFlightViews(flight, { analog = false, current = () 
     return true;
   } finally {
     if (current()) {
-      flight.setView(originalView);
-      flight.render(0, analog && !flight.chase);
+      flight.setView(originalView, originalView === 'pilot' ? {pilotPosition} : undefined);
+      flight.render(0, analog && !flight.chase && originalView !== 'pilot');
       flight.analogVideo?.reset();
     }
   }

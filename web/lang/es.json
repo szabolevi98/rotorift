@@ -162,7 +162,7 @@
   "key.arm": "Armar / desarmar",
   "key.reset": "Reiniciar dron",
   "key.menu": "Menú / continuar",
-  "key.view": "Seguimiento / FPV con dron / FPV despejada",
+  "key.view": "Cambiar de cámara",
   "hud.view.chase": "Seguimiento",
   "hud.view.fpv": "FPV · dron",
   "hud.view.fpv-clean": "FPV · despejada",
@@ -423,5 +423,10 @@
   "online.yourAircraft": "Tu aeronave",
   "online.mixedHint": "Cada piloto elige su dron o avión. También puedes unirte a un vuelo en curso.",
   "error.invalidAircraft": "Elige una aeronave y un modo de vuelo válidos.",
-  "error.aircraftLocked": "Puedes elegir aeronave en la sala de vuelo libre."
+  "error.aircraftLocked": "Puedes elegir aeronave en la sala de vuelo libre.",
+  "hud.view.pilot": "Piloto en tierra",
+  "hud.pilotHint": "Posición fija · rueda para ampliar",
+  "hud.zoomIn": "Acercar",
+  "hud.zoomOut": "Alejar",
+  "hud.pilotUnavailable": "No se encontró una posición segura para el piloto cerca."
 }

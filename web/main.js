@@ -366,7 +366,7 @@ function action(kind, currentInput = input) {
   }
   if (kind === "hover" && aircraftCapabilities(flight.config).hover && !controller.usingRadio && !flight.physics.turtleMode)
     controller.keyboard.throttle = hoverThrottle(flight.config);
-  if (kind === "view" && !flight.preparingViews) flight.cycleView();
+  if (kind === "view" && !flight.preparingViews && !flight.cycleView()) notice(t('hud.pilotUnavailable'));
   if (kind === "reset") resetAircraft();
   if (kind === "mode") {
     const modes=aircraftModes(flight.config),next=modes[(modes.indexOf(flight.physics.mode)+1)%modes.length];
@@ -1280,6 +1280,11 @@ function hud() {
   const viewLabel = t("hud.view." + flight.view);
   $("#hud-view").textContent = viewLabel + " ↻";
   $("#hud-view").setAttribute("aria-label", t("key.view") + " · " + viewLabel);
+  visible('#pilot-camera-tools',flight.view === 'pilot');
+  $('#pilot-camera-fov').textContent = Math.round(flight.cameraRig.pilotFov)+'°';
+  $('#pilot-camera-hint').textContent = t('hud.pilotHint');
+  $('#pilot-zoom-in').setAttribute('aria-label',t('hud.zoomIn'));
+  $('#pilot-zoom-out').setAttribute('aria-label',t('hud.zoomOut'));
   $("#hud-mode").textContent = flightModeLabel(flight.physics.mode).toUpperCase() + " ↻";
   $("#hud-mode").setAttribute("aria-label", t("hud.changeMode") + " · " + flightModeLabel(flight.physics.mode).toUpperCase());
   $("#hud-mode").title = t("hud.changeMode") + " · " + keyName(controller.keys.mode);
@@ -1504,7 +1509,7 @@ function frame(now) {
     const renderStart=diagnosticSample?performance.now():0;
     const programsBefore=diagnosticSample?flight.renderer.info.programs.length:0;
     if(diagnosticSample&&diagnostics.open)diagnostics.timer.begin(diagnosticSample);
-    try { flight.render(dt, cameraSettings.analog === true && !paused && !flight.chase); } finally { if(diagnosticSample&&diagnostics.open)diagnostics.timer.end(); }
+    try { flight.render(dt, cameraSettings.analog === true && !paused && flight.fpv); } finally { if(diagnosticSample&&diagnostics.open)diagnostics.timer.end(); }
     if(diagnosticSample){
       diagnosticSample.renderMs=performance.now()-renderStart;
       diagnosticSample.newPrograms=Math.max(0,flight.renderer.info.programs.length-programsBefore);
@@ -1512,7 +1517,7 @@ function frame(now) {
     pauseRenderNeeded = false;
   }
   pauseMenu?.update();
-  fpvOsd.update(playing && !paused && !flight.chase, flight?.cameraRig.quaternion);
+  fpvOsd.update(playing && !paused && flight.fpv, flight?.cameraRig.quaternion);
   updateFps(now, playing && (!paused || onlineLive));
   if(diagnosticSample){
     const pose=flight.physics.pose;
@@ -1576,6 +1581,8 @@ function bindUI() {
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
   for (const [id, kind] of [["arm-state", "arm"], ["hud-reset", "reset"], ["hud-view", "view"], ["hud-turtle", "turtle"]])
     $("#" + id).onclick = () => { action(kind); hud(); document.activeElement?.blur(); };
+  for (const [id,delta] of [['pilot-zoom-in',-90],['pilot-zoom-out',90]])
+    $('#'+id).onclick = () => { flight.cameraRig.zoomPilot(delta);hud();document.activeElement?.blur(); };
   $("#binding-cancel").onclick = () => {
     controller.bindings.reset(); controller.bindings.result = null; renderInputUI();
   };

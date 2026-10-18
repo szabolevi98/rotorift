@@ -162,7 +162,7 @@
   "key.arm": "Arm / disarm",
   "key.reset": "Drón visszaállítása",
   "key.menu": "Menü / folytatás",
-  "key.view": "Külső / FPV drónnal / tiszta FPV",
+  "key.view": "Kameranézet váltása",
   "hud.view.chase": "Külső",
   "hud.view.fpv": "FPV · drón",
   "hud.view.fpv-clean": "FPV · tiszta",
@@ -423,5 +423,10 @@
   "online.yourAircraft": "Saját géped",
   "online.mixedHint": "Mindenki saját drónt vagy repülőt választhat. Folyamatban lévő repüléshez is csatlakozhatsz.",
   "error.invalidAircraft": "Válassz érvényes gépet és repülési módot.",
-  "error.aircraftLocked": "Gépet a szabad repülés lobbijában választhatsz."
+  "error.aircraftLocked": "Gépet a szabad repülés lobbijában választhatsz.",
+  "hud.view.pilot": "Földi pilóta",
+  "hud.pilotHint": "Fix pilótapont · görgővel nagyíthatsz",
+  "hud.zoomIn": "Nagyítás",
+  "hud.zoomOut": "Kicsinyítés",
+  "hud.pilotUnavailable": "A közelben nem található biztonságos pilótapont."
 }
