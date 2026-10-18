@@ -43,7 +43,7 @@ separate configurations and model factories. Structural dimensions live in
 ground clearance, wing/tail colliders and Aero 75 boom/motor/fin proxies. Ground
 steering torque scales with airframe mass and length; Aero 150 response is preserved.
 
-The Aero 75 supports both Grove airplane circuits, local and verified records,
+The Aero 75 supports all six airplane circuits on Grove, Concrete Yard and Skyline, local and verified records,
 ghosts, battery and wind, and mixed eight-pilot free-flight rooms with drones
 and the Aero 150. Solo Playground flights remain excluded, as for the Aero 150; mixed
 online free flight permits any aircraft on every map. Quad-only prop damage,

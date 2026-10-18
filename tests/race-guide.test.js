@@ -112,9 +112,35 @@ test('saved demo neon guides clear baked scenery along every segment, including 
     }finally{collision.dispose();world.free();}
   }
 });
+test('city and construction airplane circuits leave room for banked wings and continuous turns',async()=>{
+  for(const map of catalog.maps.filter(m=>['skyline','betonudvar'].includes(m.id))){
+    const world=new RAPIER.World({x:0,y:0,z:0}),raw=gunzipSync(await readFile(new URL('../web'+COLLISION_ASSETS[map.id].url,import.meta.url)));
+    const collision=new PrebakedCollisions(RAPIER,world,map,decodeCollisionData(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),map.id));
+    try{
+      world.colliders.forEach(c=>c.setEnabled(true));world.step();
+      const clear=makeGuideClearance(world,RAPIER,1.25);
+      const routes=map.routes.filter(r=>r.aircraftKinds?.includes('fixedWing'));
+      assert.equal(routes.length,2);
+      assert.deepEqual(routes.map(r=>r.details.difficulty),['easy','medium']);
+      for(const route of routes){
+        assert.ok(clear(route.spawn,route.gates[0].p),'launch approach has room for a banked Aero 150');
+        const points=route.guide.flatMap(leg=>leg.slice(0,-1));
+        for(const [i,b]of points.entries()){
+          const a=points[(i+points.length-1)%points.length],c=points[(i+1)%points.length];
+          assert.ok(clear(b,c),`${map.id}/${route.id}: wing clearance on segment ${i}`);
+          const ab=Math.hypot(b[0]-a[0],b[2]-a[2]),bc=Math.hypot(c[0]-b[0],c[2]-b[2]),ac=Math.hypot(c[0]-a[0],c[2]-a[2]);
+          const area2=Math.abs((b[0]-a[0])*(c[2]-a[2])-(b[2]-a[2])*(c[0]-a[0]));
+          if(area2>1e-5)assert.ok(ab*bc*ac/(2*area2)>=40,`${map.id}/${route.id}: avoid abrupt drone-style turns`);
+          assert.ok(Math.abs(c[1]-b[1])/bc<.12,'no sudden altitude steps');
+        }
+      }
+    }finally{collision.dispose();world.free();}
+  }
+});
+
 test('construction dive courses descend the open shafts and horizontal gate meshes match their crossing plane',()=>{
   const map=catalog.maps.find(m=>m.id==='betonudvar');
-  for(const route of map.routes.slice(1)){
+  for(const route of map.routes.filter(r=>r.id==='race_2'||r.id==='race_3')){
     const dives=route.gates.filter(g=>g.n[1]<-.99);assert.ok(dives.length>=3);
     for(const gate of dives){
       const group=createNeonGate(gate,0);

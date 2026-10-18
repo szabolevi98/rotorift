@@ -76,7 +76,8 @@ manual; there is no altitude hold, stall prevention or automatic landing. Press
 **M**, use the HUD mode button or assign a radio action to switch in flight.
 Switching invalidates the current timed lap; records/ghosts retain their mode.
 The Aero 150 supports local/online free flight, mixed drone/airplane rooms
-for up to eight pilots, two dedicated Grove circuits, records and pose ghosts.
+for up to eight pilots, six airplane circuits across Grove, Concrete Yard and Skyline,
+records and pose ghosts.
 Choose an airborne practice start, or a ground start on the Grove south promenade
 in free flight. It has separate control travel/expo, animated surfaces, wingtip
 and landing-gear collisions, wind and battery simulation. Explore the same model
@@ -104,10 +105,11 @@ is 28.6%, with a near-level top speed of 153.6 km/h.
 - **Playground:** an 84 × 84 m practice area for the 65/75 whoops, with a climbing
   fort, swings, a cube climber, timber tunnel and playhouse.
 - **Skyline:** a 600 × 600 m city district with brick buildings, stepped skyscrapers
-  and a central tower reaching 244 m. Fly through its open podium, elevated skywalk,
+  and a central tower reaching 244 m. Fly through its covered podium passage, elevated skywalk,
   five-level parking garage and alleys. Rooftop water tanks, equipment, fire escapes,
   parked vehicles, street furniture and a fountain square complete the district.
-  Three race routes explore the street canyons, garage, skywalk and rooftops.
+  Three drone routes explore the street canyons, garage, skywalk and rooftops;
+  two airplane circuits add rooftop sightseeing and low boulevard flying.
 
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
@@ -342,7 +344,7 @@ Optional `aircraftKinds` restricts compatibility to `quadrotor` or `fixedWing`;
 omitting it preserves the legacy drone-only behavior. Compatibility changes bump
 the route version. Aircraft selection only shows compatible courses.
 
-Thirteen race routes ship (eleven drone courses and two airplane circuits). Lengths follow the saved guide, including the return to
+Seventeen race routes ship (eleven drone courses and six airplane circuits). Lengths follow the saved guide, including the return to
 the start/finish gate:
 
 | Map | Route | Length | Gates | Main features |
@@ -353,11 +355,15 @@ the start/finish gate:
 | Grove | Grove Air Circuit · airplanes | 1.41 km | 16 | Wide, level airplane circuit at 52 m |
 | Grove | Lakeside Figure Eight · airplanes | 1.56 km | 24 | Broad climbing and descending airplane turns |
 | Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
-| Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
+| Construction Yard | Tower A Dive | 1.34 km | 22 | Climb above the tower, descend its open shaft and cross Tower B |
 | Construction Yard | Cranes & Twin Shafts | 1.70 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |
-| Skyline | Canyon Express | 1.92 km | 29 | Fast street-grid loop and service alley |
-| Skyline | Garage to Skywalk | 1.30 km | 25 | Garage interior, 48 m skywalk and tower alleys |
-| Skyline | Rooftop Descent | 1.65 km | 24 | High-altitude climb and a dive onto the garage roof |
+| Construction Yard | Crane Air Circuit · airplanes | 1.54 km | 18 | Easy, level circuit above the cranes at 95 m |
+| Construction Yard | Tower Alley Run · airplanes | 1.40 km | 26 | Low central corridor between unfinished towers and a broad western return |
+| Skyline | Canyon Express | 1.93 km | 28 | Fast street-grid loop and service alley |
+| Skyline | Garage to Skywalk | 1.31 km | 25 | Garage interior, 48 m skywalk and tower alleys |
+| Skyline | Rooftop Descent | 1.66 km | 23 | High-altitude climb and a dive onto the garage roof |
+| Skyline | Skyline Air Circuit · airplanes | 1.67 km | 18 | Wide, level sightseeing circuit above the outer rooftops at 92 m |
+| Skyline | Boulevard Low Run · airplanes | 1.35 km | 26 | Low street canyons at 16–22 m, with 55 m radius street-corner turns |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
 | Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
 
@@ -382,7 +388,10 @@ editor reports it. Guide generation runs during authoring, not in flight.
 After map changes, rebuild collisions, run `node scripts/build-race-guides.mjs`
 and rebuild the showcase.
 
-`node scripts/author-airplane-races.mjs` rebuilds the two trainer circuits.
+`node scripts/author-airplane-races.mjs` rebuilds the six airplane circuits. Pass
+`liget`, `betonudvar` or `skyline` to rebuild only that map. The city and construction
+circuits use smooth authored curves, 18 × 14 m gates, and a 1.25 m swept aircraft
+clearance check against prepared scenery; their low routes retain broad turns.
 `node scripts/export-trainer.mjs` exports the shared procedural Aero 150 as GLB.
 
 `node scripts/author-races.mjs` rebuilds the nine long authored courses from their

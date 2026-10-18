@@ -18,8 +18,11 @@ control response are unchanged.
 - Airplane-only rooms, up to eight pilots: unique colors, wide launch slots,
   shared battery/wind/ghost rules, remote control-surface and prop animation,
   reconnect, race results and restart. Quad damage, propwash and turtle are hidden.
-- Two Grove circuits: **Grove Air Circuit** (16 gates, easy) and **Lakeside Figure
-  Eight** (24 gates, intermediate), with 18 × 14 m gates. Drone dive routes are not
+- Six airplane circuits: **Grove Air Circuit** (16 gates, easy), **Lakeside Figure
+  Eight** (24 gates, intermediate), **Crane Air Circuit** and **Skyline Air Circuit**
+  (18 gates each, easy), **Tower Alley Run** and **Boulevard Low Run** (26 gates each,
+  intermediate), with 18 × 14 m gates. The latter two fly low between buildings
+  with broad turns and clearance for banked wings. Drone dive routes are not
   offered to the trainer. Local/verified timing, records, ghost selection and
   checkpoint deltas reuse the common race pipeline with a separate aircraft ID.
 - The showcase reuses the flight factory, with color/prop preview and GLB export.
