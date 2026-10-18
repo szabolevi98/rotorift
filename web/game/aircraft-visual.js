@@ -10,6 +10,10 @@ import {
   RemoteRotorMotion,
 } from "../../shared/visual/rotor-motion.js";
 import { animateTrainer } from "../../shared/visual/fixed-wing-model.js";
+import {
+  AirplanePropellerExposure,
+  AIRPLANE_VISUAL_ROTOR_SPEED,
+} from "../../shared/visual/airplane-propeller.js";
 
 class QuadVisual {
   constructor(model, config, { remote = false } = {}) {
@@ -73,7 +77,11 @@ class AirplaneVisual {
   constructor(model, config) {
     this.model = model;
     this.config = config;
-    this.motion = new RotorMotion(1);
+    this.motion = new RotorMotion(1, AIRPLANE_VISUAL_ROTOR_SPEED);
+    this.exposure = new AirplanePropellerExposure(
+      model,
+      config.propDiameterM / 2,
+    );
   }
   bindPhysics() {}
   update(dt, physics, input) {
@@ -85,6 +93,7 @@ class AirplaneVisual {
       physics.armed && input.throttle > 0,
     );
     animateTrainer(this.model, physics.surfaces, this.motion.phase[0]);
+    this.exposure.update(this.motion.fraction[0]);
   }
   updateRemote(dt, player) {
     if (this.resetId !== player.resetId) {
@@ -99,6 +108,7 @@ class AirplaneVisual {
         : stoppedAirplaneAnimation();
     this.motion.update(dt, [state.engine ** 2], 1, this.config.motors, true);
     animateTrainer(this.model, state.surfaces, this.motion.phase[0]);
+    this.exposure.update(this.motion.fraction[0]);
   }
   prepareView() {}
   networkState(physics, interrupted) {
@@ -112,8 +122,11 @@ class AirplaneVisual {
   }
   reset() {
     this.motion.reset();
+    this.exposure.update(0);
   }
-  dispose() {}
+  dispose() {
+    this.exposure.dispose();
+  }
   get motorSpeeds() {
     return this.motion.fraction;
   }

@@ -61232,236 +61232,311 @@ function createTrainerModel({ batchStatic = true } = {}) {
     );
     return object;
   }
-  const oval = Array.from({ length: 16 }, (_, i) => [
-    Math.cos((i * Math.PI) / 8),
-    Math.sin((i * Math.PI) / 8),
-  ]);
-  const fuselageSections = [
-    [-0.465, 0.047, 0.046, 0.013],
-    [-0.38, 0.06, 0.06, 0.009],
-    [-0.29, 0.067, 0.072, 0.005],
-    [-0.15, 0.068, 0.075, 0],
-    [-0.02, 0.063, 0.071, -0.003],
-    [0.13, 0.048, 0.054, 0.001],
-    [0.28, 0.032, 0.038, 0.012],
-    [0.43, 0.018, 0.023, 0.026],
-    [0.54, 0.009, 0.014, 0.036],
-    [0.558, 0.003, 0.007, 0.036],
+  // The cabin is the upper part of this hull, not a second box sitting on it.
+  // Shape-preserving cubic sections give the hood, shoulders and rear fairing
+  // matching tangents, without overshoot at the thin tail.
+  const sections = [
+    [-0.465, 0.047, 0.046, 0.013, 0.059],
+    [-0.38, 0.06, 0.06, 0.009, 0.069],
+    [-0.32, 0.065, 0.068, 0.006, 0.08],
+    [-0.25, 0.068, 0.073, 0.003, 0.107],
+    [-0.19, 0.069, 0.075, 0.0, 0.121],
+    [-0.1, 0.067, 0.074, -0.002, 0.121],
+    [-0.02, 0.063, 0.071, -0.003, 0.113],
+    [0.075, 0.054, 0.061, -0.001, 0.09],
+    [0.16, 0.045, 0.05, 0.003, 0.061],
+    [0.28, 0.032, 0.038, 0.012, 0.05],
+    [0.43, 0.018, 0.023, 0.026, 0.049],
+    [0.54, 0.009, 0.014, 0.036, 0.05],
+    [0.558, 0.003, 0.007, 0.036, 0.043],
   ];
-  loft(
-    fuselageSections.map(([z, w, h, y]) =>
-      oval.map(([a, b]) => [
-        a * w,
-        z >= -0.29 && z <= 0.13 ? Math.min(0.034, y + b * h) : y + b * h,
-        z,
-      ]),
-    ),
-    white,
-    "T15_fuselage",
-    root,
-    { capStart: false },
+  function sectionAt(z) {
+    const hi = Math.max(
+      1,
+      sections.findIndex((row) => row[0] >= z),
+    );
+    const i = z >= sections.at(-1)[0] ? sections.length - 2 : hi - 1;
+    const a = sections[i],
+      b = sections[i + 1],
+      length = b[0] - a[0];
+    const t = Math.max(0, Math.min(1, (z - a[0]) / length));
+    const slope = (j, k) => {
+      const left = sections[Math.max(0, j - 1)],
+        center = sections[j],
+        right = sections[Math.min(sections.length - 1, j + 1)];
+      const d0 =
+        j === 0
+          ? (right[k] - center[k]) / (right[0] - center[0])
+          : (center[k] - left[k]) / (center[0] - left[0]);
+      const d1 =
+        j === sections.length - 1
+          ? d0
+          : (right[k] - center[k]) / (right[0] - center[0]);
+      return d0 * d1 > 0 ? (2 * d0 * d1) / (d0 + d1) : 0;
+    };
+    return a
+      .slice(1)
+      .map(
+        (value, k) =>
+          (2 * t ** 3 - 3 * t * t + 1) * value +
+          (t ** 3 - 2 * t * t + t) * length * slope(i, k + 1) +
+          (-2 * t ** 3 + 3 * t * t) * b[k + 1] +
+          (t ** 3 - t * t) * length * slope(i + 1, k + 1),
+      );
+  }
+  const skinPoint = (z, angle) => {
+    const [w, h, center, top] = sectionAt(z),
+      sine = Math.abs(Math.sin(angle)) < 1e-9 ? 0 : Math.sin(angle),
+      up = Math.max(0, sine),
+      cosine = Math.abs(Math.cos(angle)) < 1e-9 ? 0 : Math.cos(angle),
+      shoulder =
+        up > 0 ? Math.min(1, Math.max(0, (top - center - h) / 0.05)) : 0,
+      exponent = 1 - shoulder * 0.55;
+    // Broad, rounded cabin shoulders support the high wing across its root;
+    // the cross-section eases back into an ellipse at the hood and tail.
+    return new THREE.Vector3(
+      w * Math.sign(cosine) * Math.abs(cosine) ** exponent,
+      up > 0 ? center + (top - center) * up ** exponent : center + h * sine,
+      z,
+    );
+  };
+  const skinNormal = (z, angle) => {
+    const dz = skinPoint(Math.min(0.558, z + 0.00001), angle).sub(
+      skinPoint(Math.max(-0.465, z - 0.00001), angle),
+    );
+    const da = skinPoint(z, angle + 0.0001).sub(skinPoint(z, angle - 0.0001));
+    return da.cross(dz).normalize();
+  };
+  const patches = [];
+  const skins = new Map();
+  function skinStrip(stations, from, to, segments, mat, name, offset = 0) {
+    patches.push({ stations, from, to, segments, mat, name, offset });
+  }
+  function buildSkin() {
+    // Reconcile the tessellation of adjoining material patches. A curved
+    // window edge and its white surround share every vertex, including where
+    // a rounded pane closes into the full hull ring (no T-junction cracks).
+    const rings = new Map(),
+      round = (value) => Number(value.toFixed(10));
+    for (const patch of patches)
+      for (const z of patch.stations) {
+        if (patch.offset) continue;
+        const key = round(z);
+        if (!rings.has(key)) rings.set(key, new Set());
+        for (let j = 0; j <= patch.segments; j++)
+          rings
+            .get(key)
+            .add(
+              round(
+                patch.from(z) +
+                  ((patch.to(z) - patch.from(z)) * j) / patch.segments,
+              ),
+            );
+      }
+    for (const patch of patches) {
+      const { from, to, segments, mat, name, offset } = patch;
+      if (!skins.has(name))
+        skins.set(name, { positions: [], normals: [], indices: [], mat, name });
+      const data = skins.get(name),
+        rows = [];
+      for (const sourceZ of patch.stations) {
+        const z = round(sourceZ),
+          lo = round(from(sourceZ)),
+          hi = round(to(sourceZ));
+        const angles = offset
+          ? Array.from({ length: segments + 1 }, (_, j) =>
+              round(lo + ((hi - lo) * j) / segments),
+            )
+          : [...rings.get(z)]
+              .filter((a) => a >= lo && a <= hi)
+              .sort((a, b) => a - b);
+        const row = angles.map((angle) => {
+          const normal = skinNormal(z, angle),
+            index = data.positions.length / 3;
+          data.positions.push(
+            ...skinPoint(z, angle).addScaledVector(normal, offset).toArray(),
+          );
+          data.normals.push(...normal.toArray());
+          return index;
+        });
+        rows.push(row);
+      }
+      const triangle = (a, b, c) => {
+        const [p, q, r] = [a, b, c].map((k) =>
+          new THREE.Vector3().fromArray(data.positions, k * 3),
+        );
+        if (q.sub(p).cross(r.sub(p)).lengthSq() > 1e-18)
+          data.indices.push(a, b, c);
+      };
+      for (let row = 0; row < rows.length - 1; row++) {
+        const a = rows[row],
+          b = rows[row + 1];
+        let i = 0,
+          j = 0;
+        while (i < a.length - 1 || j < b.length - 1) {
+          if (
+            j === b.length - 1 ||
+            (i < a.length - 1 &&
+              (i + 1) / (a.length - 1) <= (j + 1) / (b.length - 1))
+          ) {
+            triangle(a[i], a[i + 1], b[j]);
+            i++;
+          } else {
+            triangle(a[i], b[j + 1], b[j]);
+            j++;
+          }
+        }
+      }
+    }
+  }
+  const stations = (start, end, steps = 12) =>
+    Array.from(
+      { length: steps + 1 },
+      (_, i) => start + ((end - start) * i) / steps,
+    );
+  const fixed = (value) => () => value;
+  const bodyStrip = (zs, from, to, n = 6) =>
+    skinStrip(zs, from, to, n, white, "T15_fuselage");
+  const closedBand = (start, end, steps) =>
+    bodyStrip(stations(start, end, steps), fixed(0), fixed(Math.PI * 2), 32);
+  closedBand(-0.465, -0.335, 8);
+  // One uninterrupted, gently wrapped windshield, with rounded corners.
+  const frontStart = -0.335,
+    frontEnd = -0.205,
+    frontZ = stations(frontStart, frontEnd, 14);
+  const windowHalf = (z, start, end, half) =>
+    half *
+    Math.sqrt(Math.max(0, 1 - ((2 * (z - start)) / (end - start) - 1) ** 8));
+  const edge = (z) => Math.PI / 2 - windowHalf(z, frontStart, frontEnd, 0.92);
+  bodyStrip(frontZ, fixed(0), edge, 6);
+  skinStrip(
+    frontZ,
+    edge,
+    (z) => Math.PI - edge(z),
+    14,
+    glass,
+    "T15_windscreen",
   );
-  // Separate fitted cowl, with lower cooling intake and visible motor hub.
+  bodyStrip(frontZ, (z) => Math.PI - edge(z), fixed(Math.PI), 6);
+  bodyStrip(frontZ, fixed(Math.PI), fixed(Math.PI * 2), 16);
+  closedBand(frontEnd, -0.195, 2);
+  function sideWindow(start, end, name) {
+    const zs = stations(start, end, 12),
+      center = 0.72;
+    const lower = (z) => center - windowHalf(z, start, end, 0.36),
+      upper = (z) => center + windowHalf(z, start, end, 0.36);
+    bodyStrip(zs, fixed(0), lower, 4);
+    skinStrip(zs, lower, upper, 8, glass, name + "_right");
+    bodyStrip(zs, upper, (z) => Math.PI - upper(z), 12);
+    skinStrip(
+      zs,
+      (z) => Math.PI - upper(z),
+      (z) => Math.PI - lower(z),
+      8,
+      glass,
+      name + "_left",
+    );
+    bodyStrip(zs, (z) => Math.PI - lower(z), fixed(Math.PI), 4);
+    bodyStrip(zs, fixed(Math.PI), fixed(Math.PI * 2), 16);
+  }
+  sideWindow(-0.195, -0.085, "T15_front_side_window");
+  closedBand(-0.085, -0.077, 2);
+  sideWindow(-0.077, 0.07, "T15_rear_side_window");
+  closedBand(0.07, 0.558, 18);
+  // The colored nose meets the same ring as the white hull. Its short hub is
+  // mostly covered by the spinner instead of looking like an extended axle.
+  const oval = Array.from({ length: 32 }, (_, i) => [
+    Math.cos((i * Math.PI) / 16),
+    Math.sin((i * Math.PI) / 16),
+  ]);
   loft(
     [
-      [-0.52, 0.026, 0.031],
-      [-0.494, 0.037, 0.04],
-      [-0.465, 0.047, 0.046],
-    ].map(([z, w, h]) => oval.map(([a, b]) => [a * w, 0.013 + b * h, z])),
+      [-0.523, 0.027, 0.03, 0.015],
+      [-0.513, 0.032, 0.035, 0.015],
+      [-0.496, 0.04, 0.041, 0.014],
+      [-0.48, 0.0445, 0.044, 0.0135],
+      [-0.465, 0.047, 0.046, 0.013],
+    ].map(([z, w, h, y]) => oval.map(([a, b]) => [a * w, y + b * h, z])),
     accent,
     "T15_moulded_cowl",
     root,
     { capEnd: false },
   );
-  box(
-    [0.031, 0.013, 0.004],
-    [0, -0.006, -0.5205],
-    navy,
-    root,
-    "T15_cooling_intake",
-  );
-  for (const side of [-1, 1])
-    for (let i = 0; i < 3; i++) {
-      const point = (z, y) => {
-          const t = (z + 0.465) / (0.465 - 0.38),
-            w = 0.047 + (0.06 - 0.047) * t,
-            h = 0.046 + (0.06 - 0.046) * t,
-            center = 0.013 + (0.009 - 0.013) * t;
-          const f = Math.abs(y - center) / (h * Math.sin(Math.PI / 8));
-          return [
-            side * (w * (1 - f + f * Math.cos(Math.PI / 8)) + 0.0007),
-            y,
-            z,
-          ];
-        },
-        z = -0.453 + i * 0.019;
-      panel(
-        [
-          point(z, -0.003),
-          point(z, 0.009),
-          point(z + 0.009, 0.009),
-          point(z + 0.009, -0.003),
-        ],
-        navy,
-        "T15_cowl_vent",
-      );
-    }
-  rod([0, 0.015, -0.516], [0, 0.015, -0.55], 0.011, metal);
-  // Shaped cabin: sloped windscreen and trapezoid side windows, rather than a box.
-  const cabinRings = [
-    [-0.305, 0.053, 0.06],
-    [-0.222, 0.055, 0.128],
-    [-0.075, 0.054, 0.128],
-    [0.045, 0.044, 0.07],
-  ];
-  const cabinAt = (z) => {
-    const hi = cabinRings.findIndex((row) => row[0] >= z),
-      a = cabinRings[Math.max(0, hi - 1)],
-      b = cabinRings[hi];
-    const t = a === b ? 0 : (z - a[0]) / (b[0] - a[0]);
-    return { z, w: a[1] + (b[1] - a[1]) * t, top: a[2] + (b[2] - a[2]) * t };
-  };
-  const cabinPoint = (z, side, y) => [side * cabinAt(z).w, y, z];
-  // Glazing replaces shell faces, rather than intersecting a second white hull.
-  const roofPoint = (u, t) => {
-    const a = cabinRings[0],
-      b = cabinRings[1];
-    return [
-      u * 0.78 * (a[1] + (b[1] - a[1]) * t),
-      a[2] + (b[2] - a[2]) * t,
-      a[0] + (b[0] - a[0]) * t,
-    ];
-  };
-  const us = [-1, -0.91, -0.025, 0.025, 0.91, 1],
-    ts = [0, 0.12, 0.9, 1];
-  for (let i = 0; i < us.length - 1; i++)
-    for (let j = 0; j < ts.length - 1; j++) {
-      const glazed = j === 1 && i !== 0 && i !== 2 && i !== us.length - 2;
-      panel(
-        [
-          roofPoint(us[i], ts[j]),
-          roofPoint(us[i + 1], ts[j]),
-          roofPoint(us[i + 1], ts[j + 1]),
-          roofPoint(us[i], ts[j + 1]),
-        ],
-        glazed ? glass : white,
-        glazed ? "T15_windscreen" : "T15_windscreen_frame",
-      );
-    }
-  for (let i = 1; i < cabinRings.length - 1; i++) {
-    const a = cabinAt(cabinRings[i][0]),
-      b = cabinAt(cabinRings[i + 1][0]);
-    panel(
-      [
-        [-a.w * 0.78, a.top, a.z],
-        [a.w * 0.78, a.top, a.z],
-        [b.w * 0.78, b.top, b.z],
-        [-b.w * 0.78, b.top, b.z],
-      ],
-      white,
-      "T15_cabin_roof",
-    );
-  }
-  for (const z of [cabinRings[0][0], cabinRings.at(-1)[0]]) {
-    const c = cabinAt(z);
-    panel(
-      [
-        [c.w, 0.028, z],
-        [c.w, c.top - 0.012, z],
-        [c.w * 0.78, c.top, z],
-        [-c.w * 0.78, c.top, z],
-        [-c.w, c.top - 0.012, z],
-        [-c.w, 0.028, z],
-      ],
-      white,
-      "T15_cabin_end",
-    );
-  }
   for (const side of [-1, 1]) {
-    const cabinStations = [
-      -0.305, -0.284, -0.222, -0.14, -0.132, -0.075, 0.006, 0.045,
-    ];
-    for (let i = 0; i < cabinStations.length - 1; i++) {
-      const a = cabinAt(cabinStations[i]),
-        b = cabinAt(cabinStations[i + 1]),
-        glazed =
-          a.z >= -0.284 && b.z <= 0.006 && !(a.z >= -0.14 && b.z <= -0.132);
-      const lower = 0.043;
-      panel(
-        [
-          cabinPoint(a.z, side, 0.028),
-          cabinPoint(b.z, side, 0.028),
-          cabinPoint(b.z, side, lower),
-          cabinPoint(a.z, side, lower),
-        ],
-        white,
-        "T15_cabin_sill",
-      );
-      panel(
-        [
-          cabinPoint(a.z, side, lower),
-          cabinPoint(b.z, side, lower),
-          cabinPoint(b.z, side, b.top - 0.012),
-          cabinPoint(a.z, side, a.top - 0.012),
-        ],
-        glazed ? glass : white,
-        glazed
-          ? b.z <= -0.14
-            ? "T15_front_side_window"
-            : "T15_rear_side_window"
-          : "T15_window_pillar",
-      );
-      panel(
-        [
-          cabinPoint(a.z, side, a.top - 0.012),
-          cabinPoint(b.z, side, b.top - 0.012),
-          [side * b.w * 0.78, b.top, b.z],
-          [side * a.w * 0.78, a.top, a.z],
-        ],
-        white,
-        "T15_cabin_roof_rail",
+    const intake = mesh(
+      new THREE.CircleGeometry(0.006, 12),
+      navy,
+      root,
+      "T15_cooling_intake",
+    );
+    intake.rotation.y = Math.PI;
+    intake.scale.set(1.05, 0.65, 1);
+    intake.position.set(side * 0.014, -0.001, -0.5232);
+    for (let i = 0; i < 3; i++) {
+      const start = -0.449 + i * 0.019;
+      skinStrip(
+        stations(start, start + 0.009, 2),
+        fixed(side > 0 ? -0.2 : Math.PI - 0.02),
+        fixed(side > 0 ? 0.02 : Math.PI + 0.2),
+        2,
+        navy,
+        "T15_cowl_vents_" + side,
+        0.0005,
       );
     }
-    rod(
-      [side * 0.057, 0.034, -0.284],
-      [side * 0.057, 0.034, 0.01],
-      0.0012,
-      seam,
-      root,
-      "T15_door_sill",
+    // Conformal paint uses the very same hull, including the curved shoulder.
+    const stripeAngle = (z, height) => {
+      const [, h, center, top] = sectionAt(z);
+      const exponent =
+        1 - Math.min(1, Math.max(0, (top - center - h) / 0.05)) * 0.55;
+      return Math.asin(((h * height) / (top - center)) ** (1 / exponent));
+    };
+    skinStrip(
+      stations(-0.3, 0.43, 38),
+      (z) => (side > 0 ? stripeAngle(z, 0.05) : Math.PI - stripeAngle(z, 0.19)),
+      (z) => (side > 0 ? stripeAngle(z, 0.19) : Math.PI - stripeAngle(z, 0.05)),
+      2,
+      accent,
+      "T15_fuselage_cheatline_" + side,
+      0.0005,
     );
+    const handle = skinPoint(-0.06, side > 0 ? 0.27 : Math.PI - 0.27);
     box(
-      [0.003, 0.003, 0.02],
-      [side * 0.058, 0.034, -0.08],
+      [0.003, 0.003, 0.018],
+      handle.toArray(),
       metal,
       root,
       "T15_door_handle",
     );
-    // Follow the actual faceted shell, so the stripe cannot cut into the body.
-    const positions = [],
-      indices = [],
-      stations = fuselageSections.slice(2, -2);
-    for (const [z, w, h, y] of stations)
-      for (const t of [0.04, 0.5])
-        positions.push(
-          side * (w * (1 - t + t * Math.cos(Math.PI / 8)) + 0.0006),
-          y + h * t * Math.sin(Math.PI / 8),
-          z,
-        );
-    for (let i = 0; i < stations.length - 1; i++) {
-      const k = i * 2;
-      if (side > 0) indices.push(k, k + 1, k + 3, k, k + 3, k + 2);
-      else indices.push(k, k + 3, k + 1, k, k + 2, k + 3);
-    }
-    const paint = new THREE.BufferGeometry();
-    paint.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(positions, 3),
-    );
-    paint.setIndex(indices);
-    paint.computeVertexNormals();
-    mesh(paint, accent, root, "T15_fuselage_cheatline");
   }
+  buildSkin();
+  for (const data of skins.values()) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(data.positions, 3),
+    );
+    geometry.setAttribute(
+      "normal",
+      new THREE.Float32BufferAttribute(data.normals, 3),
+    );
+    geometry.setIndex(data.indices);
+    mesh(geometry, data.mat, root, data.name);
+  }
+  // Close only the small tail end, never a second shell through the windows.
+  panel(
+    oval.map(([a, b]) => [a * 0.003, 0.036 + b * 0.007, 0.558]),
+    white,
+    "T15_tail_cap",
+  );
+  rod(
+    [0, 0.015, -0.521],
+    [0, 0.015, -0.532],
+    0.01,
+    metal,
+    root,
+    "T15_propeller_hub",
+  );
   const airfoil = [
     [-0.142, 0],
     [-0.139, 0.008],
@@ -61782,7 +61857,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
   }
   const prop = new THREE.Group();
   prop.name = "T15_propeller";
-  prop.position.set(0, 0.015, -0.55);
+  prop.position.set(0, 0.015, -0.532);
   prop.userData = { propeller: true, motorIndex: 0, phaseOffset: 0, axis: "z" };
   root.add(prop);
   // Swept paddle outlines replace the old pair of rectangular sticks.
@@ -61813,8 +61888,8 @@ function createTrainerModel({ batchStatic = true } = {}) {
     "T15_spinner",
   );
   spinner.rotation.x = -Math.PI / 2;
-  spinner.position.set(0, 0.015, -0.552);
-  spinner.scale.y = 1.65;
+  spinner.position.set(0, 0.015, -0.534);
+  spinner.scale.y = 1.35;
   const fpv = mesh(
     new THREE.CylinderGeometry(0.012, 0.013, 0.022, 12),
     navy,
@@ -61822,7 +61897,8 @@ function createTrainerModel({ batchStatic = true } = {}) {
     "T15_FPV_camera",
   );
   fpv.rotation.x = Math.PI / 2;
-  fpv.position.set(0, 0.135, -0.22);
+  const cameraY = skinPoint(-0.168, Math.PI / 2).y + 0.01;
+  fpv.position.set(0, cameraY, -0.168);
   const lens = mesh(
     new THREE.CircleGeometry(0.009, 16),
     light,
@@ -61830,7 +61906,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
     "T15_FPV_lens",
   );
   lens.rotation.y = Math.PI;
-  lens.position.set(0, 0.135, -0.232);
+  lens.position.set(0, cameraY, -0.18);
   // A small antenna aft of the wing and restrained navigation lenses.
   rod(
     [0, 0.068, 0.14],
@@ -61906,9 +61982,87 @@ function animateTrainer(model, surfaces, phase) {
   });
 }
 
+
+// A shutter representation, not an RPM claim: sharply sampled two-blade props
+// alias at display refresh rates. Blend the real blades into their swept area.
+const AIRPLANE_VISUAL_ROTOR_SPEED = 70;
+class AirplanePropellerExposure {
+  constructor(model, radius = 0.127) {
+    this.blades = [];
+    this.discs = [];
+    model.traverse((prop) => {
+      if (!prop.userData.propeller) return;
+      for (const blade of prop.children.filter((o) => o.isMesh)) {
+        const original = blade.material;
+        blade.material = original.clone();
+        this.blades.push({ blade, original, castShadow: blade.castShadow });
+      }
+      const geometry = new THREE.RingGeometry(0.018, radius, 64, 4);
+      const colors = [],
+        positions = geometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) {
+        const r = Math.hypot(positions.getX(i), positions.getY(i)) / radius;
+        const alpha =
+          Math.min(1, Math.max(0, (r - 0.14) / 0.16)) *
+          Math.min(1, (1 - r) / 0.1);
+        colors.push(1, 1, 1, Math.max(0, alpha));
+      }
+      geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 4),
+      );
+      const material = new THREE.MeshBasicMaterial({
+        color: "#22343f",
+        vertexColors: true,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const disc = new THREE.Mesh(geometry, material);
+      disc.name = "T15_propeller_exposure";
+      disc.visible = false;
+      prop.add(disc);
+      this.discs.push(disc);
+    });
+  }
+  update(fraction = 0) {
+    const speed = Math.max(0, Math.min(1, fraction)),
+      t = Math.max(0, Math.min(1, (speed - 0.12) / 0.73));
+    const blur = t * t * (3 - 2 * t);
+    for (const { blade, original, castShadow } of this.blades) {
+      blade.visible = blur < 0.999;
+      blade.castShadow = blur === 0 && castShadow;
+      blade.material.opacity = original.opacity * (1 - blur);
+      blade.material.transparent = blur > 0 || original.transparent;
+      blade.material.depthWrite = blur === 0 && original.depthWrite;
+    }
+    for (const disc of this.discs) {
+      disc.visible = blur > 0;
+      disc.material.opacity = (0.045 + speed * 0.15) * blur;
+    }
+  }
+  dispose() {
+    for (const { blade, original, castShadow } of this.blades) {
+      blade.material.dispose();
+      blade.material = original;
+      blade.visible = true;
+      blade.castShadow = castShadow;
+    }
+    for (const disc of this.discs) {
+      disc.removeFromParent();
+      disc.geometry.dispose();
+      disc.material.dispose();
+    }
+    this.blades.length = 0;
+    this.discs.length = 0;
+  }
+}
+
 // Reuse the flight model: the showroom never maintains a second airplane mesh.
 function createRiftT15() {
   const root = createTrainerModel();
+  const exposure = new AirplanePropellerExposure(root);
   root.position.y = 0.28;
   const materials = new Set(),
     propellers = [];
@@ -61936,6 +62090,10 @@ function createRiftT15() {
     assemblies: [],
     batteryParts: [],
     actionParts: [],
+    rotorSpeed: AIRPLANE_VISUAL_ROTOR_SPEED,
+    setMotorSpeed(value) {
+      exposure.update(value);
+    },
     setExplode() {},
     setWireframe(value) {
       for (const material of materials) material.wireframe = value;
@@ -61970,13 +62128,13 @@ const validRotorSpeeds = value => Array.isArray(value) && value.length===4 &&
   value.every(v=>Number.isFinite(v)&&v>=0&&v<=1);
 
 class RotorMotion {
-  constructor(count=4) { this.count=count;this.reset(); }
+  constructor(count=4, maxAngularSpeed=22) { this.count=count;this.maxAngularSpeed=maxAngularSpeed;this.reset(); }
   reset() { this.phase = Array(this.count).fill(0); this.speed = Array(this.count).fill(0); this.fraction = Array(this.count).fill(0); }
   update(dt, thrust, maximum, motors, running, reverse=false) {
     for (let i=0;i<this.count;i++) {
       const fraction = running && maximum>0 ? Math.sqrt(Math.max(0,Math.min(1,Math.abs(thrust[i])/maximum))) : 0;
       this.fraction[i] = fraction;
-      this.speed[i] = fraction * 22 * motors[i].direction * (reverse?-1:1);
+      this.speed[i] = fraction * this.maxAngularSpeed * motors[i].direction * (reverse?-1:1);
       this.phase[i] = (this.phase[i] + Math.min(dt,.1) * this.speed[i]) % (Math.PI*2);
     }
   }
@@ -62119,7 +62277,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
     try{
       let next=modelCache.get(model.id);
       if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation[prop.axis??'y']));}
-      scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
+      drone.setMotorSpeed?.(0);scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
       originalPropRotations=modelPropRotations.get(model.id);
       drone.propellers.forEach((prop,index)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[index]);
       state.explode=0;state.spin=false;controls.autoRotate=false;
@@ -62155,6 +62313,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
     state.spin=e.target.checked;
     document.getElementById('prop-throttle').disabled=!state.spin;
     if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation[p.axis??'y']=originalPropRotations[i]);
+    if(!state.spin)drone.setMotorSpeed?.(0);
   });
   document.getElementById('prop-throttle').addEventListener('input',e=>{
     state.throttle=Number(e.target.value)/100;
@@ -62181,6 +62340,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
     button.disabled=true;exporting=true;status.textContent='Building GLB model…';
     try{
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
+      drone.setMotorSpeed?.(0);
       const exported=drone.root.clone(true);
       for(const part of drone.assemblies)exported.getObjectByName(part.group.name).position.copy(part.base);
       drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation[p.axis??'y']=originalPropRotations[i]);
@@ -62205,8 +62365,10 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
       if(t===1)cameraTransition=null;
     }
     if(state.spin&&!exporting){
+      rotorMotion.maxAngularSpeed=drone.rotorSpeed??22;
       rotorMotion.update(dt,Array(drone.propellers.length).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
       drone.propellers.forEach((prop,i)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[i]+rotorMotion.phase[i]);
+      drone.setMotorSpeed?.(rotorMotion.fraction[0]);
     }
     controls.update(dt);renderer.render(scene,camera);
   });

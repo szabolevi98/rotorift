@@ -121,7 +121,7 @@
     try{
       let next=modelCache.get(model.id);
       if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation[prop.axis??'y']));}
-      scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
+      drone.setMotorSpeed?.(0);scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
       originalPropRotations=modelPropRotations.get(model.id);
       drone.propellers.forEach((prop,index)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[index]);
       state.explode=0;state.spin=false;controls.autoRotate=false;
@@ -157,6 +157,7 @@
     state.spin=e.target.checked;
     document.getElementById('prop-throttle').disabled=!state.spin;
     if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation[p.axis??'y']=originalPropRotations[i]);
+    if(!state.spin)drone.setMotorSpeed?.(0);
   });
   document.getElementById('prop-throttle').addEventListener('input',e=>{
     state.throttle=Number(e.target.value)/100;
@@ -183,6 +184,7 @@
     button.disabled=true;exporting=true;status.textContent='Building GLB model…';
     try{
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
+      drone.setMotorSpeed?.(0);
       const exported=drone.root.clone(true);
       for(const part of drone.assemblies)exported.getObjectByName(part.group.name).position.copy(part.base);
       drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation[p.axis??'y']=originalPropRotations[i]);
@@ -207,8 +209,10 @@
       if(t===1)cameraTransition=null;
     }
     if(state.spin&&!exporting){
+      rotorMotion.maxAngularSpeed=drone.rotorSpeed??22;
       rotorMotion.update(dt,Array(drone.propellers.length).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
       drone.propellers.forEach((prop,i)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[i]+rotorMotion.phase[i]);
+      drone.setMotorSpeed?.(rotorMotion.fraction[0]);
     }
     controls.update(dt);renderer.render(scene,camera);
   });

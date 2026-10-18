@@ -102,8 +102,8 @@ with no console errors. The new browser checks also cover ground launch, airplan
 remote room startup, showcase animation and GLB export. Eight simulated clients
 are not eight real players on separate machines. Airplane radio/mobile feedback,
 latency-dependent collision tuning, exact trim and broader calibration remain
-ongoing work. There is no structural damage, autopilot, mixed-aircraft room or
-new runway mesh. The existing accepted drone hardware tests are unaffected.
+ongoing work. Mixed drone/airplane free-flight rooms are supported. There is no structural
+damage, autopilot or new runway mesh. The existing accepted drone hardware tests are unaffected.
 
 
 ## Visual refinement — 2026-10-18
@@ -123,3 +123,31 @@ of overlays through the white cabin, and aligned control-surface hinges. Aileron
 axes follow the wing dihedral; the elevator includes central rudder clearance.
 `tests/fixed-wing-model-fit.test.js` ray-checks every glazing triangle in original
 and batched geometry and measures hinge attachment at neutral and full travel.
+
+
+## Integrated cabin and propeller exposure — 2026-10-18
+
+The cabin now forms one smooth loft with the fuselage. Shape-preserving cubic
+sections join the hood, rounded shoulders, roof and rear fairing. Glazing replaces
+faces of this same skin: one wrapped windshield without a center divider and
+rounded side windows. Adjacent material patches share their boundary vertices
+and normals, rather than overlapping a white cabin with glass overlays. The
+visible prop adapter is 11 mm long (previously 34 mm); the cowl and shorter
+spinner follow its compact nose profile. The roof FPV camera sits on the skin.
+
+The static model has 9,262 triangles and 14 meshes; motion exposure adds one
+small transparent disc while flying. Wingspan, collision geometry, aerodynamics
+and handling are unchanged. The game, showcase and GLB share the same source.
+
+Previously the plane reused the quad's deliberately slowed 22 rad/s shutter
+animation, which looked conspicuously slow on two large blades. The plane now
+uses a faster 70 rad/s visual phase and progressively fades the blades into a
+radially softened swept disc as motor power rises. This is a display/shutter
+representation, not a claim of measured motor RPM. Actual thrust is still driven
+by the existing motor dynamics. Zero power restores stationary opaque blades;
+local, remote and showcase displays use the same speed/exposure rules.
+
+Tests check the full cabin skin for unmatched edges, all glass interiors for
+occlusion, the shorter shaft, and existing control-surface attachment. Propeller
+tests cover progressive 25/50/75/100% animation/exposure, stopping, remote parity,
+cleanup and frame-rate-independent phase at 30/60/120/144 Hz.

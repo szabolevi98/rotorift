@@ -1,6 +1,7 @@
 // Reuse the flight model: the showroom never maintains a second airplane mesh.
 function createRiftT15() {
   const root = createTrainerModel();
+  const exposure = new AirplanePropellerExposure(root);
   root.position.y = 0.28;
   const materials = new Set(),
     propellers = [];
@@ -28,6 +29,10 @@ function createRiftT15() {
     assemblies: [],
     batteryParts: [],
     actionParts: [],
+    rotorSpeed: AIRPLANE_VISUAL_ROTOR_SPEED,
+    setMotorSpeed(value) {
+      exposure.update(value);
+    },
     setExplode() {},
     setWireframe(value) {
       for (const material of materials) material.wireframe = value;
