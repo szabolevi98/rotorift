@@ -997,6 +997,7 @@ function receive(m) {
     void fullscreen?.enterMenu();
     flight.updateRemotes([], network.id);
     room = null;
+    refreshColors();
     refreshSimulationControls();
     loadingRoom = null;
     loadedRoom = null;
@@ -1035,6 +1036,7 @@ function receive(m) {
       pause();
       notice(t("online.disconnected"));
       room = null;
+      refreshColors();
       refreshSimulationControls();
       playing = false;
       pauseMenu?.setOpen(false);
