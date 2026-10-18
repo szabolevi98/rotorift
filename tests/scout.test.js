@@ -118,6 +118,25 @@ test("full pusher sweep clears wing, pod, tail and motor pod; FPV lens looks out
   }
   const pod = model.getObjectByName("S75_rounded_foam_pod"),
     pylon = model.getObjectByName("S75_motor_pylon");
+  const edges = new Map(),
+    vertices = pylon.geometry.attributes.position;
+  for (let i = 0; i < vertices.count; i++) {
+    const y = vertices.getY(i).toFixed(7),
+      z = vertices.getZ(i),
+      edge = edges.get(y) ?? [Infinity, -Infinity];
+    edge[0] = Math.min(edge[0], z);
+    edge[1] = Math.max(edge[1], z);
+    edges.set(y, edge);
+  }
+  const outline = [...edges]
+    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .map(([, edge]) => edge);
+  for (let i = 1; i < outline.length; i++)
+    for (const side of [0, 1])
+      assert.ok(
+        outline[i][side] >= outline[i - 1][side] - 1e-6,
+        "motor mount silhouette must sweep smoothly without reversing direction",
+      );
   const priorSide = pod.material.side;
   pod.material.side = THREE.DoubleSide;
   try {
