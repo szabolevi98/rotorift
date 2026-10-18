@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { TRAINER_GEAR } from "../physics/fixed-wing-colliders.js";
+import { configureDronePolymer } from "./drone-rendering.js";
 
 // One metre-scale source for flight, remote aircraft, ghosts and GLB/showcase.
 // The shaped shell and flush paint retain a small solid-material mesh budget.
@@ -18,6 +19,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     seam = material("#697b80", 0.75),
     light = material("#c6e2e5", 0.2, 0.35);
   accent.userData.droneColorRole = "base";
+  configureDronePolymer(accent);
   const mesh = (geometry, mat = white, parent = root, name = "") => {
     const object = new THREE.Mesh(geometry, mat);
     object.name = name;

@@ -61150,6 +61150,7 @@ function createTrainerModel({ batchStatic = true } = {}) {
     seam = material("#697b80", 0.75),
     light = material("#c6e2e5", 0.2, 0.35);
   accent.userData.droneColorRole = "base";
+  configureDronePolymer(accent);
   const mesh = (geometry, mat = white, parent = root, name = "") => {
     const object = new THREE.Mesh(geometry, mat);
     object.name = name;
