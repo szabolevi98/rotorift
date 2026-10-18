@@ -104,3 +104,15 @@ are not eight real players on separate machines. Airplane radio/mobile feedback,
 latency-dependent collision tuning, exact trim and broader calibration remain
 ongoing work. There is no structural damage, autopilot, mixed-aircraft room or
 new runway mesh. The existing accepted drone hardware tests are unaffected.
+
+
+## Visual refinement — 2026-10-18
+
+The shared procedural model now has a lofted cabin with fitted windscreens and
+side windows, tapered fuselage with conformal livery, airfoil-shaped wing tips,
+separate hinged control surfaces, shaped propeller blades, fitted cowl/vents,
+correct-length gear braces and recessed wheel hubs. It retains the accepted
+1.5 m wingspan and existing physical configuration. Static shell parts batch by
+material; the complete model uses about 3.4k triangles and 14 mesh draws before
+shadow passes, with independently animated propeller and four control surfaces.
+The same source rebuilds the game, showcase and exported GLB.

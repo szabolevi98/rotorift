@@ -14,9 +14,9 @@ function flight(){const world=new RAPIER.World({x:0,y:-9.81,z:0});return {world,
 test('trainer configuration, capabilities and geometry are independent of the five quadcopters',()=>{
   assert.equal(config.wingspanM,1.5);assert.equal(config.motors.length,1);assert.equal(aircraftCapabilities(config).racing,true);
   assert.throws(()=>validateAirplane({...config,aero:{...config.aero,areaM2:-1}}));
-  const model=createTrainerModel();let props=0,surfaces=0,triangles=0;
-  model.traverse(o=>{if(o.userData.propeller)props++;if(o.userData.surface)surfaces++;if(o.isMesh)triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});
-  assert.equal(props,1);assert.equal(surfaces,4);assert.ok(triangles<10000);
+  const model=createTrainerModel();let props=0,surfaces=0,triangles=0,draws=0;
+  model.traverse(o=>{if(o.userData.propeller)props++;if(o.userData.surface)surfaces++;if(o.isMesh){draws++;assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite));}if(o.isMesh)triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});
+  assert.equal(props,1);assert.equal(surfaces,4);assert.ok(triangles<10000);assert.ok(draws<=20,"detailed static parts remain batched");
   animateTrainer(model,{pitch:.5,roll:.5,yaw:.5},1);assert.equal(model.getObjectByName('T15_propeller').rotation.z,1);
 });
 test('airflow generates lift and drag, controls lose authority at rest, and signs match Mode 2',()=>{
