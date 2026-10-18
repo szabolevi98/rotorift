@@ -36,7 +36,7 @@ const script = [
   read('cinewhoop3.js'),
   read('freestyle35.js'),
   read('../shared/physics/fixed-wing-colliders.js').replace(/^export /gm, ''),
-  read('../shared/visual/fixed-wing-model.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
+  read('../shared/visual/fixed-wing-model.js').replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, ''),
   read('../shared/visual/airplane-propeller.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
   read('trainer.js'),
   read('catalog.js'),

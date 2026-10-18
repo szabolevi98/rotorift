@@ -1,5 +1,8 @@
 import * as THREE from "three";
-import { TRAINER_GEAR } from "../physics/fixed-wing-colliders.js";
+import {
+  TRAINER_GEAR,
+  TRAINER_WING_SHIFT,
+} from "../physics/fixed-wing-colliders.js";
 import { configureDronePolymer } from "./drone-rendering.js";
 
 // One metre-scale source for flight, remote aircraft, ghosts and GLB/showcase.
@@ -445,7 +448,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
       airfoil.map(([z, h]) => [
         x,
         wingY(x) + h * (Math.abs(x) > 0.735 ? 0.7 : 1),
-        z === 0.066 ? 0.0645 : z * wingScale(x),
+        (z === 0.066 ? 0.0645 : z * wingScale(x)) + TRAINER_WING_SHIFT,
       ]),
     ),
     white,
@@ -468,9 +471,10 @@ export function createTrainerModel({ batchStatic = true } = {}) {
           return [
             side * x,
             height(a) * (1 - t) + height(b) * t + 0.0007,
-            top[k][0] === 0.066
+            (top[k][0] === 0.066
               ? 0.0645
-              : top[k][0] * (wingScale(a) * (1 - t) + wingScale(b) * t),
+              : top[k][0] * (wingScale(a) * (1 - t) + wingScale(b) * t)) +
+              TRAINER_WING_SHIFT,
           ];
         };
         const points = [
@@ -515,7 +519,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     const hinge = new THREE.Group();
     hinge.name =
       side < 0 ? "T15_left_aileron_hinge" : "T15_right_aileron_hinge";
-    hinge.position.set(side * 0.48, wingY(0.48), 0.0653);
+    hinge.position.set(side * 0.48, wingY(0.48), 0.0653 + TRAINER_WING_SHIFT);
     hinge.userData = {
       surface: "aileron",
       side,
@@ -537,8 +541,8 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     );
     for (const x of [0.32, 0.63])
       rod(
-        [side * x - 0.004, wingY(x), 0.0649],
-        [side * x + 0.004, wingY(x), 0.0649],
+        [side * x - 0.004, wingY(x), 0.0649 + TRAINER_WING_SHIFT],
+        [side * x + 0.004, wingY(x), 0.0649 + TRAINER_WING_SHIFT],
         0.0018,
         white,
         root,
@@ -546,7 +550,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
       );
     rod(
       [side * 0.075, -0.025, 0.036],
-      [side * 0.46, wingY(0.46) - 0.006, 0.015],
+      [side * 0.46, wingY(0.46) - 0.006, 0.015 + TRAINER_WING_SHIFT],
       0.004,
       white,
       root,
@@ -554,7 +558,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     );
     rod(
       [side * 0.075, -0.025, 0.036],
-      [side * 0.4, wingY(0.4) - 0.006, -0.099],
+      [side * 0.4, wingY(0.4) - 0.006, -0.099 + TRAINER_WING_SHIFT],
       0.003,
       metal,
       root,
@@ -563,14 +567,14 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     // Compact exposed RC servo horn/linkage, attached to the moving aileron.
     box(
       [0.021, 0.006, 0.025],
-      [side * 0.4, wingY(0.4) - 0.011, 0.014],
+      [side * 0.4, wingY(0.4) - 0.011, 0.014 + TRAINER_WING_SHIFT],
       navy,
       root,
       "T15_aileron_servo",
     );
     rod(
-      [side * 0.4, wingY(0.4) - 0.018, 0.03],
-      [side * 0.4, wingY(0.4) - 0.018, 0.081],
+      [side * 0.4, wingY(0.4) - 0.018, 0.03 + TRAINER_WING_SHIFT],
+      [side * 0.4, wingY(0.4) - 0.018, 0.081 + TRAINER_WING_SHIFT],
       0.0011,
       metal,
       root,
@@ -779,8 +783,9 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     "T15_FPV_camera",
   );
   fpv.rotation.x = Math.PI / 2;
-  const cameraY = skinPoint(-0.168, Math.PI / 2).y + 0.01;
-  fpv.position.set(0, cameraY, -0.168);
+  const cameraZ = -0.168 + TRAINER_WING_SHIFT;
+  const cameraY = skinPoint(cameraZ, Math.PI / 2).y + 0.01;
+  fpv.position.set(0, cameraY, cameraZ);
   const lens = mesh(
     new THREE.CircleGeometry(0.009, 16),
     light,
@@ -788,7 +793,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
     "T15_FPV_lens",
   );
   lens.rotation.y = Math.PI;
-  lens.position.set(0, cameraY, -0.18);
+  lens.position.set(0, cameraY, cameraZ - 0.012);
   // A small antenna aft of the wing and restrained navigation lenses.
   rod(
     [0, 0.068, 0.14],
@@ -805,7 +810,11 @@ export function createTrainerModel({ batchStatic = true } = {}) {
       root,
       "T15_wingtip_lens",
     );
-    nav.position.set(side * 0.744, wingY(0.744) + 0.012, -0.07);
+    nav.position.set(
+      side * 0.744,
+      wingY(0.744) + 0.012,
+      -0.07 + TRAINER_WING_SHIFT,
+    );
   }
   root.updateMatrixWorld(true);
   if (batchStatic) batchTrainerShell(root);

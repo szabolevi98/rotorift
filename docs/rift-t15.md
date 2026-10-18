@@ -151,3 +151,9 @@ Tests check the full cabin skin for unmatched edges, all glass interiors for
 occlusion, the shorter shaft, and existing control-surface attachment. Propeller
 tests cover progressive 25/50/75/100% animation/exposure, stopping, remote parity,
 cleanup and frame-rate-independent phase at 30/60/120/144 Hz.
+
+The main-wing assembly and collision proxy now sit 25 mm farther forward. Paint,
+ailerons, hinges, servo linkages, navigation lenses and the upper strut attachments
+follow the new position; the camera and FPV viewpoint retain their forward
+clearance. Version 2 separates records for this revised collision configuration.
+Aerodynamic coefficients, mass and control tuning are unchanged.
