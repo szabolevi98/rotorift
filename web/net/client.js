@@ -47,7 +47,7 @@ export class Network {
         "/ws",
     );
     ws.onopen = () => {
-      if (this.ws === ws) this.send("hello", { name: this.name, token: read("profile", null), color: this.color, protocol: 2, resume: this.resumption?.token });
+      if (this.ws === ws) this.send("hello", { name: this.name, token: read("profile", null), color: this.color, protocol: 3, resume: this.resumption?.token });
     };
     ws.onmessage = (e) => {
       if (this.ws !== ws) return;
@@ -116,7 +116,7 @@ export class Network {
   get now() {
     return Date.now() + this.offset;
   }
-  state(pose, config, mode, interrupted, simulation, propellers, rotorSpeeds, turtleMode=false) {
+  state(pose, config, mode, interrupted, simulation, visualState = {}) {
     this.send("state", {
       ...pose,
       seq: this.seq++,
@@ -126,9 +126,7 @@ export class Network {
       interrupted,
       simulationKey: simulationKey(simulation),
       runId: this.room?.runId,
-      propellers,
-      rotorSpeeds,
-      turtleMode,
+      ...visualState,
     });
   }
 }

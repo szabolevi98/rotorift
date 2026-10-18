@@ -5,10 +5,12 @@ import { loadCatalog } from "./catalog.js";
 import { Database } from "./db/index.js";
 import { serveStatic } from "./static.js";
 import { attachRooms } from "./net/rooms.js";
-import { DEFAULT_SIMULATION, WIND_LEVELS } from "../shared/simulation/options.js";
+import { DEFAULT_SIMULATION, WIND_LEVELS, simulationKey } from "../shared/simulation/options.js";
 import { saveRoute, readRouteBody, localEditorRequest } from "./routes.js";
 import { resolveRoute } from "../shared/race/routes.js";
 import { raceCategoryKey } from '../shared/race/category.js';
+import {findAircraft} from '../shared/catalog/aircraft.js';
+import {aircraftModes,routeSupportsAircraft,aircraftSimulation} from '../shared/aircraft/capabilities.js';
 export async function createServer({database}={}) {
   const catalog = await loadCatalog(),
     db = database ?? new Database();
@@ -49,16 +51,16 @@ export async function createServer({database}={}) {
           const map = resolveRoute(catalog.maps.find(
             (m) => m.id === url.searchParams.get("map"),
           ), url.searchParams.get("route") ?? undefined),
-          drone = catalog.drones.find(
-            (d) => d.id === url.searchParams.get("drone"),
-          ),
+          drone = findAircraft(catalog,url.searchParams.get("drone")),
           mode = url.searchParams.get("mode");
-        if (!map || !drone || !(url.pathname==='/api/leaderboard'?["all","acro", "angle", "horizon"]:["acro", "angle", "horizon"]).includes(mode))
+        if (!map || !drone || !routeSupportsAircraft(map,drone) || !(url.pathname==='/api/leaderboard'?["all",...aircraftModes(drone)]:aircraftModes(drone)).includes(mode))
           return json(res, { error: "Invalid category" }, 400);
         const key = url.searchParams.get("simulation") ?? "00010";
         if (!/^[01]{4}[0-3]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
         const simulation = { ...DEFAULT_SIMULATION, wind: WIND_LEVELS[Number(key[4])] };
         ["battery", "propDamage", "propwash", "ghost"].forEach((name, i) => simulation[name] = key[i] === "1");
+        if (simulationKey(aircraftSimulation(drone,simulation)) !== key)
+          return json(res, {error:"Unsupported aircraft effects"}, 400);
         if(url.pathname==='/api/ghost'){
           const id=url.searchParams.get('id');
           if(!/^[a-f0-9-]{36}$/.test(id??''))return json(res,{error:'Invalid ghost'},400);

@@ -27,6 +27,7 @@ export function validateRoute(route, map) {
       throw Error("Gates must be inside the map, with dimensions up to 30 metres.");
   const spawn = route.spawn ?? map.spawn;
   const details = validateRouteDetails(route.details);
+  if(route.aircraftKinds!==undefined&&(!Array.isArray(route.aircraftKinds)||!route.aircraftKinds.length||route.aircraftKinds.some(kind=>!['quadrotor','fixedWing'].includes(kind))))throw Error('Invalid route aircraft compatibility.');
   validateGuide(route.guide,route.gates,map);
   if (Math.abs(spawn[0]) > map.size / 2 || Math.abs(spawn[2]) > map.size / 2 || spawn[1] < -20 || spawn[1] > 200)
     throw Error("The start position must be inside the map.");
@@ -35,6 +36,7 @@ export function validateRoute(route, map) {
     gates: route.gates.map(g => ({ p: [...g.p], n: [...g.n], width: g.width, height: g.height })),
     ...(route.guide?{guide:structuredClone(route.guide)}:{}),
     ...(details ? {details} : {}),
+    ...(route.aircraftKinds?{aircraftKinds:[...new Set(route.aircraftKinds)]}:{}),
   };
 }
 
@@ -44,5 +46,5 @@ export function resolveRoute(map, id = map?.routeId) {
   const route = map.routes.find(r => r.id === id);
   if (!route) return null;
   return { ...map, baseSpawn: map.baseSpawn ?? map.spawn, routeId: route.id, routeVersion: route.version, routeName: route.name,
-    spawn: [...route.spawn], gates: route.gates, guide:route.guide, racingEnabled: true };
+    spawn: [...route.spawn], gates: route.gates, guide:route.guide, aircraftKinds:route.aircraftKinds, racingEnabled: true };
 }

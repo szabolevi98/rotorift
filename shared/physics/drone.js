@@ -5,7 +5,9 @@ import { FlightEffects } from "./flight-effects.js";
 import { addAircraftColliders } from "./aircraft-colliders.js";
 import { propellerCollisionRadius } from "./propellers.js";
 import { turtleThrust } from './turtle.js';
-export const PHYSICS_DT = 1 / 240;
+import { PHYSICS_DT } from './time-step.js';
+import { stepPhysicsWorld } from './world-step.js';
+export { PHYSICS_DT } from './time-step.js';
 function mixThrust(mixer, demand, max) {
   const idle = max * 0.012;
   const limits = (authority) => {
@@ -207,22 +209,11 @@ export class DronePhysics {
       ),
       true,
     );
-    this.world.timestep = dt;
     for(const [index,prop]of this.propColliders.entries()){
       const radius=propellerCollisionRadius(c,this.effects.propellers.blades[index]);
       if(this.propRadii[index]!==radius){prop.setShape(new prop.shape.constructor(.0015,radius));this.propRadii[index]=radius;}
     }
-    if (this.updateSceneQueries) this.world.step();
-    else {
-      // Rapier 0.14 World.step() also rebuilds the scene-query BVH. Flight
-      // uses no raycasts: rebuilding thousands of static shapes at 240 Hz
-      // costs much more than the actual rigid-body/contact/CCD simulation.
-      // Run the same public physics pipeline; query users retain World.step.
-      const world = this.world;
-      world.physicsPipeline.step(world.gravity, world.integrationParameters,
-        world.islands, world.broadPhase, world.narrowPhase, world.bodies,
-        world.colliders, world.impulseJoints, world.multibodyJoints, world.ccdSolver);
-    }
+    stepPhysicsWorld(this.world,dt,this.updateSceneQueries);
     if (this.effects.options.propDamage) {
       for (const [index, prop] of this.propColliders.entries()) {
         this.world.contactPairsWith(prop, other => {

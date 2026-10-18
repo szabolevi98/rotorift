@@ -108,6 +108,7 @@
                 <label><span class="dock-label" data-i18n="fly.mode"></span><select id="flight-mode"><option value="acro">Acro</option><option value="angle">Angle</option><option value="horizon">Horizon</option></select></label>
               <label id="local-session-label"><span class="dock-label" data-i18n="fly.session"></span><select id="session"><option value="free" data-i18n="session.free"></option><option value="time" data-i18n="session.time"></option><option value="online-hotlap" data-i18n="session.hotlap"></option></select></label>
               <p id="airplane-note" class="muted hidden" data-i18n="airplane.note"></p>
+              <label id="aircraft-launch-label" class="hidden"><span data-i18n="airplane.launch"></span><select id="aircraft-launch"><option value="air" data-i18n="airplane.launchAir"></option><option value="ground" data-i18n="airplane.launchGround"></option></select></label>
                 <label id="host-kind-label" class="hidden"><span class="dock-label" data-i18n="online.roomKind"></span><select id="room-kind"><option value="free" data-i18n="session.free"></option><option value="race" data-i18n="online.raceKind"></option></select></label>
                 <div id="lap-ghost-picker" class="lap-ghost-picker hidden">
                   <label><span class="dock-label" data-i18n="ghost.title"></span><select id="lap-ghost-choice"></select></label>
@@ -288,6 +289,7 @@
           <div class="records-filters">
             <select id="records-map"></select><select id="records-route" aria-label="Race route"></select><select id="records-drone"></select><select id="records-mode">
               <option value="all" data-i18n="records.allModes"></option>
+              <option value="manual" data-i18n="airplane.manual"></option>
               <option value="acro">Acro</option>
               <option value="angle">Angle</option>
               <option value="horizon">Horizon</option></select><button id="records-refresh" class="secondary" data-i18n="action.refresh"></button>

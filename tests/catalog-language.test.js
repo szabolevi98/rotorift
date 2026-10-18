@@ -25,7 +25,9 @@ test("catalog contains five valid drone models and four maps with explicit race 
   const park = maps.find((m) => m.id === "liget");
   assert.equal(canRace(park), true);
   assert.equal(park.routeId, "race_1");
-  assert.equal(park.routes.length, 3);
+  assert.equal(park.routes.length, 5);
+  assert.equal(park.routes.filter(r=>!r.aircraftKinds||r.aircraftKinds.includes("quadrotor")).length,3);
+  assert.equal(park.routes.filter(r=>r.aircraftKinds?.includes("fixedWing")).length,2);
   assert.ok(park.gates.length >= 4);
   const construction = maps.find((m) => m.id === "betonudvar");
   assert.equal(canRace(construction), true);

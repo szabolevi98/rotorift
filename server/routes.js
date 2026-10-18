@@ -18,7 +18,7 @@ export async function saveRoute(map, input, dataRoot = DATA_ROOT) {
   if (!validRouteId(map?.id)) throw Error("Invalid map ID.");
   const route = validateRoute(input, map), previous = (await loadRoutes(map, dataRoot)).find(r => r.id === route.id);
   if (previous) {
-    const geometry = r => JSON.stringify({ name: r.name, spawn: r.spawn, gates: r.gates, guide:r.guide });
+    const geometry = r => JSON.stringify({ name: r.name, spawn: r.spawn, gates: r.gates, guide:r.guide,aircraftKinds:r.aircraftKinds });
     route.version = geometry(route) === geometry(previous) ? previous.version : Math.max(route.version, previous.version + 1);
   }
   const folder = new URL(`maps/${map.id}/`, dataRoot);

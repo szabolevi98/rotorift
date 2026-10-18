@@ -186,7 +186,7 @@
   "simulation.battery": "Akkumulátor-szimuláció",
   "simulation.propDamage": "Propellersérülés",
   "simulation.propwash": "Propwash",
-  "simulation.ghost": "Ghost mód · drónok ütközése nélkül",
+  "simulation.ghost": "Ghost mód · nincs ütközés a gépek között",
   "simulation.wind": "Szél",
   "simulation.hint": "Az opciók külön kapcsolhatók. Reset: friss akkumulátor és ép propellerek.",
   "simulation.hostHint": "Közös szobaszabályok. Csak a házigazda módosíthatja; változtatás után újra jelezzétek, hogy készen álltok.",
@@ -386,7 +386,7 @@
   "settings.rateCurve": "Botkitérés és fordulási sebesség",
   "route.details": "Részletek",
   "route.close": "Bezárás",
-  "route.recommended": "Ajánlott drónok",
+  "route.recommended": "Ajánlott gépek",
   "route.gates": "{count} kapu",
   "route.easy": "Könnyű",
   "route.medium": "Közepes",
@@ -402,7 +402,7 @@
   "drone.rift-t15": "1,5 m tanulórepülő · 3S",
   "spec.wingspan": "Szárnyfesztáv",
   "airplane.manual": "Kézi",
-  "airplane.note": "Kísérleti repülő · helyi szabad repülés, indulás a levegőből. Játszótér és drónversenyek egyelőre nem támogatottak. Húzd le a gázt, majd adj gázt az armoláshoz.",
+  "airplane.note": "Oktatórepülő · szabad repülés, közös szobák és repülős útvonalak. Húzd le a gázt, majd adj gázt az armoláshoz.",
   "airplane.controls": "Repülő irányítása",
   "airplane.controlHint": "Mode 2: bal gáz/oldalkormány, jobb magassági/csűrő. Bot előre: orr le. Itt kormánykitérést állítasz, nem drón rate-et.",
   "airplane.travel": "Kormánykitérés",
@@ -411,5 +411,10 @@
   "airplane.stall": "ÁTESÉS · engedd le az orrát",
   "airplane.crashed": "ÜTKÖZÉS · indítsd újra a repülőt",
   "airplane.effects": "Repülőnél akkumulátor és szél. Drón-propwash, turtle és rotoronkénti sérülés nincs.",
-  "error.airplaneLocalOnly": "Ez a kísérleti repülő egyelőre helyi szabad repülésben használható."
+  "airplane.launch": "Indulás",
+  "airplane.launchAir": "A levegőből",
+  "airplane.launchGround": "A földről · ligeti sétány",
+  "error.clientTooOld": "Frissítsd az oldalt a repülős szobához.",
+  "error.incompatibleRoute": "Ez az útvonal vagy pálya nem támogatja a választott gépet.",
+  "error.invalidLaunch": "Földi indulás a Liget szabad repülésében választható."
 }

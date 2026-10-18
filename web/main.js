@@ -35,8 +35,11 @@ import { newLap, advanceLap, clearLapReference } from "/shared/race/gates.js";
 import { resolveRoute } from "/shared/race/routes.js";
 import { canRace, isTimedSession, withoutRaceRoute } from "/shared/race/map-modes.js";
 import { DRONE_COLORS, normalizeDroneColor } from "/shared/visual/drone-colors.js";
-import {isFixedWing,aircraftModes} from '/shared/physics/aircraft.js';
-import { DEFAULT_SIMULATION, FLIGHT_MODES, WIND_LEVELS, normalizeSimulation, simulationKey } from "/shared/simulation/options.js";
+import {isFixedWing,aircraftModes,aircraftCapabilities,aircraftSimulation,supportsMap,aircraftRoutes,routeSupportsAircraft} from '/shared/aircraft/capabilities.js';
+import {allAircraft} from '/shared/catalog/aircraft.js';
+import {groundLaunchAvailable} from '/shared/aircraft/launch.js';
+import {routePreferenceKey,selectAircraftRoute} from './aircraft-menu.js';
+import { DEFAULT_SIMULATION, WIND_LEVELS, normalizeSimulation, simulationKey } from "/shared/simulation/options.js";
 const $ = (s) => document.querySelector(s),
   node = (tag, cls = "", text = "") => {
     const e = document.createElement(tag);
@@ -137,7 +140,7 @@ let flightHelp;
 let ghostSelection;
 let lapGhostLoad=0;
 const localGhostRecorder=new LapGhostRecorder();
-function menuGhostContext(){return {map,drone:config,mode:$('#flight-mode').value,simulation};}
+function menuGhostContext(){return {map,drone:config,mode:$('#flight-mode').value,simulation:aircraftSimulation(config,simulation)};}
 function flightGhostContext(){return {map:flight.map,drone:flight.config,mode:flight.physics.mode,simulation:flight.physics.effects.options};}
 function refreshGhostChoices(){
   if(ghostSelection&&map&&config)void ghostSelection.refresh(menuGhostContext(),($('#menu').dataset.panel??'fly')==='fly'&&isTimedSession($('#session').value)&&canRace(map));
@@ -206,10 +209,12 @@ function refreshSimulationControls() {
   for (const id of ["flight-simulation", "lobby-simulation"]) {
     const root = $("#" + id), context = id === "lobby-simulation" ? "lobby" : $("#menu").dataset.panel === "multiplayer" ? "host" : "solo";
     const view = simulationView(context, simulation, room, network?.id);
+    const aircraft = id === 'lobby-simulation' && room
+      ? catalog.aircraft.find(item => item.id === room.droneId) : config;
     for (const input of root.querySelectorAll("[data-sim-option]")) {
       const key = input.dataset.simOption;
       input.disabled = view.locked;
-      if(id==='flight-simulation'&&isFixedWing(config)&&['propDamage','propwash'].includes(key)){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
+      if(['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
       input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
       input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
       if (key === "wind") {
@@ -218,7 +223,7 @@ function refreshSimulationControls() {
       } else input.checked = view.options[key];
     }
     const note = root.querySelector(".simulation-note");
-    if (note) note.textContent = t(isFixedWing(config)?'airplane.effects':view.note);
+    if (note) note.textContent = t(isFixedWing(aircraft)?'airplane.effects':view.note);
   }
 }
 function refreshColors() {
@@ -251,7 +256,6 @@ function notice(message) {
   noticeTimer = setTimeout(() => visible("#notice", false), 4200);
 }
 function panel(name) {
-  if(name==='multiplayer'&&isFixedWing(config))void selectDrone('rift-x5');
   routeDetails.close();
   controller?.bindings.reset();
   if (controller) controller.setup = null;
@@ -291,7 +295,7 @@ function pause() {
   paused = true;
   flight.active = flightSimulationActive(playing, paused, room, network.id);
   flight.physics.armed = false;
-  flight.physics.setTurtleMode(false);
+  flight.physics.setTurtleMode?.(false);
   flight.mute();
   lap.invalid = true;
   controller.clear();
@@ -334,11 +338,11 @@ function action(kind, currentInput = input) {
   }
   if (!playing || paused) return;
   if(['turtle','turtleOn','turtleOff'].includes(kind)){
-    if(isFixedWing(flight.config))return;
+    if(!aircraftCapabilities(flight.config).turtle)return;
     if(flight.physics.armed){notice(t('hud.turtleDisarm'));return;}
     if(currentInput.throttle>.06){notice(t('hud.lowThrottle'));return;}
     if(room&&(room.phase!=='flying'||room.players.find(p=>p.id===network.id)?.finished))return;
-    flight.physics.setTurtleMode(kind==='turtle'?!flight.physics.turtleMode:kind==='turtleOn');autoArm.cancel();flight.rotorMotion.reset();hud();return;
+    flight.physics.setTurtleMode(kind==='turtle'?!flight.physics.turtleMode:kind==='turtleOn');autoArm.cancel();flight.aircraftVisual.reset();hud();return;
   }
   if (["arm", "armOn", "armOff"].includes(kind)) {
     if(flight.physics.crashed){notice(t('airplane.crashed'));return;}
@@ -355,7 +359,7 @@ function action(kind, currentInput = input) {
     flight.startSound();
     hud();
   }
-  if (kind === "hover" && !isFixedWing(flight.config) && !controller.usingRadio && !flight.physics.turtleMode)
+  if (kind === "hover" && aircraftCapabilities(flight.config).hover && !controller.usingRadio && !flight.physics.turtleMode)
     controller.keyboard.throttle = hoverThrottle(flight.config);
   if (kind === "view" && !flight.preparingViews) flight.cycleView();
   if (kind === "reset") resetAircraft();
@@ -389,8 +393,8 @@ function saveLocal(ms) {
 async function selectDrone(id) {
   const previous = config;
   config =
-    catalog.drones.find((d) => d.id === id) ??
-    catalog.drones.find((d) => d.id === "rift-x5");
+    catalog.aircraft.find((d) => d.id === id) ??
+    catalog.aircraft.find((d) => d.id === "rift-x5");
   write("selected-drone", config.id);
   renderKeys();
   const modes=aircraftModes(config),priorMode=$('#flight-mode').value;
@@ -399,8 +403,7 @@ async function selectDrone(id) {
   visible('#airplane-note',isFixedWing(config));visible('#airplane-controls',isFixedWing(config));
   if(isFixedWing(config)){const saved=read('airplane-controls',{});for(const [key,fallback]of [['travel',70],['expo',30]]){const value=Number.isFinite(saved[key])?Math.round(saved[key]*100):fallback;$('#airplane-'+key).value=value;$('#airplane-'+key+'-output').textContent=value+'%';}}
   if(isFixedWing(config)&&map?.kind==='playground')selectMap('liget');
-  updateSessionOptions();
-  refreshCatalogText();
+  selectMap(map?.id??catalog.maps[0].id);
   const selected = config, task = loading.begin("loading.model", { name: selected.name }, { overlay: !!preview.model });
   try {
     await paintLoading();
@@ -420,23 +423,26 @@ async function selectDrone(id) {
 function selectMap(id) {
   if(isFixedWing(config)&&catalog.maps.find(m=>m.id===id)?.kind==='playground')id='liget';
   const base = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
-  map = resolveRoute(base, read("selected-race-" + base.id, base.routeId)) ?? base;
+  map = selectAircraftRoute(base,config,read(routePreferenceKey(base,config),base.routeId));
   fillRoutes($("#race-route"), base, map.routeId);
   write("selected-map", map.id);
   updateSessionOptions();
   refreshCatalogText();
 }
-function fillRoutes(select, base, selected = base?.routeId, allowNone = false) {
-  select.replaceChildren(...(base?.routes ?? []).map(route => new Option(route.name, route.id)));
+function fillRoutes(select, base, selected = base?.routeId, allowNone = false, aircraft=config) {
+  select.replaceChildren(...aircraftRoutes(base,aircraft).map(route => new Option(route.name, route.id)));
   if (allowNone) select.prepend(new Option(t("fly.noRoute"), ""));
   if ([...select.options].some(option => option.value === selected)) select.value = selected;
   select.disabled = !select.options.length;
 }
 function refreshRecordRoutes() {
-  fillRoutes($("#records-route"), catalog.maps.find(m => m.id === $("#records-map").value));
+  const aircraft=catalog.aircraft.find(d=>d.id===$('#records-drone').value);
+  fillRoutes($("#records-route"), catalog.maps.find(m => m.id === $("#records-map").value),undefined,false,aircraft);
+  for(const option of $('#records-mode').options)option.disabled=option.value!=='all'&&!aircraftModes(aircraft).includes(option.value);
+  if($('#records-mode').selectedOptions[0]?.disabled)$('#records-mode').value='all';
 }
 function updateSessionOptions() {
-  const enabled = canRace(map)&&!isFixedWing(config);
+  const enabled = canRace(map)&&aircraftCapabilities(config).racing;
   for (const option of $("#session").options)
     option.disabled = !enabled && isTimedSession(option.value);
   if (!enabled && isTimedSession($("#session").value))
@@ -445,8 +451,12 @@ function updateSessionOptions() {
   if (!enabled && $("#room-kind").value === "race") $("#room-kind").value = "free";
   const timed = $("#menu").dataset.panel === "multiplayer" ? $("#room-kind").value === "race" : isTimedSession($("#session").value);
   fillRoutes($("#race-route"), catalog.maps.find(m => m.id === map.id), timed ? map.routeId : "", true);
-  visible(".race-row", !isFixedWing(config));
+  visible(".race-row", true);
   visible("#map-mode-note", !enabled&&!isFixedWing(config));
+  const launchVisible=aircraftCapabilities(config).launchModes.length>1&&!timed;
+  visible('#aircraft-launch-label',launchVisible);
+  const ground=$('#aircraft-launch option[value="ground"]');ground.disabled=!groundLaunchAvailable(config,map);
+  if(ground.disabled)$('#aircraft-launch').value='air';
   refreshRouteDetails();
   refreshSimulationControls();
   refreshMenuNavigation();
@@ -454,12 +464,12 @@ function updateSessionOptions() {
 }
 function refreshRouteDetails() {
   const selected = $('#race-route').value;
-  routeDetails.update(catalog?.maps.find(item => item.id === map?.id)?.routes.find(route => route.id === selected), catalog?.drones ?? []);
+  routeDetails.update(catalog?.maps.find(item => item.id === map?.id)?.routes.find(route => route.id === selected), catalog?.aircraft ?? []);
 }
 function refreshCatalogText() {
   if (map) $("#map-preview-link").href = "/showcase/?tab=maps&" + new URLSearchParams({ map: map.id, route: map.routeId });
-  dronePicker.update(catalog.drones.filter(d=>$('#menu').dataset.panel!=='multiplayer'||!isFixedWing(d)).map(d => ({value:d.id,label:d.name,detail:t("drone." + d.id)})), config?.id);
-  mapPicker.update(catalog.maps.filter(m=>!isFixedWing(config)||m.kind!=='playground').map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
+  dronePicker.update(catalog.aircraft.map(d => ({value:d.id,label:d.name,detail:t("drone." + d.id)})), config?.id);
+  mapPicker.update(catalog.maps.filter(m=>supportsMap(config,m)).map(m => ({value:m.id,label:mapName(m),detail:t(mapPresentation(m).audienceKey)})), map?.id);
   const manual=$('#flight-mode').querySelector('option[value="manual"]');if(manual)manual.textContent=t('airplane.manual');
   if (config) {
     $("#selected-name").textContent = config.name;
@@ -499,9 +509,9 @@ function createCatalogUI() {
     button.append(dot); button.onclick=()=>setDroneColor(id); $("#drone-color-picker").append(button);
   }
   refreshColors();
-  for (const d of catalog.drones) {
+  for (const d of catalog.aircraft) {
     for (const select of ["#rates-drone", "#rates-target", "#records-drone", "#camera-drone"])
-      if(!isFixedWing(d)||select==='#camera-drone')$(select).append(new Option(d.name, d.id));
+      if(aircraftCapabilities(d).rateProfiles||!['#rates-drone','#rates-target'].includes(select))$(select).append(new Option(d.name, d.id));
   }
   for (const m of catalog.maps) {
     $("#records-map").append(new Option(mapName(m), m.id));
@@ -757,7 +767,7 @@ function renderRooms() {
     button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
     const summary = node("div", "room-summary");
     summary.append(node("strong", "", r.code), node("span", "", mapName(r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
-    summary.append(node("span", "", (catalog.drones.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
+    summary.append(node("span", "", (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + r.mode.toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
       summary,
       button,
@@ -792,7 +802,7 @@ function createRoom() {
   const kind = $("#room-kind").value;
   if (kind === "race" && !canRace(map)) { notice(t("error.raceUnavailable")); return; }
   requestRoom("create", { mapId: map.id, routeId: map.routeId, droneId: config.id,
-    mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation });
+    mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation:aircraftSimulation(config,simulation),launchMethod:$("#aircraft-launch").value });
 }
 function endFlight() {
   if (room) { network.send("leave"); return; }
@@ -810,7 +820,7 @@ function renderLobby() {
   $("#lobby-description").textContent =
     mapName(room.mapId) +
     " · " +
-    catalog.drones.find((d) => d.id === room.droneId)?.name +
+    catalog.aircraft.find((d) => d.id === room.droneId)?.name +
     " · " +
     room.mode.toUpperCase() + (room.kind !== "free" && room.route?.name ? " · " + room.route.name : "");
   $("#lobby-players").replaceChildren();
@@ -842,7 +852,7 @@ function renderResults() {
   if (signature === resultsSignature) return;
   resultsSignature = signature;
   $("#results-code").textContent = room.code + " · " + mapName(room.mapId);
-  $("#results-description").textContent = [room.route?.name, catalog.drones.find(d=>d.id===room.droneId)?.name].filter(Boolean).join(" · ");
+  $("#results-description").textContent = [room.route?.name, catalog.aircraft.find(d=>d.id===room.droneId)?.name].filter(Boolean).join(" · ");
   $("#results-status").textContent = t(room.phase === "finished" ? "results.complete" : "results.waiting");
   const head = node("tr");
   for (const key of ["place", "pilot", "laps", "best", "total", "status"]) {
@@ -884,18 +894,19 @@ async function loadRoom(r) {
   flight.mute();
   void fullscreen?.enterFlight();
   const task = loading.begin("loading.flight", { name: mapName(r.mapId) });
-  const roomConfig = catalog.drones.find((d) => d.id === r.droneId);
+  const roomConfig = catalog.aircraft.find((d) => d.id === r.droneId);
   const baseMap = catalog.maps.find((m) => m.id === r.mapId);
   const roomMap = r.kind === "free" ? withoutRaceRoute(baseMap) : r.route ? { ...baseMap, routeId: r.route.id ?? baseMap.routeId, routeName: r.route.name,
-    routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates, guide:r.route.guide } : resolveRoute(baseMap, r.routeId);
+    routeVersion: r.route.version, spawn: r.route.spawn, gates: r.route.gates, guide:r.route.guide,aircraftKinds:r.route.aircraftKinds } : resolveRoute(baseMap, r.routeId);
   session = "online-" + r.kind;
   flightHelp?.setOpen(false);
   $("#flight-mode").value = r.mode;
   try {
     const own = r.players.find(p=>p.id===network.id);
+    if(config.id!==roomConfig.id)await selectDrone(roomConfig.id);
     await paintLoading();
     diagnostics?.reset();
-    const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress);
+    const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, r.simulation, task.progress,{launchMethod:r.launchMethod});
     if (loaded === false) return;
     applyAircraftCamera();
     renderCameraProfile(roomConfig.id);
@@ -907,7 +918,7 @@ async function loadRoom(r) {
       return;
     }
     flight.reset(
-      room.players.find((p) => p.id === network.id)?.p ?? roomMap.spawn,
+      room.players.find((p) => p.id === network.id)?.p ?? roomMap.spawn, room.players.find(p=>p.id===network.id),
     );
     autoArm.reset();
     const restoredProps=room.players.find(p=>p.id===network.id)?.propellers;
@@ -973,7 +984,7 @@ function receive(m) {
     }
   }
   if (m.type === "reset") {
-    flight.reset(m.pose.p);
+    flight.reset(m.pose.p,m.pose);
     autoArm.reset();
     controller.clear();
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
@@ -1082,7 +1093,6 @@ async function launch() {
     return;
   }
   session = $("#session").value;
-  if(isFixedWing(config))session=$('#session').value='free';
   if (isTimedSession(session) && !canRace(map)) {
     notice(t("error.raceUnavailable"));
     return;
@@ -1099,7 +1109,8 @@ async function launch() {
       mode: $("#flight-mode").value,
       kind: session.replace("online-", ""),
       public: false,
-      simulation,
+      simulation:aircraftSimulation(config,simulation),
+      launchMethod:$("#aircraft-launch").value,
     });
     return;
   }
@@ -1111,7 +1122,7 @@ async function launch() {
   try {
     await paintLoading();
     diagnostics?.reset();
-    if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, simulation, task.progress) === false) return;
+    if (await flight.load(isTimedSession(session) ? map : withoutRaceRoute(map), config, rates(config.id), $("#flight-mode").value, droneColor, aircraftSimulation(config,simulation), task.progress,{launchMethod:$("#aircraft-launch").value}) === false) return;
     applyAircraftCamera();
     await configureLapGhost();
     if (await flight.prepareViews({analog:cameraSettings.analog === true}) === false) return;
@@ -1133,19 +1144,20 @@ async function launch() {
 }
 async function showRecords() {
   if (!catalog) return;
-  const version=++recordsVersion,recordSimulation={...simulation};
+  const version=++recordsVersion;
   const m = resolveRoute(catalog.maps.find((v) => v.id === $("#records-map").value), $("#records-route").value || undefined),
-    c = catalog.drones.find((v) => v.id === $("#records-drone").value),
+    c = catalog.aircraft.find((v) => v.id === $("#records-drone").value),
     mode = $("#records-mode").value,
     root = $("#records-body");
+  const recordSimulation=aircraftSimulation(c,simulation);
   root.replaceChildren();
-  if (!canRace(m)) {
+  if (!canRace(m) || !routeSupportsAircraft(m,c)) {
     root.append(node("p", "muted", t("error.raceUnavailable")));
     return;
   }
   root.append(
     node("h2", "", t("records.local")),
-    node("p", "muted", time(mode === 'all' ? Math.min(...FLIGHT_MODES.map(value=>read('records',{})[recordKey(m,c,value,recordSimulation)]??Infinity)) : read("records", {})[recordKey(m, c, mode, recordSimulation)])),
+    node("p", "muted", time(mode === 'all' ? Math.min(...aircraftModes(c).map(value=>read('records',{})[recordKey(m,c,value,recordSimulation)]??Infinity)) : read("records", {})[recordKey(m, c, mode, recordSimulation)])),
     node("p", "muted", t("simulation.recordsHint")),
   );
   root.append(node("h2", "", t("records.online")));
@@ -1175,7 +1187,7 @@ async function showRecords() {
           const choose=node('button','secondary small',t('ghost.choose'));
           choose.onclick=async()=>{
             const recordMode=r.mode??mode,context={map:m,drone:c,mode:recordMode,simulation:recordSimulation};ghostSelection.choose(context,r.ghostId);
-            selectMap(m.id);map=m;write('selected-race-'+m.id,m.routeId);
+            selectMap(m.id);map=m;write(routePreferenceKey(m,c),m.routeId);
             await selectDrone(c.id);$('#flight-mode').value=recordMode;$('#session').value=network.ready?'online-hotlap':'time';
             write('solo-session',$('#session').value);panel('fly');refreshCatalogText();
           };
@@ -1431,9 +1443,7 @@ function frame(now) {
       flight.physics.mode,
       paused,
       flight.physics.effects.options,
-      flight.physics.effects.propellers.blades,
-      flight.physics.armed && !paused ? flight.rotorMotion.fraction : [0,0,0,0],
-      flight.physics.turtleMode,
+      flight.aircraftVisual.networkState(flight.physics,paused),
     );
     sendAt = now;
   }
@@ -1561,7 +1571,7 @@ function bindUI() {
     const routeId = $("#race-route").value;
     if (routeId) {
       map = resolveRoute(catalog.maps.find(m => m.id === map.id), routeId);
-      write("selected-race-" + map.id, map.routeId);
+      write(routePreferenceKey(map,config), map.routeId);
     }
     if ($("#menu").dataset.panel === "multiplayer") {
       $("#room-kind").value = routeId ? "race" : "free";
@@ -1605,7 +1615,7 @@ function bindUI() {
   $("#rates-drone").value = config.id;
   $("#rates-drone").onchange = renderRates;
   $("#rates-save").onclick = () => saveRates([$("#rates-drone").value]);
-  $("#rates-all").onclick = () => saveRates(catalog.drones.map((d) => d.id));
+  $("#rates-all").onclick = () => saveRates(catalog.aircraft.filter(d=>aircraftCapabilities(d).rateProfiles).map((d) => d.id));
   $("#rates-copy").onclick = () => saveRates([$("#rates-target").value]);
   $("#rates-reset").onclick = () => {
     rateProfiles[$("#rates-drone").value] = defaultRates();
@@ -1678,11 +1688,11 @@ function bindUI() {
       })();
     }
   }
-  for(const d of catalog.drones)cameraProfiles.set(d.id,cameraProfiles.get(d.id));
+  for(const d of catalog.aircraft)cameraProfiles.set(d.id,cameraProfiles.get(d.id));
   write('camera-profiles',cameraProfiles.profiles);renderCameraProfile(config.id);
   $('#camera-drone').onchange=()=>renderCameraProfile($('#camera-drone').value);
   $('#camera-all').onclick=()=>{
-    const p=cameraProfiles.get($('#camera-drone').value);for(const d of catalog.drones)cameraProfiles.set(d.id,p);
+    const p=cameraProfiles.get($('#camera-drone').value);for(const d of catalog.aircraft)cameraProfiles.set(d.id,p);
     write('camera-profiles',cameraProfiles.profiles);applyAircraftCamera();notice(t('settings.saved'));
   };
   $('#camera-reset').onclick=()=>{cameraProfiles.set($('#camera-drone').value,DEFAULT_CAMERA_PROFILE);write('camera-profiles',cameraProfiles.profiles);renderCameraProfile($('#camera-drone').value);applyAircraftCamera();};
@@ -1694,8 +1704,11 @@ function bindUI() {
   for(const s of ['#camera-angle','#camera-fov'])$(s).oninput=()=>camera(true);
   for (const s of ["#sound", "#sound-volume", "#fpv-horizon-toggle", "#analog-video-toggle"])$(s).oninput=()=>camera();
   camera();
-  for (const s of ["#records-route", "#records-drone", "#records-mode"])
+  for (const s of ["#records-route", "#records-mode"])
     $(s).onchange = showRecords;
+  $('#records-drone').onchange=()=>{refreshRecordRoutes();showRecords();};
+  $('#aircraft-launch').value=read('aircraft-launch','air');
+  $('#aircraft-launch').onchange=()=>write('aircraft-launch',$('#aircraft-launch').value);
   $("#records-map").onchange = () => { refreshRecordRoutes(); showRecords(); };
   $("#records-refresh").onclick = showRecords;
   window.addEventListener("languagechange", () => {
@@ -1732,7 +1745,7 @@ try {
   const response = await fetch("/api/catalog");
   if (!response.ok) throw Error("Catalog unavailable");
   catalog = await response.json();
-  catalog.drones=[...catalog.drones,...(catalog.airplanes??[])];
+  catalog.aircraft=allAircraft(catalog);
   for(const plane of catalog.airplanes??[])if(!cameraProfiles.profiles[plane.id])cameraProfiles.set(plane.id,{angle:0,fov:100});
   preview = new Preview($("#preview-scene"));
   flight = new Flight($("#game-scene"));

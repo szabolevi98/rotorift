@@ -31,14 +31,14 @@
     <span class="demo-badge"><span></span> Interactive 3D showcase</span>
     <span class="edition">001 / FREESTYLE</span>
   </header>
-  <nav class="showcase-tabs" aria-label="Explore Rotorift"><button type="button" data-showcase-tab="drones" aria-pressed="true">Drones</button><button type="button" data-showcase-tab="maps" aria-pressed="false">Maps &amp; races</button></nav>
+  <nav class="showcase-tabs" aria-label="Explore Rotorift"><button type="button" data-showcase-tab="drones" aria-pressed="true">Aircraft</button><button type="button" data-showcase-tab="maps" aria-pressed="false">Maps &amp; races</button></nav>
   <section id="drone-panel">
   <section class="catalog" aria-labelledby="catalog-heading">
     <div class="catalog-intro"><h2 id="catalog-heading">The fleet</h2><p id="catalog-count">3 models</p></div>
-    <nav id="model-picker" class="model-picker" aria-label="Select a drone model"></nav>
+    <nav id="model-picker" class="model-picker" aria-label="Select an aircraft model"></nav>
   </section>
   <main class="layout">
-    <section class="stage" aria-label="Interactive drone model">
+    <section class="stage" aria-label="Interactive aircraft model">
       <div class="stage-heading"><span class="eyebrow" id="model-eyebrow">ORIGINAL MODEL · 5″ FREESTYLE</span><h1><span id="model-title" class="model-title">Rift</span> <span id="model-suffix">X5.</span></h1><p id="model-tagline">Small details. Big freedom.</p></div>
       <div id="viewport"><canvas id="scene" aria-label="Rift X5 3D model. Drag to rotate, scroll to zoom."></canvas></div>
       <div id="loading" role="status">Opening the workshop…</div>
@@ -61090,6 +61090,311 @@ function createRiftX35({cameraMount='cage'}={}) {
     setColor(hex){materials.tpu.color.set(hex);materials.tpuDetail.color.set(hex).multiplyScalar(.55);applyBatteryLabelColor(root,hex);}};
 }
 
+const TRAINER_GEAR = Object.freeze([
+  [-0.21, -0.22, 0.08],
+  [0.21, -0.22, 0.08],
+  [0, -0.22, -0.38],
+]);
+
+function addFixedWingColliders(RAPIER, world, body, config) {
+  const add = (half, position) =>
+    world.createCollider(
+      RAPIER.ColliderDesc.cuboid(...half)
+        .setTranslation(...position)
+        .setDensity(0)
+        .setFriction(config.friction)
+        .setRestitution(config.restitution),
+      body,
+    );
+  const bodyCollider = add(config.bodyHalfExtentsM, [0, 0, 0]);
+  const noseCollider = add([0.04, 0.04, 0.08], [0, 0.015, -0.49]);
+  const wingCollider = add(
+    [config.wingspanM / 2, 0.018, 0.112],
+    [0, 0.115, -0.02],
+  );
+  const tailCollider = add([0.25, 0.012, 0.075], [0, 0.045, 0.46]);
+  const gearColliders = TRAINER_GEAR.map((position) =>
+    world.createCollider(
+      RAPIER.ColliderDesc.ball(0.06)
+        .setTranslation(...position)
+        .setDensity(0)
+        .setFriction(0.08)
+        .setRestitution(0.05),
+      body,
+    ),
+  );
+  return {
+    bodyCollider,
+    noseCollider,
+    wingCollider,
+    tailCollider,
+    gearColliders,
+  };
+}
+
+
+// Original trainer design, metres, nose -Z. A few solid lofts and hinged
+// surfaces rather than a high-resolution downloaded aircraft asset.
+function createTrainerModel() {
+  const root = new THREE.Group();
+  root.name = "Rift_T15";
+  root.userData.proceduralAircraft = true;
+  const white = new THREE.MeshStandardMaterial({
+      color: "#e4e7de",
+      roughness: 0.65,
+    }),
+    accent = new THREE.MeshStandardMaterial({
+      color: "#ff6648",
+      roughness: 0.58,
+    });
+  accent.userData.droneColorRole = "base";
+  const dark = new THREE.MeshStandardMaterial({
+      color: "#222c32",
+      roughness: 0.65,
+    }),
+    metal = new THREE.MeshStandardMaterial({
+      color: "#82979b",
+      metalness: 0.65,
+      roughness: 0.3,
+    }),
+    glass = new THREE.MeshStandardMaterial({
+      color: "#375366",
+      metalness: 0.25,
+      roughness: 0.17,
+    });
+  const mesh = (geometry, material, parent = root, name = "") => {
+    const m = new THREE.Mesh(geometry, material);
+    m.name = name;
+    m.castShadow = m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  };
+  const box = (size, p, mat = white, parent = root, name = "") => {
+    const m = mesh(new THREE.BoxGeometry(...size), mat, parent, name);
+    m.position.set(...p);
+    return m;
+  };
+  function loft(sections, profile, mat, name) {
+    const vertices = [],
+      indices = [],
+      n = profile.length;
+    for (const s of sections)
+      for (const [a, b] of profile) vertices.push(...s(a, b));
+    for (let i = 0; i < sections.length - 1; i++)
+      for (let j = 0; j < n; j++) {
+        const k = i * n + j,
+          l = i * n + ((j + 1) % n);
+        indices.push(k, l, l + n, k, l + n, k + n);
+      }
+    for (let j = 1; j < n - 1; j++) {
+      indices.push(0, j + 1, j);
+      const k = (sections.length - 1) * n;
+      indices.push(k, k + j, k + j + 1);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices, 3),
+    );
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return mesh(geometry, mat, root, name);
+  }
+  const oval = Array.from({ length: 10 }, (_, i) => [
+    Math.cos((i * Math.PI) / 5),
+    Math.sin((i * Math.PI) / 5),
+  ]);
+  loft(
+    [
+      [-0.51, 0.032, 0.035, 0.012],
+      [-0.36, 0.063, 0.065, 0.01],
+      [-0.08, 0.066, 0.07, 0],
+      [0.16, 0.045, 0.052, 0],
+      [0.43, 0.019, 0.028, 0.024],
+      [0.55, 0.009, 0.016, 0.035],
+    ].map(([z, w, h, y]) => (a, b) => [a * w, y + b * h, z]),
+    oval,
+    white,
+    "T15_fuselage",
+  );
+  const wingProfile = [
+    [-0.12, 0],
+    [-0.11, 0.012],
+    [-0.065, 0.024],
+    [0.025, 0.015],
+    [0.09, 0.002],
+    [0.09, -0.004],
+    [-0.065, -0.008],
+    [-0.115, -0.005],
+  ];
+  loft(
+    [
+      [-0.75, 0.16, 0.83],
+      [-0.65, 0.15, 0.95],
+      [0, 0.12, 1],
+      [0.65, 0.15, 0.95],
+      [0.75, 0.16, 0.83],
+    ].map(([x, y, scale]) => (z, h) => [x, y + h, z * scale - 0.02]),
+    wingProfile,
+    white,
+    "T15_airfoil_wing",
+  );
+  for (const side of [-1, 1]) {
+    const tip = box([0.13, 0.008, 0.185], [side * 0.68, 0.164, -0.032], accent);
+    tip.rotation.z = side * 0.06;
+    const stripe = box(
+      [0.042, 0.006, 0.19],
+      [side * 0.49, 0.163, -0.031],
+      dark,
+    );
+    stripe.rotation.z = side * 0.06;
+    const hinge = new THREE.Group();
+    hinge.position.set(side * 0.48, 0.142, 0.067);
+    hinge.userData.surface = "aileron";
+    hinge.userData.side = side;
+    root.add(hinge);
+    box([0.39, 0.009, 0.048], [0, 0, 0.024], accent, hinge, "T15_aileron");
+    const strut = mesh(
+      new THREE.CylinderGeometry(0.005, 0.005, 0.52, 6),
+      metal,
+    );
+    const from = new THREE.Vector3(side * 0.06, -0.015, 0.02),
+      to = new THREE.Vector3(side * 0.5, 0.135, -0.015);
+    strut.position.copy(from).add(to).multiplyScalar(0.5);
+    strut.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      to.sub(from).normalize(),
+    );
+  }
+  box([0.5, 0.012, 0.105], [0, 0.045, 0.43], white, root, "T15_stabilizer");
+  const elevator = new THREE.Group();
+  elevator.position.set(0, 0.045, 0.482);
+  elevator.userData.surface = "elevator";
+  root.add(elevator);
+  box([0.49, 0.01, 0.055], [0, 0, 0.0275], accent, elevator);
+  const fin = new THREE.Shape();
+  fin.moveTo(0.34, 0.04);
+  fin.lineTo(0.43, 0.23);
+  fin.lineTo(0.52, 0.19);
+  fin.lineTo(0.54, 0.04);
+  fin.closePath();
+  const finMesh = mesh(
+    new THREE.ExtrudeGeometry(fin, { depth: 0.012, bevelEnabled: false }),
+    white,
+  );
+  finMesh.rotation.y = -Math.PI / 2;
+  finMesh.position.x = 0.006;
+  const rudder = new THREE.Group();
+  rudder.position.set(0, 0.045, 0.52);
+  rudder.userData.surface = "rudder";
+  root.add(rudder);
+  box([0.012, 0.145, 0.045], [0, 0.072, 0.0225], accent, rudder);
+  const cabin = box(
+    [0.112, 0.07, 0.17],
+    [0, 0.075, -0.19],
+    glass,
+    root,
+    "T15_cabin",
+  );
+  cabin.rotation.x = -0.12;
+  box([0.116, 0.009, 0.11], [0, 0.113, -0.185], white);
+  for (const side of [-1, 1])
+    box([0.005, 0.08, 0.009], [side * 0.057, 0.07, -0.15], white);
+  box([0.078, 0.006, 0.19], [0, 0.074, -0.345], accent, root, "T15_motor_cowl");
+  for (const [x, , z] of TRAINER_GEAR) {
+    const leg = mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.2, 6), metal);
+    leg.position.set(x * 0.5, -0.12, z);
+    leg.rotation.z = -Math.atan2(x, 0.18);
+    const wheel = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.027, 12), dark);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(x, -0.22, z);
+    const hub = mesh(
+      new THREE.CylinderGeometry(0.021, 0.021, 0.029, 10),
+      metal,
+    );
+    hub.rotation.z = Math.PI / 2;
+    hub.position.copy(wheel.position);
+  }
+  const prop = new THREE.Group();
+  prop.position.set(0, 0.015, -0.55);
+  prop.name = "T15_propeller";
+  prop.userData = { propeller: true, motorIndex: 0, phaseOffset: 0, axis: "z" };
+  root.add(prop);
+  for (const side of [-1, 1]) {
+    const blade = box(
+      [0.027, 0.115, 0.005],
+      [side * 0.007, side * 0.066, 0],
+      dark,
+      prop,
+    );
+    blade.rotation.z = side * 0.12;
+  }
+  const spinner = mesh(new THREE.ConeGeometry(0.025, 0.046, 12), accent);
+  spinner.rotation.x = -Math.PI / 2;
+  spinner.position.set(0, 0.015, -0.568);
+  const fpv = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.022, 10), dark);
+  fpv.rotation.x = Math.PI / 2;
+  fpv.position.set(0, 0.135, -0.22);
+  const lens = mesh(new THREE.CircleGeometry(0.009, 12), glass);
+  lens.rotation.y = Math.PI;
+  lens.position.set(0, 0.135, -0.232);
+  root.updateMatrixWorld(true);
+  return root;
+}
+function animateTrainer(model, surfaces, phase) {
+  model.traverse((o) => {
+    if (o.userData.propeller) o.rotation.z = phase;
+    if (o.userData.surface === "aileron")
+      o.rotation.x = -surfaces.roll * o.userData.side * 0.45;
+    if (o.userData.surface === "elevator") o.rotation.x = surfaces.pitch * 0.4;
+    if (o.userData.surface === "rudder") o.rotation.y = surfaces.yaw * 0.4;
+  });
+}
+
+// Reuse the flight model: the showroom never maintains a second airplane mesh.
+function createRiftT15() {
+  const root = createTrainerModel();
+  root.position.y = 0.28;
+  const materials = new Set(),
+    propellers = [];
+  let meshes = 0,
+    triangles = 0;
+  root.traverse((object) => {
+    if (object.userData.propeller)
+      propellers.push({ group: object, direction: 1, axis: "z" });
+    if (!object.isMesh) return;
+    meshes++;
+    triangles +=
+      (object.geometry.index?.count ??
+        object.geometry.attributes.position.count) / 3;
+    for (const material of Array.isArray(object.material)
+      ? object.material
+      : [object.material])
+      materials.add(material);
+  });
+  return {
+    root,
+    propellers,
+    materials: [...materials],
+    meshes,
+    triangles,
+    assemblies: [],
+    batteryParts: [],
+    actionParts: [],
+    setExplode() {},
+    setWireframe(value) {
+      for (const material of materials) material.wireframe = value;
+    },
+    setColor(value) {
+      applyDroneColor(
+        root,
+        Object.keys(DRONE_COLORS).find((key) => DRONE_COLORS[key] === value) ??
+          "coral",
+      );
+    },
+  };
+}
+
 // One catalog ordered by aircraft size.
 const MODEL_CATALOG = [
  {id:'rift-75',status:'ready',name:'Rift 75',badge:'75',category:'75 class tinywhoop · 1S',create:createRift75,filename:'rotorift-rift-75.glb',title:'Rift',suffix:'75.',eyebrow:'ORIGINAL MODEL · 75 CLASS WHOOP',tagline:'Small parks. Bigger possibilities.',heading:'A tougher little explorer.',description:'A durable orange frame, white ventilated camera canopy, 1102 motors and larger 45 mm propellers. Made for close outdoor lines.',edition:'004 / TINYWHOOP',mark:'R / 75',cameraScale:.38,colorLabel:'Plastic frame',specs:[{label:'Propeller',value:'45',detail:'mm / 3 blades'},{label:'Battery',value:'1S',detail:'/ 580 mAh'},{label:'Diagonal wheelbase',value:'80.8',detail:'mm / 75 class'},{label:'Motor',value:'1102',detail:'/ brushless'}]},
@@ -61100,6 +61405,8 @@ const MODEL_CATALOG = [
 MODEL_CATALOG.push({id:'rift-x35',status:'ready',name:'Rift X35',badge:'X35',category:'3.5″ freestyle · 4S',create:createRiftX35,filename:'rotorift-rift-x35.glb',title:'Rift',suffix:'X35.',eyebrow:'ORIGINAL MODEL · 3.5″ FREESTYLE',tagline:'Small frame. Freestyle freedom.',heading:'Light on its feet.',description:'A compact carbon X frame, smoked tri-blade propellers and a top-mounted 4S battery. Only the FPV camera: nothing above it to weigh you down.',edition:'005 / FREESTYLE',mark:'R / X35',cameraScale:.7,specs:[{label:'Propeller',value:'3.5″',detail:'/ 88.9 mm · 3 blades'},{label:'Battery',value:'4S',detail:'/ 650 mAh'},{label:'Diagonal wheelbase',value:'160',detail:'mm'},{label:'Motor',value:'1404',detail:'/ brushless'}]});
 MODEL_CATALOG.sort((a,b)=>['rift-65','rift-75','rift-c3','rift-x35','rift-x5'].indexOf(a.id)-['rift-65','rift-75','rift-c3','rift-x35','rift-x5'].indexOf(b.id));
 
+MODEL_CATALOG.push({id:'rift-t15',status:'ready',name:'Rift T15',badge:'T15',category:'1.5 m trainer · 3S',create:createRiftT15,filename:'rotorift-rift-t15.glb',title:'Rift',suffix:'T15.',eyebrow:'ORIGINAL MODEL · FIXED-WING TRAINER',tagline:'A new way to find your line.',heading:'Room to spread your wings.',description:'A high-wing trainer with a 1.5 m wingspan, tricycle landing gear and moving ailerons, elevator and rudder. The same lightweight model used in flight.',edition:'006 / TRAINER',mark:'R / T15',cameraScale:5.5,colorLabel:'Airframe accents',specs:[{label:'Wingspan',value:'1.5',detail:'m'},{label:'Battery',value:'3S',detail:'/ 3 200 mAh'},{label:'Take-off mass',value:'1.45',detail:'kg'},{label:'Propeller',value:'10″',detail:'/ 2 blades'}]});
+
 // Render a readable shutter-speed representation instead of sampling real RPM
 // at the display refresh rate (which can make a fast rotor look stopped or
 // reverse). Physics keeps its independent full-speed phase for blade strikes.
@@ -61108,10 +61415,10 @@ const validRotorSpeeds = value => Array.isArray(value) && value.length===4 &&
   value.every(v=>Number.isFinite(v)&&v>=0&&v<=1);
 
 class RotorMotion {
-  constructor() { this.reset(); }
-  reset() { this.phase = [0,0,0,0]; this.speed = [0,0,0,0]; this.fraction = [0,0,0,0]; }
+  constructor(count=4) { this.count=count;this.reset(); }
+  reset() { this.phase = Array(this.count).fill(0); this.speed = Array(this.count).fill(0); this.fraction = Array(this.count).fill(0); }
   update(dt, thrust, maximum, motors, running, reverse=false) {
-    for (let i=0;i<4;i++) {
+    for (let i=0;i<this.count;i++) {
       const fraction = running && maximum>0 ? Math.sqrt(Math.max(0,Math.min(1,Math.abs(thrust[i])/maximum))) : 0;
       this.fraction[i] = fraction;
       this.speed[i] = fraction * 22 * motors[i].direction * (reverse?-1:1);
@@ -61133,7 +61440,7 @@ class RemoteRotorMotion extends RotorMotion {
   }
 }
 
-const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rift-x35":1.62,"rift-x5":1.5};
+const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rift-x35":1.62,"rift-x5":1.5,"rift-t15":1.5};
 (() => {
   'use strict';
   const canvas = document.getElementById('scene');
@@ -61152,7 +61459,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
   configureDroneRenderer(THREE, renderer);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(36, 1, .005, 8);
+  const camera = new THREE.PerspectiveCamera(36, 1, .005, 50);
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
   controls.dampingFactor = .08;
@@ -61184,7 +61491,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
   let currentModel = MODEL_CATALOG.find(model => model.status === 'ready' && typeof model.create === 'function');
   let drone = currentModel.create();scene.add(drone.root);
   const modelCache = new Map([[currentModel.id, drone]]);
-  let originalPropRotations=drone.propellers.map(p=>p.group.rotation.y);
+  let originalPropRotations=drone.propellers.map(p=>p.group.rotation[p.axis??'y']);
   const modelPropRotations=new Map([[currentModel.id,originalPropRotations]]);
   const stats = document.getElementById('mesh-stats');
   stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
@@ -61252,6 +61559,10 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
       const active=button.dataset.model===model.id;button.setAttribute('aria-pressed',String(active));
       if(!button.disabled)button.querySelector('.model-status').textContent=active?'Selected':'View ↗';
     });
+    const batteryToggle=document.getElementById('battery');
+    batteryToggle.disabled=drone.batteryParts.length===0;batteryToggle.checked=!batteryToggle.disabled;
+    batteryToggle.closest('label').classList.toggle('unavailable',batteryToggle.disabled);
+    const explode=document.getElementById('explode');explode.disabled=drone.assemblies.length===0;
     const actionToggle=document.getElementById('action-camera');
     actionToggle.disabled=drone.actionParts.length===0;actionToggle.checked=drone.actionParts.length>0;
     actionToggle.closest('label').classList.toggle('unavailable',actionToggle.disabled);
@@ -61261,12 +61572,12 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
     if(model.id===currentModel.id){setView('hero');return;}
     try{
       let next=modelCache.get(model.id);
-      if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation.y));}
+      if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation[prop.axis??'y']));}
       scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
       originalPropRotations=modelPropRotations.get(model.id);
-      drone.propellers.forEach((prop,index)=>prop.group.rotation.y=originalPropRotations[index]);
+      drone.propellers.forEach((prop,index)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[index]);
       state.explode=0;state.spin=false;controls.autoRotate=false;
-      rotorMotion.reset();document.getElementById('prop-throttle').disabled=true;
+      rotorMotion.count=drone.propellers.length;rotorMotion.reset();document.getElementById('prop-throttle').disabled=true;
       drone.setExplode(0);drone.setWireframe(false);drone.setColor(colors.coral);
       drone.batteryParts.forEach(part=>part.visible=true);drone.actionParts.forEach(part=>part.visible=true);drone.propellers.forEach(prop=>prop.group.visible=true);
       for(const id of ['battery','props'])document.getElementById(id).checked=true;
@@ -61276,6 +61587,10 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
       document.querySelectorAll('[data-color]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.color==='coral')));
       controls.minDistance=.19*(model.cameraScale||1);controls.maxDistance=1.25*(model.cameraScale||1);
       studioCircle.scale.setScalar(model.cameraScale||1);
+      const scale=model.cameraScale||1;
+      key.position.set(-.35*scale,.75*scale,.25*scale);
+      Object.assign(key.shadow.camera,{left:-.32*scale,right:.32*scale,top:.32*scale,bottom:-.32*scale,far:1.6*scale});
+      key.shadow.camera.updateProjectionMatrix();
       updateModelInfo(model);setView('hero',true);
     }catch(error){document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
   }
@@ -61293,7 +61608,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
   document.getElementById('spin').addEventListener('change',e=>{
     state.spin=e.target.checked;
     document.getElementById('prop-throttle').disabled=!state.spin;
-    if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation.y=originalPropRotations[i]);
+    if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation[p.axis??'y']=originalPropRotations[i]);
   });
   document.getElementById('prop-throttle').addEventListener('input',e=>{
     state.throttle=Number(e.target.value)/100;
@@ -61322,7 +61637,7 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
       const exported=drone.root.clone(true);
       for(const part of drone.assemblies)exported.getObjectByName(part.group.name).position.copy(part.base);
-      drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation.y=originalPropRotations[i]);
+      drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation[p.axis??'y']=originalPropRotations[i]);
       exported.updateMatrixWorld(true);
       const result=await new GLTFExporter().parseAsync(exported,{binary:true,onlyVisible:true,maxTextureSize:1024});
       const blob=new Blob([result],{type:'model/gltf-binary'}),url=URL.createObjectURL(blob);
@@ -61344,8 +61659,8 @@ const ROTOR_THRUST_EXPONENTS = {"rift-65":1.25,"rift-75":1.3,"rift-c3":1.25,"rif
       if(t===1)cameraTransition=null;
     }
     if(state.spin&&!exporting){
-      rotorMotion.update(dt,Array(4).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
-      drone.propellers.forEach((prop,i)=>prop.group.rotation.y=originalPropRotations[i]+rotorMotion.phase[i]);
+      rotorMotion.update(dt,Array(drone.propellers.length).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
+      drone.propellers.forEach((prop,i)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[i]+rotorMotion.phase[i]);
     }
     controls.update(dt);renderer.render(scene,camera);
   });

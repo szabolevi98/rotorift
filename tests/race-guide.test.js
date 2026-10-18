@@ -85,7 +85,7 @@ test('saved demo neon guides clear baked scenery along every segment, including 
       const clear=makeGuideClearance(world,RAPIER,map.kind==='playground'?.18:.45);
       for(const route of map.routes){
         assert.equal(route.guide.length,route.gates.length);
-        assert.ok(Math.max(...route.gates.map(g=>g.p[1]))-Math.min(...route.gates.map(g=>g.p[1]))>1);
+        if(!route.aircraftKinds?.includes("fixedWing"))assert.ok(Math.max(...route.gates.map(g=>g.p[1]))-Math.min(...route.gates.map(g=>g.p[1]))>1);
         let length=0;
         const lap=newLap();let clock=0;
         const start=route.gates[0],before=start.p.map((v,i)=>v-start.n[i]*2);
@@ -98,7 +98,7 @@ test('saved demo neon guides clear baked scenery along every segment, including 
         assert.equal(lap.completed,1,`${map.id}/${route.id}: following the saved line must complete a lap`);
         if(map.kind!=='playground'){
           assert.ok(length>1250,`${map.id}/${route.id}: full-length course`);
-          assert.ok(route.gates.length>=20);
+          assert.ok(route.gates.length>=(route.aircraftKinds?.includes("fixedWing")?12:20));
           for(const [i,g]of route.gates.entries()){
             const {right,up}=gateBasis(g.n),q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(...right),new THREE.Vector3(...up),new THREE.Vector3(...g.n)));
             const hit=world.castShape({x:g.p[0]-g.n[0]*2,y:g.p[1]-g.n[1]*2,z:g.p[2]-g.n[2]*2},q,

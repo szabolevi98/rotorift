@@ -2,6 +2,8 @@
 // Pose updates come from the shared room; no models or colliders exist in ghost mode.
 import { addAircraftColliders } from "../../shared/physics/aircraft-colliders.js";
 import { validPropellers,propellerCollisionRadius } from "../../shared/physics/propellers.js";
+import {isFixedWing} from '../../shared/aircraft/capabilities.js';
+import {addFixedWingColliders} from '../../shared/physics/fixed-wing-colliders.js';
 export class RemoteCollisions {
   constructor(RAPIER, world, config) {
     this.RAPIER = RAPIER; this.world = world; this.config = config; this.bodies = new Map();
@@ -17,7 +19,7 @@ export class RemoteCollisions {
       if (!body) {
         body = this.world.createRigidBody(this.RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(...player.p).setRotation(q));
         this.bodies.set(id, body);
-        const {propColliders}=addAircraftColliders(this.RAPIER,this.world,body,this.config);
+        const {propColliders=[]}=isFixedWing(this.config)?addFixedWingColliders(this.RAPIER,this.world,body,this.config):addAircraftColliders(this.RAPIER,this.world,body,this.config);
         body.userData = { resetId: player.resetId,propColliders,radii:[] };
       }
       if (body.userData.resetId !== player.resetId || Math.hypot(body.translation().x - p.x, body.translation().y - p.y, body.translation().z - p.z) > 3) {

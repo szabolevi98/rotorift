@@ -19,7 +19,7 @@ test('every built-in route has localized, validated details and known recommenda
     const details=route.details;
     assert.deepEqual(validateRouteDetails(details),details);
     for(const lang of ROUTE_LANGUAGES) assert.ok(details.description[lang].length>20);
-    assert.ok(details.recommendedDrones.every(id=>catalog.drones.some(d=>d.id===id)));
+    assert.ok(details.recommendedDrones.every(id=>[...catalog.drones,...catalog.airplanes].some(d=>d.id===id)));
     const draft=new RouteDraft(map,route);draft.setGate(1,{width:route.gates[1].width+.1});
     assert.deepEqual(validateRoute(draft.export(),map).details,details);
     draft.undo();assert.deepEqual(draft.route,route);

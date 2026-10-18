@@ -22,7 +22,7 @@ function fixture(t) {
 test('the browser retains its own resume credential across reconnect and reload without stale socket callbacks',t=>{
   const {network,welcome,message,session,room,token}=fixture(t),n=network();n.connect('Pilot');n.ws.onopen();welcome(n);message(n.ws,{type:'room',room});
   const old=n.ws;n.seq=27;old.readyState=0;old.onclose();assert.equal(n.resumption.code,room.code);assert.equal(n.ready,false);
-  n.connect('Pilot');n.ws.onopen();assert.equal(n.ws.sent[0].resume,token);assert.equal(n.ws.sent[0].protocol,2);
+  n.connect('Pilot');n.ws.onopen();assert.equal(n.ws.sent[0].resume,token);assert.equal(n.ws.sent[0].protocol,3);
   welcome(n,{resumed:true});message(n.ws,{type:'room',room});assert.equal(n.seq,0);
   message(old,{type:'left'});assert.equal(n.room.code,room.code,'the superseded socket cannot erase the resumed room');
   n.state({p:[0,0,0],v:[0,0,0],q:{x:0,y:0,z:0,w:1}},{configHash:'config'},'acro',false,{});
@@ -41,7 +41,7 @@ test('cancelling recovery leaves the reserved room after handshake without reope
 test('state serialization carries the four actual rotor speeds beside independent blade damage',t=>{
   const {network,welcome,message,room}=fixture(t),n=network();n.connect('Pilot');welcome(n);message(n.ws,{type:'room',room});
   const speeds=[0,.25,.5,1],blades=[[3,3,3],[1,0,0],[0,0,0],[0,0,0]];
-  n.state({p:[0,0,0],v:[0,0,0],q:{x:0,y:0,z:0,w:1}},{configHash:'config'},'acro',false,{},blades,speeds);
+  n.state({p:[0,0,0],v:[0,0,0],q:{x:0,y:0,z:0,w:1}},{configHash:'config'},'acro',false,{},{propellers:blades,rotorSpeeds:speeds,turtleMode:false});
   const sent=n.ws.sent.at(-1);assert.deepEqual(sent.rotorSpeeds,speeds);assert.deepEqual(sent.propellers,blades);assert.equal(sent.runId,room.runId);
 });
 
@@ -51,4 +51,13 @@ test('an explicit leave interrupted by disconnect stays a leave, and rejected re
   assert.equal(n.ws.sent.some(m=>m.type==='leave'),true);message(n.ws,{type:'left'});assert.equal(events.at(-1).type,'left');assert.equal(session.size,0);
   message(n.ws,{type:'room',room});n.ws.readyState=0;n.ws.onclose();n.connect('Pilot');welcome(n,{id:'new-pilot',resumeRejected:true});
   assert.equal(n.resumption,null);assert.equal(session.size,0);
+});
+
+
+test('the generic state envelope carries airplane animation without synthetic quad data',t=>{
+  const {network,welcome,message,room}=fixture(t),n=network();n.connect('Pilot');welcome(n);message(n.ws,{type:'room',room});
+  const animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.2,roll:.3,yaw:0}};
+  n.state({p:[0,60,0],v:[0,0,-15],q:{x:0,y:0,z:0,w:1}},{configHash:'trainer'},'manual',false,{},{animation});
+  const sent=n.ws.sent.at(-1);assert.deepEqual(sent.animation,animation);assert.equal(sent.mode,'manual');assert.equal(sent.configHash,'trainer');
+  for(const key of ['propellers','rotorSpeeds','turtleMode'])assert.equal(key in sent,false);
 });

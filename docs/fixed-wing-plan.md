@@ -1,13 +1,13 @@
 # Fixed-wing aircraft introduction plan
 
-Recorded: **2026-10-16**. Updated: **2026-10-17**. Status: **implementation started**.
+Recorded: **2026-10-16**. Updated: **2026-10-18**. Status: **initial trainer features implemented**.
 
-The user approved implementation on 2026-10-17. The compatible foundation and
-first flyable **Rift T15** prototype are implemented; see [current scope and
-validation](rift-t15.md). The original plan below is retained as the roadmap.
-The current experimental release uses an airborne start only; phase 3 ground
-operations and later online/racing phases are not complete. This is a deliberate
-limited prototype release, not a claim that the phase 3 acceptance gate passed.
+The approved T15 now includes separate flight/effects/visual implementations,
+ground and airborne launch, eight-pilot airplane rooms, reconnect/restart,
+airplane circuits, records/ghosts and shared showcase/GLB export. See
+[current scope and validation](rift-t15.md). The original phased design below
+is retained as the rationale, rather than an outstanding task list. Real-device
+and real-network tuning remains ongoing; automated tests do not certify handling.
 
 ## Goal and first aircraft
 
@@ -18,8 +18,7 @@ The airplane needs its own flight model, not a modified quadcopter motor mixer.
 Start with one original, low-poly, high-wing trainer with a single electric motor,
 ailerons, elevator, rudder and fixed landing gear. A conventional trainer offers
 clear control surfaces and a useful baseline for take-off, glide and landing tests.
-Its name, dimensions, battery and power system are undecided. Choose them together
-from a documented reference envelope before tuning; do not invent a claim of
+The selected T15 envelope is documented in `rift-t15.md`; do not invent a claim of
 matching a specific real aircraft.
 
 The first public release should support local free flight, an airborne practice
@@ -28,7 +27,7 @@ airborne start is enough for the internal physics prototype, not proof that grou
 handling works. Keep the existing drone maps and visual identity.
 
 Initially exclude flying wings, jets, VTOL transitions, retractable gear, flaps,
-autopilot/navigation, detailed structural damage and airplane race leaderboards.
+autopilot/navigation and detailed structural damage.
 These can be separate additions after the trainer behaves convincingly.
 
 ## What can be reused
@@ -158,9 +157,9 @@ performance regression blocks release; low polygon count alone is not validation
 
 Local free flight comes first. Subsequent online free flight should reuse the
 eight-player rooms and reconnect flow, with explicit aircraft capabilities and
-validated state messages. `server/net/rooms.js` currently validates four-propeller
-state; remote visuals in `web/game/flight.js` also assume four motors. Add a typed,
-bounded airplane animation/state payload rather than filling in fake drone rotors.
+validated state messages. The network now accepts a bounded, typed fixed-wing animation payload alongside
+the unchanged four-rotor format. Aircraft visual adapters handle the two types
+without fake drone rotors.
 Reject incompatible clients/aircraft cleanly; do not accept arbitrary JSON state.
 
 For initial online testing, use airplane-only rooms. Mixed freestyle rooms and
@@ -210,10 +209,10 @@ performance pass; record any remaining model limitations in the documentation.
 ## Initial decisions (2026-10-17)
 
 1. Original high-wing Rift T15: 1.5 m, 1.45 kg, 3S 3200 mAh, single electric motor.
-2. First map: Grove, airborne practice start. A verified runway is still future work.
+2. First map: Grove, airborne practice start and ground start on its south promenade.
 3. Initial measured checks and limitations are recorded in `rift-t15.md`.
-4. First release is explicitly experimental local free flight. Online rooms and
-   airplane races remain deferred until their acceptance checks and routes exist.
+4. The first release was local free flight. On 2026-10-18 the ground, online,
+   racing/replay and showcase features were added; see current validation above.
 
 No implementation time estimate is committed here. The main uncertainty is
 handling calibration and ground contact behavior; reassess effort after phase 2.

@@ -35,9 +35,12 @@ const script = [
   read('whoop75.js'),
   read('cinewhoop3.js'),
   read('freestyle35.js'),
+  read('../shared/physics/fixed-wing-colliders.js').replace(/^export /gm, ''),
+  read('../shared/visual/fixed-wing-model.js').replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''),
+  read('trainer.js'),
   read('catalog.js'),
   read('../shared/visual/rotor-motion.js').replace(/^export /gm, ''),
-  `const ROTOR_THRUST_EXPONENTS = ${JSON.stringify(Object.fromEntries(catalog.drones.map(c=>[c.id,c.motor.thrustExponent])))};`,
+  `const ROTOR_THRUST_EXPONENTS = ${JSON.stringify(Object.fromEntries([...catalog.drones,...catalog.airplanes].map(c=>[c.id,c.motor.thrustExponent])))};`,
   read('viewer.js'),
 ].join('\n');
 const html = read('template.html')

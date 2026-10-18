@@ -186,7 +186,7 @@
   "simulation.battery": "Simulación de batería",
   "simulation.propDamage": "Daños en hélices",
   "simulation.propwash": "Propwash",
-  "simulation.ghost": "Modo fantasma · sin colisiones entre drones",
+  "simulation.ghost": "Modo fantasma · sin colisiones entre aeronaves",
   "simulation.wind": "Viento",
   "simulation.hint": "Activa cada efecto por separado. Reiniciar restaura la batería y las hélices.",
   "simulation.hostHint": "Reglas comunes de la sala. Solo el anfitrión puede cambiarlas; después todos deben volver a confirmar que están listos.",
@@ -386,7 +386,7 @@
   "settings.rateCurve": "Respuesta de los sticks",
   "route.details": "Detalles",
   "route.close": "Cerrar",
-  "route.recommended": "Drones recomendados",
+  "route.recommended": "Aeronaves recomendadas",
   "route.gates": "{count} puertas",
   "route.easy": "Fácil",
   "route.medium": "Intermedio",
@@ -402,7 +402,7 @@
   "drone.rift-t15": "Entrenador de 1,5 m · 3S",
   "spec.wingspan": "Envergadura",
   "airplane.manual": "Manual",
-  "airplane.note": "Avión experimental · vuelo libre local con inicio en el aire. Parque infantil y carreras de drones aún no disponibles. Baja y luego sube el acelerador para armar.",
+  "airplane.note": "Avión de entrenamiento · vuelo libre, salas compartidas y circuitos para aviones. Baja y luego sube el acelerador para armar.",
   "airplane.controls": "Controles del avión",
   "airplane.controlHint": "Modo 2: acelerador/timón a la izquierda, elevador/alerones a la derecha. Palanca adelante baja el morro. Ajusta recorrido, no rates de dron.",
   "airplane.travel": "Recorrido de superficies",
@@ -411,5 +411,10 @@
   "airplane.stall": "PÉRDIDA · baja el morro",
   "airplane.crashed": "ACCIDENTE · reinicia el avión",
   "airplane.effects": "Avión: batería y viento. Sin propwash de quad, modo tortuga ni daños por rotor.",
-  "error.airplaneLocalOnly": "Este avión experimental solo está disponible en vuelo libre local."
+  "airplane.launch": "Salida",
+  "airplane.launchAir": "En el aire",
+  "airplane.launchGround": "Desde el suelo · paseo de Grove",
+  "error.clientTooOld": "Actualiza la página para entrar en una sala de aviones.",
+  "error.incompatibleRoute": "Esta ruta o mapa no admite la aeronave seleccionada.",
+  "error.invalidLaunch": "La salida desde el suelo está disponible en vuelo libre en Grove."
 }

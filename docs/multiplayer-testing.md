@@ -67,3 +67,20 @@ collision check. It does not measure eight browsers rendering simultaneously,
 eight physical devices, browser background throttling, production database load
 or the subjective fairness of simultaneous collisions across real internet
 connections. The local kinematic collision architecture remains unchanged.
+
+
+## T15 extension — 2026-10-18
+
+`tests/network.test.js` additionally runs eight protocol-3 trainer clients, shared
+rules with unsupported quad effects disabled, unique colors, 1.5 m wing clearance
+between launch slots, bounded engine/surface replication, malformed-state
+rejection, reconnect and restart. A Manual hotlap exercises server validation and
+stores a pose replay. `tests/ghost-api.test.js` checks Manual/all-mode records,
+public ghosts and incompatible route/effect rejection.
+
+The fixed-wing physics tests separately compare solid wing contacts with ghost
+pass-through and remove the proxy bodies afterwards. Two actual local browser
+clients also joined the same T15 ground-start room and rendered the remote
+colored aircraft without console errors. This is functional validation; background
+browser throttling is not an FPS benchmark, and the eight-client automation is
+not a test of eight rendering browsers or eight independent internet connections.

@@ -186,7 +186,7 @@
   "simulation.battery": "Akkusimulation",
   "simulation.propDamage": "Propellerschäden",
   "simulation.propwash": "Propwash",
-  "simulation.ghost": "Ghost-Modus · keine Drohnenkollisionen",
+  "simulation.ghost": "Ghost-Modus · keine Fluggerätkollisionen",
   "simulation.wind": "Wind",
   "simulation.hint": "Effekte einzeln aktivieren. Zurücksetzen stellt Akku und Propeller wieder her.",
   "simulation.hostHint": "Gemeinsame Raumregeln. Nur der Gastgeber kann sie ändern; danach müssen alle erneut bereit sein.",
@@ -386,7 +386,7 @@
   "settings.rateCurve": "Knüppelreaktion",
   "route.details": "Details",
   "route.close": "Schließen",
-  "route.recommended": "Empfohlene Drohnen",
+  "route.recommended": "Empfohlene Fluggeräte",
   "route.gates": "{count} Tore",
   "route.easy": "Leicht",
   "route.medium": "Mittel",
@@ -402,7 +402,7 @@
   "drone.rift-t15": "1,5 m Schulflugzeug · 3S",
   "spec.wingspan": "Spannweite",
   "airplane.manual": "Manuell",
-  "airplane.note": "Experimentelles Flugzeug · lokaler Freiflug mit Start in der Luft. Spielplatz und Drohnenrennen werden noch nicht unterstützt. Gas senken, dann zum Scharfschalten erhöhen.",
+  "airplane.note": "Schulflugzeug · Freiflug, gemeinsame Räume und Flugzeugstrecken. Gas senken, dann zum Scharfschalten erhöhen.",
   "airplane.controls": "Flugzeugsteuerung",
   "airplane.controlHint": "Mode 2: links Gas/Seitenruder, rechts Höhen-/Querruder. Knüppel vorwärts senkt die Nase. Ruderausschlag statt Drohnenraten.",
   "airplane.travel": "Ruderausschlag",
@@ -411,5 +411,10 @@
   "airplane.stall": "STRÖMUNGSABRISS · Nase senken",
   "airplane.crashed": "ABSTURZ · Flugzeug zurücksetzen",
   "airplane.effects": "Flugzeuge: Akku und Wind. Kein Quad-Propwash, Turtle-Modus oder Rotorschaden.",
-  "error.airplaneLocalOnly": "Dieses experimentelle Flugzeug ist nur im lokalen Freiflug verfügbar."
+  "airplane.launch": "Start",
+  "airplane.launchAir": "In der Luft",
+  "airplane.launchGround": "Vom Boden · Grove-Promenade",
+  "error.clientTooOld": "Lade die Seite neu, um einem Flugzeugraum beizutreten.",
+  "error.incompatibleRoute": "Diese Strecke oder Karte unterstützt das gewählte Fluggerät nicht.",
+  "error.invalidLaunch": "Bodenstarts sind im Grove-Freiflug möglich."
 }

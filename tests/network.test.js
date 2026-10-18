@@ -10,7 +10,7 @@ import { serveStatic } from "../server/static.js";
 import { DRONE_COLORS } from "../shared/visual/drone-colors.js";
 import { DEFAULT_SIMULATION, simulationKey } from "../shared/simulation/options.js";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-async function fixture(t, mapOverrides = {}) {
+async function fixture(t, mapOverrides = {}, roomOptions = {}) {
   const catalog = await loadCatalog();
   catalog.maps = [
     {
@@ -44,7 +44,7 @@ async function fixture(t, mapOverrides = {}) {
     },
   };
   const server = http.createServer();
-  attachRooms(server, catalog, db);
+  attachRooms(server, catalog, db, roomOptions);
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const sockets = [];
@@ -52,7 +52,7 @@ async function fixture(t, mapOverrides = {}) {
     for (const ws of sockets) ws.terminate();
     await new Promise((resolve) => server.close(resolve));
   });
-  async function client(name, color) {
+  async function client(name, color, hello = {}) {
     const ws = new WebSocket("ws://127.0.0.1:" + server.address().port + "/ws");
     sockets.push(ws);
     const messages = [];
@@ -71,7 +71,7 @@ async function fixture(t, mapOverrides = {}) {
         "Message timed out: " + messages.slice(-3).map((m) => m.type),
       );
     }
-    send("hello", { name, color });
+    send("hello", { name, color, ...hello });
     const welcome = await next((m) => m.type === "welcome");
     let seq = 0;
     return {
@@ -79,6 +79,7 @@ async function fixture(t, mapOverrides = {}) {
       send,
       next,
       id: welcome.id,
+      welcome,
       state: async (p, extra = {}) => {
         await delay(30);
         const at = Date.now();
@@ -529,10 +530,49 @@ test('eight pilots receive unique colors, occupied colors are rejected and leavi
  guest.send('appearance',{color:'coral'});await guest.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===guest.id)?.color==='coral');
 });
 
-test('experimental trainer rooms are rejected explicitly while quad multiplayer remains available',async t=>{
+test('older clients must refresh for airplane rooms while quad multiplayer remains available',async t=>{
 const {client}=await fixture(t),pilot=await client('Trainer pilot');
 pilot.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'free'});
-assert.equal((await pilot.next(m=>m.type==='error')).code,'airplaneLocalOnly');
+assert.equal((await pilot.next(m=>m.type==='error')).code,'clientTooOld');
 pilot.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'free'});
 assert.equal((await pilot.next(m=>m.type==='room')).room.droneId,'rift-x5');
+});
+
+test('eight trainer pilots synchronize typed animations, reconnect to their slot and restart with safe spacing',async t=>{
+  const {client,catalog}=await fixture(t,{kind:'park',size:700,aircraftKinds:['fixedWing']},{countdownMs:20});
+  const pilots=[];for(let i=0;i<8;i++)pilots.push(await client('Wing '+i,'coral',{protocol:3}));
+  const host=pilots[0];host.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'free',launchMethod:'ground',simulation:{...DEFAULT_SIMULATION,propDamage:true,propwash:true,ghost:false}});
+  const created=(await host.next(m=>m.type==='room')).room;
+  assert.equal(created.aircraftKind,'fixedWing');assert.equal(created.simulation.propDamage,false);assert.equal(created.simulation.propwash,false);assert.equal(created.simulation.ghost,false);
+  for(let i=1;i<8;i++){pilots[i].send('join',{code:created.code});await pilots[i].next(m=>m.type==='room'&&m.room.players.length===i+1);}
+  const joined=(await pilots[7].next(m=>m.type==='room'&&m.room.players.length===8)).room;
+  assert.equal(new Set(joined.players.map(p=>p.color)).size,8);
+  for(let i=0;i<8;i++)for(let j=i+1;j<8;j++)assert.ok(Math.hypot(...joined.players[i].p.map((v,k)=>v-joined.players[j].p[k]))>1.5);
+  for(const pilot of pilots)pilot.send('ready',{ready:true});
+  await host.next(m=>m.type==='room'&&m.room.players.length===8&&m.room.players.every(p=>p.ready));host.send('start');
+  const flying=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+  const config=catalog.airplanes[0],animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.3,roll:.2,yaw:.1}},opts={runId:flying.runId,configHash:config.configHash,mode:'manual',simulationKey:simulationKey(flying.simulation),animation};
+  for(let i=0;i<8;i++)await pilots[i].state(flying.players[i].p,opts);
+  const active=(await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.animation?.engine===.6))).room;
+  for(const p of active.players){assert.deepEqual(p.animation,animation);for(const key of ['propellers','rotorSpeeds','turtleMode'])assert.equal(key in p,false);}
+  await pilots[2].state([1,50,1],{...opts,animation:{...animation,engine:9}});
+  await pilots[2].state([2,50,1],{...opts,propellers:[[1,1,1],[1,1,1],[1,1,1],[1,1,1]]});
+  const old=pilots[2];old.ws.terminate();await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===old.id)?.connected===false);
+  const resumed=await client('Restored','blue',{protocol:3,resume:old.welcome.resume});
+  assert.equal(resumed.id,old.id);assert.equal(resumed.welcome.resumed,true);
+  const recovered=(await resumed.next(m=>m.type==='room')).room,own=recovered.players.find(p=>p.id===old.id);
+  assert.equal(own.animation.engine,0);assert.deepEqual(own.p,joined.players[2].p);assert.ok(own.resetId>joined.players[2].resetId);
+  host.send('restart');const lobby=(await host.next(m=>m.type==='room'&&m.room.phase==='lobby'&&m.room.players.length===8&&m.room.players.find(p=>p.id===old.id)?.resetId>own.resetId&&m.room.runId!==flying.runId)).room;
+  assert.equal(lobby.players.length,8);assert.ok(lobby.players.every(p=>p.animation.engine===0&&!p.ready));
+});
+
+test('manual airplane hotlaps save a pose ghost and rejects incompatible drone categories',async t=>{
+  const {client,catalog,db}=await fixture(t,{kind:'park',size:700,aircraftKinds:['fixedWing']},{countdownMs:20}),p=await client('Wing racer','coral',{protocol:3});
+  p.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'hotlap'});assert.equal((await p.next(m=>m.type==='error')).code,'incompatibleRoute');
+  p.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'hotlap'});await p.next(m=>m.type==='room');p.send('start');
+  const room=(await p.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+  const opts={runId:room.runId,configHash:catalog.airplanes[0].configHash,mode:'manual',simulationKey:simulationKey(room.simulation),animation:{kind:'fixedWing',engine:.4,surfaces:{pitch:0,roll:0,yaw:0}}};
+  for(const point of [[0,1,-.5],[0,1,.5],[0,1,2.5],[0,1,1.5],[0,1,-.5],[0,1,.5]])await p.state(point,opts);
+  const lap=await p.next(m=>m.type==='lap');assert.equal(lap.valid,true);assert.equal(lap.saved,true);assert.ok(lap.replay.frames.length>=3);
+  assert.equal(db.laps[0][2].id,'rift-t15');assert.equal(db.laps[0][3],'manual');assert.ok(db.laps[0][6].frames.length>=3);
 });

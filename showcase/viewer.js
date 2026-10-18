@@ -16,7 +16,7 @@
   configureDroneRenderer(THREE, renderer);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(36, 1, .005, 8);
+  const camera = new THREE.PerspectiveCamera(36, 1, .005, 50);
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
   controls.dampingFactor = .08;
@@ -48,7 +48,7 @@
   let currentModel = MODEL_CATALOG.find(model => model.status === 'ready' && typeof model.create === 'function');
   let drone = currentModel.create();scene.add(drone.root);
   const modelCache = new Map([[currentModel.id, drone]]);
-  let originalPropRotations=drone.propellers.map(p=>p.group.rotation.y);
+  let originalPropRotations=drone.propellers.map(p=>p.group.rotation[p.axis??'y']);
   const modelPropRotations=new Map([[currentModel.id,originalPropRotations]]);
   const stats = document.getElementById('mesh-stats');
   stats.textContent=`${Math.round(drone.triangles/1000)}k triangles · ${drone.meshes} parts`;
@@ -116,6 +116,10 @@
       const active=button.dataset.model===model.id;button.setAttribute('aria-pressed',String(active));
       if(!button.disabled)button.querySelector('.model-status').textContent=active?'Selected':'View ↗';
     });
+    const batteryToggle=document.getElementById('battery');
+    batteryToggle.disabled=drone.batteryParts.length===0;batteryToggle.checked=!batteryToggle.disabled;
+    batteryToggle.closest('label').classList.toggle('unavailable',batteryToggle.disabled);
+    const explode=document.getElementById('explode');explode.disabled=drone.assemblies.length===0;
     const actionToggle=document.getElementById('action-camera');
     actionToggle.disabled=drone.actionParts.length===0;actionToggle.checked=drone.actionParts.length>0;
     actionToggle.closest('label').classList.toggle('unavailable',actionToggle.disabled);
@@ -125,12 +129,12 @@
     if(model.id===currentModel.id){setView('hero');return;}
     try{
       let next=modelCache.get(model.id);
-      if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation.y));}
+      if(!next){next=model.create();modelCache.set(model.id,next);modelPropRotations.set(model.id,next.propellers.map(prop=>prop.group.rotation[prop.axis??'y']));}
       scene.remove(drone.root);drone=next;currentModel=model;scene.add(drone.root);
       originalPropRotations=modelPropRotations.get(model.id);
-      drone.propellers.forEach((prop,index)=>prop.group.rotation.y=originalPropRotations[index]);
+      drone.propellers.forEach((prop,index)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[index]);
       state.explode=0;state.spin=false;controls.autoRotate=false;
-      rotorMotion.reset();document.getElementById('prop-throttle').disabled=true;
+      rotorMotion.count=drone.propellers.length;rotorMotion.reset();document.getElementById('prop-throttle').disabled=true;
       drone.setExplode(0);drone.setWireframe(false);drone.setColor(colors.coral);
       drone.batteryParts.forEach(part=>part.visible=true);drone.actionParts.forEach(part=>part.visible=true);drone.propellers.forEach(prop=>prop.group.visible=true);
       for(const id of ['battery','props'])document.getElementById(id).checked=true;
@@ -140,6 +144,10 @@
       document.querySelectorAll('[data-color]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.color==='coral')));
       controls.minDistance=.19*(model.cameraScale||1);controls.maxDistance=1.25*(model.cameraScale||1);
       studioCircle.scale.setScalar(model.cameraScale||1);
+      const scale=model.cameraScale||1;
+      key.position.set(-.35*scale,.75*scale,.25*scale);
+      Object.assign(key.shadow.camera,{left:-.32*scale,right:.32*scale,top:.32*scale,bottom:-.32*scale,far:1.6*scale});
+      key.shadow.camera.updateProjectionMatrix();
       updateModelInfo(model);setView('hero',true);
     }catch(error){document.getElementById('status').textContent='Cannot load the model. '+error.message;console.error(error);}
   }
@@ -157,7 +165,7 @@
   document.getElementById('spin').addEventListener('change',e=>{
     state.spin=e.target.checked;
     document.getElementById('prop-throttle').disabled=!state.spin;
-    if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation.y=originalPropRotations[i]);
+    if(!state.spin)drone.propellers.forEach((p,i)=>p.group.rotation[p.axis??'y']=originalPropRotations[i]);
   });
   document.getElementById('prop-throttle').addEventListener('input',e=>{
     state.throttle=Number(e.target.value)/100;
@@ -186,7 +194,7 @@
       // Az export mindig összeszerelt modell, az aktuális színnel és láthatósággal.
       const exported=drone.root.clone(true);
       for(const part of drone.assemblies)exported.getObjectByName(part.group.name).position.copy(part.base);
-      drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation.y=originalPropRotations[i]);
+      drone.propellers.forEach((p,i)=>exported.getObjectByName(p.group.name).rotation[p.axis??'y']=originalPropRotations[i]);
       exported.updateMatrixWorld(true);
       const result=await new GLTFExporter().parseAsync(exported,{binary:true,onlyVisible:true,maxTextureSize:1024});
       const blob=new Blob([result],{type:'model/gltf-binary'}),url=URL.createObjectURL(blob);
@@ -208,8 +216,8 @@
       if(t===1)cameraTransition=null;
     }
     if(state.spin&&!exporting){
-      rotorMotion.update(dt,Array(4).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
-      drone.propellers.forEach((prop,i)=>prop.group.rotation.y=originalPropRotations[i]+rotorMotion.phase[i]);
+      rotorMotion.update(dt,Array(drone.propellers.length).fill(state.throttle**ROTOR_THRUST_EXPONENTS[currentModel.id]),1,drone.propellers,state.throttle>0);
+      drone.propellers.forEach((prop,i)=>prop.group.rotation[prop.axis??'y']=originalPropRotations[i]+rotorMotion.phase[i]);
     }
     controls.update(dt);renderer.render(scene,camera);
   });

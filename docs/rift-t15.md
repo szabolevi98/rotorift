@@ -1,17 +1,25 @@
-# Rift T15 — initial fixed-wing flight prototype
+# Rift T15 — fixed-wing trainer
 
-Implemented 2026-10-17 following user approval. The original high-wing trainer is
-available in **Singleplayer → Rift T15 → Free flight**, with an airborne practice
-start at 65 m and 15 m/s. Grove is the recommended first map. Concrete Yard and
-Skyline also allow free flight; Playground is omitted for this aircraft.
+Introduced 2026-10-17; ground/online/racing support added 2026-10-18. The user
+accepted the airborne handling before this extension; its force model and default
+control response are unchanged.
 
 ## Scope
 
-This delivers the compatible foundation and first flyable prototype from
-[the introduction plan](fixed-wing-plan.md). It does **not** complete the later
-ground-operation, online or racing milestones. There is no runway/take-off selector
-yet; reset always returns to the airborne start. The model is generated at runtime;
-the separate drone showcase/GLB exporter still contains the five quadcopters.
+- Local free flight on Grove, Concrete Yard and Skyline; Playground is excluded.
+- Airborne practice launch at 65 m and 15 m/s, or ground launch on the Grove south
+  promenade in free flight. Mode 2 steering: rudder on the left, elevator/ailerons
+  on the right. Add power and gently pull back once airspeed builds. Ground reset
+  parks the aircraft; airborne reset restores its heading and initial velocity.
+- Airplane-only rooms, up to eight pilots: unique colors, wide launch slots,
+  shared battery/wind/ghost rules, remote control-surface and prop animation,
+  reconnect, race results and restart. Quad damage, propwash and turtle are hidden.
+- Two Grove circuits: **Grove Air Circuit** (16 gates, easy) and **Lakeside Figure
+  Eight** (24 gates, intermediate), with 18 × 14 m gates. Drone dive routes are not
+  offered to the trainer. Local/verified timing, records, ghost selection and
+  checkpoint deltas reuse the common race pipeline with a separate aircraft ID.
+- The showcase reuses the flight factory, with color/prop preview and GLB export.
+  `scripts/export-trainer.mjs` also rebuilds `web/assets/models/rift-t15.glb`.
 
 The airplane is an original design, not an Apprentice replica. Its medium trainer
 envelope was informed by the manufacturer's [Apprentice STS manual](https://www.horizonhobby.com/on/demandware.static/-/Sites-horizon-master/default/Manuals/EFL3700-Manual-EN.pdf)
@@ -26,20 +34,24 @@ calibration. The current configuration is `experimental-estimate`.
 | Wing reference area | 0.332 m² |
 | Battery / motor | 3S 3200 mAh / one 14 N static-thrust electric motor |
 | Propeller | 10-inch, two blades |
-| Launch | Airborne, 65 m, 15 m/s, nose along local/world -Z |
+| Launch | Airborne 65 m / 15 m/s, course heading when racing; Grove ground start in free flight |
 | Controls / mode | Mode 2, Manual surface control |
 
 ## Implementation
 
 - `shared/physics/aircraft.js` dispatches to `DronePhysics` or `FixedWingPhysics`.
   Old quad configurations/hashes and network state remain unchanged. The server
-  publishes a separate `airplanes` array; only the game aircraft picker combines it.
+  publishes a separate `airplanes` array; the game aircraft picker combines it through `shared/catalog/aircraft.js`.
+  `shared/aircraft/capabilities.js` handles maps, modes, effects and route support.
+  Time step, world stepping and wind are independent shared utilities. Airplane
+  effects no longer borrow a drone prototype or carry dummy rotor damage.
 - `aerodynamics.js` computes body-frame lift, drag, sideslip forces and pitch/yaw/
   roll moments from wind-relative airspeed. Positive stick pitch lowers the nose;
   positive roll/yaw turns right. Controls lose authority at low airspeed. The lift
   curve blends continuously into a post-stall flat-plate approximation.
 - One Rapier rigid body, CCD, mass/inertia, simple fuselage/nose/wing/tail colliders
-  and three low-friction gear contacts. Wing tips collide independently of the
+  and three low-friction gear contacts. Main gear sits behind the center of mass;
+  ground-only lateral grip and rudder steering do not affect airborne dynamics. Wing tips collide independently of the
   fuselage. The fast prepared-world physics pipeline is shared with drone flight;
   no scene-query tree rebuild is added per tick. Aerodynamic output buffers are
   reused. Small vector helpers still allocate; no per-vertex/per-surface solver runs.
@@ -48,6 +60,10 @@ calibration. The current configuration is `experimental-estimate`.
 - Single-motor battery current/sag/power reduction and shared wind field. Quad
   propwash, rotor damage, turtle and hover-throttle shortcuts do not apply. A strong
   collision disarms the engine and requires reset; there is no structural damage.
+- `web/game/aircraft-visual.js` selects independent quad/airplane animation adapters.
+  Protocol 3 carries `{kind:"fixedWing", engine, surfaces:{pitch,roll,yaw}}`; server
+  validation rejects malformed payloads and drone rotor/turtle fields. Old clients
+  keep drone access but must refresh for airplane rooms.
 - Original low-poly airframe, separate animated ailerons/elevator/rudder and tractor
   propeller. Preview and flight release the instance-owned procedural geometry.
 - FPV, visible-airframe FPV and chase views, per-aircraft camera profile, airspeed
@@ -60,8 +76,13 @@ calibration. The current configuration is `experimental-estimate`.
 control signs, no aerodynamic authority at rest, lift/drag, unusual airflow,
 unpowered mechanical-energy loss, powered/extreme-input finite states, reset,
 wingtip strikes, battery, disabled quad effects and identical input sequences
-under 30/60/120/144 Hz display cadence. The full suite passed **436 tests** during
-introduction, including the five unchanged drone configurations.
+under 30/60/120/144 Hz display cadence. Additional checks cover independent
+remote visual animation, physical wing contact versus ghost pass-through,
+compatible route selection/editor preservation, eight clients with animation,
+reconnect/reset and unique colors, and a valid Manual hotlap with saved replay.
+`tests/aircraft-ground.test.js` uses Grove's actual prepared collision asset for
+stable parking and powered takeoff, and a separate gentle touchdown test.
+The full suite passed **444 tests** on 2026-10-18, including the unchanged drones.
 
 Initial 30-second runs in a clear physics world, neutral surfaces, calm wind,
 starting at 150 m and 15 m/s (no scenery/ground constraint):
@@ -77,6 +98,9 @@ climbs under power; lowering the nose converts thrust/height to speed. The isola
 physics sample took approximately 0.02–0.032 ms/tick on the development machine;
 that is not a multi-map/mobile benchmark. The browser check on Grove exercised
 airborne reset, keyboard auto-arm/power, chase view, pause and airplane settings
-with no console errors. Radio and phone flight feedback on this new airplane,
-ground handling/runways, exact trim and broader performance calibration remain
-future work. The existing accepted drone hardware tests are unaffected.
+with no console errors. The new browser checks also cover ground launch, airplane course selection,
+remote room startup, showcase animation and GLB export. Eight simulated clients
+are not eight real players on separate machines. Airplane radio/mobile feedback,
+latency-dependent collision tuning, exact trim and broader calibration remain
+ongoing work. There is no structural damage, autopilot, mixed-aircraft room or
+new runway mesh. The existing accepted drone hardware tests are unaffected.

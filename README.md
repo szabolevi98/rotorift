@@ -68,11 +68,14 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 The [Rift T15](docs/rift-t15.md) introduces separate fixed-wing aerodynamics:
 lift/drag, stall, airflow-dependent elevator/aileron/rudder control, gliding and
-single-motor propulsion. Select it in Singleplayer for local free flight with an
-airborne practice start. It has its own control travel/expo, airspeed display,
-camera profile, animated surfaces, wingtip collisions, wind and battery simulation.
-Drone courses, online rooms, ground take-offs and showcase export are deferred;
-this is an initial flight prototype, not a calibrated real-aircraft replica.
+single-motor propulsion. It supports local/online free flight, airplane-only rooms
+for up to eight pilots, two dedicated Grove circuits, records and pose ghosts.
+Choose an airborne practice start, or a ground start on the Grove south promenade
+in free flight. It has separate control travel/expo, animated surfaces, wingtip
+and landing-gear collisions, wind and battery simulation. Explore the same model
+in the showcase and export it as GLB. Handling remains an experimental estimate;
+it is not a calibrated real-aircraft replica. Playground and drone-only courses
+are excluded for the trainer.
 
 The [Rift X35](docs/rift-x35.md) is a compact 215 g carbon-frame aircraft with a
 top-mounted battery and no action camera. Its measured simulation hover throttle
@@ -316,8 +319,11 @@ Optional `details` in each race JSON stores `difficulty` (`easy`, `medium`, `har
 `recommendedDrones` (catalog IDs) and `description` in `en`, `hu`, `de`, `fr`, `es`.
 Descriptions and recommendations are advisory and do not restrict drone selection.
 Metadata-only project saves preserve the route version, records and ghosts.
+Optional `aircraftKinds` restricts compatibility to `quadrotor` or `fixedWing`;
+omitting it preserves the legacy drone-only behavior. Compatibility changes bump
+the route version. Aircraft selection only shows compatible courses.
 
-Eleven race routes ship. Lengths follow the saved guide, including the return to
+Thirteen race routes ship (eleven drone courses and two airplane circuits). Lengths follow the saved guide, including the return to
 the start/finish gate:
 
 | Map | Route | Length | Gates | Main features |
@@ -325,6 +331,8 @@ the start/finish gate:
 | Grove | Grove Grand Tour | 2.27 km | 28 | Pavilion passage, lakes and woodland perimeter |
 | Grove | Twin Lakes Flow | 1.74 km | 28 | Under the footbridge, over the jetty and through the boathouse |
 | Grove | Pavilion Peaks | 1.85 km | 26 | Covered arcade, upper pavilion gallery and a single outdoor dive gate with recovery space |
+| Grove | Grove Air Circuit · T15 | 1.41 km | 16 | Wide, level airplane circuit at 52 m |
+| Grove | Lakeside Figure Eight · T15 | 1.56 km | 24 | Broad climbing and descending airplane turns |
 | Construction Yard | Concrete Marathon | 1.79 km | 29 | Ground-floor bays, hangar, warehouse and an upper-floor crossing |
 | Construction Yard | Tower A Dive | 1.37 km | 23 | Climb above the tower, descend its open shaft and cross Tower B |
 | Construction Yard | Cranes & Twin Shafts | 1.70 km | 29 | Crane-height climbs, dives through both towers and a hangar finish |
@@ -354,6 +362,9 @@ editor reports it. Guide generation runs during authoring, not in flight.
 
 After map changes, rebuild collisions, run `node scripts/build-race-guides.mjs`
 and rebuild the showcase.
+
+`node scripts/author-airplane-races.mjs` rebuilds the two trainer circuits.
+`node scripts/export-trainer.mjs` exports the shared procedural T15 as GLB.
 
 `node scripts/author-races.mjs` rebuilds the nine long authored courses from their
 landmark-based designs, checks gate clearance and regenerates their guides. It

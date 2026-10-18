@@ -12,7 +12,7 @@ const {airplanes}=await loadCatalog(),config=airplanes[0];
 const controls={pitch:0,roll:0,yaw:0,throttle:0};
 function flight(){const world=new RAPIER.World({x:0,y:-9.81,z:0});return {world,physics:createAircraftPhysics(RAPIER,world,config,[0,100,0],{updateSceneQueries:false})};}
 test('trainer configuration, capabilities and geometry are independent of the five quadcopters',()=>{
-  assert.equal(config.wingspanM,1.5);assert.equal(config.motors.length,1);assert.equal(aircraftCapabilities(config).racing,false);
+  assert.equal(config.wingspanM,1.5);assert.equal(config.motors.length,1);assert.equal(aircraftCapabilities(config).racing,true);
   assert.throws(()=>validateAirplane({...config,aero:{...config.aero,areaM2:-1}}));
   const model=createTrainerModel();let props=0,surfaces=0,triangles=0;
   model.traverse(o=>{if(o.userData.propeller)props++;if(o.userData.surface)surfaces++;if(o.isMesh)triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3;});
@@ -48,4 +48,47 @@ test('wing tips collide, while single-motor battery and disabled quad-only effec
   for(let i=0;i<120;i++)p.step({...controls,throttle:.6});
   assert.ok(Math.abs(p.pose.v[0])>.01||p.crashed||Math.abs(p.pose.w[1])>.05,'wing collision affects the airframe');
   assert.ok(p.effects.usedMah>0);assert.ok(p.effects.telemetry.voltage>0);world.free();
+});
+
+import {createAircraftVisual} from '../web/game/aircraft-visual.js';
+import {RemoteCollisions} from '../web/game/remote-collisions.js';
+import {aircraftRoutes,routeSupportsAircraft} from '../shared/aircraft/capabilities.js';
+import {selectAircraftRoute,routePreferenceKey} from '../web/aircraft-menu.js';
+import {RouteDraft} from '../shared/race/editor.js';
+
+test('local and remote trainer visuals animate one axial rotor and independent hinged surfaces',()=>{
+  const model=createTrainerModel(),visual=createAircraftVisual(model,config);
+  const physics={armed:true,motorThrust:[7],surfaces:{pitch:-.2,roll:.3,yaw:.1}};
+  visual.bindPhysics(physics);visual.update(.1,physics,{throttle:.5});
+  const prop=model.getObjectByName('T15_propeller');assert.notEqual(prop.rotation.z,0);assert.equal(prop.rotation.y,0);
+  const payload=visual.networkState(physics,false);assert.deepEqual(Object.keys(payload),['animation']);assert.equal(payload.animation.engine,Math.SQRT1_2);
+  const remoteModel=createTrainerModel(),remote=createAircraftVisual(remoteModel,config,{remote:true});remote.updateRemote(.1,{...payload,resetId:1});
+  assert.notEqual(remoteModel.getObjectByName('T15_propeller').rotation.z,0);
+  const elevator=[];remoteModel.traverse(o=>{if(o.userData.surface==='elevator')elevator.push(o)});assert.ok(Math.abs(elevator[0].rotation.x+.08)<1e-12);
+  remote.updateRemote(.1,{...payload,resetId:1,connected:false});assert.equal(remote.motorSpeeds[0],0);assert.equal(elevator[0].rotation.x,0);
+  visual.reset();assert.equal(visual.motorSpeeds[0],0);visual.dispose();remote.dispose();
+});
+
+test('trainer wing collision proxies block contact and ghost mode removes all remote geometry',()=>{
+  const results=[];
+  for(const ghost of [true,false]){
+    const world=new RAPIER.World({x:0,y:0,z:0}),p=createAircraftPhysics(RAPIER,world,config,[-1.8,30,0],{updateSceneQueries:false}),remote=new RemoteCollisions(RAPIER,world,config);
+    remote.update([{id:'peer',p:[0,30,0],q:{x:0,y:0,z:0,w:1},resetId:1}],'self',ghost);
+    p.body.setLinvel({x:4,y:0,z:0},true);
+    for(let i=0;i<120;i++){remote.step(1/240);p.step(controls);}
+    results.push(p.pose.p[0]);remote.update([],'self',false);assert.equal(remote.bodies.size,0);assert.equal(world.bodies.len(),1);remote.dispose();world.free();
+  }
+  assert.ok(results[0]>-.3,JSON.stringify(results));assert.ok(results[1]<-1,JSON.stringify(results));
+});
+
+test('route selection preserves old drone preferences and isolates airplane courses through editor round trips',async()=>{
+  const catalog=await loadCatalog(),park=catalog.maps[0],quad=catalog.drones[0];
+  assert.equal(aircraftRoutes(park,quad).length,3);assert.equal(aircraftRoutes(park,config).length,2);
+  assert.equal(selectAircraftRoute(park,quad,'wing_1').routeId,'race_1');assert.equal(selectAircraftRoute(park,config,'race_1').routeId,'wing_1');
+  assert.equal(routePreferenceKey(park,quad),'selected-race-liget');assert.equal(routePreferenceKey(park,config),'selected-race-liget-fixedWing');
+  assert.equal(selectAircraftRoute(catalog.maps[1],config).gates.length,0);
+  for(const route of aircraftRoutes(park,config)){
+    const draft=new RouteDraft(park,route);draft.setGate(1,{width:20});assert.deepEqual(draft.export().aircraftKinds,['fixedWing']);
+    assert.ok(route.gates.every(g=>g.width>=18&&g.height>=14));assert.equal(routeSupportsAircraft(route,quad),false);
+  }
 });

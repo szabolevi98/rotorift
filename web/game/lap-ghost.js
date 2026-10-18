@@ -42,8 +42,8 @@ export class LapGhostPilot {
     this.position.set(...pose.p);this.rotation.set(pose.q.x,pose.q.y,pose.q.z,pose.q.w);
     this.model.position.copy(this.offset).applyQuaternion(this.rotation).add(this.position);
     this.model.quaternion.copy(this.rotation);
-    if(playerPosition&&this.position.distanceTo(new THREE.Vector3(...playerPosition))<this.config.motorDiagonalM*.65)this.model.visible=false;
-    for(const prop of this.props)prop.rotation.y=ms*.014*this.config.motors[prop.userData.motorIndex].direction;
+    if(playerPosition&&this.position.distanceTo(new THREE.Vector3(...playerPosition))<(this.config.wingspanM??this.config.motorDiagonalM)*.65)this.model.visible=false;
+    for(const prop of this.props)prop.rotation[prop.userData.axis??'y']=ms*.014*this.config.motors[prop.userData.motorIndex].direction;
   }
   dispose(){this.trail.dispose();this.model.removeFromParent();this.material.dispose();for(const geometry of this.geometries)geometry.dispose();}
 }

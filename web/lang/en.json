@@ -186,7 +186,7 @@
   "simulation.battery": "Battery simulation",
   "simulation.propDamage": "Propeller damage",
   "simulation.propwash": "Propwash",
-  "simulation.ghost": "Ghost mode · no drone collisions",
+  "simulation.ghost": "Ghost mode · no aircraft collisions",
   "simulation.wind": "Wind",
   "simulation.hint": "Enable each effect separately. Reset restores the battery and propellers.",
   "simulation.hostHint": "Shared room rules. Only the host can change them; changes clear everyone’s ready status.",
@@ -386,7 +386,7 @@
   "settings.rateCurve": "Stick response",
   "route.details": "Details",
   "route.close": "Close",
-  "route.recommended": "Recommended drones",
+  "route.recommended": "Recommended aircraft",
   "route.gates": "{count} gates",
   "route.easy": "Easy",
   "route.medium": "Intermediate",
@@ -402,7 +402,7 @@
   "drone.rift-t15": "1.5 m trainer · 3S",
   "spec.wingspan": "Wingspan",
   "airplane.manual": "Manual",
-  "airplane.note": "Experimental airplane · local free flight, airborne practice start. Playground and drone races are not supported yet. Lower throttle, then add power to arm.",
+  "airplane.note": "Trainer airplane · free flight, shared rooms and airplane circuits. Lower throttle, then add power to arm.",
   "airplane.controls": "Airplane controls",
   "airplane.controlHint": "Mode 2: left throttle/rudder, right elevator/ailerons. Forward stick lowers the nose. These settings control surface travel, not drone rates.",
   "airplane.travel": "Control surface travel",
@@ -411,5 +411,10 @@
   "airplane.stall": "STALL · lower the nose",
   "airplane.crashed": "CRASHED · reset the aircraft",
   "airplane.effects": "Airplane effects: battery and wind. Quad propwash, turtle and per-rotor damage do not apply.",
-  "error.airplaneLocalOnly": "This experimental airplane is available in local free flight only."
+  "airplane.launch": "Launch",
+  "airplane.launchAir": "In the air",
+  "airplane.launchGround": "From the ground · Grove promenade",
+  "error.clientTooOld": "Refresh the page to join an airplane room.",
+  "error.incompatibleRoute": "This route or map does not support the selected aircraft.",
+  "error.invalidLaunch": "Ground launches are available in Grove free flight."
 }

@@ -186,7 +186,7 @@
   "simulation.battery": "Simulation de batterie",
   "simulation.propDamage": "Dégâts aux hélices",
   "simulation.propwash": "Propwash",
-  "simulation.ghost": "Mode fantôme · sans collisions entre drones",
+  "simulation.ghost": "Mode fantôme · sans collisions entre appareils",
   "simulation.wind": "Vent",
   "simulation.hint": "Activez chaque effet séparément. Réinitialiser restaure la batterie et les hélices.",
   "simulation.hostHint": "Règles communes du salon. Seul l’hôte peut les modifier ; chacun doit ensuite confirmer qu’il est prêt.",
@@ -386,7 +386,7 @@
   "settings.rateCurve": "Réponse des manches",
   "route.details": "Détails",
   "route.close": "Fermer",
-  "route.recommended": "Drones conseillés",
+  "route.recommended": "Appareils recommandés",
   "route.gates": "{count} portes",
   "route.easy": "Facile",
   "route.medium": "Intermédiaire",
@@ -402,7 +402,7 @@
   "drone.rift-t15": "Avion école de 1,5 m · 3S",
   "spec.wingspan": "Envergure",
   "airplane.manual": "Manuel",
-  "airplane.note": "Avion expérimental · vol libre local, départ en vol. Aire de jeux et courses de drones non pris en charge. Baissez puis augmentez les gaz pour armer.",
+  "airplane.note": "Avion-école · vol libre, salons partagés et circuits pour avions. Baissez puis augmentez les gaz pour armer.",
   "airplane.controls": "Commandes de l’avion",
   "airplane.controlHint": "Mode 2 : gaz/direction à gauche, profondeur/ailerons à droite. Pousser le manche abaisse le nez. Réglages de débattement, pas de rates drone.",
   "airplane.travel": "Débattement des gouvernes",
@@ -411,5 +411,10 @@
   "airplane.stall": "DÉCROCHAGE · baissez le nez",
   "airplane.crashed": "CRASH · réinitialisez l’avion",
   "airplane.effects": "Avion : batterie et vent. Pas de propwash quad, mode tortue ou dégâts par rotor.",
-  "error.airplaneLocalOnly": "Cet avion expérimental est disponible uniquement en vol libre local."
+  "airplane.launch": "Départ",
+  "airplane.launchAir": "En vol",
+  "airplane.launchGround": "Au sol · promenade de Grove",
+  "error.clientTooOld": "Actualisez la page pour rejoindre un salon pour avions.",
+  "error.incompatibleRoute": "Ce circuit ou cette carte ne prend pas en charge cet appareil.",
+  "error.invalidLaunch": "Le départ au sol est disponible en vol libre à Grove."
 }
