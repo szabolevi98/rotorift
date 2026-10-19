@@ -186,6 +186,8 @@
   "simulation.title": "Simulationsoptionen",
   "simulation.battery": "Akkusimulation",
   "simulation.propDamage": "Propellerschäden",
+  "simulation.batteryHint": "Der Akku entlädt sich; bei niedrigem Ladestand sinkt die Leistung.",
+  "simulation.propDamageHint": "Stöße können Propellerblätter beschädigen und den Schub verringern.",
   "simulation.propwash": "Propwash",
   "simulation.propwash.droneHint": "Schütteln beim Zurückfliegen in die eigene turbulente Luftströmung.",
   "simulation.propwash.airplaneHint": "Wirkung des Propellerluftstroms auf die Ruderflächen.",

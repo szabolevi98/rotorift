@@ -186,6 +186,8 @@
   "simulation.title": "Opciones de simulación",
   "simulation.battery": "Simulación de batería",
   "simulation.propDamage": "Daños en hélices",
+  "simulation.batteryHint": "La batería se descarga; con poca carga se reduce la potencia.",
+  "simulation.propDamageHint": "Los impactos pueden dañar las palas y reducir el empuje.",
   "simulation.propwash": "Propwash",
   "simulation.propwash.droneHint": "Sacudidas al volver a entrar en la propia estela turbulenta.",
   "simulation.propwash.airplaneHint": "Efecto del flujo de la hélice sobre las superficies de control.",

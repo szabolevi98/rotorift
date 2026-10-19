@@ -186,6 +186,8 @@
   "simulation.title": "Simulation options",
   "simulation.battery": "Battery simulation",
   "simulation.propDamage": "Propeller damage",
+  "simulation.batteryHint": "The battery drains; low charge reduces available power.",
+  "simulation.propDamageHint": "Impacts can damage propeller blades and reduce thrust.",
   "simulation.propwash": "Propwash",
   "simulation.propwash.droneHint": "Shaking when flying back into your own turbulent airflow.",
   "simulation.propwash.airplaneHint": "The effect of propeller airflow on control surfaces.",

@@ -202,10 +202,10 @@ function createSimulationControls() {
         }
         refreshSimulationControls();refreshGhostChoices();
       };
-      if (key === "propwash") {
+      if (["battery", "propDamage", "propwash"].includes(key)) {
         const copy = node("span", "simulation-copy"), description = node("small", "simulation-description");
         description.id = input.id + "-description";
-        description.dataset.propwashDescription = "";
+        description.dataset.simDescription = key;
         input.setAttribute("aria-describedby", description.id);
         copy.append(caption, description); label.append(copy, input);
       } else label.append(caption, input);
@@ -228,9 +228,12 @@ function refreshSimulationControls() {
       if(!mixed&&['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
       input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
       input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
-      if (key === "propwash") {
-        input.setAttribute("aria-label", t("simulation.propwash"));
-        input.parentElement.querySelector("[data-propwash-description]").textContent = t("simulation.propwash." + (mixed ? "mixedHint" : isFixedWing(aircraft) ? "airplaneHint" : "droneHint"));
+      const description = input.parentElement.querySelector("[data-sim-description]");
+      if (description) {
+        input.setAttribute("aria-label", t("simulation." + key));
+        description.textContent = t(key === "propwash"
+          ? "simulation.propwash." + (mixed ? "mixedHint" : isFixedWing(aircraft) ? "airplaneHint" : "droneHint")
+          : "simulation." + key + "Hint");
       }
       if (key === "wind") {
         input.value = view.options.wind;

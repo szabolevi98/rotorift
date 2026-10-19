@@ -186,6 +186,8 @@
   "simulation.title": "Options de simulation",
   "simulation.battery": "Simulation de batterie",
   "simulation.propDamage": "Dégâts aux hélices",
+  "simulation.batteryHint": "La batterie se décharge ; une charge faible réduit la puissance.",
+  "simulation.propDamageHint": "Les chocs peuvent endommager les pales et réduire la poussée.",
   "simulation.propwash": "Propwash",
   "simulation.propwash.droneHint": "Secousses en repassant dans son propre sillage turbulent.",
   "simulation.propwash.airplaneHint": "Effet du souffle de l’hélice sur les gouvernes.",

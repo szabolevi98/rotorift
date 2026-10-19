@@ -186,6 +186,8 @@
   "simulation.title": "Szimulációs opciók",
   "simulation.battery": "Akkumulátor-szimuláció",
   "simulation.propDamage": "Propellersérülés",
+  "simulation.batteryHint": "Az akkumulátor merül; alacsony töltöttségnél csökken a teljesítmény.",
+  "simulation.propDamageHint": "Ütközéskor sérülhetnek a lapátok, csökkentve a tolóerőt.",
   "simulation.propwash": "Propwash",
   "simulation.propwash.droneHint": "Rázkódás a saját turbulens légáramba visszarepüléskor.",
   "simulation.propwash.airplaneHint": "A légcsavar légáramának hatása a kormányfelületekre.",
