@@ -1,6 +1,6 @@
 # Fixed-wing aircraft introduction plan
 
-Recorded: **2026-10-16**. Updated: **2026-10-18**. Status: **trainer and small pusher implemented**.
+Recorded: **2026-10-16**. Updated: **2026-10-19**. Status: **Aero 40, Aero 75 and Aero 150 implemented**.
 
 The approved Aero 150 now includes separate flight/effects/visual implementations,
 ground and airborne launch, eight-pilot airplane rooms, reconnect/restart,
@@ -11,10 +11,17 @@ and real-network tuning remains ongoing; automated tests do not certify handling
 
 The smaller [Rift Aero 75](rift-s75.md) now adds an original 750 mm / 2S pusher,
 with its own visual factory, structure and tuning, sharing the fixed-wing solver.
+The [Rift Aero 40](rift-a40.md) adds a 400 mm / 1S micro warbird. On 2026-10-19
+the fleet comprises six drones and three airplanes; this is a dated snapshot,
+not a permanent fleet-size limit. See the [current summary](prototype.md).
+
+The design below records the **2026-10-16 starting point**, when five drones
+existed. Its initial scope and exclusions are historical requirements, not
+unimplemented tasks or a description of the current fleet.
 
 ## Goal and first aircraft
 
-Add conventional electric RC airplanes alongside the five existing quadcopters,
+Add conventional electric RC airplanes alongside the then-existing quadcopters,
 while keeping Rotorift lightweight and playable in a browser on desktop and phone.
 The airplane needs its own flight model, not a modified quadcopter motor mixer.
 
@@ -52,7 +59,7 @@ must remain valid. Planning airplane support does not change the current game.
 
 Introduce an aircraft type discriminator such as `kind: "quadrotor" | "fixedWing"`.
 Treat existing drone configurations without `kind` as `quadrotor`. Keep
-`data/drones/` and its five IDs working; load new aircraft from a proposed
+`data/drones/` and its existing IDs working; load new aircraft from a proposed
 `data/airplanes/` directory. Avoid a repository-wide rename simply to add one type.
 
 Before implementing the airplane, extract a small shared aircraft interface around

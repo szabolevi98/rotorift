@@ -1,8 +1,10 @@
 # Rift X35
 
 3.5-inch, 4S freestyle aircraft with a top-mounted battery and FPV camera only.
-There is no action camera, action-camera mount, or propeller guard. Fleet order:
-65, 75, C3, X35, X5. The five languages, solo selection, radio/rate profiles,
+There is no action camera, action-camera mount, or propeller guard. Fleet order
+at its introduction (2026-10-14): 65, 75, C3, X35, X5. This is a historical
+snapshot; see the [current fleet](prototype.md) for later additions. The five
+languages, solo selection, radio/rate profiles,
 multiplayer rooms, individual propeller damage and eight colors use the normal
 catalog/configuration path.
 

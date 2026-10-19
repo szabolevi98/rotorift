@@ -1,15 +1,17 @@
 # Repülési hangolás és dátumozott mérések
 
-Aktuális állapot (2026-10-16): öt külön konfiguráció működik; a verziók
-drónonként értendők, nem egy közös flottaverzióként. A mérőprogram mind az öt
-gépet futtatja. A lentebb szereplő három-/négydrónos táblázatok és korábbi
-verziószámok a megadott időpontok mérési előzményei, nem a jelenlegi flotta felsorolásai.
+Állapotkép (2026-10-19): hat drón és három repülő rendelkezik külön fizikai
+konfigurációval; a verziók gépenként értendők, nem közös flottaverzióként.
+A `measure-flight.mjs` a katalógusból betöltött összes drónt méri, a repülőknek
+külön aerodinamikai tesztjeik vannak. Aktuális flotta: [prototype.md](prototype.md).
+A lentebb szereplő táblázatok, drónszámok és verziók a megadott időpontok
+mérési előzményei; a régi mérések nem tekinthetők az új gépek mérésének.
 
 2026-10-14: a [Rift X35](rift-x35.md) saját 1-es konfigurációval csatlakozott:
 215 g, 3,5″ propeller, 160 mm motortáv, 4S / 650 mAh akku, akciókamera nélkül.
 Mért szimulációs hover: 28,63%; szinttartó teljes gázas utazósebesség: 153,58 km/h;
 teljes roll: 0,571 s; 50–25 km/h kifutás: 1,688 s / 16,30 m.
-A mérőprogram és repülési tesztek mind az öt konfigurációt ellenőrzik.
+A 2026-10-14-i mérőprogram és repülési tesztek az akkori öt konfigurációt ellenőrizték.
 
 2026-10-13-i kiegészítés: a három korábbi konfiguráció most 6-os verziójú,
 külön lapátsérüléssel. A Rift 75 új, 1-es verziójú konfiguráció; akkumulátorral
@@ -150,7 +152,7 @@ A 65 motorerejének nagyságrendi támpontja a gyártó
 amely motor/prop változattól függően kb. 28–37 g maximális tolóerőt ad meg.
 A C3 kategóriájának támpontja a
 [GEPRC 1404 motorcsalád](https://geprc.com/product/geprc-speedx2-1404-3000kv-4600kv-motor/).
-A három teljes konfiguráció és a gázgörbék továbbra is hangolási becslések.
+Az ebben a korábbi mérésben szereplő három konfiguráció és gázgörbéik hangolási becslések.
 
 A nagyobb négyzetes légellenállás sebességfüggő erővel állítja be az utazó
 végsebességet; nincs kemény sebességlevágás. Zuhanás, irány, gázállás és ütközési
@@ -165,7 +167,7 @@ mozgásellenőrzésének névleges kategóriahatára, nem kliensoldali sebesség
 - `controller.derivativeFilterSeconds`: pozitív időállandó másodpercben.
 - `linearDrag`: kg/s; `quadraticDrag`: kg/m; `angularDrag`: kg·m²/s, nem negatív.
 
-A konfigurációk verziója 2, új hash-sel. A korábbi ranglisták megmaradnak, de az
+Az itt leírt 2026-10-11–12-i hangolás konfigurációi 2-es verziót és új hash-t kaptak. A korábbi ranglisták megmaradnak, de az
 új hangolással repült körök külön konfiguráció-kategóriába kerülnek.
 A tesztek tényleges elrugaszkodást, lebegést, forgási sebességet, teljes flipet,
 túlpörgést, elengedés utáni fékezést, sebességbeállást és 120/240 Hz stabilitást mérnek.

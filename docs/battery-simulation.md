@@ -1,4 +1,8 @@
-# Akkumulátorszimuláció – 2026. október 13.
+# Akkumulátorszimuláció
+
+Bevezetés: **2026-10-13**. Leírás aktualizálva: **2026-10-19**.
+A dátumozott mérések az akkori gépekre vonatkoznak; az aktuális flotta
+összefoglalója a [prototype.md](prototype.md) oldalon található.
 
 Az akkumulátor továbbra is opcionális. Online szobában a házigazda kapcsolja,
 a szoba szabálya minden pilótára érvényes. A fogyasztást a repülő drón motorjai
@@ -74,7 +78,7 @@ Alacsony töltöttségnél sárga, leszállási állapotban piros. A figyelmezte
 képernyőolvasóval is elérhető; az élő feszültséget nem olvassa fel folyamatosan.
 Kikapcsolt szimulációnál a kártya rejtett.
 
-A tesztek a katalógus mind az öt drónjánál ellenőrzik a fogyasztás integrálását, a gáztól
+A tesztek a katalógusból betöltött összes drónnál ellenőrzik a fogyasztás integrálását, a gáztól
 függő merülést, a rövid terhelési esést, a kapacitás nélküli feszültség-visszaállást,
 a figyelmeztetéseket, a teljes kimerülést, a resetet és a 30/120/240 Hz-es
 időlépés-egyezést. Böngészőben a gyorsított, 1%-os kapacitású, adatbázis nélküli

@@ -57,6 +57,11 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 ## Aircraft and maps
 
+Fleet snapshot: **2026-10-19 — six drones, three airplanes and four maps**.
+Counts describe that date and may grow; the runtime catalog comes from
+`data/drones/`, `data/airplanes/` and `data/maps/`. See the
+[current implementation summary](docs/prototype.md) for the latest documented scope.
+
 | Aircraft | Class | Battery |
 | --- | --- | --- |
 | Rift 65 | 65 mm tinywhoop | 1S / 300 mAh |

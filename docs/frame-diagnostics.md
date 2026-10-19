@@ -8,7 +8,7 @@ A renderelés `requestAnimationFrame` ütemezést használ, a fizika fixen
 120 FPS körül kettő; 35 FPS esetén felváltva hat-hét lépés jut egy képkockára.
 Az interpoláció csak a kirajzolt modell helyét változtatja.
 
-A `tests/fixed-step.test.js` mind az öt drónra ugyanazt a három másodperces
+A `tests/fixed-step.test.js` a katalógusból betöltött összes drónra ugyanazt a három másodperces
 repülést futtatja 30, 35, 60, 75, 120, 144 és 240 Hz-es képkockákkal,
 valamint váltakozó 60/35/120 FPS-sel. A fizikai lépésszám, pozíció, orientáció,
 sebesség, motorerő és akkufogyasztás egyezik. Apró lebegőpontos tolerancia
@@ -94,7 +94,7 @@ A regressziós tesztek zárt panelnél keletkező 120/200 ms-os intervallumokat,
 megnyitást/becsukást, pufferből kiöregedő csúcsot, szünetet, nullázást,
 GPU-adat hiányát és a jelentés tényleges időtartamát ellenőrzik.
 A 2026-10-16-i célzott futtatás 20 ellenőrzése sikeres: diagnosztika,
-mind az öt drón kijelzőfrekvenciától független fizikája, katalógus/fordítások
+az akkori öt drón kijelzőfrekvenciától független fizikája, katalógus/fordítások
 és betöltési képernyő, valamint shader-előkészítés. Ez nem új teljes
 tesztcsomag-eredmény.
 # View-switch shader preparation (2026-10-15)

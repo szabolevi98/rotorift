@@ -36,7 +36,9 @@ visszaállítása szintén új propellereket ad, miközben a futam előrehaladá
 
 A drón JSON `simulation.propeller` részében a hajlás, csorbulás és törés
 sebességküszöbei, a forgó lapát becsült csúcssebessége és a védőgyűrű méretei
-állíthatók. A fizikai konfigurációk verziója 6.
+állíthatók. A sérülés bevezetésekor a három eredeti drón konfigurációja 6-os
+verziót kapott. Ez történeti verziószám, nem közös flottaverzió; a jelenlegi
+értékeket a gépenkénti `data/drones/*.json` fájlok tartalmazzák.
 
 Ellenőrzések: négy rotor függetlensége; gyenge ütközés és álló, ép drón;
 valódi, egyetlen rotort érő akadály; védőgyűrű és nyitott belső tér; teljes

@@ -1,6 +1,10 @@
 # Eight-player multiplayer check
 
 Run on **2026-10-17**. Result: **passed**.
+The figures in the original report below describe that run and its five-drone
+fleet. Later mixed-aircraft checks are dated separately at the end of this page;
+they do not retroactively expand this saved measurement. Current scope:
+[prototype.md](prototype.md).
 Raw results: [multiplayer-check-2026-10-17.json](multiplayer-check-2026-10-17.json).
 
 The reusable checker runs the real `attachRooms` WebSocket server on an isolated
@@ -40,7 +44,7 @@ run, so they are lower bounds; timing percentiles use the retained samples.
 
 ## Collision checks
 
-Each of the five aircraft was tested with seven real `RemoteCollisions` proxies
+Each of the five drones present on 2026-10-17 was tested with seven real `RemoteCollisions` proxies
 in Rapier, with ghost mode on and off. Ghosts had no contacts and crossed the
 opposing aircraft. Solid proxies produced contact candidates and a substantial
 change in forward momentum. Proxies were removed cleanly afterwards.

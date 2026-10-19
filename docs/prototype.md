@@ -3,6 +3,9 @@
 Frissítve: **2026-10-19**. Ez az oldal az aktuális megvalósítást és a ténylegesen
 nyitott munkát foglalja össze. A korábbi prototípus fejlesztéstörténete a Gitben,
 a részletes mérések és korlátaik a lent hivatkozott témadokumentumokban maradnak.
+A darabszámok a fenti dátum pillanatképei; az élő katalógus forrása a
+`data/drones/`, `data/airplanes/` és `data/maps/` könyvtár. A dátumozott régi
+mérések az akkori flottára vonatkoznak, és nem bővülnek visszamenőleg új gépekkel.
 
 ## Elkészült
 
@@ -52,8 +55,10 @@ A kisebb képernyők szükség szerint továbbra is görgethetők.
 
 ## Ellenőrzések és korlátaik
 
-Az automatizált tesztek a katalógus mind az öt fizikai konfigurációját vizsgálják,
-beleértve a lebegést, forgási választ, visszaszintezést és a fix időlépést.
+Az automatizált tesztek a katalógus drón- és repülőkonfigurációit vizsgálják.
+Drónoknál többek között lebegést, forgási választ és visszaszintezést; repülőknél
+aerodinamikát, kormányreakciót, átesést, földi indulást és kamerákat ellenőriznek.
+Mindkét típusnál külön vizsgált a fix időlépés és a kijelzőfrekvenciától független repülés.
 Külön tesztek ellenőrzik az ütközéseket, akkumulátort, sérülést, bemeneteket,
 kamerákat, rekordokat, szellemeket, útvonalakat és hálózati életciklust.
 Az egyes korábbi dokumentumok tesztszámai és időmérései az ott jelzett állapotra
@@ -71,20 +76,25 @@ akkumulátoráramok, légellenállás és propwash továbbra is hangolási becsl
 A szerver rajtot, kapukat, időket és mozgási korlátokat ellenőriz, de nem futtat
 minden pilótához teljes Rapier-visszaszimulálást. A ranglista nem csalásbiztos.
 A pilótaütközés simított távoli testekkel helyben számolódik. Az automatizált
-nyolcklienses hálózati és ötdrónos fizikai próba elkészült; ez nem helyettesíti
-nyolc külön fizikai eszköz és valódi internetkapcsolat egyidejű mérését.
+nyolcklienses hálózati próba és a 2026-10-17-i ötdrónos ütközésmérés elkészült;
+a 2026-10-19-i vegyesflotta-tesztek az új gépeket is ellenőrzik. Ezek nem
+helyettesítik nyolc külön fizikai eszköz és valódi internetkapcsolat egyidejű mérését.
 
-## Ténylegesen nyitott munka
+## Nyitott munka és későbbi bővítések
+
+2026-10-19-én nincs vállalt, befejezetlen alapfejlesztés. A korábban felvetett
+szerveroldali megerősítés opcionális későbbi bővítés:
 
 1. **Későbbi bővítés:** erősebb szerveroldali visszaellenőrzés, ha a versenyek
-   igénye indokolja. A Aero 150 alapfunkciói, földi indulása, multiplayer- és
-   verseny/szellem-támogatása elkészült. A valós eszközös finomhangolás és a
-   késleltetésfüggő ütközések további próbái folyamatos ellenőrzésnek számítanak.
+   igénye indokolja. Az Aero 40, Aero 75 és Aero 150 támogatása, a földi indulás,
+   a multiplayer és a verseny/szellem-funkciók elkészültek. A valós eszközös
+   finomhangolás és a késleltetésfüggő ütközések további próbái folyamatos
+   ellenőrzésnek számítanak.
 
 2026-10-17: a vállalt automatizált multiplayer-ellenőrzés kész. Nyolc kliens,
 négy pálya, 0–150 ms egyirányú késleltetés és jitter, vendég/host újracsatlakozás,
 szobaújraindítás, közös ghost szabály; külön versenyen nyolc célba érés és 24
-érvényes kör. Mind az öt drón fizikai ütközése hét távoli testtel ellenőrizve.
+érvényes kör. A méréskori öt drón fizikai ütközése hét távoli testtel ellenőrizve.
 Játékhiba nem került elő; a mérés határai: [multiplayer-testing.md](multiplayer-testing.md).
 
 A felhasználó döntése alapján az FPS-optimalizálás és a fizika finomhangolása
@@ -112,4 +122,5 @@ A pályák és modellek további javítása konkrét hibák vagy új igények al
 - [Turtle és drónonkénti kamera](turtle-camera.md)
 - [Rift 75 és Játszótér](pocket-park-and-rift75.md), [Rift X35](rift-x35.md), [Skyline](skyline.md)
 - [Elkészült megosztási kép](cover.md)
-- [Rift Aero 150 első repülhető prototípus](rift-t15.md), [repülőtámogatás terve](fixed-wing-plan.md)
+- [Rift Aero 40](rift-a40.md), [Rift Aero 75](rift-s75.md), [Rift Aero 150](rift-t15.md)
+- [Rift R5 versenydrón](rift-r5.md), [repülőtámogatás terve és megvalósítási állapota](fixed-wing-plan.md)
