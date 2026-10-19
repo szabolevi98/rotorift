@@ -231,6 +231,8 @@ h2 {
 .simulation-controls summary { cursor: pointer; font-size: 12px; font-weight: 600; }
 .simulation-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: 12px 0 0; font-size: 12px; }
 .simulation-row > span { margin: 0; }
+.simulation-copy { flex: 1; min-width: 0; }
+.simulation-description { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
 .simulation-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--orange); }
 .simulation-row select { width: 150px; padding: 6px 8px; }
 .simulation-row:has(:disabled) { opacity: 0.65; }

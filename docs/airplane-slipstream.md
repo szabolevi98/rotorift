@@ -1,7 +1,7 @@
 # Airplane propeller slipstream — 2026-10-19
 
-All three Aero aircraft offer the existing `propwash` simulation switch; Hungarian
-menus label it **Légcsavarszél (propwash)**. The default remains off. Multiplayer
+All three Aero aircraft offer the existing **Propwash** simulation switch, with
+a short aircraft-specific explanation below its name. The default remains off. Multiplayer
 uses the host’s existing rules and simulation-key record category. Mixed rooms
 apply the airplane model to planes and the unchanged quad turbulence model to drones.
 
