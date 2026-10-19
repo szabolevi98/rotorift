@@ -146,7 +146,7 @@ The old `/map-preview.html` address redirects to its map tab.
 - Camera angle and field of view settings for each aircraft.
 - Optional artificial horizon and analog video effects, including noise,
   color bleed and brief line glitches, available in FPV for solo and online flying.
-- Optional battery simulation, individual propeller damage, propwash and wind. Airplanes also support optional two-blade propeller damage, with thrust loss, visible blade deformation and a single-prop HUD.
+- Optional battery simulation, individual propeller damage, propwash and wind. Airplanes also support optional two-blade propeller damage, with thrust loss, visible blade deformation and a single-prop HUD. Their optional [propeller slipstream](docs/airplane-slipstream.md) increases control authority only on tail surfaces reached by the wake.
 - Turtle mode for recovering an overturned aircraft.
 - Local freestyle and time trials, online freestyle, three-lap races and
   server-tracked solo time trials.

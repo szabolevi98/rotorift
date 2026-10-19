@@ -544,7 +544,7 @@ test('eight trainer pilots synchronize typed animations, reconnect to their slot
   const pilots=[];for(let i=0;i<8;i++)pilots.push(await client('Wing '+i,'coral',{protocol:3}));
   const host=pilots[0];host.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'free',launchMethod:'ground',simulation:{...DEFAULT_SIMULATION,propDamage:true,propwash:true,ghost:false}});
   const created=(await host.next(m=>m.type==='room')).room;
-  assert.equal(created.aircraftKind,'fixedWing');assert.equal(created.simulation.propDamage,true);assert.equal(created.simulation.propwash,false);assert.equal(created.simulation.ghost,false);
+  assert.equal(created.aircraftKind,'fixedWing');assert.equal(created.simulation.propDamage,true);assert.equal(created.simulation.propwash,true);assert.equal(created.simulation.ghost,false);
   for(let i=1;i<8;i++){pilots[i].send('join',{code:created.code});await pilots[i].next(m=>m.type==='room'&&m.room.players.length===i+1);}
   const joined=(await pilots[7].next(m=>m.type==='room'&&m.room.players.length===8)).room;
   assert.equal(new Set(joined.players.map(p=>p.color)).size,8);

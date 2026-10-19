@@ -220,7 +220,7 @@ function refreshSimulationControls() {
       input.disabled = view.locked;
       if(!mixed&&['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
       input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
-      input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
+      input.parentElement.querySelector("[data-sim-label]").textContent = t(key === "propwash" && !mixed && isFixedWing(aircraft) ? "airplane.propwash" : "simulation." + key);
       if (key === "wind") {
         input.value = view.options.wind;
         for (const option of input.options) option.textContent = t("wind." + option.value);

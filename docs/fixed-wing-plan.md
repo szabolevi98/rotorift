@@ -116,7 +116,7 @@ along -Z. State every aerodynamic sign convention explicitly and test it.
 
 Begin with a small number of aerodynamic surfaces or an equivalent calibrated
 force/moment model. Do not add CFD, per-vertex forces or a new physics engine.
-Fine effects such as detailed propeller slipstream can follow measured need.
+Implemented 2026-10-19: optional [propeller slipstream](airplane-slipstream.md) estimates the wake over the actual tail layout. Detailed CFD/wake history remains outside scope.
 
 ## Controls, HUD and launch
 

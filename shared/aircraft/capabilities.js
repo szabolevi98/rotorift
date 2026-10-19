@@ -19,7 +19,7 @@ const AIRPLANE = Object.freeze({
   racing: true,
   multiplayer: true,
   propDamage: true,
-  propwash: false,
+  propwash: true,
   turtle: false,
   hover: false,
   rateProfiles: false,

@@ -30,5 +30,6 @@ test('airplane records and public pose ghosts use Manual and compatible routes w
   const assisted=await(await fetch(base+'/api/ghost?'+query)).json();assert.ok(assisted.category.endsWith(':stabilized'));assert.notEqual(assisted.category,ghost.category);
   query.set('mode','manual');
   assert.ok(calls.every(c=>c.map.routeId==='wing_1'&&c.aircraft.kind==='fixedWing'));
-  for(const [key,value]of [['route','race_1'],['mode','acro'],['drone','rift-x5'],['simulation','01110']]){const invalid=new URLSearchParams(query);invalid.set(key,value);assert.equal((await fetch(base+'/api/ghost?'+invalid)).status,400);}
+  const enabled=new URLSearchParams(query);enabled.set('simulation','01110');assert.equal((await fetch(base+'/api/ghost?'+enabled)).status,200,'airplane damage and slipstream are now supported categories');
+  for(const [key,value]of [['route','race_1'],['mode','acro'],['drone','rift-x5'],['simulation','02110']]){const invalid=new URLSearchParams(query);invalid.set(key,value);assert.equal((await fetch(base+'/api/ghost?'+invalid)).status,400);}
 });

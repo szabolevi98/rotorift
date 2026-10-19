@@ -1,3 +1,4 @@
+import { isFixedWing } from "/shared/aircraft/capabilities.js";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { PHYSICS_DT } from "/shared/physics/time-step.js";
@@ -213,7 +214,7 @@ export class Flight {
     this.sound?.update(this.aircraftVisual.motorSpeeds, {
       enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: !this.fpv,
       speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
-      propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers?.blades ?? [this.physics.effects.propeller?.blades],
+      propwash: !isFixedWing(this.config) && this.physics.effects.options.propwash, blades: this.physics.effects.propellers?.blades ?? [this.physics.effects.propeller?.blades],
     });
   }
   place(pose, alpha, dt = 0) {

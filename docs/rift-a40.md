@@ -23,3 +23,5 @@ Revision 2 halves the aileron authority to make the micro airframe's roll respon
 Revision 3 lowers and broadens the bubble canopy and adds a small nose-mounted FPV camera. Both FPV views use the lens position; the ordinary FPV view shows the propeller ahead, while FPV clean retains its unobstructed view.
 
 Optional tractor prop damage (2026-10-19) uses the shared simulation switch: each of the two blades can bend, chip or break, reducing thrust and causing imbalance. Reset or disabling the option repairs the prop; the existing severe crash remains separate.
+
+Optional [airplane propeller slipstream](airplane-slipstream.md) models the tractor wake over the tail, including throttle-dependent control authority and mild swirl, without applying quad descent wobble.

@@ -44,7 +44,7 @@ test('powered flight, extreme stalls, reset and 30/60/120/144 Hz display cadence
 });
 test('wing tips collide, while single-motor battery and disabled quad-only effects follow capabilities',()=>{
   const {world,physics:p}=flight();world.createCollider(RAPIER.ColliderDesc.cuboid(.08,1,.1).setTranslation(.67,100,-1));p.armed=true;p.effects.setOptions({battery:true,propwash:true,propDamage:true});
-  assert.equal(p.effects.options.propwash,false);assert.equal(p.effects.options.propDamage,true);
+  assert.equal(p.effects.options.propwash,true);assert.equal(p.effects.options.propDamage,true);
   for(let i=0;i<120;i++)p.step({...controls,throttle:.6});
   assert.ok(Math.abs(p.pose.v[0])>.01||p.crashed||Math.abs(p.pose.w[1])>.05,'wing collision affects the airframe');
   assert.ok(p.effects.usedMah>0);assert.ok(p.effects.telemetry.voltage>0);world.free();

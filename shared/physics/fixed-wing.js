@@ -1,3 +1,4 @@
+import { AirplaneSlipstream } from "./airplane-slipstream.js";
 import { PHYSICS_DT } from "./time-step.js";
 import { stepPhysicsWorld } from "./world-step.js";
 import { AirplaneEffects } from "./fixed-wing-effects.js";
@@ -29,6 +30,7 @@ export class FixedWingPhysics {
     this.surfaceTargets = { pitch: 0, roll: 0, yaw: 0 };
     this.controlProfile = { ...config.controls };
     this.loads = { force: [0, 0, 0], torque: [0, 0, 0] };
+    this.slipstream = new AirplaneSlipstream(config);
     this.body = world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setCanSleep(false)
@@ -121,10 +123,13 @@ export class FixedWingPhysics {
     const efficiency = this.effects.options.propDamage
       ? damage.efficiency(this.effects.time)
       : 1;
-    loads.force[2] -=
+    const thrust =
       this.motorThrust[0] *
       efficiency *
       clamp(1 - Math.max(0, -local[2]) / c.motor.pitchSpeedMps, 0, 1);
+    loads.force[2] -= thrust;
+    if (this.effects.options.propwash)
+      this.slipstream.addLoads(loads, local, w, this.surfaces, thrust);
     if (this.effects.options.propDamage) {
       const wobble =
         this.motorThrust[0] * c.propDiameterM * 0.02 * damage.imbalance;

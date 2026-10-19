@@ -11,10 +11,7 @@ export class AirplaneEffects {
   }
   setOptions(options) {
     const previous = this.options;
-    this.options = {
-      ...normalizeSimulation(options),
-      propwash: false,
-    };
+    this.options = normalizeSimulation(options);
     if (!previous || previous.battery !== this.options.battery) this.reset();
     if (!this.options.propDamage) this.propeller.reset();
   }

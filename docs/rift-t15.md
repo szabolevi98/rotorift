@@ -17,7 +17,7 @@ control response are unchanged.
   parks the aircraft; airborne reset restores its heading and initial velocity.
 - Airplane-only rooms, up to eight pilots: unique colors, wide launch slots,
   shared battery/wind/ghost rules, remote control-surface and prop animation,
-  reconnect, race results and restart. Optional two-blade prop damage is shared; quad propwash and turtle are hidden.
+  reconnect, race results and restart. Optional two-blade prop damage is shared; airplane slipstream is optional and turtle is hidden.
 - Six airplane circuits: **Grove Air Circuit** (16 gates, easy), **Lakeside Figure
   Eight** (24 gates, intermediate), **Crane Air Circuit** and **Skyline Air Circuit**
   (18 gates each, easy), **Tower Alley Run** and **Boulevard Low Run** (26 gates each,
@@ -65,7 +65,7 @@ calibration. The current configuration is `experimental-estimate`.
 - Servo lag, engine spool response, bounded control travel and expo. Airplane
   settings live under **Settings → Controls**, independently of drone Actual Rates.
 - Single-motor battery current/sag/power reduction and shared wind field. Quad
-  propwash, turtle and hover-throttle shortcuts do not apply. Optional two-blade prop damage reduces thrust and deforms/breaks the blades. A strong
+  turtle and hover-throttle shortcuts do not apply. Optional two-blade prop damage reduces thrust and deforms/breaks the blades. A strong
   collision disarms the engine and requires reset; there is no additional structural damage.
 - `web/game/aircraft-visual.js` selects independent quad/airplane animation adapters.
   Protocol 3 carries `{kind:"fixedWing", engine, surfaces:{pitch,roll,yaw}}`; server
@@ -189,3 +189,5 @@ This is an original simulator controller. Real-world references include the
 manufacturer's [SAFE/AS3X description](https://www.horizonhobby.com/airplanes/rc-airplanes-by-skill-level/skill-level-2/):
 AS3X damps disturbances; SAFE additionally provides self-level and attitude limits.
 We do not claim to reproduce a proprietary controller or its aircraft calibration.
+
+Optional [airplane propeller slipstream](airplane-slipstream.md) added 2026-10-19 uses tail-surface coverage, throttle/spool response, crossflow and remaining propeller thrust; it is separate from the quad descent-turbulence effect.
