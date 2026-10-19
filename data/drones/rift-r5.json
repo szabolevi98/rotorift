@@ -1,7 +1,7 @@
 {
   "id": "rift-r5",
   "name": "Rift R5",
-  "version": 1,
+  "version": 2,
   "category": "racing",
   "tuningStatus": "initial-estimate",
   "massKg": 0.485,
@@ -14,7 +14,7 @@
   "frameParts": [
     {
       "halfExtentsM": [0.0175, 0.017, 0.034],
-      "positionM": [0, -0.0335, 0.003]
+      "positionM": [0, -0.027, 0.003]
     },
     { "halfExtentsM": [0.002, 0.025, 0.018], "positionM": [0, 0.045, -0.013] }
   ],

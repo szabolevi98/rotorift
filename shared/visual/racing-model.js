@@ -36,55 +36,62 @@ function carbonTexture() {
 }
 
 function packLabel() {
-  const width = 128,
-    height = 256,
+  const width = 512,
+    height = 224,
     pixels = new Uint8Array(width * height * 4);
-  for (let i = 0; i < pixels.length; i += 4)
-    pixels.set([214, 221, 217, 255], i);
   const rect = (x, y, w, h, color) => {
     for (let row = y; row < y + h; row++)
       for (let col = x; col < x + w; col++)
         if (row >= 0 && col >= 0 && row < height && col < width)
-          pixels.set([...color, 255], (row * width + col) * 4);
+          pixels.set([...color, 255], ((height - 1 - row) * width + col) * 4);
   };
   const font = {
-    R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
-    I: ["111", "010", "010", "010", "010", "010", "111"],
+    A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+    E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
     F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
-    T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+    G: ["01111", "10000", "10000", "10111", "10001", "10001", "01111"],
+    H: ["10001", "10001", "10001", "11111", "10001", "10001", "10001"],
+    I: ["111", "010", "010", "010", "010", "010", "111"],
+    L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+    M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+    O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+    R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
     S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
-    6: ["01110", "10000", "10000", "11110", "10001", "10001", "01110"],
-    1: ["010", "110", "010", "010", "010", "010", "111"],
+    T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+    V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
     0: ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+    1: ["010", "110", "010", "010", "010", "010", "111"],
+    2: ["01110", "10001", "00001", "00010", "00100", "01000", "11111"],
     5: ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
+    6: ["01110", "10000", "10000", "11110", "10001", "10001", "01110"],
+    8: ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+    "/": ["00001", "00010", "00100", "00100", "01000", "10000", "10000"],
+    ".": ["0", "0", "0", "0", "0", "1", "1"],
   };
-  const text = (value, y, scale) => {
-    const total =
-      [...value].reduce((n, c) => n + (font[c]?.[0].length ?? 3) + 1, 0) *
-      scale;
-    let x = Math.floor((width - total) / 2);
+  const text = (value, x, y, scale, color) => {
     for (const c of value) {
       const glyph = font[c];
-      if (glyph)
-        glyph.forEach((row, j) =>
-          [...row].forEach((p, i) => {
-            if (p === "1")
-              rect(x + i * scale, y + j * scale, scale, scale, [28, 39, 43]);
-          }),
-        );
+      glyph?.forEach((row, j) =>
+        [...row].forEach((p, i) => {
+          if (p === "1")
+            rect(x + i * scale, y + j * scale, scale, scale, color);
+        }),
+      );
       x += ((glyph?.[0].length ?? 3) + 1) * scale;
     }
   };
-  rect(0, 0, width, 12, [255, 102, 72]);
-  rect(0, 244, width, 12, [255, 102, 72]);
-  text("RIFT", 28, 4);
-  text("6S", 82, 5);
-  text("1050", 148, 4);
-  for (let i = 0; i < 24; i++)
-    rect(15 + i * 4, 210, i % 3 === 0 ? 2 : 1, 18, [28, 39, 43]);
+  // Same dark Flight Series layout, cream type and orange spine as the fleet.
+  rect(0, 0, width, height, [38, 49, 53]);
+  rect(0, 0, 13, height, [237, 104, 72]);
+  text("RIFT / 6S", 35, 38, 8, [232, 233, 220]);
+  text("1050 MAH / 22.8 V", 35, 118, 3, [163, 176, 171]);
+  rect(35, 162, 390, 3, [120, 142, 132]);
+  text("ROTORIFT / FLIGHT SERIES", 35, 185, 2, [120, 142, 132]);
   const texture = new THREE.DataTexture(pixels, width, height);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
 }
@@ -107,13 +114,13 @@ export function createRacingModel({ batchStatic = true } = {}) {
   const dark = mat("#1b2428", 0.65),
     rubber = mat("#202426", 0.96),
     silver = mat("#9caaae", 0.3, 0.85),
-    copper = mat("#b8763c", 0.4, 0.6),
     gold = mat("#c4a25a", 0.3, 0.7),
     accent = mat("#ff6648", 0.64),
     yellow = mat("#f4bc23", 0.72),
     red = mat("#bb382d", 0.7),
     pcb = new THREE.MeshStandardMaterial(DRONE_SURFACES.pcb),
     glass = new THREE.MeshPhysicalMaterial(DRONE_SURFACES.lens),
+    white = mat("#e8e9dc", 0.72),
     pack = mat("#29383e", 0.5, 0.15);
   accent.userData.droneColorRole = "base";
   configureDronePolymer(accent);
@@ -122,10 +129,10 @@ export function createRacingModel({ batchStatic = true } = {}) {
     roughness: 0.3,
     metalness: 0,
     clearcoat: 0.7,
-    transparent: true,
-    opacity: 0.9,
-    depthWrite: false,
-    side: THREE.DoubleSide,
+    transparent: false,
+    opacity: 1,
+    depthWrite: true,
+    side: THREE.FrontSide,
   });
   const roundRect = (w, h, r, cx = 0, cy = 0) => {
     const s = new THREE.Shape(),
@@ -288,8 +295,20 @@ export function createRacingModel({ batchStatic = true } = {}) {
   fin.moveTo(0.031, 0.02);
   fin.quadraticCurveTo(0.032, 0.047, 0.025, 0.065);
   fin.quadraticCurveTo(0.021, 0.071, 0.018, 0.067);
-  fin.quadraticCurveTo(0.02, 0.039, -0.004, 0.024);
-  fin.quadraticCurveTo(-0.012, 0.02, -0.026, 0.02);
+  const trailingEdge = [
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(0.018, 0.067),
+      new THREE.Vector2(0.02, 0.039),
+      new THREE.Vector2(-0.004, 0.024),
+    ),
+    new THREE.QuadraticBezierCurve(
+      new THREE.Vector2(-0.004, 0.024),
+      new THREE.Vector2(-0.012, 0.02),
+      new THREE.Vector2(-0.026, 0.02),
+    ),
+  ];
+  for (const curve of trailingEdge)
+    fin.quadraticCurveTo(curve.v1.x, curve.v1.y, curve.v2.x, curve.v2.y);
   fin.closePath();
   const finGeometry = new THREE.ExtrudeGeometry(fin, {
     depth: 0.0028,
@@ -302,18 +321,42 @@ export function createRacingModel({ batchStatic = true } = {}) {
   finGeometry.translate(0, 0, -0.0014);
   finGeometry.rotateY(Math.PI / 2);
   mesh(finGeometry, dark, "R5_shark_fin");
-  tube(
-    [
-      [0, 0.067, -0.019],
-      [0, 0.054, -0.018],
-      [0, 0.04, -0.012],
-      [0, 0.029, 0.001],
-      [0, 0.022, 0.017],
-    ],
-    0.00065,
-    accent,
-    "R5_fin_accent",
-  );
+  // Thin paint on both flat faces, sampled from the fin's own Bezier edge.
+  // Its tapered inner edge remains inside the silhouette all the way to the base.
+  for (const side of [-1, 1]) {
+    const positions = [],
+      indices = [];
+    const points = trailingEdge.flatMap((curve, index) =>
+      samples(index ? 1 / 24 : 0, 1, 24).map((t) => ({
+        point: curve.getPoint(t),
+        tangent: curve.getTangent(t),
+      })),
+    );
+    for (const { point, tangent } of points) {
+      const width = Math.min(0.0012, Math.max(0, point.y - 0.02) * 0.45);
+      const inner = point
+        .clone()
+        .addScaledVector(new THREE.Vector2(-tangent.y, tangent.x), width);
+      positions.push(
+        side * 0.00195,
+        point.y,
+        -point.x,
+        side * 0.00195,
+        inner.y,
+        -inner.x,
+      );
+    }
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = i * 2;
+      if (side > 0) indices.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+      else indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    g.setIndex(indices);
+    g.computeVertexNormals();
+    mesh(g, accent, "R5_fin_accent");
+  }
   for (const z of [-0.028, 0.025])
     rod(
       [0, 0.02, z],
@@ -380,8 +423,8 @@ export function createRacingModel({ batchStatic = true } = {}) {
   lens.rotation.x = -Math.PI / 2;
   lens.position.z = -0.0143;
   rounded(
-    [0.027, 0.005, 0.012],
-    [0, -0.006, -0.001],
+    [0.027, 0.0045, 0.015],
+    [0, -0.01, -0.0005],
     accent,
     "R5_camera_bumper",
     cameraGroup,
@@ -440,7 +483,7 @@ export function createRacingModel({ batchStatic = true } = {}) {
   root.add(battery);
   rounded(
     [0.035, 0.034, 0.068],
-    [0, -0.0335, 0.003],
+    [0, -0.027, 0.003],
     pack,
     "R5_6S_1050mAh_pack",
     battery,
@@ -450,7 +493,7 @@ export function createRacingModel({ batchStatic = true } = {}) {
     for (const side of [-1, 1])
       box(
         [0.0003, 0.00025, 0.059],
-        [side * 0.01755, -0.0505 + i * 0.0056, 0.003],
+        [side * 0.01755, -0.044 + i * 0.0056, 0.003],
         silver,
         "R5_cell_wrapper_seam",
         battery,
@@ -460,26 +503,44 @@ export function createRacingModel({ batchStatic = true } = {}) {
     color: "#ffffff",
     roughness: 0.75,
   });
+  label.userData.droneColorRole = "label";
   const print = mesh(
-    new THREE.PlaneGeometry(0.028, 0.056),
+    new THREE.PlaneGeometry(0.031, 0.01356),
     label,
     "R5_battery_label",
     battery,
   );
   print.rotation.x = Math.PI / 2;
-  print.position.set(0, -0.05065, 0.003);
+  print.position.set(0, -0.04415, 0.003);
+  for (const side of [-1, 1]) {
+    const sidePrint = mesh(
+      new THREE.PlaneGeometry(0.045, 0.01969),
+      label,
+      "R5_battery_side_label",
+      battery,
+    );
+    sidePrint.rotation.y = (side * Math.PI) / 2;
+    sidePrint.position.set(side * 0.0177, -0.027, 0.003);
+  }
+  box(
+    [0.032, 0.0025, 0.06],
+    [0, -0.00875, 0.003],
+    rubber,
+    "R5_battery_grip_pad",
+    battery,
+  );
   for (const z of [-0.019, 0.025]) {
     for (const side of [-1, 1])
       box(
-        [0.001, 0.049, 0.0075],
-        [side * 0.018, -0.026, z],
+        [0.001, 0.0425, 0.0075],
+        [side * 0.018, -0.02275, z],
         rubber,
         "R5_battery_strap",
         battery,
       );
     box(
       [0.037, 0.001, 0.0075],
-      [0, -0.0515, z],
+      [0, -0.0445, z],
       rubber,
       "R5_battery_strap_bottom",
       battery,
@@ -499,8 +560,8 @@ export function createRacingModel({ batchStatic = true } = {}) {
   ])
     tube(
       [
-        [x, -0.034, 0.037],
-        [x, -0.032, 0.048],
+        [x, -0.0275, 0.037],
+        [x, -0.0255, 0.048],
         [x, -0.011, 0.054],
         [x, 0.007, 0.052],
       ],
@@ -523,6 +584,58 @@ export function createRacingModel({ batchStatic = true } = {}) {
       0.0012,
       gold,
       "R5_XT60_contact",
+    );
+  }
+  // A parked seven-contact 6S balance plug beside the XT60, with connected
+  // individual cell leads and a small TPU retaining shelf on the rear frame.
+  const balancePosition = [0.0185, 0.006, 0.05];
+  const balanceShape = roundRect(0.019, 0.0046, 0.0006);
+  for (let i = 0; i < 7; i++)
+    balanceShape.holes.push(
+      roundRect(0.0015, 0.0026, 0.0002, -0.0075 + i * 0.0025, 0),
+    );
+  const balanceGeometry = new THREE.ExtrudeGeometry(balanceShape, {
+    depth: 0.006,
+    bevelEnabled: false,
+    curveSegments: 3,
+  });
+  balanceGeometry.translate(0, 0, -0.003);
+  mesh(balanceGeometry, white, "R5_6S_balance_plug", battery).position.set(
+    ...balancePosition,
+  );
+  box(
+    [0.021, 0.0024, 0.008],
+    [0.0185, 0.0025, 0.049],
+    accent,
+    "R5_balance_retaining_shelf",
+  );
+  box(
+    [0.004, 0.005, 0.008],
+    [0.013, -0.0002, 0.043],
+    accent,
+    "R5_balance_shelf_anchor",
+  );
+  for (let i = 0; i < 7; i++) {
+    const x = balancePosition[0] - 0.0075 + i * 0.0025;
+    rod(
+      [x, 0.006, 0.048],
+      [x, 0.006, 0.0525],
+      0.00025,
+      silver,
+      "R5_balance_contact",
+      battery,
+    );
+    tube(
+      [
+        [0.009 + i * 0.001, -0.025, 0.037],
+        [0.014 + i * 0.001, -0.021, 0.049],
+        [x, -0.004, 0.052],
+        [x, 0.006, 0.0471],
+      ],
+      0.00035,
+      i === 0 ? dark : i === 6 ? red : white,
+      "R5_balance_cell_wire",
+      battery,
     );
   }
   for (const [x, material] of [
@@ -552,34 +665,40 @@ export function createRacingModel({ batchStatic = true } = {}) {
   tube(
     [
       [0.004, 0.006, 0.036],
-      [0.009, 0.011, 0.041],
-      [0.007, 0.022, 0.049],
-      [0, 0.031, 0.054],
+      [0.006, 0.011, 0.037],
+      [0.004, 0.018, 0.042],
+      [0, 0.022, 0.044],
     ],
     0.00055,
     dark,
     "R5_VTX_coax",
   );
-  rod([0, 0.03, 0.054], [0, 0.049, 0.061], 0.0011, dark, "R5_antenna_stem");
+  rounded(
+    [0.014, 0.004, 0.009],
+    [0, 0.0195, 0.0405],
+    accent,
+    "R5_antenna_mount",
+  );
+  rod([0, 0.022, 0.043], [0, 0.022, 0.055], 0.0022, dark, "R5_short_antenna");
   rod(
-    [0, 0.048, 0.061],
-    [0, 0.054, 0.063],
-    0.0034,
+    [0, 0.022, 0.052],
+    [0, 0.022, 0.058],
+    0.003,
     dark,
     "R5_antenna_head",
     root,
     14,
   );
   rod(
-    [0, 0.049, 0.0613],
-    [0, 0.05, 0.0617],
-    0.0035,
+    [0, 0.022, 0.044],
+    [0, 0.022, 0.047],
+    0.0027,
     accent,
     "R5_antenna_color_ring",
     root,
     14,
   );
-  // Detailed 2207 outrunners: copper stator, vented bells, shaft and locknut.
+  // Closed 2207-style motor bells with a shouldered crown and continuous skirt.
   R5_MOTOR_POSITIONS.forEach(([x, y, z], index) => {
     const cylinder = (r, h, cy, material, name, segments = 24) => {
       const o = mesh(
@@ -591,29 +710,26 @@ export function createRacingModel({ batchStatic = true } = {}) {
       return o;
     };
     cylinder(0.0105, 0.003, -0.0001, silver, "R5_motor_mount");
-    cylinder(0.0085, 0.008, 0.004, dark, "R5_stator");
-    for (let j = 0; j < 12; j++) {
-      const angle = (j * Math.PI) / 6;
-      const coil = rounded(
-        [0.0025, 0.006, 0.0025],
-        [x + Math.cos(angle) * 0.0088, 0.004, z + Math.sin(angle) * 0.0088],
-        copper,
-        "R5_copper_winding",
-        root,
-        0.0006,
-      );
-      coil.rotation.y = -angle;
-      const rib = box(
-        [0.002, 0.009, 0.002],
-        [x + Math.cos(angle) * 0.012, 0.006, z + Math.sin(angle) * 0.012],
-        dark,
-        "R5_vented_bell_rib",
-      );
-      rib.rotation.y = -angle;
-    }
-    cylinder(0.0133, 0.0015, 0.0108, dark, "R5_motor_bell_top");
+    const bell = mesh(
+      new THREE.LatheGeometry(
+        [
+          [0, 0.0004],
+          [0.0105, 0.0004],
+          [0.0128, 0.0012],
+          [0.0133, 0.002],
+          [0.0133, 0.0092],
+          [0.0127, 0.0107],
+          [0.0102, 0.0115],
+          [0, 0.0115],
+        ].map((p) => new THREE.Vector2(...p)),
+        32,
+      ),
+      dark,
+      "R5_closed_motor_bell",
+    );
+    bell.position.set(x, 0, z);
     cylinder(0.009, 0.001, 0.012, accent, "R5_motor_color_ring");
-    cylinder(0.003, 0.005, 0.014, silver, "R5_motor_shaft");
+    cylinder(0.003, 0.012, 0.017, silver, "R5_motor_shaft");
     cylinder(0.0036, 0.003, 0.0215, silver, "R5_propeller_locknut", 6);
     for (let j = 0; j < 4; j++) {
       const a = Math.PI / 4 + (j * Math.PI) / 2;
@@ -666,10 +782,11 @@ export function createRacingModel({ batchStatic = true } = {}) {
       motorIndex: index,
       direction: DIRECTIONS[index],
       phaseOffset: 0,
+      pitchM: 0.11684,
     };
     root.add(prop);
     mesh(
-      new THREE.CylinderGeometry(0.0057, 0.0057, 0.0028, 18),
+      new THREE.CylinderGeometry(0.0057, 0.0061, 0.005, 24),
       propMaterial,
       "R5_propeller_hub",
       prop,
@@ -681,14 +798,17 @@ export function createRacingModel({ batchStatic = true } = {}) {
       blade.rotation.y = (bladeIndex * 2 * Math.PI) / 3;
       prop.add(blade);
       const rows = [
-        [0.0065, 0.003, 0],
-        [0.014, 0.007, 0.0005],
-        [0.032, 0.012, 0.002],
-        [0.049, 0.011, 0.004],
+        [0.0045, 0.003, 0],
+        [0.014, 0.008, 0.0005],
+        [0.032, 0.013, 0.002],
+        [0.049, 0.012, 0.004],
         [0.06, 0.006, 0.005],
         [0.0632, 0.0005, 0.004],
       ].map(([r, width, sweep]) => {
-        const pitch = (0.5 - (0.3 * r) / 0.0635) * DIRECTIONS[index];
+        // 5 x 4.6 x 3: a constant-pitch helix, softened at the molded root.
+        const pitch =
+          Math.min(0.9, prop.userData.pitchM / (2 * Math.PI * r)) *
+          DIRECTIONS[index];
         return [
           [-1, 1],
           [1, 1],
@@ -700,7 +820,9 @@ export function createRacingModel({ batchStatic = true } = {}) {
           return [x, (edge * width * pitch) / 2 + face * 0.00045, z];
         });
       });
-      loft(rows, propMaterial, "R5_twisted_blade", blade);
+      const bladeMesh = loft(rows, propMaterial, "R5_twisted_blade", blade);
+      // Thin translucent edges otherwise catch their own shadow-map texels.
+      bladeMesh.receiveShadow = false;
     }
   });
   root.updateMatrixWorld(true);

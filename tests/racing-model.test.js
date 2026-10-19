@@ -38,7 +38,17 @@ test("R5 keeps a short racing body, a top fin and bottom-mounted 6S pack in the 
   assert.ok(pack.max.y < chassis.min.y);
   assert.ok(fin.min.y > 0.018 && fin.max.y > 0.065);
   assert.ok(chassis.max.z - chassis.min.z < 0.1);
-  assert.ok(battery.min.y < -0.05);
+  assert.ok(battery.min.y < -0.043);
+  const pad = new THREE.Box3().setFromObject(
+    raw.getObjectByName("R5_battery_grip_pad"),
+  );
+  assert.ok(Math.abs(pack.max.y - pad.min.y) < 0.00001);
+  assert.ok(Math.abs(pad.max.y - chassis.min.y) < 0.00001);
+  assert.ok(
+    Math.abs(
+      pack.getCenter(new THREE.Vector3()).y - config.frameParts[0].positionM[1],
+    ) < 0.00001,
+  );
   assert.equal(
     raw.children.filter((o) => o.name === "R5_motor_solder").length,
     12,
@@ -150,6 +160,143 @@ test("R5 motor solder joints touch ESC pads and connected camera conductors end 
     assert.ok(board.clone().expandByScalar(0.001).containsPoint(end));
   }
   disposeModelMaterials(model);
+});
+
+test("R5 closed bells cover every side, and prop roots, hubs, shafts and nuts meet", () => {
+  for (const model of [
+    createRacingModel({ batchStatic: false }),
+    createRacingModel(),
+  ]) {
+    model.updateMatrixWorld(true);
+    for (const [index, [x, y, z]] of R5_MOTOR_POSITIONS.entries()) {
+      for (let i = 0; i < 24; i++) {
+        const outward = new THREE.Vector3(
+          Math.cos(((i + 0.37) * Math.PI) / 12),
+          0,
+          Math.sin(((i + 0.37) * Math.PI) / 12),
+        );
+        const origin = new THREE.Vector3(x, 0.006, z).addScaledVector(
+          outward,
+          0.03,
+        );
+        const hit = new THREE.Raycaster(
+          origin,
+          outward.clone().negate(),
+          0,
+          0.03,
+        ).intersectObject(model, true)[0];
+        assert.ok(
+          hit && hit.distance > 0.016 && hit.distance < 0.017,
+          "continuous motor skirt",
+        );
+      }
+      const prop = model.getObjectByName("Propeller_" + index),
+        hub = prop.getObjectByName("R5_propeller_hub");
+      const bounds = new THREE.Box3().setFromObject(hub);
+      assert.ok(
+        bounds.min.y < 0.0165 && bounds.max.y > 0.02,
+        "hub overlaps shaft and nut",
+      );
+      assert.equal(prop.userData.pitchM, 0.11684);
+      for (const blade of prop.children.filter(
+        (o) => o.userData.bladeIndex !== undefined,
+      )) {
+        const mesh = blade.getObjectByName("R5_twisted_blade"),
+          positions = mesh.geometry.attributes.position;
+        for (let i = 0; i < 4; i++) {
+          const point = mesh.localToWorld(
+            new THREE.Vector3().fromBufferAttribute(positions, i),
+          );
+          assert.ok(
+            bounds.containsPoint(point),
+            "blade root is molded into hub",
+          );
+        }
+        const slope = Math.abs(
+          (positions.getY(13) - positions.getY(12)) /
+            (positions.getZ(13) - positions.getZ(12)),
+        );
+        assert.ok(slope > 0.36 && slope < 0.4, "racing pitch at 49 mm radius");
+      }
+    }
+    disposeModelMaterials(model);
+  }
+});
+
+test("R5 fin paint follows its own silhouette, balance plug is wired and antenna stays low", () => {
+  const model = createRacingModel({ batchStatic: false });
+  model.updateMatrixWorld(true);
+  const fin = model.getObjectByName("R5_shark_fin");
+  for (const stripe of model.children.filter(
+    (o) => o.name === "R5_fin_accent",
+  )) {
+    const p = stripe.geometry.attributes.position;
+    for (let i = 1; i < p.count; i += 2) {
+      const point = new THREE.Vector3().fromBufferAttribute(p, i),
+        edge = new THREE.Vector3().fromBufferAttribute(p, i - 1);
+      if (point.distanceTo(edge) < 0.0004) continue;
+      const side = Math.sign(point.x),
+        ray = new THREE.Raycaster(
+          new THREE.Vector3(side * 0.01, point.y, point.z),
+          new THREE.Vector3(-side, 0, 0),
+          0,
+          0.012,
+        );
+      assert.ok(
+        ray.intersectObject(fin, false).length,
+        "colored trim must lie on the fin",
+      );
+    }
+  }
+  const antenna = new THREE.Box3().setFromObject(
+    model.getObjectByName("R5_antenna_head"),
+  );
+  assert.ok(antenna.max.y < 0.026 && antenna.max.z < 0.06);
+  assert.equal(
+    model.getObjectsByProperty("name", "R5_balance_cell_wire").length,
+    7,
+  );
+  assert.equal(
+    model.getObjectsByProperty("name", "R5_balance_contact").length,
+    7,
+  );
+  const plug = new THREE.Box3().setFromObject(
+    model.getObjectByName("R5_6S_balance_plug"),
+  );
+  for (const wire of model.getObjectsByProperty("name", "R5_balance_cell_wire"))
+    assert.ok(
+      plug
+        .clone()
+        .expandByScalar(0.0001)
+        .containsPoint(wire.geometry.parameters.path.getPoint(1)),
+    );
+  disposeModelMaterials(model);
+});
+
+test("R5 Flight Series labels recolor only the accent ink without changing another model", () => {
+  const model = createRacingModel(),
+    other = createRacingModel();
+  const labels = [];
+  model.traverse((o) => {
+    if (o.material?.userData.droneColorRole === "label")
+      labels.push(o.material);
+  });
+  const label = labels[0],
+    original = label.map.image.data.slice();
+  assert.equal(label.map.image.width, 512);
+  assert.equal(label.map.image.height, 224);
+  applyDroneColor(model, "blue");
+  const pixels = label.map.image.data;
+  assert.deepEqual([...pixels.slice(0, 3)], [57, 134, 255]);
+  assert.deepEqual([...pixels.slice(20 * 4, 20 * 4 + 3)], [38, 49, 53]);
+  let otherLabel;
+  other.traverse((o) => {
+    if (o.material?.userData.droneColorRole === "label")
+      otherLabel = o.material;
+  });
+  assert.deepEqual(otherLabel.map.image.data, original);
+  disposeModelMaterials(model);
+  disposeModelMaterials(other);
 });
 
 test("R5 supports individual blade damage, FPV exposure, remote motor fractions, color changes and texture disposal", () => {

@@ -4,12 +4,15 @@ Original compact true-X 5-inch racing quad, visually inspired by classic fin-equ
 
 ## Airframe and configuration
 
-- 218 mm motor diagonal, 127 mm tri-blade propellers, 2207-style vented motors.
+- 218 mm motor diagonal, 127 mm / 4.6-inch pitch tri-blade propellers, 2207-style motors with closed bell sides.
 - 485 g estimated flying mass including an underslung 6S / 1050 mAh pack.
 - A short slotted carbon chassis, replaceable tapered arms, curved upper fin, tilted micro FPV camera, FC/4-in-1 ESC stack, VTX/coax and rear antenna.
 - Two bottom straps, soft power-lead bends into an XT60, twelve motor solder joints and separate camera conductors terminating at the FC.
+- The underside pack seats against a thin grip pad; matching Flight Series labels sit on the bottom and sides. A wired seven-contact balance plug is retained beside the XT60, and a short VTX antenna sits in a low rear TPU mount.
 - Shared Acro/Angle/Horizon control, battery/wind/propwash simulation, individual blade damage, turtle mode, remote animation, mixed multiplayer, timed records and ghosts.
 - The battery and fin have extra massless collision shapes. Previous aircraft configurations and record hashes are unchanged.
+
+Revision 2 raises the battery collision proxy with the seated pack. The fin accent follows the same Bezier curves as the fin, the camera bumper avoids coplanar faces, and the molded prop roots overlap their hubs around a continuous shaft. Propeller pitch is a visual construction parameter; propulsion tuning remains the existing R5 estimate.
 
 ## Measured envelope
 

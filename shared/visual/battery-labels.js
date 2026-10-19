@@ -22,21 +22,30 @@ export function recolorBatteryLabelPixels(pixels, hex) {
 }
 
 export function colorBatteryLabel(material, hex) {
-  if (!material.map || typeof document === "undefined") return;
+  if (!material.map || (!material.map.isDataTexture && typeof document === "undefined")) return;
   const source = originals.get(material.map) ?? material.map;
   let colors = variants.get(source);
   if (!colors) { colors = new Map(); variants.set(source, colors); }
   if (!colors.has(hex)) {
-    const image = source.image, canvas = document.createElement("canvas");
-    canvas.width = image.width; canvas.height = image.height;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0);
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    recolorBatteryLabelPixels(pixels.data, hex); ctx.putImageData(pixels, 0, 0);
+    const image = source.image;
+    let recolored;
+    if (source.isDataTexture) {
+      const pixels = new image.data.constructor(image.data);
+      recolorBatteryLabelPixels(pixels, hex);
+      recolored = { data: pixels, width: image.width, height: image.height };
+    } else {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width; canvas.height = image.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0);
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      recolorBatteryLabelPixels(pixels.data, hex); ctx.putImageData(pixels, 0, 0);
+      recolored = canvas;
+    }
     const texture = source.clone();
     // Texture.clone shares its Source: replacing image on that clone alone would
     // overwrite the pristine texture and recolor other pilots' labels as well.
-    texture.source = new source.source.constructor(canvas);
+    texture.source = new source.source.constructor(recolored);
     texture.needsUpdate = true;
     originals.set(texture, source); colors.set(hex, texture);
   }
