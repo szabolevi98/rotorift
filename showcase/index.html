@@ -62151,8 +62151,8 @@ function createWarbirdModel({ batchStatic = true } = {}) {
         0,
         1,
       );
-    // A low, broad bubble with a gently flattened crown and tangent deck joins.
-    const bump = 0.0115 * (1 - Math.cos(Math.PI * t) ** 4);
+    // A low, rounded bubble with continuous crown curvature and tangent deck joins.
+    const bump = 0.012075 * Math.sin(Math.PI * t) ** 2;
     return new THREE.Vector3(
       (w + offset) * Math.cos(angle),
       cy + (h + offset + (Math.sin(angle) > 0 ? bump : 0)) * Math.sin(angle),
