@@ -250,6 +250,7 @@ h2 {
 #battery-hud.low { color: #ffdb77; }
 #battery-hud.critical { color: #ff9c8b; }
 .propeller-heading { display:block; font-size:10px; opacity:.85; margin-bottom:5px; }
+.propeller-grid.airplane { grid-template-columns:44px; }
 .propeller-grid { display:grid; grid-template-columns:repeat(2,44px); gap:5px 8px; }
 .propeller-cell { color:#b9edac; display:grid; justify-items:center; font-size:9px; }
 .propeller-cell svg { width:30px; height:30px; fill:currentColor; }

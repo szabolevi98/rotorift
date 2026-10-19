@@ -17,7 +17,7 @@ control response are unchanged.
   parks the aircraft; airborne reset restores its heading and initial velocity.
 - Airplane-only rooms, up to eight pilots: unique colors, wide launch slots,
   shared battery/wind/ghost rules, remote control-surface and prop animation,
-  reconnect, race results and restart. Quad damage, propwash and turtle are hidden.
+  reconnect, race results and restart. Optional two-blade prop damage is shared; quad propwash and turtle are hidden.
 - Six airplane circuits: **Grove Air Circuit** (16 gates, easy), **Lakeside Figure
   Eight** (24 gates, intermediate), **Crane Air Circuit** and **Skyline Air Circuit**
   (18 gates each, easy), **Tower Alley Run** and **Boulevard Low Run** (26 gates each,
@@ -65,8 +65,8 @@ calibration. The current configuration is `experimental-estimate`.
 - Servo lag, engine spool response, bounded control travel and expo. Airplane
   settings live under **Settings → Controls**, independently of drone Actual Rates.
 - Single-motor battery current/sag/power reduction and shared wind field. Quad
-  propwash, rotor damage, turtle and hover-throttle shortcuts do not apply. A strong
-  collision disarms the engine and requires reset; there is no structural damage.
+  propwash, turtle and hover-throttle shortcuts do not apply. Optional two-blade prop damage reduces thrust and deforms/breaks the blades. A strong
+  collision disarms the engine and requires reset; there is no additional structural damage.
 - `web/game/aircraft-visual.js` selects independent quad/airplane animation adapters.
   Protocol 3 carries `{kind:"fixedWing", engine, surfaces:{pitch,roll,yaw}}`; server
   validation rejects malformed payloads and drone rotor/turtle fields. Old clients

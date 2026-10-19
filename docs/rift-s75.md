@@ -46,8 +46,7 @@ steering torque scales with airframe mass and length; Aero 150 response is prese
 The Aero 75 supports all six airplane circuits on Grove, Concrete Yard and Skyline, local and verified records,
 ghosts, battery and wind, and mixed eight-pilot free-flight rooms with drones
 and the Aero 150. Solo Playground flights remain excluded, as for the Aero 150; mixed
-online free flight permits any aircraft on every map. Quad-only prop damage,
-propwash and turtle mode remain unavailable on airplanes.
+online free flight permits any aircraft on every map. Optional two-blade pusher prop damage uses the shared switch, reduces thrust and synchronizes visible blade damage. Quad propwash and turtle mode remain unavailable on airplanes.
 
 Automated checks cover finite geometry, propeller/camera clearance, flight and
 glide, 30/60/120/144 Hz display cadence, battery/reset, ground parking/takeoff on

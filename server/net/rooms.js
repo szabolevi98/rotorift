@@ -65,7 +65,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       p: p.pose?.p,
       q: p.pose?.q,
       v:p.pose?.v,
-      ...(isFixedWing(aircraftOf(p,r))?{animation:airplaneAnimation(aircraftOf(p,r),p.animation,r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600)}:{
+      ...(isFixedWing(aircraftOf(p,r))?{animation:airplaneAnimation(aircraftOf(p,r),p.animation,r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600,r.simulation.propDamage)}:{
         propellers:p.propellers??freshPropellers(),
         rotorSpeeds:r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600?p.rotorSpeeds:STOPPED_ROTORS,
         turtleMode:r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600&&p.turtleMode===true,
@@ -485,7 +485,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         if (validTravel && r.kind !== "free")
           events = advanceLap(p.lap, previous, m.p, p.at, m.t, r.map.gates);
         const ghostLaps=validTravel&&r.kind!=='free'?p.ghostRecorder.segment(p.pose,{p:m.p,q:m.q},p.at,m.t,events):[];
-        if(isFixedWing(aircraft))p.animation=airplaneAnimation(aircraft,m.animation,!m.interrupted);
+        if(isFixedWing(aircraft))p.animation=airplaneAnimation(aircraft,m.animation,!m.interrupted,options.propDamage);
         else {
           p.propellers=options.propDamage&&validPropellers(m.propellers)?m.propellers.map(blades=>[...blades]):freshPropellers();
           p.rotorSpeeds=m.interrupted||m.rotorSpeeds===undefined?STOPPED_ROTORS:[...m.rotorSpeeds];

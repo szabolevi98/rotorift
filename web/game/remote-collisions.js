@@ -1,3 +1,5 @@
+import {validAirplanePropeller} from "../../shared/aircraft/propeller.js";
+import {addAirplanePropellerCollider} from "../../shared/physics/airplane-propeller.js";
 // Remote aircraft are kinematic collision proxies in the local Rapier world.
 // Pose updates come from the shared room; no models or colliders exist in ghost mode.
 import { addAircraftColliders } from "../../shared/physics/aircraft-colliders.js";
@@ -27,12 +29,24 @@ export class RemoteCollisions {
         const {propColliders=[]}=isFixedWing(config)?addFixedWingColliders(this.RAPIER,this.world,body,config):addAircraftColliders(this.RAPIER,this.world,body,config);
         body.userData = { config, resetId: player.resetId,propColliders,radii:[] };
       }
+      if(isFixedWing(config)) {
+        const enabled=validAirplanePropeller(player.animation?.propeller);
+        if(enabled && !body.userData.propColliders.length)
+          body.userData.propColliders.push(addAirplanePropellerCollider(this.RAPIER,this.world,body,config));
+        if(!enabled && body.userData.propColliders.length) {
+          this.world.removeCollider(body.userData.propColliders.pop(),true);
+          body.userData.radii=[];
+        }
+      }
       if (body.userData.resetId !== player.resetId || Math.hypot(body.translation().x - p.x, body.translation().y - p.y, body.translation().z - p.z) > 3) {
         body.setTranslation(p, true); body.setRotation(q, true); body.userData.resetId = player.resetId;
       }
       body.userData.target = { p, q };
-      if(validPropellers(player.propellers))for(const [index,collider]of body.userData.propColliders.entries()){
-        const radius=propellerCollisionRadius(config,player.propellers[index]);
+      const rotors=isFixedWing(config)
+        ? (validAirplanePropeller(player.animation?.propeller) ? [player.animation.propeller] : null)
+        : (validPropellers(player.propellers) ? player.propellers : null);
+      if(rotors)for(const [index,collider]of body.userData.propColliders.entries()){
+        const radius=propellerCollisionRadius(config,rotors[index]);
         if(body.userData.radii[index]!==radius){collider.setShape(new this.RAPIER.Cylinder(.0015,radius));body.userData.radii[index]=radius;}
       }
     }

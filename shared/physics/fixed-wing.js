@@ -5,6 +5,7 @@ import { addFixedWingColliders } from "./fixed-wing-colliders.js";
 import { array, vector, rotate, inverse, clamp } from "./math.js";
 import { airplaneSurfaceTargets } from "./airplane-stabilization.js";
 import { aerodynamicLoads } from "./aerodynamics.js";
+import { AirplanePropellerContact } from "./airplane-propeller.js";
 
 export class FixedWingPhysics {
   constructor(
@@ -43,6 +44,13 @@ export class FixedWingPhysics {
       this,
       addFixedWingColliders(RAPIER, world, this.body, config),
     );
+    this.propellerContact = new AirplanePropellerContact(
+      RAPIER,
+      world,
+      this.body,
+      config,
+      this.effects,
+    );
     this.reset(spawn);
   }
   reset(position, pose = this.launchPose) {
@@ -50,6 +58,8 @@ export class FixedWingPhysics {
     this.crashed = false;
     this.motorThrust[0] = 0;
     this.effects.reset();
+    this.propellerContact.previousVelocity = [...pose.v];
+    this.propellerContact.prepare();
     for (const key of Object.keys(this.surfaces)) this.surfaces[key] = 0;
     this.body.setTranslation(vector(position), true);
     this.body.setRotation(pose.q, true);
@@ -106,9 +116,21 @@ export class FixedWingPhysics {
               : c.motor.fallSeconds),
         ));
     const loads = aerodynamicLoads(c, local, w, this.surfaces, this.loads);
+    const damage = this.effects.propeller;
+    damage.advance(dt, this.motorThrust[0]);
+    const efficiency = this.effects.options.propDamage
+      ? damage.efficiency(this.effects.time)
+      : 1;
     loads.force[2] -=
       this.motorThrust[0] *
+      efficiency *
       clamp(1 - Math.max(0, -local[2]) / c.motor.pitchSpeedMps, 0, 1);
+    if (this.effects.options.propDamage) {
+      const wobble =
+        this.motorThrust[0] * c.propDiameterM * 0.02 * damage.imbalance;
+      loads.torque[0] += Math.sin(damage.phase) * wobble;
+      loads.torque[1] += Math.cos(damage.phase) * wobble;
+    }
     if (this.grounded) {
       // Rolling contact: resist sideways sliding and allow nose-wheel steering.
       // This acts only while actual gear contacts exist, never in airborne flight.
@@ -128,7 +150,9 @@ export class FixedWingPhysics {
     b.addForce(vector(rotate(loads.force, q)), true);
     b.addTorque(vector(rotate(loads.torque, q)), true);
     const oldSpeed = Math.hypot(...v);
+    this.propellerContact.prepare();
     stepPhysicsWorld(this.world, dt, this.updateSceneQueries);
+    this.propellerContact.update(v, rotate(w, q), q, this.motorThrust[0]);
     this.grounded = false;
     for (const gear of this.gearColliders)
       this.world.contactPairsWith(gear, (other) =>

@@ -87,7 +87,7 @@ export class DroneSound {
     for (const [i, rotor] of this.rotors.entries()) {
       const rpm = armed && enabled ? unit(speeds?.[i]) : 0;
       const damage = blades?.[i];
-      const remaining = damage ? damage.reduce((sum, state) => sum + [1, .9, .55, .08][state], 0) / 3 : 1;
+      const remaining = damage ? damage.reduce((sum, state) => sum + [1, .9, .55, .08][state], 0) / damage.length : 1;
       const rough = remaining < .99;
       if (rough !== rotor.rough) { rotor.osc.setPeriodicWave(rough ? this.roughWave : this.cleanWave); rotor.rough = rough; }
       const flutter = 1 + Math.sin(now * (19 + i * 2) + i) * (rough ? .012 : .002);

@@ -540,7 +540,7 @@ export function createScoutModel({ batchStatic = true } = {}) {
         }),
       );
     }
-    solid(rings, ink, "S75_twisted_pusher_blade", prop);
+    solid(rings, ink, "S75_twisted_pusher_blade", prop).userData.bladeIndex = sign > 0 ? 0 : 1;
   }
   const hub = mesh(
     new THREE.SphereGeometry(0.005, 12, 8),

@@ -231,3 +231,5 @@ performance pass; record any remaining model limitations in the documentation.
 
 No implementation time estimate is committed here. The main uncertainty is
 handling calibration and ground contact behavior; reassess effort after phase 2.
+
+Implemented 2026-10-19: all three airplanes support optional two-blade propeller damage, separate from severe crashes and from the drone four-rotor state. See [propeller damage](propeller-damage.md) for physics, visuals, HUD and multiplayer behavior.

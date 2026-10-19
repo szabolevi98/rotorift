@@ -69,3 +69,11 @@ test('damage and enabled descent propwash change texture without allocating new 
   sound.mute();assert.equal(last(sound.master.gain),0);
   sound.dispose();assert.equal(ctx.events.size,0);assert.ok(ctx.nodes.every(node=>node.disconnected));
 });
+
+test('two-blade airplane prop damage uses its blade count and changes the motor sound',()=>{
+ const ctx=context(),sound=new DroneSound(ctx,{id:'rift-a40'},{win:ctx.win});
+ sound.update([.6],{armed:true,blades:[[0,0]]});assert.equal(sound.rotors[0].rough,false);
+ const clean=last(sound.rotors[0].gain.gain);
+ sound.update([.6],{armed:true,blades:[[2,3]]});assert.equal(sound.rotors[0].rough,true);
+ assert.ok(last(sound.rotors[0].gain.gain)<clean);sound.dispose();
+});

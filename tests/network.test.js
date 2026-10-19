@@ -544,7 +544,7 @@ test('eight trainer pilots synchronize typed animations, reconnect to their slot
   const pilots=[];for(let i=0;i<8;i++)pilots.push(await client('Wing '+i,'coral',{protocol:3}));
   const host=pilots[0];host.send('create',{mapId:'test-route',droneId:'rift-t15',mode:'manual',kind:'free',launchMethod:'ground',simulation:{...DEFAULT_SIMULATION,propDamage:true,propwash:true,ghost:false}});
   const created=(await host.next(m=>m.type==='room')).room;
-  assert.equal(created.aircraftKind,'fixedWing');assert.equal(created.simulation.propDamage,false);assert.equal(created.simulation.propwash,false);assert.equal(created.simulation.ghost,false);
+  assert.equal(created.aircraftKind,'fixedWing');assert.equal(created.simulation.propDamage,true);assert.equal(created.simulation.propwash,false);assert.equal(created.simulation.ghost,false);
   for(let i=1;i<8;i++){pilots[i].send('join',{code:created.code});await pilots[i].next(m=>m.type==='room'&&m.room.players.length===i+1);}
   const joined=(await pilots[7].next(m=>m.type==='room'&&m.room.players.length===8)).room;
   assert.equal(new Set(joined.players.map(p=>p.color)).size,8);
@@ -552,17 +552,23 @@ test('eight trainer pilots synchronize typed animations, reconnect to their slot
   for(const pilot of pilots)pilot.send('ready',{ready:true});
   await host.next(m=>m.type==='room'&&m.room.players.length===8&&m.room.players.every(p=>p.ready));host.send('start');
   const flying=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
-  const config=catalog.airplanes.find(c=>c.id==='rift-t15'),animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.3,roll:.2,yaw:.1}},opts={runId:flying.runId,configHash:config.configHash,mode:'manual',simulationKey:simulationKey(flying.simulation),animation};
+  const config=catalog.airplanes.find(c=>c.id==='rift-t15'),animation={kind:'fixedWing',engine:.6,surfaces:{pitch:-.3,roll:.2,yaw:.1},propeller:[2,3]},opts={runId:flying.runId,configHash:config.configHash,mode:'manual',simulationKey:simulationKey(flying.simulation),animation};
   for(let i=0;i<8;i++)await pilots[i].state(flying.players[i].p,opts);
   const active=(await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.animation?.engine===.6))).room;
   for(const p of active.players){assert.deepEqual(p.animation,animation);for(const key of ['propellers','rotorSpeeds','turtleMode'])assert.equal(key in p,false);}
+  await pilots[2].state([1,50,1],{...opts,animation:{...animation,propeller:[4,0]}});
+  const rejected=(await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.animation?.engine===.6))).room;
+  assert.deepEqual(rejected.players.find(p=>p.id===pilots[2].id).animation.propeller,[2,3]);
   await pilots[2].state([1,50,1],{...opts,animation:{...animation,engine:9}});
   await pilots[2].state([2,50,1],{...opts,propellers:[[1,1,1],[1,1,1],[1,1,1],[1,1,1]]});
-  const old=pilots[2];old.ws.terminate();await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===old.id)?.connected===false);
+  const old=pilots[2];old.ws.terminate();
+  const stopped=(await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===old.id)?.connected===false)).room.players.find(p=>p.id===old.id);
+  assert.equal(stopped.animation.engine,0);
+  assert.deepEqual(stopped.animation.propeller,[2,3],'disconnect stops the engine without repairing damage');
   const resumed=await client('Restored','blue',{protocol:3,resume:old.welcome.resume});
   assert.equal(resumed.id,old.id);assert.equal(resumed.welcome.resumed,true);
   const recovered=(await resumed.next(m=>m.type==='room')).room,own=recovered.players.find(p=>p.id===old.id);
-  assert.equal(own.animation.engine,0);assert.deepEqual(own.p,joined.players[2].p);assert.ok(own.resetId>joined.players[2].resetId);
+  assert.equal(own.animation.engine,0);assert.equal(own.animation.propeller,undefined,'spawn reset repairs prop');assert.deepEqual(own.p,joined.players[2].p);assert.ok(own.resetId>joined.players[2].resetId);
   host.send('restart');const lobby=(await host.next(m=>m.type==='room'&&m.room.phase==='lobby'&&m.room.players.length===8&&m.room.players.find(p=>p.id===old.id)?.resetId>own.resetId&&m.room.runId!==flying.runId)).room;
   assert.equal(lobby.players.length,8);assert.ok(lobby.players.every(p=>p.animation.engine===0&&!p.ready));
 });

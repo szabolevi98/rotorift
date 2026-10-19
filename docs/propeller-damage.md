@@ -1,6 +1,6 @@
 # Propellersérülés
 
-A sérülés külön-külön érinti a négy rotort és azok három lapátját. Nincs közös
+Drónoknál a sérülés külön-külön érinti a négy rotort és azok három lapátját. Nincs közös
 életerő vagy sérülési százalék. A lapát állapota ép, hajlott, csorbult vagy letört;
 három letört lapáttal a propeller tönkrement, és nem termel tolóerőt.
 
@@ -47,3 +47,28 @@ multiplayer továbbítás és hibás állapot elutasítása; a három tényleges
 lapátjainak alakváltozása és az ép modellgyorsítótár megőrzése.
 
 Az érintkezési API: [Rapier ContactManifold](https://rapier.rs/javascript3d/classes/TempContactManifold.html).
+
+## Repülők — 2026-10-19
+
+Mindhárom Aero ugyanazt a külön bekapcsolható propellersérülés kapcsolót használja.
+A saját, kétlapátos állapot nem a drón 4×3 tömbjét másolja. Az orron lévő, illetve
+a hátsó tolólégcsavar helyén vékony, forgástengelyre merőleges ütközési tárcsa van;
+kikapcsolva ez nem vesz részt az ütközésekben. A valódi kontaktus, bejövő sebesség
+és forgásfázis választ lapátot. A küszöbök ugyanúgy becsült játékfizikai értékek.
+
+A hajlás/csorbulás/letörés csökkenti a tolóerőt, az eltérő lapátok rezgést okoznak.
+Mindkét lapát elvesztésével a motor nem ad hajtóerőt, de a gép tovább siklik.
+A sérült geometria és a forgási elmosás is követi az állapotot; hiányzó lapátból
+nem lesz újra ép forgó tárcsa. A hang érdesebb, a HUD egy kétlapátos ikont mutat.
+Az erős becsapódás miatti crash és motorleállítás megmarad.
+
+A szerver ellenőrzött `animation.propeller: [0..3, 0..3]` állapotot továbbít,
+csak bekapcsolt szobaszabály mellett. A leálló/kilépő játékos sérülése látható marad;
+a reset, új futam és a rajthelyre visszaállító újracsatlakozás ép légcsavart ad.
+A távoli ütközési tárcsa mérete is követi a sérülést. Ez továbbra is kliensoldali
+fizika és állapotszinkron. Bekapcsolt sérüléssel az eredmények a kapcsoló szokásos
+szimulációs kategóriájába kerülnek; az alapbeállítás kikapcsolva marad.
+
+A célzott tesztek mindhárom gép tényleges propellerkontaktusát, kikapcsolt állapotát,
+tolóerővesztését, siklását, resetjét, lapátgeometriáját, elmosását, távoli ütközési
+méretét, valamint a nyolcklienses továbbítást és hibás adatok elutasítását ellenőrzik.

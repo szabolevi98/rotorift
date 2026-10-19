@@ -21,3 +21,5 @@ Focused tests cover real dimensions and selector order, finite geometry/draw bud
 Revision 2 halves the aileron authority to make the micro airframe's roll response manageable alongside Aero 75 and Aero 150. This applies equally to keyboard, radio and touch controls in Manual and Stabilized modes; elevator and rudder tuning are unchanged. Its physics hash changes with this tuning, so earlier records and ghosts remain separate.
 
 Revision 3 lowers and broadens the bubble canopy and adds a small nose-mounted FPV camera. Both FPV views use the lens position; the ordinary FPV view shows the propeller ahead, while FPV clean retains its unobstructed view.
+
+Optional tractor prop damage (2026-10-19) uses the shared simulation switch: each of the two blades can bend, chip or break, reducing thrust and causing imbalance. Reset or disabling the option repairs the prop; the existing severe crash remains separate.

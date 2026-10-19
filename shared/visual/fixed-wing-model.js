@@ -765,6 +765,7 @@ export function createTrainerModel({ batchStatic = true } = {}) {
       prop,
       "T15_shaped_prop_blade",
     );
+    object.userData.bladeIndex = side > 0 ? 0 : 1;
     object.rotation.z = side < 0 ? Math.PI : 0;
     object.position.z = -0.0015;
   }

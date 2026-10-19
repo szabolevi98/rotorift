@@ -18,7 +18,7 @@ const AIRPLANE = Object.freeze({
   modes: ["manual", "stabilized"],
   racing: true,
   multiplayer: true,
-  propDamage: false,
+  propDamage: true,
   propwash: false,
   turtle: false,
   hover: false,

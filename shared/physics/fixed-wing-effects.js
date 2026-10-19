@@ -2,21 +2,24 @@ import { clamp } from "./math.js";
 import { normalizeSimulation } from "../simulation/options.js";
 import { openCircuitCellVoltage } from "./battery.js";
 import { windVelocity } from "./wind.js";
+import { AirplanePropellerDamage } from "./airplane-propeller.js";
 export class AirplaneEffects {
   constructor(config, options) {
     this.config = config;
+    this.propeller = new AirplanePropellerDamage(config);
     this.setOptions(options);
   }
   setOptions(options) {
     const previous = this.options;
     this.options = {
       ...normalizeSimulation(options),
-      propDamage: false,
       propwash: false,
     };
     if (!previous || previous.battery !== this.options.battery) this.reset();
+    if (!this.options.propDamage) this.propeller.reset();
   }
   reset() {
+    this.propeller.reset();
     this.time = 0;
     this.usedMah = 0;
     this.charge = 1;
@@ -79,6 +82,7 @@ export class AirplaneEffects {
       remainingSeconds: this.remainingSeconds,
       batteryState: this.batteryState,
       throttleLimit: this.throttleLimit,
+      propeller: [...this.propeller.blades],
     };
   }
 }

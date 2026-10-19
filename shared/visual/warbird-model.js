@@ -227,6 +227,7 @@ export function createWarbirdModel({ batchStatic = true } = {}) {
       "A40_propeller_blade",
       prop,
     );
+    blade.userData.bladeIndex = side > 0 ? 0 : 1;
     if (side < 0) {
       const index = blade.geometry.index;
       for (let i = 0; i < index.count; i += 3) {

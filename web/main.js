@@ -1,3 +1,4 @@
+import {validAirplanePropeller} from "../shared/aircraft/propeller.js";
 import { initLanguage, t } from "./lang.js";
 import { CatalogSelect } from "./catalog-select.js";
 import { RouteDetails } from './route-details.js';
@@ -957,6 +958,11 @@ async function loadRoom(r) {
     autoArm.reset();
     const restoredProps=room.players.find(p=>p.id===network.id)?.propellers;
     if(r.simulation.propDamage && validPropellers(restoredProps))flight.physics.effects.propellers.blades=restoredProps.map(blades=>[...blades]);
+    const restoredPlaneProp = room.players.find(p=>p.id===network.id)?.animation?.propeller;
+    if(r.simulation.propDamage && isFixedWing(roomConfig) && validAirplanePropeller(restoredPlaneProp)) {
+      flight.physics.effects.propeller.blades=[...restoredPlaneProp];
+      flight.physics.propellerContact.prepare();
+    }
     lap = newLap();
     playing = true;
     paused = false;
@@ -1312,7 +1318,7 @@ function hud() {
   if ($("#battery-warning").textContent !== batteryWarning) $("#battery-warning").textContent = batteryWarning;
   $("#battery-hud").classList.toggle("low", state.batteryState === "low");
   $("#battery-hud").classList.toggle("critical", state.batteryState === "critical");
-  propellerHud.update(effects.options.propDamage,state.propellers);
+  propellerHud.update(effects.options.propDamage,state.propeller ?? state.propellers,isFixedWing(flight.config));
   visible("#wind-hud", effects.options.wind !== "calm");
   $("#wind-hud").textContent = t("simulation.wind") + " · " + t("wind." + effects.options.wind);
   $("#hud-session").textContent =

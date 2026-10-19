@@ -12,6 +12,7 @@ import {
 import { animateFixedWingModel } from "../../shared/visual/airplane-model-utils.js";
 import {
   AirplanePropellerExposure,
+  AirplanePropellerVisual,
   AIRPLANE_VISUAL_ROTOR_SPEED,
 } from "../../shared/visual/airplane-propeller.js";
 
@@ -77,6 +78,7 @@ class AirplaneVisual {
   constructor(model, config) {
     this.model = model;
     this.config = config;
+    this.damage = new AirplanePropellerVisual(model, config.propDiameterM / 2);
     this.motion = new RotorMotion(1, AIRPLANE_VISUAL_ROTOR_SPEED);
     this.exposure = new AirplanePropellerExposure(
       model,
@@ -85,6 +87,7 @@ class AirplaneVisual {
   }
   bindPhysics() {}
   update(dt, physics, input) {
+    this.damage.update(physics.effects?.propeller.blades);
     this.motion.update(
       dt,
       physics.motorThrust,
@@ -100,6 +103,7 @@ class AirplaneVisual {
       this.reset();
       this.resetId = player.resetId;
     }
+    this.damage.update(player.animation?.propeller);
     const state =
       player.connected !== false &&
       !player.finished &&
@@ -115,17 +119,22 @@ class AirplaneVisual {
     return {
       animation: {
         kind: "fixedWing",
+        ...(physics.effects?.options.propDamage
+          ? { propeller: [...physics.effects.propeller.blades] }
+          : {}),
         engine: physics.armed && !interrupted ? this.motion.fraction[0] : 0,
         surfaces: { ...physics.surfaces },
       },
     };
   }
-  reset() {
+  reset(physics) {
+    this.damage.update(physics?.effects?.propeller.blades);
     this.motion.reset();
     this.exposure.update(0);
   }
   dispose() {
     this.exposure.dispose();
+    this.damage.dispose();
   }
   get motorSpeeds() {
     return this.motion.fraction;

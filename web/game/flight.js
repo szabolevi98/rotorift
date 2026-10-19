@@ -213,7 +213,7 @@ export class Flight {
     this.sound?.update(this.aircraftVisual.motorSpeeds, {
       enabled: this.soundEnabled, volume: this.soundVolume, armed: this.physics.armed, chase: !this.fpv,
       speed: Math.hypot(...this.current.v), vertical: this.current.v[1],
-      propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers?.blades,
+      propwash: this.physics.effects.options.propwash, blades: this.physics.effects.propellers?.blades ?? [this.physics.effects.propeller?.blades],
     });
   }
   place(pose, alpha, dt = 0) {
