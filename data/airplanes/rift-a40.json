@@ -2,7 +2,7 @@
   "id": "rift-a40",
   "kind": "fixedWing",
   "name": "Rift Aero 40",
-  "version": 2,
+  "version": 3,
   "category": "warbird",
   "tuningStatus": "experimental-estimate",
   "massKg": 0.062,
@@ -14,7 +14,7 @@
   "centerOfMassM": [0, 0, 0],
   "bodyHalfExtentsM": [0.018, 0.02, 0.07],
   "visualOffsetM": [0, 0, 0],
-  "cameraOffsetM": [0, 0.036, -0.042],
+  "cameraOffsetM": [0, 0.025, -0.102],
   "motor": {
     "maxThrustN": 0.68,
     "thrustExponent": 1.5,

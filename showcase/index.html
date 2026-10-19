@@ -62116,7 +62116,7 @@ function createWarbirdModel({ batchStatic = true } = {}) {
   const root = new THREE.Group();
   root.name = "Rift_Aero_40";
   root.userData.proceduralAircraft = true;
-  const { mesh, loft, rod, tube } = aircraftMeshTools(root);
+  const { mesh, loft, rod, tube, box } = aircraftMeshTools(root);
   const material = (color, roughness = 0.55, metalness = 0) =>
     new THREE.MeshStandardMaterial({ color, roughness, metalness });
   const silver = material("#b9c4c6", 0.48, 0.32),
@@ -62151,8 +62151,8 @@ function createWarbirdModel({ batchStatic = true } = {}) {
         0,
         1,
       );
-    // A single teardrop crown, with tangent joins at both ends of the deck.
-    const bump = (0.0205 * t ** 2 * (1 - t) ** 3) / 0.03456;
+    // A low, broad bubble with a gently flattened crown and tangent deck joins.
+    const bump = 0.0115 * (1 - Math.cos(Math.PI * t) ** 4);
     return new THREE.Vector3(
       (w + offset) * Math.cos(angle),
       cy + (h + offset + (Math.sin(angle) > 0 ? bump : 0)) * Math.sin(angle),
@@ -62605,8 +62605,24 @@ function createWarbirdModel({ batchStatic = true } = {}) {
   );
   rear.rotation.z = Math.PI / 2;
   rear.position.set(0, -0.014, 0.138);
-  // Subtle FPV camera in the windshield; the view looks clear over the spinner.
-  root.userData.fpvCameraOffset = [0, 0.036, -0.042];
+  // Small nose-mounted FPV pod, seated on the cowl. The optical point is just
+  // ahead of its lens, clear of the housing, with the propeller in front.
+  box([0.008, 0.003, 0.008], [0, 0.0205, -0.096], silver, "A40_FPV_mount");
+  const camera = mesh(
+    new THREE.CylinderGeometry(0.0045, 0.0048, 0.009, 12),
+    dark,
+    "A40_FPV_camera",
+  );
+  camera.rotation.x = Math.PI / 2;
+  camera.position.set(0, 0.025, -0.096);
+  const lens = mesh(
+    new THREE.CircleGeometry(0.0032, 16),
+    glass,
+    "A40_FPV_lens",
+  );
+  lens.rotation.y = Math.PI;
+  lens.position.set(0, 0.025, -0.101);
+  root.userData.fpvCameraOffset = [0, 0.025, -0.102];
   root.updateMatrixWorld(true);
   if (batchStatic) batchAirplaneShell(root, "A40");
   return root;

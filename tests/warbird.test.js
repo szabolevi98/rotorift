@@ -10,6 +10,7 @@ import { createAircraftVisual } from "../web/game/aircraft-visual.js";
 import { FixedWingPhysics } from "../shared/physics/fixed-wing.js";
 import { advanceFixedSteps } from "../shared/physics/fixed-step.js";
 import { disposeModelMaterials } from "../web/game/models.js";
+import { DroneCameraRig } from "../web/game/camera-rig.js";
 await RAPIER.init();
 const catalog = await loadCatalog(),
   config = catalog.airplanes.find((c) => c.id === "rift-a40");
@@ -133,6 +134,47 @@ test("propeller, hinged paint and all four control surfaces animate in local and
   remote.dispose();
   disposeModelMaterials(model);
   disposeModelMaterials(remoteModel);
+});
+
+test("nose FPV lens clears its housing and frames the propeller ahead of the lower canopy", () => {
+  for (const model of [
+    createWarbirdModel({ batchStatic: false }),
+    createWarbirdModel(),
+  ]) {
+    const camera = new THREE.PerspectiveCamera(100, 16 / 9, 0.001, 350);
+    const rig = new DroneCameraRig(camera);
+    rig.configure(config, model);
+    rig.setSettings(0, 100);
+    rig.setView("fpv");
+    rig.update(new THREE.Vector3(), new THREE.Quaternion());
+    assert.deepEqual(camera.position.toArray(), config.cameraOffsetM);
+    for (const phase of [0, Math.PI / 2]) {
+      model.getObjectByName("A40_tractor_propeller").rotation.z = phase;
+      model.updateMatrixWorld(true);
+      camera.updateMatrixWorld(true);
+      const blade = model.getObjectByName("A40_propeller_blade");
+      const target = blade.localToWorld(new THREE.Vector3(0.043, 0, 0));
+      const screen = target.clone().project(camera);
+      assert.ok(
+        Math.abs(screen.x) < 0.9 &&
+          Math.abs(screen.y) < 0.9 &&
+          screen.z > -1 &&
+          screen.z < 1,
+      );
+      const hit = new THREE.Raycaster(
+        camera.position,
+        target.clone().sub(camera.position).normalize(),
+        0,
+        0.1,
+      ).intersectObject(model, true)[0];
+      assert.equal(
+        hit?.object.name,
+        "A40_propeller_blade",
+        "nose and camera housing must not hide the propeller",
+      );
+    }
+    disposeModelMaterials(model);
+  }
 });
 
 test("radiator walls face outward and enclose the belly scoop before and after batching", () => {

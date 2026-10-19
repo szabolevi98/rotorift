@@ -19,3 +19,5 @@ The real [Volantex P-51D 400 mm](https://exhobby.com/products/volantexrc-p51d-mu
 Focused tests cover real dimensions and selector order, finite geometry/draw budget, unobstructed glazing before/after batching, local/remote propeller and control animation, gliding, control signs and frame-cadence independence. Handling remains an experimental estimate.
 
 Revision 2 halves the aileron authority to make the micro airframe's roll response manageable alongside Aero 75 and Aero 150. This applies equally to keyboard, radio and touch controls in Manual and Stabilized modes; elevator and rudder tuning are unchanged. Its physics hash changes with this tuning, so earlier records and ghosts remain separate.
+
+Revision 3 lowers and broadens the bubble canopy and adds a small nose-mounted FPV camera. Both FPV views use the lens position; the ordinary FPV view shows the propeller ahead, while FPV clean retains its unobstructed view.
