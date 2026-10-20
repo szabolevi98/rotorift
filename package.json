@@ -10,7 +10,7 @@
     "dev": "node --watch server/index.js",
     "test": "node --test",
     "showcase:build": "node showcase/build.mjs",
-    "maps:build": "node scripts/build-map-surfaces.mjs && node scripts/build-collisions.mjs",
+    "maps:build": "node scripts/build-map-surfaces.mjs && node scripts/build-circuit-apron.mjs && node scripts/build-circuit-ground.mjs && node scripts/build-collisions.mjs",
     "collisions:build": "node scripts/build-collisions.mjs",
     "physics:measure": "node scripts/measure-flight.mjs docs/flight-measurements.json"
   },

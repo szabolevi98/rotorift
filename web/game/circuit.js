@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { createConstructionParts } from "./construction-parts.js";
 import {prepareCircuitSurfaces} from './circuit-surfaces.js';
 import {CIRCUIT_PIT_APRON} from '../../shared/world/circuit-apron.js';
+import {installCircuitGround} from './circuit-ground.js';
 import {
   CIRCUIT_LENGTH,
   CIRCUIT_SAMPLES,
@@ -56,7 +57,7 @@ function trackGeometry() {
   g.computeVertexNormals();
   return g;
 }
-export function buildCircuit(scene, world, RAPIER, map) {
+export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} = {}) {
   const p = createConstructionParts(scene, world, RAPIER, {
       batchSize: Infinity,
     }),
@@ -539,6 +540,7 @@ export function buildCircuit(scene, world, RAPIER, map) {
   }
   const result = p.finish();
   prepareCircuitSurfaces(result.root, p.palette);
+  if (!authorGround) installCircuitGround(result.root, p.palette);
   result.heightAt = circuitSurfaceHeight;
   return result;
 }

@@ -78,3 +78,14 @@ Ground paint and paving receive shadows but do not cast shadows onto their own
 near-coplanar top faces. The pit apron is a single authored polygon, boolean-cut
 against the main circuit strips; regenerate it with
 `node scripts/build-circuit-apron.mjs` after changing the track footprint.
+
+The high-altitude depth regression uses disjoint ground geometry for every flat
+region, including grass, planting, gravel, asphalt, paving and paint. The source
+polygons are boolean-cut in priority order at authoring time, then tiled at 25 m
+before triangulation. A single vertex-colored mesh replaces the stacked planes;
+outer terrain uses expanding local tiles rather than a horizon-sized triangle.
+This removes dependence on millimetre-scale layer separation, including on 16-bit
+depth targets. `npm run maps:build` regenerates the apron, ground and collisions.
+The regression check casts vertical rays through the ground and requires exactly
+one hit per point; browser verification uses the actual Flight renderer at 128 m,
+100° FOV and a forced 16-bit depth attachment, with shadows enabled and disabled.

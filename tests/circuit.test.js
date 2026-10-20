@@ -193,10 +193,10 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
   try {
     assert.ok(site.root.userData.batches < 40);
     const groundBatches = site.root.children.filter(mesh=>mesh.userData.groundSurface);
-    assert.ok(groundBatches.length >= 4);
+    assert.equal(groundBatches.length, 1);
     assert.ok(groundBatches.every(mesh=>!mesh.castShadow && mesh.receiveShadow));
     assert.ok(site.root.children.some(mesh=>mesh.name.startsWith('box:white:') && mesh.castShadow), 'real walls still cast shadows');
-    assert.equal(site.root.children.filter(mesh=>mesh.name==='Apex_pit_apron').length,1,'pit entries are one non-overlapping asphalt surface');
+    assert.equal(groundBatches[0].name,'Apex_disjoint_ground','all terrain, paving and paint share disjoint geometry');
     assert.ok(site.root.userData.instances < 6000);
     assert.equal(
       world.bodies.len(),
@@ -238,11 +238,17 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
       );
       assert.equal(hit, null, `car body clears all scenery at ${d} m, lane ${lane}`);
     }
-    const surface = site.root.getObjectByName("Apex_asphalt_kerbs_runoff");
+    const surface = site.root.getObjectByName("Apex_disjoint_ground");
     assert.ok(
       surface.geometry.attributes.normal.getY(0) > 0.9,
       "road faces upward",
     );
+    const groundRay = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,-1,0),0,2);
+    site.root.updateMatrixWorld(true);
+    for(let x=-337.173;x<350;x+=53.125)for(let z=-338.397;z<350;z+=61.875) {
+      groundRay.ray.origin.set(x,1,z);
+      assert.equal(groundRay.intersectObject(surface,false).length,1,`one ground surface at ${x},${z}; no stacked depth layers`);
+    }
   } finally {
     site.dispose();
     assert.equal(world.colliders.len(), 0);

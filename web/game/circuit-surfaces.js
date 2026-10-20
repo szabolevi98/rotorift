@@ -11,7 +11,7 @@ export function prepareCircuitSurfaces(root, palette) {
     for (let i = 0; i < mesh.count; i++) {
       mesh.getMatrixAt(i, matrix);
       const e = matrix.elements, height = Math.abs(e[1]) + Math.abs(e[5]) + Math.abs(e[9]);
-      (height <= .2 && e[13] + height / 2 <= .22 ? flat : solid).push(matrix.clone());
+      (height <= .201 && e[13] + height / 2 <= .221 ? flat : solid).push(matrix.clone());
     }
     if (!flat.length) continue;
     let material = materials.get(mesh.material);
