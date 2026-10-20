@@ -123,7 +123,7 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
   Three drone routes explore the street canyons, garage, skywalk and rooftops;
   two airplane circuits add rooftop sightseeing and low boulevard flying.
 
-- **Apex Circuit:** an 800 × 800 m motorsport park with a 1.68 km asphalt track,
+- **Apex Circuit:** an 800 × 800 m motorsport park with a 2.21 km technical asphalt track,
   open pit garages, three grandstands, control tower, paddock and fly-under bridge.
   Eight GT cars share deterministic, server-timed traffic in multiplayer. Two
   drone and two airplane routes are included. See [Apex Circuit](docs/apex-circuit.md).
@@ -389,8 +389,8 @@ the start/finish gate:
 | Skyline | Boulevard Low Run · airplanes | 1.35 km | 26 | Low street canyons at 16–22 m, with 55 m radius street-corner turns |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
 | Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
-| Apex Circuit · local | GT Chase | 1.68 km | 22 | Follow the moving GT cars around the asphalt circuit |
-| Apex Circuit · local | Pit Lane Run | 1.75 km | 26 | Low pit lane detour and fly-under bridge |
+| Apex Circuit · local | GT Chase | 2.21 km | 30 | Follow the GT cars through double S bends and an infield return |
+| Apex Circuit · local | Pit Lane Run | 2.62 km | 34 | Clubhouse breezeway, media tower, low pit lane detour and fly-under bridge |
 | Apex Circuit · local | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
 | Apex Circuit · local | Infield Figure Eight · airplanes | 1.96 km | 24 | Crossing turns between the circuit straights at 26–34 m |
 

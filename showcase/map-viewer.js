@@ -83,6 +83,9 @@ const CIRCUIT_VIEWS={
   grandstand:['Main grandstand',[-150,28,212],[-225,8,248]],
   curves:['Northern technical section',[-135,110,-120],[30,1,-180]],
   paddock:['Paddock and transporters',[-170,37,326],[-30,3,272]],
+  infield:['Clubhouse and media tower',[-108,65,125],[5,5,62]],
+  esses:['Technical S bends and hairpin',[215,90,-92],[115,1,-130]],
+  village:['Fan village and visitor parking',[270,60,357],[100,3,280]],
 };
 const viewsFor=map=>map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 

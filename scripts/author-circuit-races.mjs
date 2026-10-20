@@ -14,7 +14,16 @@ const track = (d, y = 4.7) => {
   return [p.x, y, p.z];
 };
 const pitPath = [];
-for (let d = 470; d < CIRCUIT_LENGTH + 15; d += 5) pitPath.push(track(d));
+for (let d = 470; d < CIRCUIT_LENGTH + 15; d += 5) {
+  if (d === 1130) pitPath.push(
+    track(1130), [95, 4.7, 20], [65, 4.7, 34], [20, 2.7, 42],
+    [20, 2.7, 95], [-10, 4.7, 105], [-40, 4.7, 83],
+    [-40, 2.7, 32], [-90, 2.7, 32], [-97, 4.7, 5],
+    [-70, 6, -35], [-30, 5, -90], track(1320),
+  );
+  if (d >= 1130 && d <= 1320) continue;
+  pitPath.push(track(d));
+}
 pitPath.push(
   track(15),
   [-218, 4.7, 174],
@@ -63,11 +72,11 @@ const descriptions = {
     es: "Sigue a los GT por todo el circuito. Puertas anchas y bajas, curvas fluidas y paso libre bajo el puente peatonal.",
   },
   race_2: {
-    en: "A full circuit lap with a technical detour through the pit-lane apron and the open garage frontage, returning under the bridge.",
-    hu: "Teljes pályakör technikás kitérővel a boxutcai előtéren és a nyitott garázsok előtt, majd visszatérés a híd alatt.",
-    de: "Eine volle Runde mit einem technischen Abstecher über die Boxengasse und vor den offenen Garagen, zurück unter der Brücke.",
-    fr: "Un tour complet avec un détour technique par les stands et devant les garages ouverts, puis retour sous la passerelle.",
-    es: "Una vuelta completa con desvío técnico por el área de boxes y frente a los garajes abiertos, regresando bajo el puente.",
+    en: "A technical circuit lap through the clubhouse breezeway, below the media tower and along the open pit garages, returning under the bridge.",
+    hu: "Technikás pályakör a klubház átjáróján és a médiatorony alatt, majd a nyitott boxok előtt és a híd alatt.",
+    de: "Eine technische Runde durch den Clubhaus-Durchgang, unter dem Medienturm und entlang der offenen Boxen, zurück unter der Brücke.",
+    fr: "Un tour technique par le passage du club-house, sous la tour média et devant les garages ouverts, puis sous la passerelle.",
+    es: "Una vuelta técnica por el paso del club, bajo la torre de medios y frente a los boxes abiertos, regresando bajo el puente.",
   },
   wing_1: {
     en: "A broad, smooth airplane circuit above the motorsport park, with ample wing clearance and views of the moving cars.",
@@ -88,18 +97,18 @@ const designs = [
   {
     id: "race_1",
     name: "GT Chase",
-    count: 22,
+    count: 30,
     point: (t) =>
       track(140 + t * CIRCUIT_LENGTH, 4.7 + 0.8 * Math.sin(t * Math.PI * 2)),
     length: CIRCUIT_LENGTH,
     width: 9,
     height: 4,
-    difficulty: "easy",
+    difficulty: "medium",
   },
   {
     id: "race_2",
     name: "Pit Lane Run",
-    count: 26,
+    count: 34,
     ...pit,
     width: 7,
     height: 4,
@@ -166,7 +175,7 @@ for (const d of designs) {
     {
       id: d.id,
       name: d.name,
-      version: 1,
+      version: d.plane ? 1 : 2,
       spawn: d.point(-14 / d.length).map(round),
       gates,
       guide,

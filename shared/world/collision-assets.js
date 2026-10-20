@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-d4d67e5a7ef8d68a.rrc",
     "mapVersion": 3,
-    "sourceHash": "b2a8aae29588a565143e3427ccf1a01ec07a2f544622238acc72ae590b7b6608",
+    "sourceHash": "71e4fa49a8e7f01797686ce8775c102785d94c0294a641c9fb30550facfe5c3a",
     "records": 3927,
     "rawBytes": 7088036,
     "bytes": 2988034
@@ -11,7 +11,7 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-369218137557891a.rrc",
     "mapVersion": 3,
-    "sourceHash": "b2a8aae29588a565143e3427ccf1a01ec07a2f544622238acc72ae590b7b6608",
+    "sourceHash": "71e4fa49a8e7f01797686ce8775c102785d94c0294a641c9fb30550facfe5c3a",
     "records": 8301,
     "rawBytes": 7557396,
     "bytes": 1891952
@@ -19,7 +19,7 @@ export const COLLISION_ASSETS = {
   "jatszoter": {
     "url": "/assets/collisions/jatszoter-acb789a99b3c2c5e.rrc",
     "mapVersion": 2,
-    "sourceHash": "b2a8aae29588a565143e3427ccf1a01ec07a2f544622238acc72ae590b7b6608",
+    "sourceHash": "71e4fa49a8e7f01797686ce8775c102785d94c0294a641c9fb30550facfe5c3a",
     "records": 880,
     "rawBytes": 170156,
     "bytes": 18910
@@ -27,17 +27,17 @@ export const COLLISION_ASSETS = {
   "skyline": {
     "url": "/assets/collisions/skyline-4af51e55c63c8015.rrc",
     "mapVersion": 2,
-    "sourceHash": "b2a8aae29588a565143e3427ccf1a01ec07a2f544622238acc72ae590b7b6608",
+    "sourceHash": "71e4fa49a8e7f01797686ce8775c102785d94c0294a641c9fb30550facfe5c3a",
     "records": 3110,
     "rawBytes": 622528,
     "bytes": 55638
   },
   "apex": {
-    "url": "/assets/collisions/apex-e81e6fca8fabaa7f.rrc",
-    "mapVersion": 1,
-    "sourceHash": "b2a8aae29588a565143e3427ccf1a01ec07a2f544622238acc72ae590b7b6608",
-    "records": 717,
-    "rawBytes": 168280,
-    "bytes": 45750
+    "url": "/assets/collisions/apex-e2a1136204cee3b8.rrc",
+    "mapVersion": 2,
+    "sourceHash": "71e4fa49a8e7f01797686ce8775c102785d94c0294a641c9fb30550facfe5c3a",
+    "records": 1161,
+    "rawBytes": 266388,
+    "bytes": 68105
   }
 };

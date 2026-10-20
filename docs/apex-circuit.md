@@ -5,7 +5,7 @@ needed to try it at `http://localhost:3015/showcase/?tab=maps&map=apex` or in th
 
 ## Map and flying
 
-An 800 × 800 m motorsport park with a 1.68 km closed asphalt circuit, red/cream
+An 800 × 800 m motorsport park with a 2.21 km closed asphalt circuit, red/cream
 kerbs, runoff, guardrails, starting grid and timing gantry. Open pit garages,
 observation terrace, control tower, three roofed grandstands, paddock transporters,
 lamps and a 9 m fly-under pedestrian bridge offer low flight lines. The launch
@@ -13,10 +13,19 @@ apron is outside the live track. All current drones and airplanes can free-fly;
 airplanes retain airborne launches. Ground-pilot view excludes moving car bodies
 when finding stationary footing.
 
-Routes: **GT Chase** (22 gates, easy), **Pit Lane Run** (26, medium), **Apex Air
+The second local revision replaces the simple perimeter lap with double S bends,
+a tight infield return and a western technical section. A clubhouse with a 24 m
+wide, 5.2 m high breezeway, fly-through media tower, corner-shaped gravel traps,
+tyre walls, marshal stations, planted belts, visitor parking and fan/camping village
+make the grounds usable at close range as well as from above. The car lanes clear
+all static scenery along the complete circuit. Map version is 2.
+
+Routes: **GT Chase** (30 gates, medium), **Pit Lane Run** (34, medium), **Apex Air
 Circuit** (18, easy) and **Infield Figure Eight** (24, medium). Saved smooth guides
 and the full gate frames clear static scenery. Routes are independent of car laps:
 there is no requirement to match a particular car's phase to finish a drone lap.
+The 2.62 km Pit Lane Run also flies through the clubhouse and under the media tower.
+Both drone route versions are 2; the unchanged airplane routes retain version 1.
 
 ## Shared traffic
 

@@ -30,8 +30,9 @@ test("Apex is a full-sized fifth map with drone and airplane circuits and a clea
     map.routes.filter((r) => r.aircraftKinds.includes("fixedWing")).length,
     2,
   );
-  assert.ok(CIRCUIT_LENGTH > 1500 && CIRCUIT_LENGTH < 2000);
-  assert.ok(CIRCUIT_LAP_SECONDS > 60 && CIRCUIT_LAP_SECONDS < 100);
+  assert.ok(CIRCUIT_LENGTH > 2100 && CIRCUIT_LENGTH < 2600);
+  assert.ok(CIRCUIT_LAP_SECONDS > 80 && CIRCUIT_LAP_SECONDS < 140);
+  assert.ok(CIRCUIT_SAMPLES.every(s => Math.abs(s.curvature) * 16 < 1), "inner guardrails must not fold at tight corners");
   assert.equal(circuitSurfaceHeight(-175, 200), 0);
   assert.equal(circuitSurfaceHeight(65, 217), 20.3);
   assert.ok(
@@ -221,6 +222,17 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
     );
     assert.ok(ray([-100, 3, 210], [0, 0, 1], 20), "garage rear wall is solid");
     assert.ok(ray([-175, 2, 200], [0, -1, 0], 3), "spawn sits on solid ground");
+    assert.equal(ray([20, 2.7, 43], [0, 0, 1], 53), null, "clubhouse has a full-width flight passage");
+    assert.equal(ray([-40, 2.7, 32], [-1, 0, 0], 50), null, "media tower can be flown through below its deck");
+    for (let d = 0; d < CIRCUIT_LENGTH; d += 5) for (const lane of [-4.5, -1.5, 1.5, 4.5]) {
+      const s = circuitPoint(d, lane);
+      const hit = world.intersectionWithShape(
+        {x:s.x, y:.728, z:s.z},
+        {x:0,y:Math.sin(s.yaw/2),z:0,w:Math.cos(s.yaw/2)},
+        new RAPIER.Cuboid(.97,.58,2.18),
+      );
+      assert.equal(hit, null, `car body clears all scenery at ${d} m, lane ${lane}`);
+    }
     const surface = site.root.getObjectByName("Apex_asphalt_kerbs_runoff");
     assert.ok(
       surface.geometry.attributes.normal.getY(0) > 0.9,

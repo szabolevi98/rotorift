@@ -3,22 +3,34 @@ export const CIRCUIT_SIZE = 800;
 export const CIRCUIT_WIDTH = 18;
 export const CIRCUIT_CAR_COUNT = 8;
 export const CIRCUIT_TRAFFIC_VERSION = 1;
+export const CIRCUIT_CLUBHOUSE = { x: 20, z: 70, width: 68, depth: 26, roof: 9.15 };
+export const CIRCUIT_MEDIA = { x: -65, z: 32, roof: 13.7 };
 export const CIRCUIT_CONTROL_POINTS = [
   [-220, 150],
   [-90, 150],
   [80, 150],
   [210, 132],
-  [265, 70],
-  [258, -32],
-  [170, -80],
-  [140, -180],
-  [35, -220],
-  [-80, -185],
-  [-45, -78],
-  [-145, -40],
-  [-250, -80],
-  [-290, 20],
-  [-265, 115],
+  [270, 75],
+  [275, 5],
+  [240, -45],
+  [265, -110],
+  [225, -185],
+  [155, -210],
+  [100, -155],
+  [140, -75],
+  [100, -15],
+  [25, -40],
+  [0, -125],
+  [-40, -210],
+  [-125, -235],
+  [-225, -210],
+  [-225, -145],
+  [-155, -110],
+  [-120, -40],
+  [-175, 10],
+  [-265, -20],
+  [-300, 40],
+  [-275, 105],
 ];
 const mod = (a, b) => ((a % b) + b) % b;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -69,8 +81,8 @@ for (let i = 0; i < count; i++) {
     );
   a.speed = clamp(
     Math.sqrt(5.5 / Math.max(0.003, Math.abs(a.curvature))),
-    14,
-    34,
+    9,
+    38,
   );
 }
 export const CIRCUIT_LENGTH =
@@ -165,6 +177,8 @@ export function circuitCarState(seconds, index, seed = 0, out = {}) {
   return out;
 }
 export function circuitSurfaceHeight(x, z) {
+  if (Math.abs(x - CIRCUIT_CLUBHOUSE.x) <= 34 && Math.abs(z - CIRCUIT_CLUBHOUSE.z) <= 13) return CIRCUIT_CLUBHOUSE.roof;
+  if (Math.abs(x - CIRCUIT_MEDIA.x) <= 10 && Math.abs(z - CIRCUIT_MEDIA.z) <= 7) return CIRCUIT_MEDIA.roof;
   if (x >= 48 && x <= 82 && z >= 205 && z <= 230) return 20.3;
   if (Math.abs(x) <= 112 && z >= 195 && z <= 224) return 7.15;
   if (Math.abs(x - 115) <= 2.5 && z >= 118 && z <= 182) return 9.2;

@@ -3,6 +3,8 @@ import { createConstructionParts } from "./construction-parts.js";
 import {
   CIRCUIT_LENGTH,
   CIRCUIT_SAMPLES,
+  CIRCUIT_CLUBHOUSE,
+  CIRCUIT_MEDIA,
   circuitPoint,
   circuitSurfaceHeight,
 } from "../../shared/world/circuit-layout.js";
@@ -60,7 +62,10 @@ export function buildCircuit(scene, world, RAPIER, map) {
   p.root.name = "Apex_Circuit_motorsport_park";
   for (const [name, color] of Object.entries({
     asphalt: 0x353b40,
-    grass: 0x718b50,
+    grass: 0x647e43,
+    lawn: 0x7a9254,
+    planted: 0x4b693b,
+    paving: 0x989a8d,
     runoff: 0x477b6e,
     sand: 0xbba98b,
     roof: 0x3c4953,
@@ -89,6 +94,39 @@ export function buildCircuit(scene, world, RAPIER, map) {
   p.ground(ground, "grass", false).name = "Apex_grass_landscape";
   p.ground(trackGeometry(), "racingSurface", false).name =
     "Apex_asphalt_kerbs_runoff";
+
+  const trackDistance = (x, z) => {
+    let nearest = Infinity;
+    for (let i = 0; i < CIRCUIT_SAMPLES.length; i += 4) {
+      const s = CIRCUIT_SAMPLES[i];
+      nearest = Math.min(nearest, Math.hypot(x - s.x, z - s.z));
+    }
+    return nearest;
+  };
+  // Flat landscaping patches give the grounds structure without terrain CCD.
+  function patch(x, z, rx, rz, color, angle = 0) {
+    const geometry = new THREE.CircleGeometry(1, 36);
+    geometry.rotateX(-Math.PI / 2);
+    geometry.scale(rx, 1, rz);
+    geometry.rotateY(angle);
+    geometry.translate(x, -0.035, z);
+    p.ground(geometry, color, false);
+  }
+  function gravelTrap(distance, side) {
+    const inner = [], outer = [];
+    for (let i = 0; i <= 20; i++) {
+      const d = distance - 26 + i * 2.6;
+      const a = circuitPoint(d, side * 16.6);
+      const b = circuitPoint(d, side * (16.6 + Math.sin(i * Math.PI / 20) * 24));
+      if (trackDistance(b.x, b.z) < 15.8) return;
+      inner.push(new THREE.Vector2(a.x, -a.z));
+      outer.push(new THREE.Vector2(b.x, -b.z));
+    }
+    const g = new THREE.ShapeGeometry(new THREE.Shape([...inner, ...outer.reverse()]));
+    g.rotateX(-Math.PI / 2);
+    g.translate(0, -0.025, 0);
+    p.ground(g, "sand", false);
+  }
 
   function sign(text, width, height, position, angle = 0) {
     if (typeof document === "undefined") return;
@@ -215,9 +253,9 @@ export function buildCircuit(scene, world, RAPIER, map) {
         box([0.12, 0.016, 5], [x + dx, 0.15, -20], "ochre", false);
     }
   });
-  sign("RIFT MOTORSPORT  /  PIT LANE", 70, 1.5, [0, 6.4, 195.75]);
+  sign("RIFT MOTORSPORT  /  PIT LANE", 70, 1.5, [0, 6.4, 195.75], Math.PI);
   for (let i = 0; i < 11; i++)
-    sign(String(i + 1).padStart(2, "0"), 2.5, 1.1, [-100 + i * 20, 5.1, 195.7]);
+    sign(String(i + 1).padStart(2, "0"), 2.5, 1.1, [-100 + i * 20, 5.1, 195.7], Math.PI);
   model("Race_control_tower", [65, 0, 217], 0, () => {
     box([32, 13, 22], [0, 13.5, 0], "white");
     box([33, 0.35, 23], [0, 18.2, 0], "roof");
@@ -228,7 +266,7 @@ export function buildCircuit(scene, world, RAPIER, map) {
     box([34, 0.35, 24], [0, 20.1, 0], "roof");
     cylinder(0.1, 8, [-12, 24.3, 0], "steel");
   });
-  sign("RACE CONTROL", 24, 1.7, [65, 12.5, 205.9]);
+  sign("RACE CONTROL", 24, 1.7, [65, 12.5, 205.9], Math.PI);
   // Spectators' bridge: nine metres clear below, open pedestrian sides above.
   model("Fly_under_pedestrian_bridge", [115, 0, 150], 0, () => {
     for (const z of [-31, 31])
@@ -283,7 +321,7 @@ export function buildCircuit(scene, world, RAPIER, map) {
   grandstand("Main_grandstand", -225, 248, 108);
   grandstand("North_grandstand", 10, -265, 90, Math.PI);
   grandstand("East_curve_grandstand", 313, 7, 70, Math.PI / 2);
-  sign("ROTORIFT  /  FPV ON THE GO", 70, 2, [-225, 10.4, 230.8]);
+  sign("ROTORIFT  /  FPV ON THE GO", 70, 2, [-225, 10.4, 230.8], Math.PI);
 
   // Paddock, transporters and safe launch apron behind the pit-lane entry.
   model("Paddock_transporters", [-30, 0, 272], 0, () => {
@@ -311,7 +349,148 @@ export function buildCircuit(scene, world, RAPIER, map) {
       box([0.15, 0.014, 10], [x, 0.02, 0], "orange", false);
     box([16, 0.014, 0.15], [0, 0.02, 5], "white", false);
   });
-  sign("PILOTS  /  LAUNCH AREA", 10, 1, [-175, 2.4, 210]);
+  sign("PILOTS  /  LAUNCH AREA", 10, 1, [-175, 2.4, 210], Math.PI);
+
+  // A real infield destination: two service wings around a generous, flyable
+  // passage, a glazed upper floor and a spectator terrace overlooking the S's.
+  model("Infield_clubhouse_and_breezeway", [CIRCUIT_CLUBHOUSE.x, 0, CIRCUIT_CLUBHOUSE.z], 0, () => {
+    box([76, 0.12, 42], [0, 0.06, 0], "paving");
+    for (const x of [-23, 23]) {
+      box([22, 5.1, 26], [x, 2.67, 0], "white");
+      box([19, 1.7, 0.1], [x, 2, -13.06], "glass", false);
+      box([19, 1.7, 0.1], [x, 2, 13.06], "glass", false);
+    }
+    box([68, 0.32, 26], [0, 5.38, 0], "roof");
+    box([66, 3, 23], [0, 7.05, 0], "white");
+    for (const z of [-11.56, 11.56]) {
+      box([62, 2, 0.1], [0, 7.1, z], "glass", false);
+      for (let x = -28; x <= 28; x += 7)
+        box([0.12, 2, 0.15], [x, 7.1, z], "steel", false);
+    }
+    box([70, 0.35, 28], [0, 8.975, 0], "roof");
+    for (const z of [-19, 19]) {
+      box([72, 0.12, 0.12], [0, 1.05, z], "steel");
+      for (let x = -36; x <= 36; x += 6)
+        box([0.12, 1, 0.12], [x, 0.55, z], "steel");
+    }
+    for (const x of [-27, -18, 18, 27]) {
+      cylinder(0.07, 2.7, [x, 1.45, -17], "steel", false);
+      part("cone", [5, 0.8, 5], [x, 3, -17], "seatCream", false);
+      box([3, 0.12, 1.6], [x, 0.9, -17], "wood");
+    }
+  });
+  sign("APEX  /  DRIVERS CLUB", 42, 1, [20, 5.7, 56.9], Math.PI);
+  patch(20, 70, 66, 47, "lawn");
+  model("Infield_media_tower", [CIRCUIT_MEDIA.x, 0, CIRCUIT_MEDIA.z], 0, () => {
+    for (const x of [-7.5, 7.5]) for (const z of [-4.5, 4.5]) {
+      box([0.6, 10, 0.6], [x, 5, z], "steel");
+      beam([x, 1, z], [-x, 9, z], 0.13, "steel");
+    }
+    box([20, 0.35, 14], [0, 10, 0], "roof");
+    box([15, 3, 9], [0, 11.65, 0], "blue");
+    for (const z of [-4.56, 4.56])
+      box([13, 1.6, 0.1], [0, 11.8, z], "glass", false);
+    box([20, 0.35, 14], [0, 13.525, 0], "roof");
+    for (let i = 0; i < 25; i++)
+      box([2.5, 0.18, 0.9], [-11, 0.2 + i * 0.4, 16 - i * 0.8], "concrete");
+  });
+  sign("LIVE  /  APEX TV", 13, 1, [-65, 10.6, 24.95], Math.PI);
+
+  // Continuous visual planting, paved walks and an occupied camping/service
+  // area replace the isolated objects in an otherwise empty green plane.
+  box([3, 0.06, 170], [-65, 0.02, 80], "paving", false);
+  box([235, 0.06, 3], [-24, 0.02, 112], "paving", false);
+  patch(-345, -10, 32, 180, "planted", -0.06);
+  patch(-130, -295, 160, 27, "planted");
+  patch(350, -115, 30, 155, "planted", 0.08);
+  patch(220, 270, 85, 55, "lawn");
+  patch(-72, -145, 30, 42, "planted", -0.35);
+  patch(180, -68, 24, 50, "lawn", -0.3);
+  for (let i = 0; i < 86; i++) {
+    const strip = i % 4;
+    const x = strip === 0 ? -345 + Math.sin(i * 1.7) * 11
+      : strip === 1 ? -275 + (i / 4) * 14
+      : strip === 2 ? 350 + Math.sin(i) * 9
+      : -65 + Math.cos(i * 2.4) * (23 + i % 18);
+    const z = strip === 0 ? -235 + i / 4 * 22
+      : strip === 1 ? -295 + Math.sin(i) * 7
+      : strip === 2 ? -255 + i / 4 * 17
+      : -125 + Math.sin(i * 2.4) * 39;
+    if (trackDistance(x, z) < 32) continue;
+    cylinder(0.3, 4.5, [x, 2.25, z], "wood");
+    part("sphere", [7 + i % 3, 8 + i % 4, 7], [x, 7, z], i % 3 ? "planted" : "lawn", false);
+  }
+
+  // Outside-of-corner gravel traps and compact tyre walls follow the actual
+  // driving line. Clearance rejects decorations near another part of the track.
+  for (let d = 520; d < CIRCUIT_LENGTH - 60; d += 125) {
+    const s = circuitPoint(d);
+    if (Math.abs(s.curvature) < 0.007) continue;
+    const side = s.curvature > 0 ? -1 : 1;
+    const trap = circuitPoint(d, side * 31);
+    if (trackDistance(trap.x, trap.z) < 27) continue;
+    gravelTrap(d, side);
+    model("Corner_tyre_wall_" + d, [trap.x, 0, trap.z], -Math.atan2(s.tz, s.tx), () => {
+      box([20, 1.1, 1.2], [0, 0.55, side * 9], "rubber");
+      for (let x = -9; x <= 9; x += 1.15) for (const y of [0.3, 0.85])
+        part("pipe", [1.1, 0.5, 1.1], [x, y, side * 9], Math.abs(x) < 4 ? "seatCream" : "rubber", false);
+    });
+  }
+  for (let d = 120; d < CIRCUIT_LENGTH; d += 220) {
+    const post = circuitPoint(d, -24);
+    if (trackDistance(post.x, post.z) < 22 || post.z > 160) continue;
+    model("Marshal_station_" + d, [post.x, 0, post.z], post.yaw, () => {
+      box([5, 0.2, 4], [0, 0.1, 0], "concrete");
+      box([4.5, 1.2, 0.15], [0, 0.8, 1.8], "white");
+      for (const x of [-2, 2]) for (const z of [-1.6, 1.6])
+        cylinder(0.06, 3.2, [x, 1.6, z], "steel", false);
+      box([5, 0.18, 4], [0, 3.2, 0], "orange");
+      box([0.6, 0.7, 0.15], [0, 2.2, -1.85], "signal", false);
+    });
+  }
+  for (const d of [480, 920, 1370, 1750, 2000]) {
+    const board = circuitPoint(d, -20);
+    if (trackDistance(board.x, board.z) < 19) continue;
+    box([2, 1.3, 0.15], [board.x, 1.2, board.z], "white", false, [0, board.yaw, 0]);
+    sign("100", 1.7, 1, [board.x - board.tx * 0.09, 1.2, board.z - board.tz * 0.09], board.yaw);
+  }
+
+  model("Visitor_parking", [-20, 0, 342], 0, () => {
+    box([310, 0.012, 60], [0, 0.008, 0], "asphalt", false);
+    for (let x = -145; x <= 145; x += 10) {
+      for (const z of [-18, 18])
+        box([0.12, 0.014, 12], [x, 0.024, z], "white", false);
+      if (x % 3 === 0) continue;
+      for (const z of [-18, 18]) {
+        const color = ["white", "blue", "red", "roof"][Math.floor((x + 145) / 10) % 4];
+        box([2.1, 0.8, 4.5], [x + 4, 0.65, z], color);
+        box([1.8, 0.65, 2.4], [x + 4, 1.3, z + 0.1], "glass");
+        for (const dx of [3, 5]) for (const dz of [-1.3, 1.3])
+          cylinder(0.37, 0.22, [x + dx, 0.38, z + dz], "rubber", false, [0, 0, Math.PI / 2]);
+      }
+    }
+  });
+  model("Fan_village_and_camping", [220, 0, 270], 0, () => {
+    box([140, 0.08, 5], [0, 0, 0], "paving", false);
+    for (const x of [-48, -24, 0, 24, 48]) {
+      for (const xx of [-5, 5]) cylinder(0.07, 3.4, [x + xx, 1.7, -16], "steel", false);
+      box([12, 0.2, 9], [x, 3.5, -16], x % 48 ? "blue" : "orange");
+      box([8, 1, 1.5], [x, 0.6, -16], "white");
+      box([3.5, 2.4, 8], [x, 1.4, 25], "seatCream");
+      box([3.6, 0.7, 2], [x, 2.5, 23], "roof", false);
+      for (const dx of [-1.8, 1.8]) for (const dz of [22.5, 27.5])
+        cylinder(0.42, 0.25, [x + dx, 0.5, dz], "rubber", false, [0, 0, Math.PI / 2]);
+    }
+  });
+  sign("FAN ZONE  /  COFFEE  /  GRILL", 38, 1.4, [220, 3.6, 249.35], Math.PI);
+  // Small instanced spectators at terraces and fan areas, outside driving/flying lines.
+  for (let i = 0; i < 46; i++) {
+    const village = i >= 22;
+    const x = village ? 163 + (i - 22) * 4.8 : -12 + i * 3;
+    const z = village ? 267 + Math.sin(i * 2.1) * 4 : 49 + Math.sin(i * 2.1) * 1.2;
+    cylinder(0.2, 0.85, [x, 0.8, z], i % 3 ? "blue" : "orange", false);
+    part("sphere", [0.4, 0.45, 0.4], [x, 1.45, z], "seatCream", false);
+  }
   for (const [x, z] of [
     [-180, 202],
     [-170, 202],
@@ -334,7 +513,7 @@ export function buildCircuit(scene, world, RAPIER, map) {
     [290, 105],
     [-310, 110],
     [145, -238],
-    [-125, -235],
+    [-125, -270],
   ]) {
     cylinder(0.18, 17, [x, 8.5, z], "steel");
     box([4, 0.16, 0.2], [x, 17, z], "steel");
