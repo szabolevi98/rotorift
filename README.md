@@ -58,7 +58,7 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 ## Aircraft and maps
 
 Fleet snapshot: **2026-10-20 — six drones, three airplanes and five maps**.
-The new Apex Circuit is local work in this branch and has not been deployed.
+The Apex Circuit expansion is included in the 2026-10-20 release.
 Counts describe that date and may grow; the runtime catalog comes from
 `data/drones/`, `data/airplanes/` and `data/maps/`. See the
 [current implementation summary](docs/prototype.md) for the latest documented scope.
@@ -328,7 +328,7 @@ Further details:
 
 ## Showcase and race editor
 
-The English showcase combines six drone models and three airplanes with all five map viewers, including the local Apex Circuit addition. It runs
+The English showcase combines six drone models and three airplanes with all five map viewers, including Apex Circuit. It runs
 on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 `http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
 The game itself requires a separate Node server.
@@ -367,7 +367,7 @@ Optional `aircraftKinds` restricts compatibility to `quadrotor` or `fixedWing`;
 omitting it preserves the legacy drone-only behavior. Compatibility changes bump
 the route version. Aircraft selection only shows compatible courses.
 
-Twenty-one race routes are available in this branch (thirteen drone courses and eight airplane circuits); four belong to the new, undeployed Apex Circuit. Lengths follow the saved guide, including the return to
+Twenty-one race routes are available (thirteen drone courses and eight airplane circuits); four belong to Apex Circuit. Lengths follow the saved guide, including the return to
 the start/finish gate:
 
 | Map | Route | Length | Gates | Main features |
@@ -389,10 +389,10 @@ the start/finish gate:
 | Skyline | Boulevard Low Run · airplanes | 1.35 km | 26 | Low street canyons at 16–22 m, with 55 m radius street-corner turns |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
 | Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
-| Apex Circuit · local | GT Chase | 2.21 km | 30 | Follow the GT cars through double S bends and an infield return |
-| Apex Circuit · local | Pit Lane Run | 2.62 km | 34 | Clubhouse breezeway, media tower, low pit lane detour and fly-under bridge |
-| Apex Circuit · local | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
-| Apex Circuit · local | Infield Figure Eight · airplanes | 1.96 km | 24 | Crossing turns between the circuit straights at 26–34 m |
+| Apex Circuit | GT Chase | 2.21 km | 30 | Follow the GT cars through double S bends and an infield return |
+| Apex Circuit | Pit Lane Run | 2.62 km | 34 | Clubhouse breezeway, media tower, low pit lane detour and fly-under bridge |
+| Apex Circuit | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
+| Apex Circuit | Infield Figure Eight · airplanes | 1.96 km | 24 | Crossing turns between the circuit straights at 26–34 m |
 
 Floating gates can face horizontally as well as vertically. Dive gates require
 downward passage through their full opening; passing upward does not count.

@@ -1,7 +1,8 @@
-# Apex Circuit — local development, 2026-10-20
+# Apex Circuit — release, 2026-10-20
 
-Not deployed. Source branch: `codex/apex-circuit`. No push or production update is
-needed to try it at `http://localhost:3015/showcase/?tab=maps&map=apex` or in the game.
+Available in the 2026-10-20 release at `https://fpv.levente.net/` and
+`https://fpv.levente.net/showcase/?tab=maps&map=apex`. Development began on
+`codex/apex-circuit`; local preview remains available at `http://localhost:3015/`.
 
 ## Map and flying
 
@@ -13,7 +14,7 @@ apron is outside the live track. All current drones and airplanes can free-fly;
 airplanes retain airborne launches. Ground-pilot view excludes moving car bodies
 when finding stationary footing.
 
-The second local revision replaces the simple perimeter lap with double S bends,
+The second revision replaces the simple perimeter lap with double S bends,
 a tight infield return and a western technical section. A clubhouse with a 24 m
 wide, 5.2 m high breezeway, fly-through media tower, corner-shaped gravel traps,
 tyre walls, marshal stations, planted belts, visitor parking and fan/camping village
@@ -66,4 +67,5 @@ resource disposal, static passages, gate/guide clearance, baked/source identity,
 translations, game selection and showcase rendering. Browser checks are local;
 scripted clients do not constitute a long eight-person latency/controller trial.
 
-No production service, public page, database schema or external account is changed.
+The release updates only Rotorift and its showcase. No database schema or unrelated
+service changes are required.

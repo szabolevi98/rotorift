@@ -7,7 +7,7 @@ A darabszámok a fenti dátum pillanatképei; az élő katalógus forrása a
 `data/drones/`, `data/airplanes/` és `data/maps/` könyvtár. A dátumozott régi
 mérések az akkori flottára vonatkoznak, és nem bővülnek visszamenőleg új gépekkel.
 
-Az új Apex versenypálya ezen az ágon csak helyben készült el; élesítés nem történt.
+Az Apex versenypálya a 2026-10-20-i kiadás része.
 
 ## Elkészült
 
@@ -17,8 +17,8 @@ Az új Apex versenypálya ezen az ágon csak helyben készült el; élesítés n
 | Flotta | Hat repülhető drón: Rift 65, Rift 75, Rift C3, Rift X35, Rift X5, Rift R5; külön validált fizikai JSON és konfigurációhash. |
 | Repülők | Rift Aero 40 (400 mm / 1S mikro warbird), Aero 75 (750 mm / 2S tolólégcsavaros kisgép) és Aero 150: 1,5 m felsőszárnyas tréner, saját aerodinamika, kézi kormányok, légsebesség/átesés, légi és ligeti földi indulás, nyolcfős szobák, versenyek és szellemek. |
 | Modellek | Hat drón-GLB és közös forrásból exportált Aero 40, Aero 75 és Aero 150, részletes kábelezés, külön forgó/sérülő propellerek, nyolc választható szín és színkövető akkucímkék. |
-| Apex (helyi) | 800 × 800 m motorsportpark, 2,21 km-es kanyargós aszfaltkör, nyolc közös idővel mozgó GT autó, boxutca, lelátók, híd, átrepülhető klubház és médiatorony, parkoló és szurkolói rész; két drónos és két repülős útvonal. |
-| Pályák | Liget/Grove, Betonudvar/Concrete Yard, Játszótér/Playground, Skyline és a helyi Apex Circuit; stabil belső azonosítók, öt nyelven megjelenített nevek. |
+| Apex | 800 × 800 m motorsportpark, 2,21 km-es kanyargós aszfaltkör, nyolc közös idővel mozgó GT autó, boxutca, lelátók, híd, átrepülhető klubház és médiatorony, parkoló és szurkolói rész; két drónos és két repülős útvonal. |
+| Pályák | Liget/Grove, Betonudvar/Concrete Yard, Játszótér/Playground, Skyline és Apex Circuit; stabil belső azonosítók, öt nyelven megjelenített nevek. |
 | Útvonalak | Összesen 21 JSON-verseny: Liget, Betonudvar és Skyline mind 3 drónos és 2 repülős, 2 Játszótér, valamint az új Apex Circuit 2 drónos és 2 repülős útvonala. Freestyle-hoz nem kötelező útvonalat választani. |
 | Fizika | 240 Hz-es fix lépés, külön motorválasz, tömeg/súlypont/tehetetlenség, légellenállás és előkészített pályaütközések. |
 | Repülési módok | Drónok: Acro, Angle, Horizon; repülők: Manual és Stabilized; váltás repülés közben is. Mért kör közbeni módváltás érvényteleníti a kört. |

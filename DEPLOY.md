@@ -60,9 +60,9 @@ run `apache2ctl configtest` after a pull that changes that file as well.
 
 - HTTP redirects to HTTPS; HTTPS `/` returns 200 with a trusted certificate.
 - `/api/status` returns `ok: true` and `database: true`.
-- `/api/catalog` includes five drones, four maps and their JSON race routes
-  (currently 11 routes in total).
-- `/ws` successfully upgrades over WSS; two clients can create/join a room.
+- `/api/catalog` includes six drones, three airplanes, five maps and their JSON race routes
+  (21 routes in the 2026-10-20 release).
+- `/ws` successfully upgrades over WSS; two protocol-5 clients can create/join an Apex room and receive the same traffic epoch and seed.
 - GLB models, Three modules, Rapier WASM, languages and `/showcase/` load.
 - `/.git/config` and `/.env` are forbidden, directory listings disabled.
 - `POST /api/routes` stays forbidden on the public hostname. Gate editing exports

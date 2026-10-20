@@ -1,4 +1,4 @@
-2026-10-20: helyben elkészült az [Apex versenypálya](apex-circuit.md), a projekt ötödik mapja, nyolc szinkronizált GT autóval. Élesítés nincs kérve.
+2026-10-20: elkészült és kiadásba került az [Apex versenypálya](apex-circuit.md), a projekt ötödik mapja, nyolc szinkronizált GT autóval.
 
 # Rotorift – fejlesztési terv
 
