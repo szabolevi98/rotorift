@@ -57,7 +57,8 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 ## Aircraft and maps
 
-Fleet snapshot: **2026-10-19 — six drones, three airplanes and four maps**.
+Fleet snapshot: **2026-10-20 — six drones, three airplanes and five maps**.
+The new Apex Circuit is local work in this branch and has not been deployed.
 Counts describe that date and may grow; the runtime catalog comes from
 `data/drones/`, `data/airplanes/` and `data/maps/`. See the
 [current implementation summary](docs/prototype.md) for the latest documented scope.
@@ -85,7 +86,7 @@ manual; there is no altitude hold, stall prevention or automatic landing. Press
 **M**, use the HUD mode button or assign a radio action to switch in flight.
 Switching invalidates the current timed lap; records/ghosts retain their mode.
 The Aero 150 supports local/online free flight, mixed drone/airplane rooms
-for up to eight pilots, six airplane circuits across Grove, Concrete Yard and Skyline,
+for up to eight pilots, eight airplane circuits across Grove, Concrete Yard, Skyline and the local Apex Circuit,
 records and pose ghosts.
 Choose an airborne practice start, or a ground start on the Grove south promenade
 in free flight. It has separate control travel/expo, animated surfaces, wingtip
@@ -121,6 +122,11 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
   parked vehicles, street furniture and a fountain square complete the district.
   Three drone routes explore the street canyons, garage, skywalk and rooftops;
   two airplane circuits add rooftop sightseeing and low boulevard flying.
+
+- **Apex Circuit:** an 800 × 800 m motorsport park with a 1.68 km asphalt track,
+  open pit garages, three grandstands, control tower, paddock and fly-under bridge.
+  Eight GT cars share deterministic, server-timed traffic in multiplayer. Two
+  drone and two airplane routes are included. See [Apex Circuit](docs/apex-circuit.md).
 
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
@@ -322,7 +328,7 @@ Further details:
 
 ## Showcase and race editor
 
-The English showcase combines six drone models and three airplanes with all four map viewers. It runs
+The English showcase combines six drone models and three airplanes with all five map viewers, including the local Apex Circuit addition. It runs
 on [GitHub Pages](https://szabolevi98.github.io/rotorift/), at
 `http://localhost:3015/showcase/`, or under XAMPP at `http://localhost/rotorift/showcase/`.
 The game itself requires a separate Node server.
@@ -361,7 +367,7 @@ Optional `aircraftKinds` restricts compatibility to `quadrotor` or `fixedWing`;
 omitting it preserves the legacy drone-only behavior. Compatibility changes bump
 the route version. Aircraft selection only shows compatible courses.
 
-Seventeen race routes ship (eleven drone courses and six airplane circuits). Lengths follow the saved guide, including the return to
+Twenty-one race routes are available in this branch (thirteen drone courses and eight airplane circuits); four belong to the new, undeployed Apex Circuit. Lengths follow the saved guide, including the return to
 the start/finish gate:
 
 | Map | Route | Length | Gates | Main features |
@@ -383,6 +389,10 @@ the start/finish gate:
 | Skyline | Boulevard Low Run · airplanes | 1.35 km | 26 | Low street canyons at 16–22 m, with 55 m radius street-corner turns |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
 | Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
+| Apex Circuit · local | GT Chase | 1.68 km | 22 | Follow the moving GT cars around the asphalt circuit |
+| Apex Circuit · local | Pit Lane Run | 1.75 km | 26 | Low pit lane detour and fly-under bridge |
+| Apex Circuit · local | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
+| Apex Circuit · local | Infield Figure Eight · airplanes | 1.96 km | 24 | Crossing turns between the circuit straights at 26–34 m |
 
 Floating gates can face horizontally as well as vertically. Dive gates require
 downward passage through their full opening; passing upward does not count.

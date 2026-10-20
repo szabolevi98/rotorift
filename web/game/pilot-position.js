@@ -17,6 +17,7 @@ export class PilotPositionPicker {
     this.entries = [];
     this.body = new RAPIER.Capsule(.55, .3);
     world.colliders.forEach(collider => {
+      if (collider.parent()?.isKinematic()) return; // Moving traffic is never stationary footing.
       const shape = collider.shape, type = shape.type, types = RAPIER.ShapeType;
       let half;
       if (type === types.Cuboid) half = new THREE.Vector3(...['x','y','z'].map(k => shape.halfExtents[k]));

@@ -113,7 +113,7 @@ test('saved demo neon guides clear baked scenery along every segment, including 
   }
 });
 test('city and construction airplane circuits leave room for banked wings and continuous turns',async()=>{
-  for(const map of catalog.maps.filter(m=>['skyline','betonudvar'].includes(m.id))){
+  for(const map of catalog.maps.filter(m=>['skyline','betonudvar','apex'].includes(m.id))){
     const world=new RAPIER.World({x:0,y:0,z:0}),raw=gunzipSync(await readFile(new URL('../web'+COLLISION_ASSETS[map.id].url,import.meta.url)));
     const collision=new PrebakedCollisions(RAPIER,world,map,decodeCollisionData(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),map.id));
     try{

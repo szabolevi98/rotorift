@@ -681,3 +681,30 @@ test('races still pin a common aircraft even when protocol-4 guests selected ano
   assert.equal(own.droneId,'rift-x5');assert.equal(own.mode,'acro');
   guest.send('aircraft',{droneId:'rift-t15',mode:'manual'});assert.equal((await guest.next(m=>m.type==='error')).code,'aircraftLocked');
 });
+
+test('Apex traffic shares one immutable epoch and seed across eight pilots, late join, reconnect and restart',async t=>{
+ const {client}=await fixture(t,{id:'apex',kind:'circuit',size:800,spawn:[-175,.15,200],gates:[],racingEnabled:false},{countdownMs:20});
+ const legacy=await client('Old circuit client','blue',{protocol:4});
+ legacy.send('create',{mapId:'apex',droneId:'rift-x5',mode:'acro',kind:'free'});assert.equal((await legacy.next(m=>m.type==='error')).code,'clientTooOld');
+ const pilots=[];for(let i=0;i<8;i++)pilots.push(await client('Circuit '+i,'coral',{protocol:5}));
+ const host=pilots[0];host.send('create',{mapId:'apex',droneId:'rift-x5',mode:'acro',kind:'free'});
+ const created=(await host.next(m=>m.type==='room')).room,traffic=created.traffic;
+ assert.equal(traffic.version,1);assert.ok(Number.isFinite(traffic.epoch));assert.ok(Number.isInteger(traffic.seed));
+ legacy.send('join',{code:created.code});assert.equal((await legacy.next(m=>m.type==='error')).code,'clientTooOld');
+ legacy.send('list');assert.ok(!(await legacy.next(m=>m.type==='rooms')).rooms.some(r=>r.code===created.code));
+ for(let i=1;i<8;i++){
+  pilots[i].send('join',{code:created.code,droneId:i%2?'rift-a40':'rift-x5',mode:i%2?'manual':'acro'});
+  const joined=(await pilots[i].next(m=>m.type==='room'&&m.room.players.length===i+1)).room;assert.deepEqual(joined.traffic,traffic);
+ }
+ for(const p of pilots)p.send('ready',{ready:true});
+ await host.next(m=>m.type==='room'&&m.room.players.length===8&&m.room.players.every(p=>p.ready));host.send('start');
+ const flying=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;assert.deepEqual(flying.traffic,traffic);
+ pilots[7].send('leave');await host.next(m=>m.type==='room'&&m.room.players.length===7);
+ const late=await client('Late circuit pilot','yellow',{protocol:5});late.send('join',{code:created.code,droneId:'rift-s75',mode:'manual'});
+ assert.deepEqual((await late.next(m=>m.type==='room'&&m.room.phase==='flying')).room.traffic,traffic);
+ pilots[1].ws.terminate();await host.next(m=>m.type==='room'&&m.room.players.find(p=>p.id===pilots[1].id)?.connected===false);
+ const resumed=await client('Resumed circuit pilot','blue',{protocol:5,resume:pilots[1].welcome.resume});
+ assert.equal(resumed.welcome.resumed,true);assert.deepEqual((await resumed.next(m=>m.type==='room')).room.traffic,traffic);
+ host.send('restart');const restarted=(await host.next(m=>m.type==='room'&&m.room.phase==='lobby'&&m.room.runId!==flying.runId)).room;
+ assert.deepEqual(restarted.traffic,traffic,'restarting a flight never teleports the traffic');
+});

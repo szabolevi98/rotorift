@@ -1,3 +1,5 @@
+import { TrafficClock } from "/shared/world/traffic-clock.js";
+const trafficClock = new TrafficClock();
 import {validAirplanePropeller} from "../shared/aircraft/propeller.js";
 import { initLanguage, t } from "./lang.js";
 import { CatalogSelect } from "./catalog-select.js";
@@ -1459,6 +1461,11 @@ function frame(now) {
     flight.physics.armed = true;
     flight.startSound();
     hud();
+  }
+  if (playing && flight.map?.kind === "circuit") {
+    const trafficTime = room ? trafficClock.sample(room.traffic, network.now, elapsed)
+      : simTime / 1000 + flight.accumulator + (paused ? 0 : Math.min(dt, .1));
+    if (trafficTime !== null) { flight.trafficTime = trafficTime; flight.trafficSeed = room?.traffic?.seed ?? 0; }
   }
   const onlineLive = !!room && flightSimulationActive(playing, paused, room, network.id);
   if (playing && !paused) updateSticks(input);

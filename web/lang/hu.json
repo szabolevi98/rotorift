@@ -378,6 +378,7 @@
   "map.audience.standard": "Közepes és nagy drónoknak",
   "picker.search": "Keresés…",
   "picker.empty": "Nincs találat",
+  "map.apex-circuit": "Apex versenypálya",
   "map.skyline": "Skyline",
   "settings.autoArm": "Auto arm",
   "settings.autoArmHint": "Induláskor, reset vagy folytatás után: gáz nullára, majd emeld meg az armoláshoz. Kézi DISARM után kézi armolásig vagy resetig/folytatásig kikapcsolva marad.",

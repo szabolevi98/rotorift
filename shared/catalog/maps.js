@@ -5,6 +5,7 @@ const legacy = {
   betonudvar: { code: 'construction-yard', order: 1, droneClass: 'standard' },
   jatszoter: { code: 'playground', order: 2, droneClass: 'micro' },
   skyline: { code: 'skyline', order: 3, droneClass: 'standard' },
+  apex: { code: 'apex-circuit', order: 4, droneClass: 'standard' },
 };
 export function mapPresentation(value) {
   const map = typeof value === 'string' ? { id: value } : value;

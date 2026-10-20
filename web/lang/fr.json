@@ -378,6 +378,7 @@
   "map.audience.standard": "Pour les drones moyens et grands",
   "picker.search": "Rechercher…",
   "picker.empty": "Aucun résultat",
+  "map.apex-circuit": "Circuit Apex",
   "map.skyline": "Skyline",
   "settings.autoArm": "Armement automatique",
   "settings.autoArmHint": "Au départ, après réinitialisation ou reprise : baissez les gaz à zéro, puis augmentez-les pour armer. Après un DISARM manuel, réarmez manuellement ou réinitialisez/reprenez le vol.",

@@ -75,7 +75,16 @@ const CITY_VIEWS={
   service:['Service alley and deliveries',[242,3,280],[240,1.2,240]],
   pocket:['Street benches and planters',[-180,14,-180],[-240,1,-199]],
 };
-const viewsFor=map=>map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
+const CIRCUIT_VIEWS={
+  overview:['Apex Circuit overview',[515,455,545],[0,0,0]],
+  chase:['Main straight and moving GT cars',[-215,5,157],[-80,1,150]],
+  pits:['Pit lane and open garages',[-127,18,172],[0,4,210]],
+  bridge:['Fly-under pedestrian bridge',[84,15,195],[115,6,150]],
+  grandstand:['Main grandstand',[-150,28,212],[-225,8,248]],
+  curves:['Northern technical section',[-135,110,-120],[30,1,-180]],
+  paddock:['Paddock and transporters',[-170,37,326],[-30,3,272]],
+};
+const viewsFor=map=>map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");
@@ -276,5 +285,5 @@ export async function startMapViewer(embeddedCatalog) {
   }).observe(viewport);
   await RAPIER.init();
   const params=new URLSearchParams(location.search);await selectMap(params.get("map")??"liget",params.get("route"));
-  renderer.setAnimationLoop(()=>{if(!active||document.hidden||busy||!scene)return;controls.update();environment.update(controls.target.toArray());shadows.update();renderer.render(scene,camera);});
+  renderer.setAnimationLoop(()=>{if(!active||document.hidden||busy||!scene)return;controls.update();environment.update(controls.target.toArray());environment.renderTraffic?.(performance.now()/1000,0);shadows.update({dynamic:environment.dynamicTraffic});renderer.render(scene,camera);});
 }

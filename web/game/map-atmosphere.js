@@ -3,6 +3,8 @@ import * as THREE from "three";
 export const MAP_WEATHER = {
   park: { horizon: 0xd4e4eb, zenith: 0x3485ca, fogDensity: 0.00065, sunIntensity: 3, sunColor: 0xfff0d5,
     skyLight: 0xe6f2ff, groundLight: 0x7c8763, hemisphereIntensity: 2.4, environmentIntensity: 0.65, shadowRadius: 1 },
+  circuit: { horizon: 0xd8e3e4, zenith: 0x4385b9, fogDensity: 0.00035, sunIntensity: 2.7, sunColor: 0xffefd6,
+    skyLight: 0xe1eef8, groundLight: 0x7b825e, hemisphereIntensity: 2.2, environmentIntensity: 0.65, shadowRadius: 1.3 },
   construction: { horizon: 0xb5bcc4, zenith: 0x667381, fogDensity: 0.00055, sunIntensity: 0.65, sunColor: 0xdde5ef,
     skyLight: 0xd5dfe9, groundLight: 0x887968, hemisphereIntensity: 3, environmentIntensity: 0.85, shadowRadius: 3 },
   city: { horizon: 0xcbd7df, zenith: 0x5484b0, fogDensity: 0.00048, sunIntensity: 2.3, sunColor: 0xffeed6,

@@ -1,3 +1,5 @@
+2026-10-20: helyben elkészült az [Apex versenypálya](apex-circuit.md), a projekt ötödik mapja, nyolc szinkronizált GT autóval. Élesítés nincs kérve.
+
 # Rotorift – fejlesztési terv
 
 2026-10-19: elkészült a 400 mm / 1S Rift Aero 40 mikro warbird és az 5″ / 6S Rift R5 versenydrón. A flotta hat drónból és három repülőből áll; mindkét új gép a közös katalógust, showcase-t és multiplayer-folyamatot használja.

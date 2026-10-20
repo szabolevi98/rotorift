@@ -378,6 +378,7 @@
   "map.audience.standard": "For medium and large drones",
   "picker.search": "Search…",
   "picker.empty": "No results",
+  "map.apex-circuit": "Apex Circuit",
   "map.skyline": "Skyline",
   "settings.autoArm": "Auto arm",
   "settings.autoArmHint": "At launch, reset or resume: lower throttle to zero, then raise it to arm. Manual DISARM stays off until you arm manually or reset/resume.",

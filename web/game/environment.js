@@ -1,3 +1,5 @@
+import { buildCircuit } from "./circuit.js";
+import { CircuitTraffic } from "./circuit-traffic.js";
 import * as THREE from "three";
 import { buildPark } from "./park.js";
 import { parkSurfaceHeight } from "../../shared/world/park-layout.js";
@@ -9,13 +11,15 @@ import { createNeonGate, createRaceGuide, gateFrameParts } from "./race-course.j
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
   const root = new THREE.Group();
   scene.add(root);
-  let park, construction, playground, city;
+  let park, construction, playground, city, circuit;
   const staticWorld = bakedCollisions ? null : world;
   if (map.kind === "park") park = buildPark(scene, staticWorld, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
   else if(map.kind==="playground")playground=buildPlayground(scene,staticWorld,RAPIER,map);
   else if(map.kind==="city")city=buildCity(scene,staticWorld,RAPIER,map);
+  else if(map.kind==="circuit")circuit=buildCircuit(scene,staticWorld,RAPIER,map);
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
-  const environment=park??construction??playground??city;
+  const environment=park??construction??playground??city??circuit;
+  const traffic=map.kind==="circuit"?new CircuitTraffic(scene,world,RAPIER):null;
   const gateGroups = [], gateColliders = [];
   const guide=createRaceGuide(map.gates.length ? map.guide : undefined);root.add(guide);
   let gatesEnabled = true, highlighted=-1;
@@ -31,7 +35,9 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
     : (x,z) => environment.heightAt(x,z));
   root.add(pad);
   return {
-    root,
+    root, traffic, dynamicTraffic: !!traffic,
+    stepTraffic: traffic ? (time,seed) => traffic.step(time,seed) : undefined,
+    renderTraffic: traffic ? (time,seed) => traffic.render(time,seed) : undefined,
     update: (position, velocity, observerPosition) => {
       environment?.update(position, velocity, observerPosition);
       bakedCollisions?.update(position, velocity);
@@ -47,7 +53,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       if(highlighted!==next){highlighted=next;gateGroups.forEach((group,i)=>group.userData.setState(i===next));guide.userData.highlight(next);}
     },
     dispose: () => {
-      park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
+      traffic?.dispose();circuit?.dispose();park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
       for(const collider of gateColliders)if(world.getCollider(collider.handle))world.removeCollider(collider,true);
       const geometries=new Set(),materials=new Set();
       root.traverse(o=>{if(o.geometry&&!o.isSprite)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)materials.add(m);});

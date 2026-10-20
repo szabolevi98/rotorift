@@ -39,5 +39,5 @@ test('all seventeen built-in diagrams fit the viewport and retain every saved gu
     }
     assert.ok(result.arrow);
   }
-  assert.equal(count,17);
+  assert.equal(count,21);
 });

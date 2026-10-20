@@ -197,6 +197,7 @@ export class Flight {
     const steps = advanceFixedSteps(this, dt, () => {
       const stepStart=metrics?performance.now():0;
       this.previous = this.physics.pose;
+      this.environment.stepTraffic?.((this.trafficTime ?? this.physics.effects.time + dt) - this.accumulator + PHYSICS_DT, this.trafficSeed ?? 0);
       this.remoteCollisions.step(PHYSICS_DT);
       this.physics.step(input);
       this.current = this.physics.pose;
@@ -326,7 +327,8 @@ export class Flight {
       const tail = new THREE.Vector3(0, 0.015, (r.config.lengthM??r.config.motorDiagonalM) * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
       r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
-    this.parkShadows?.update({ dynamic: this.view !== "fpv-clean" || this.remotes.size > 0 });
+    this.environment.renderTraffic?.(this.trafficTime ?? this.physics.effects.time, this.trafficSeed ?? 0);
+    this.parkShadows?.update({ dynamic: this.environment.dynamicTraffic || this.view !== "fpv-clean" || this.remotes.size > 0 });
     if (analog) {
       this.getAnalogVideo().render(this.scene, this.camera, dt);
     } else {

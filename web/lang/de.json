@@ -378,6 +378,7 @@
   "map.audience.standard": "Für mittlere und große Drohnen",
   "picker.search": "Suchen…",
   "picker.empty": "Keine Treffer",
+  "map.apex-circuit": "Apex-Rennstrecke",
   "map.skyline": "Skyline",
   "settings.autoArm": "Auto-Arm",
   "settings.autoArmHint": "Bei Start, Zurücksetzen oder Fortsetzen: Gas auf null senken, dann zum Scharfschalten erhöhen. Nach manuellem DISARM bleiben die Motoren bis zum manuellen Scharfschalten oder Zurücksetzen/Fortsetzen aus.",
