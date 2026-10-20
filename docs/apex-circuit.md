@@ -8,7 +8,7 @@ Available in the 2026-10-20 release at `https://fpv.levente.net/` and
 
 An 800 × 800 m motorsport park with a 2.21 km closed asphalt circuit, red/cream
 kerbs, runoff, guardrails, starting grid and timing gantry. Open pit garages,
-observation terrace, control tower, three roofed grandstands, paddock transporters,
+observation terrace, control tower, three roofed grandstands, a rear service court,
 lamps and a 9 m fly-under pedestrian bridge offer low flight lines. The launch
 apron is outside the live track. All current drones and airplanes can free-fly;
 airplanes retain airborne launches. Ground-pilot view excludes moving car bodies
@@ -19,14 +19,14 @@ a tight infield return and a western technical section. A clubhouse with a 24 m
 wide, 5.2 m high breezeway, fly-through media tower, corner-shaped gravel traps,
 tyre walls, marshal stations, planted belts, visitor parking and fan/camping village
 make the grounds usable at close range as well as from above. The car lanes clear
-all static scenery along the complete circuit. Map version is 2.
+all static scenery along the complete circuit. Map version is 3.
 
 Routes: **GT Chase** (30 gates, medium), **Pit Lane Run** (34, medium), **Apex Air
 Circuit** (18, easy) and **Infield Figure Eight** (24, medium). Saved smooth guides
 and the full gate frames clear static scenery. Routes are independent of car laps:
 there is no requirement to match a particular car's phase to finish a drone lap.
 The 2.62 km Pit Lane Run also flies through the clubhouse and under the media tower.
-Both drone route versions are 2; the unchanged airplane routes retain version 1.
+Both drone route versions are 3; the unchanged airplane routes retain version 1.
 
 ## Shared traffic
 
@@ -89,3 +89,11 @@ depth targets. `npm run maps:build` regenerates the apron, ground and collisions
 The regression check casts vertical rays through the ground and requires exactly
 one hit per point; browser verification uses the actual Flight renderer at 128 m,
 100° FOV and a forced 16-bit depth attachment, with shadows enabled and disabled.
+
+The pit-lane revision uses smooth tangent-matched entry/exit curves and a continuous
+pit wall that ends before the merges. Garage partitions end inside wider columns
+and the rear wall, removing exposed coincident box faces. Repeated transporters
+and awnings have been removed in favor of a modest rear service court and planting.
+Both drone races now launch from the marked apron at [-175, 0.15, 201], safely away
+from moving cars; the timer still starts only at gate one. Airplane launches remain
+airborne. Close garage/entry/exit views are available in the showcase selector.

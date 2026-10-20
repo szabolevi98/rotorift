@@ -181,6 +181,6 @@ export function circuitSurfaceHeight(x, z) {
   if (Math.abs(x - CIRCUIT_MEDIA.x) <= 10 && Math.abs(z - CIRCUIT_MEDIA.z) <= 7) return CIRCUIT_MEDIA.roof;
   if (x >= 48 && x <= 82 && z >= 205 && z <= 230) return 20.3;
   if (Math.abs(x) <= 112 && z >= 195 && z <= 224) return 7.15;
-  if (Math.abs(x - 115) <= 2.5 && z >= 118 && z <= 182) return 9.2;
+  if (Math.abs(x - 115) <= 2.5 && z >= 118 && z <= 194) return 9.2;
   return 0;
 }

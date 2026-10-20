@@ -124,7 +124,7 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
   two airplane circuits add rooftop sightseeing and low boulevard flying.
 
 - **Apex Circuit:** an 800 × 800 m motorsport park with a 2.21 km technical asphalt track,
-  open pit garages, three grandstands, control tower, paddock and fly-under bridge.
+  open pit garages, three grandstands, control tower, rear service court and fly-under bridge.
   Eight GT cars share deterministic, server-timed traffic in multiplayer. Two
   drone and two airplane routes are included. See [Apex Circuit](docs/apex-circuit.md).
 

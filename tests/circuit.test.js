@@ -12,6 +12,7 @@ import {
   circuitPoint,
   circuitSurfaceHeight,
 } from "../shared/world/circuit-layout.js";
+import {CIRCUIT_LAUNCH, CIRCUIT_PIT_LINE} from "../shared/world/circuit-pits.js";
 import { TrafficClock } from "../shared/world/traffic-clock.js";
 import { CircuitTraffic } from "../web/game/circuit-traffic.js";
 import { buildCircuit } from "../web/game/circuit.js";
@@ -25,6 +26,11 @@ const { maps, drones, airplanes } = await loadCatalog(),
 test("Apex is a full-sized fifth map with drone and airplane circuits and a clear launch apron", () => {
   assert.equal(map.kind, "circuit");
   assert.equal(map.size, 800);
+  assert.deepEqual(map.baseSpawn ?? map.spawn, CIRCUIT_LAUNCH);
+  for(const route of map.routes.filter(r=>r.aircraftKinds.includes("quadrotor"))) {
+    assert.deepEqual(route.spawn,CIRCUIT_LAUNCH,"racing also launches outside the live car lanes");
+    assert.ok(Math.min(...CIRCUIT_SAMPLES.map(p=>Math.hypot(p.x-route.spawn[0],p.z-route.spawn[2])))>35);
+  }
   assert.equal(map.routes.length, 4);
   assert.equal(
     map.routes.filter((r) => r.aircraftKinds.includes("fixedWing")).length,
@@ -226,6 +232,14 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
       "pit garage has an open front",
     );
     assert.ok(ray([-100, 3, 210], [0, 0, 1], 20), "garage rear wall is solid");
+    assert.ok(!site.root.userData.landmarks.some(p=>p.name==="Paddock_transporters"));
+    for(const [i,[x,z]] of CIRCUIT_PIT_LINE.entries()) {
+      const hit=world.intersectionWithShape({x,y:1.3,z},{x:0,y:0,z:0,w:1},new RAPIER.Ball(1));
+      assert.equal(hit,null,`pit lane entry/exit has no barrier or garage obstruction at sample ${i}`);
+    }
+    for(const x of [-100,-80,0,100]) {
+      assert.equal(ray([x,3,194],[0,0,1],23),null,"each garage has a clear interior approach");
+    }
     assert.ok(ray([-175, 2, 200], [0, -1, 0], 3), "spawn sits on solid ground");
     assert.equal(ray([20, 2.7, 43], [0, 0, 1], 53), null, "clubhouse has a full-width flight passage");
     assert.equal(ray([-40, 2.7, 32], [-1, 0, 0], 50), null, "media tower can be flown through below its deck");
@@ -245,6 +259,15 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
     );
     const groundRay = new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,-1,0),0,2);
     site.root.updateMatrixWorld(true);
+    const asphaltColors=[0x353b40,0x343b40].map(hex=>new THREE.Color(hex));
+    for(const [x,z] of CIRCUIT_PIT_LINE) {
+      groundRay.ray.origin.set(x,1,z);
+      const [hit]=groundRay.intersectObject(surface,false);
+      assert.ok(hit,"the complete pit lane has a paved surface");
+      const color=new THREE.Color().fromBufferAttribute(surface.geometry.attributes.color,hit.face.a);
+      assert.ok(asphaltColors.some(c=>Math.abs(c.r-color.r)+Math.abs(c.g-color.g)+Math.abs(c.b-color.b)<.001),
+        `pit merge must replace kerbs/runoff with asphalt at ${x},${z}`);
+    }
     for(let x=-337.173;x<350;x+=53.125)for(let z=-338.397;z<350;z+=61.875) {
       groundRay.ray.origin.set(x,1,z);
       assert.equal(groundRay.intersectObject(surface,false).length,1,`one ground surface at ${x},${z}; no stacked depth layers`);

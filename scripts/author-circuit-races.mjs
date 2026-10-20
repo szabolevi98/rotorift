@@ -3,6 +3,7 @@ import {
   circuitPoint,
   CIRCUIT_LENGTH,
 } from "../shared/world/circuit-layout.js";
+import {CIRCUIT_LAUNCH} from '../shared/world/circuit-pits.js';
 import { validateRoute } from "../shared/race/routes.js";
 import './build-circuit-apron.mjs';
 const map = JSON.parse(
@@ -176,8 +177,8 @@ for (const d of designs) {
     {
       id: d.id,
       name: d.name,
-      version: d.plane ? 1 : 2,
-      spawn: d.point(-14 / d.length).map(round),
+      version: d.plane ? 1 : 3,
+      spawn: d.plane ? d.point(-14 / d.length).map(round) : [...CIRCUIT_LAUNCH],
       gates,
       guide,
       aircraftKinds: [d.plane ? "fixedWing" : "quadrotor"],

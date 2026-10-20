@@ -1,11 +1,11 @@
 {
   "id": "race_2",
   "name": "Pit Lane Run",
-  "version": 2,
+  "version": 3,
   "spawn": [
-    231.119,
-    4.7,
-    120.832
+    -175,
+    0.15,
+    201
   ],
   "gates": [
     {

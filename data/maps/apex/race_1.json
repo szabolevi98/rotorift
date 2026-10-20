@@ -1,11 +1,11 @@
 {
   "id": "race_1",
   "name": "GT Chase",
-  "version": 2,
+  "version": 3,
   "spawn": [
-    -94.306,
-    4.668,
-    150.02
+    -175,
+    0.15,
+    201
   ],
   "gates": [
     {

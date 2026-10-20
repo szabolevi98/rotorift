@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { createConstructionParts } from "./construction-parts.js";
 import {prepareCircuitSurfaces} from './circuit-surfaces.js';
 import {CIRCUIT_PIT_APRON} from '../../shared/world/circuit-apron.js';
+import {pitEdge} from '../../shared/world/circuit-pits.js';
 import {installCircuitGround} from './circuit-ground.js';
 import {
   CIRCUIT_LENGTH,
@@ -72,6 +73,7 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
     runoff: 0x477b6e,
     sand: 0xbba98b,
     roof: 0x3c4953,
+    pitWall: 0x7e898b,
     seatRed: 0xd65239,
     seatBlue: 0x377d9b,
     seatCream: 0xc8c7ac,
@@ -171,7 +173,8 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
       circuitPoint((i * CIRCUIT_LENGTH) / segments, side * 16, a);
       circuitPoint(((i + 1) * CIRCUIT_LENGTH) / segments, side * 16, b);
       // Open access to the entire pit apron from the south main straight.
-      if (side === 1 && a.z > 144 && a.x > -208 && a.x < 175) continue;
+      const distance = i * CIRCUIT_LENGTH / segments;
+      if (side === 1 && (distance < 475 || distance > CIRCUIT_LENGTH - 15)) continue;
       const dx = b.x - a.x,
         dz = b.z - a.z,
         len = Math.hypot(dx, dz),
@@ -191,15 +194,28 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
     const shape = new THREE.Shape(points(outer));
     shape.holes = holes.map(ring=>new THREE.Path(points(ring)));
     const geometry = new THREE.ShapeGeometry(shape);
-    geometry.rotateX(-Math.PI/2); geometry.translate(0,.014,0);
+    geometry.rotateX(-Math.PI/2); geometry.translate(0,.04,0);
     p.ground(geometry,'asphalt',false).name = 'Apex_pit_apron';
   }
-  for (let x = -177; x < 165; x += 8) {
-    box([4, 0.014, 0.14], [x, 0.016, 174], "white", false);
-    box([4, 0.014, 0.14], [x, 0.016, 186], "white", false);
+  // Painted edges follow the same smooth curves as the asphalt. All paint
+  // is boolean-cut into the ground mesh by the offline surface compiler.
+  for (const offset of [-6, 6]) {
+    const edge = pitEdge(offset);
+    for (let i=1;i<edge.length;i++) {
+      const a=edge[i-1],b=edge[i],dx=b[0]-a[0],dz=b[1]-a[1];
+      if(trackDistance((a[0]+b[0])/2,(a[1]+b[1])/2)<10) continue;
+      box([Math.hypot(dx,dz),.012,.16],[(a[0]+b[0])/2,.054,(a[1]+b[1])/2],
+        "white",false,[0,-Math.atan2(dz,dx),0]);
+    }
   }
-  for (let x = -190; x <= 165; x += 14)
-    box([11, 0.6, 0.55], [x, 0.3, 169], "white");
+  // A continuous low pit wall ends before both merging curves.
+  box([290,.8,.7],[0,.4,169],"pitWall");
+  box([289,.12,.82],[0,.83,169],"white");
+  for (const x of [-145,145]) cylinder(.82,.8,[x,.4,169],"pitWall");
+  for (const x of [-145,145]) {
+    box([1.2,1.9,.25],[x,1.65,170],"roof",false);
+    sign(x<0?"PIT IN":"PIT OUT",3.6,.8,[x,2.15,170.2]);
+  }
   // Marked starting grid, checker stripe and timing gantry.
   for (let x = -145; x < 20; x += 16)
     for (const side of [-1, 1]) {
@@ -235,31 +251,35 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
   sign("APEX  /  CIRCUIT", 24, 1.3, [-153.34, 7.8, 150], -Math.PI / 2);
 
   model("Pit_garages_and_roof_terrace", [0, 0, 210], 0, () => {
-    box([224, 0.12, 32], [0, 0.06, 0], "concrete");
-    box([224, 6.8, 0.35], [0, 3.4, 14], "white");
-    for (const x of [-112, 112]) box([0.4, 6.8, 28], [x, 3.4, 0], "white");
-    for (let x = -110; x <= 110; x += 20) {
-      box([0.4, 6.8, 28], [x, 3.4, 0], "white");
-      box([0.4, 6.8, 0.4], [x, 3.4, -14], "roof");
+    box([224,.12,30],[0,.06,0],"concrete");
+    box([221,7,.6],[0,3.5,14],"pitWall");
+    // Narrow partitions terminate inside wider posts and the rear wall.
+    // Their side/end faces never share a visible plane with those parts.
+    for (let x=-110;x<=110;x+=20) {
+      box([.32,7,27.7],[x,3.5,.1],"white");
+      box([.8,7,1],[x,3.5,-13.8],"roof");
     }
-    box([225, 0.3, 30], [0, 7, 0], "roof");
-    for (const z of [-14.4, 14.4]) {
-      box([224, 1, 0.12], [0, 7.65, z], "steel");
-      box([224, 0.12, 0.12], [0, 8.25, z], "steel");
+    for (let x=-100;x<=100;x+=20)
+      box([19.2,1,1],[x,6.5,-13.8],"roof");
+    box([225,.3,30],[0,7,0],"roof");
+    box([223,.16,.2],[0,5.93,-14.4],"orange");
+    for (const z of [-14.4,14.4]) {
+      box([224,.09,.09],[0,8.2,z],"steel");
+      box([224,.07,.07],[0,7.65,z],"steel");
+      for(let x=-110;x<=110;x+=10)
+        box([.09,1.15,.09],[x,7.65,z],"steel");
     }
-    for (let x = -100; x <= 100; x += 20) {
-      box([18, 0.45, 0.25], [x, 5.6, -14.1], "orange");
-      box([4.8, 0.85, 1.5], [x, 0.55, 10], "blue");
-      for (const dx of [-2, 2])
-        cylinder(0.8, 0.9, [x + dx, 0.45, 6], "rubber", false);
-      box([6, 0.014, 5], [x, 0.14, -20], x % 40 ? "runoff" : "asphalt", false);
-      for (const dx of [-3.1, 3.1])
-        box([0.12, 0.016, 5], [x + dx, 0.15, -20], "ochre", false);
+    for (let x=-100;x<=100;x+=20) {
+      box([4.8,.85,1.5],[x,.55,11],"blue");
+      for (const dx of [-2,2]) cylinder(.8,.9,[x+dx,.57,7],"rubber",false);
+      box([6,.014,5],[x,.14,-20],x%40?"runoff":"asphalt",false);
+      for (const dx of [-3.1,3.1])
+        box([.12,.016,5],[x+dx,.15,-20],"ochre",false);
     }
   });
-  sign("RIFT MOTORSPORT  /  PIT LANE", 70, 1.5, [0, 6.4, 195.75], Math.PI);
-  for (let i = 0; i < 11; i++)
-    sign(String(i + 1).padStart(2, "0"), 2.5, 1.1, [-100 + i * 20, 5.1, 195.7], Math.PI);
+  sign("RIFT MOTORSPORT  /  PIT LANE",54,.7,[-35,8.05,195.45],Math.PI);
+  for (let i=0;i<11;i++)
+    sign(String(i+1).padStart(2,"0"),2.5,.62,[-100+i*20,6.65,195.64],Math.PI);
   model("Race_control_tower", [65, 0, 217], 0, () => {
     box([32, 13, 22], [0, 13.5, 0], "white");
     box([33, 0.35, 23], [0, 18.2, 0], "roof");
@@ -273,18 +293,18 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
   sign("RACE CONTROL", 24, 1.7, [65, 12.5, 205.9], Math.PI);
   // Spectators' bridge: nine metres clear below, open pedestrian sides above.
   model("Fly_under_pedestrian_bridge", [115, 0, 150], 0, () => {
-    for (const z of [-31, 31])
+    for (const z of [-31, 43])
       for (const x of [-2.1, 2.1]) box([0.35, 9, 0.35], [x, 4.5, z], "steel");
-    box([4.8, 0.35, 64], [0, 9, 0], "roof");
+    box([4.8, 0.35, 76], [0, 9, 6], "roof");
     for (const x of [-2.35, 2.35]) {
-      box([0.12, 1.15, 64], [x, 9.75, 0], "steel");
-      box([0.16, 0.12, 64], [x, 10.4, 0], "orange");
+      box([0.12, 1.15, 76], [x, 9.75, 6], "steel");
+      box([0.16, 0.12, 76], [x, 10.4, 6], "orange");
     }
     for (const side of [-1, 1])
       for (let i = 0; i < 24; i++)
         box(
           [4.8, 0.18, 1.2],
-          [0, 0.2 + i * 0.365, side * (55 - i)],
+          [0, 0.2 + i * 0.365, side * (55 - i) + (side > 0 ? 12 : 0)],
           "concrete",
         );
   });
@@ -327,26 +347,19 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
   grandstand("East_curve_grandstand", 313, 7, 70, Math.PI / 2);
   sign("ROTORIFT  /  FPV ON THE GO", 70, 2, [-225, 10.4, 230.8], Math.PI);
 
-  // Paddock, transporters and safe launch apron behind the pit-lane entry.
-  model("Paddock_transporters", [-30, 0, 272], 0, () => {
-    box([270, 0.015, 45], [0, 0.008, 0], "asphalt", false);
-    for (let x = -100; x <= 100; x += 40) {
-      box([7, 3.8, 17], [x, 2, 0], x % 80 ? "blue" : "white");
-      box([7, 3.5, 5], [x, 1.85, -10], "roof");
-      for (const dx of [-3.4, 3.4])
-        for (const zz of [-11, 2, 6])
-          part(
-            "cylinder",
-            [1.2, 0.6, 1.2],
-            [x + dx, 0.7, zz],
-            "rubber",
-            false,
-            [0, 0, Math.PI / 2],
-          );
-      for (const dx of [-3, 3]) box([0.15, 4, 0.15], [x + dx, 2, 14], "steel");
-      box([13, 0.18, 9], [x, 4.1, 17], "orange");
+  // A quiet service court replaces the repeated transporters and awnings.
+  model("Rear_service_court", [0,0,242], 0, () => {
+    box([224,.016,28],[0,.008,0],"paving",false);
+    box([224,.014,7],[0,.02,0],"asphalt",false);
+    for (const z of [-4.1,4.1])
+      box([222,.012,.14],[0,.036,z],"white",false);
+    for (const x of [-96,-48,0,48,96]) {
+      box([12,.65,3],[x,.325,11],"pitWall");
+      box([11.6,.8,2.6],[x,.95,11],"planted",false);
     }
   });
+  patch(0,277,112,19,"lawn");
+  box([5,.04,54],[-125,.01,273],"paving",false);
   model("Launch_apron", [-175, 0, 201], 0, () => {
     box([22, 0.012, 14], [0, 0.008, 0], "asphalt", false);
     for (const x of [-8, 8])
@@ -496,8 +509,8 @@ export function buildCircuit(scene, world, RAPIER, map, {authorGround = false} =
     part("sphere", [0.4, 0.45, 0.4], [x, 1.45, z], "seatCream", false);
   }
   for (const [x, z] of [
-    [-180, 202],
-    [-170, 202],
+    [-180, 209],
+    [-170, 209],
     [-130, 230],
     [130, 235],
   ]) {
