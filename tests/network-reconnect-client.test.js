@@ -22,7 +22,7 @@ function fixture(t) {
 test('the browser retains its own resume credential across reconnect and reload without stale socket callbacks',t=>{
   const {network,welcome,message,session,room,token}=fixture(t),n=network();n.connect('Pilot');n.ws.onopen();welcome(n);message(n.ws,{type:'room',room});
   const old=n.ws;n.seq=27;old.readyState=0;old.onclose();assert.equal(n.resumption.code,room.code);assert.equal(n.ready,false);
-  n.connect('Pilot');n.ws.onopen();assert.equal(n.ws.sent[0].resume,token);assert.equal(n.ws.sent[0].protocol,5);
+  n.connect('Pilot');n.ws.onopen();assert.equal(n.ws.sent[0].resume,token);assert.equal(n.ws.sent[0].protocol,6);
   welcome(n,{resumed:true});message(n.ws,{type:'room',room});assert.equal(n.seq,0);
   message(old,{type:'left'});assert.equal(n.room.code,room.code,'the superseded socket cannot erase the resumed room');
   n.state({p:[0,0,0],v:[0,0,0],q:{x:0,y:0,z:0,w:1}},{configHash:'config'},'acro',false,{});

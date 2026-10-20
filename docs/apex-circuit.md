@@ -35,8 +35,12 @@ curvature-limited corner speeds, braking/acceleration envelope and eight car pha
 Cars use four separate lanes with preserved headway within each lane. Their
 trajectories depend only on absolute traffic time, car index and the room seed.
 No client RNG, frame counts, aircraft input or local join time affects the route.
+The revised pace averages about 94 km/h for the base car, reaching about 180 km/h
+on the main straight. Cornering, acceleration and braking remain distance-based;
+liveries retain their individual pace factors. Version 2 traffic requires a fresh
+protocol-6 client so old speed tables cannot silently diverge.
 
-Protocol 5 rooms carry `traffic: {version: 1, epoch, seed}` in the existing room
+Protocol 6 rooms carry `traffic: {version: 2, epoch, seed}` in the existing room
 snapshot. The server creates this metadata once. Late join and reconnect receive
 the same metadata; restarting the flight leaves traffic running without teleporting
 it. The existing server clock/ping offset supplies time. `TrafficClock` slews small
@@ -69,3 +73,8 @@ scripted clients do not constitute a long eight-person latency/controller trial.
 
 The release updates only Rotorift and its showcase. No database schema or unrelated
 service changes are required.
+
+Ground paint and paving receive shadows but do not cast shadows onto their own
+near-coplanar top faces. The pit apron is a single authored polygon, boolean-cut
+against the main circuit strips; regenerate it with
+`node scripts/build-circuit-apron.mjs` after changing the track footprint.

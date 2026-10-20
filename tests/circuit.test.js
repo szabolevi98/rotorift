@@ -31,7 +31,7 @@ test("Apex is a full-sized fifth map with drone and airplane circuits and a clea
     2,
   );
   assert.ok(CIRCUIT_LENGTH > 2100 && CIRCUIT_LENGTH < 2600);
-  assert.ok(CIRCUIT_LAP_SECONDS > 80 && CIRCUIT_LAP_SECONDS < 140);
+  assert.ok(CIRCUIT_LAP_SECONDS > 65 && CIRCUIT_LAP_SECONDS < 140);
   assert.ok(CIRCUIT_SAMPLES.every(s => Math.abs(s.curvature) * 16 < 1), "inner guardrails must not fold at tight corners");
   assert.equal(circuitSurfaceHeight(-175, 200), 0);
   assert.equal(circuitSurfaceHeight(65, 217), 20.3);
@@ -75,7 +75,7 @@ test("traffic is a pure absolute-time function, continuous across lap seams, and
 });
 
 test("room traffic clocks agree after late join and resume, slew small corrections and catch up suspension", () => {
-  const meta = { version: 1, epoch: 100000, seed: 42 },
+  const meta = { version: 2, epoch: 100000, seed: 42 },
     a = new TrafficClock(),
     b = new TrafficClock();
   assert.equal(a.sample(meta, 105000, 0), 5);
@@ -191,7 +191,12 @@ test("static circuit and traffic resources are separate, the bridge/garages are 
     scene = new THREE.Scene(),
     site = buildCircuit(scene, world, RAPIER, map);
   try {
-    assert.ok(site.root.userData.batches < 35);
+    assert.ok(site.root.userData.batches < 40);
+    const groundBatches = site.root.children.filter(mesh=>mesh.userData.groundSurface);
+    assert.ok(groundBatches.length >= 4);
+    assert.ok(groundBatches.every(mesh=>!mesh.castShadow && mesh.receiveShadow));
+    assert.ok(site.root.children.some(mesh=>mesh.name.startsWith('box:white:') && mesh.castShadow), 'real walls still cast shadows');
+    assert.equal(site.root.children.filter(mesh=>mesh.name==='Apex_pit_apron').length,1,'pit entries are one non-overlapping asphalt surface');
     assert.ok(site.root.userData.instances < 6000);
     assert.equal(
       world.bodies.len(),

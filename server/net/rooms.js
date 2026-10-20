@@ -1,3 +1,4 @@
+import { CIRCUIT_TRAFFIC_VERSION } from "../../shared/world/circuit-layout.js";
 import {findAircraft} from '../../shared/catalog/aircraft.js';
 import {isFixedWing,aircraftModes,aircraftSimulation,supportsMap,routeSupportsAircraft} from '../../shared/aircraft/capabilities.js';
 import {aircraftLaunch,groundLaunchAvailable} from '../../shared/aircraft/launch.js';
@@ -27,7 +28,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   };
   const aircraftOf = (p, r) => p.aircraft ?? r.drone;
   const optionsOf = (p, r) => aircraftSimulation(aircraftOf(p, r), r.simulation);
-  const compatibleClient = (r, protocol) => (!r.map || r.map.kind !== "circuit" || protocol >= 5) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
+  const compatibleClient = (r, protocol) => (!r.map || r.map.kind !== "circuit" || protocol >= 6) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
   // Free-flight rules belong to the room; each aircraft applies only the
   // effects it supports. A plane host must not disable drone effects for guests.
   const roomOptions = (r, options) => r.mixedAircraft ? normalizeSimulation(options) : aircraftSimulation(r.drone, options);
@@ -195,7 +196,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               clients.delete(p);
               const oldSocket = previous.ws;
               p = previous; p.ws = ws; p.connected = true; p.alive = true; p.reconnectUntil = null;
-              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5].includes(m.protocol) ? m.protocol : 1;
+              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5,6].includes(m.protocol) ? m.protocol : 1;
               // A duplicated tab must not keep taking over the recovered socket.
               // Retain the presented key only while disconnected, in case the
               // new welcome packet itself is lost during an unstable connection.
@@ -221,7 +222,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
             if (ws.readyState !== 1) return;
-            p.protocol = [2,3,4,5].includes(m.protocol) ? m.protocol : 1;
+            p.protocol = [2,3,4,5,6].includes(m.protocol) ? m.protocol : 1;
             p.resume = randomBytes(24).toString("hex");
             resumable.set(p.resume, p);
             send(p, "welcome", {
@@ -295,7 +296,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             send(p, "error", { code: "raceUnavailable" });
             return;
           }
-          if(map.kind==="circuit"&&p.protocol<5){send(p,"error",{code:"clientTooOld"});return;}
+          if(map.kind==="circuit"&&p.protocol<6){send(p,"error",{code:"clientTooOld"});return;}
           leave(p);
           const code = randomBytes(3).toString("hex").toUpperCase();
           const r = {
@@ -313,7 +314,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             host: p.id,
             players: new Map(),
             participants: new Map(),
-            ...(map.kind === "circuit" ? {traffic: {version: 1, epoch: Date.now(), seed: randomBytes(4).readUInt32LE()}} : {}),
+            ...(map.kind === "circuit" ? {traffic: {version: CIRCUIT_TRAFFIC_VERSION, epoch: Date.now(), seed: randomBytes(4).readUInt32LE()}} : {}),
             raceId: randomUUID(),
           };
           rooms.set(code, r);

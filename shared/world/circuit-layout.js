@@ -2,7 +2,7 @@
 export const CIRCUIT_SIZE = 800;
 export const CIRCUIT_WIDTH = 18;
 export const CIRCUIT_CAR_COUNT = 8;
-export const CIRCUIT_TRAFFIC_VERSION = 1;
+export const CIRCUIT_TRAFFIC_VERSION = 2;
 export const CIRCUIT_CLUBHOUSE = { x: 20, z: 70, width: 68, depth: 26, roof: 9.15 };
 export const CIRCUIT_MEDIA = { x: -65, z: 32, roof: 13.7 };
 export const CIRCUIT_CONTROL_POINTS = [
@@ -80,9 +80,9 @@ for (let i = 0; i < count; i++) {
       Math.hypot(ax, az) * Math.hypot(bx, bz) * Math.hypot(ax + bx, az + bz),
     );
   a.speed = clamp(
-    Math.sqrt(5.5 / Math.max(0.003, Math.abs(a.curvature))),
-    9,
-    38,
+    Math.sqrt(8.5 / Math.max(0.0015, Math.abs(a.curvature))),
+    10,
+    50,
   );
 }
 export const CIRCUIT_LENGTH =
@@ -97,13 +97,13 @@ for (let pass = 0; pass < 2; pass++) {
     const a = CIRCUIT_SAMPLES[i % count],
       b = CIRCUIT_SAMPLES[(i + 1) % count],
       ds = Math.hypot(a.x - b.x, a.z - b.z);
-    a.speed = Math.min(a.speed, Math.sqrt(b.speed * b.speed + 2 * 7 * ds));
+    a.speed = Math.min(a.speed, Math.sqrt(b.speed * b.speed + 2 * 10 * ds));
   }
   for (let i = 0; i < count * 2; i++) {
     const a = CIRCUIT_SAMPLES[i % count],
       b = CIRCUIT_SAMPLES[mod(i - 1, count)],
       ds = Math.hypot(a.x - b.x, a.z - b.z);
-    a.speed = Math.min(a.speed, Math.sqrt(b.speed * b.speed + 2 * 4 * ds));
+    a.speed = Math.min(a.speed, Math.sqrt(b.speed * b.speed + 2 * 6 * ds));
   }
 }
 let time = 0;

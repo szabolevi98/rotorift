@@ -1,3 +1,4 @@
+import { CIRCUIT_TRAFFIC_VERSION } from './circuit-layout.js';
 // Synchronize to the room's immutable epoch, not local frame counts or a join time.
 // Small network-clock corrections are slewed; long suspension catches up directly.
 export class TrafficClock {
@@ -8,7 +9,7 @@ export class TrafficClock {
   sample(traffic, serverNow, elapsed) {
     if (
       !traffic ||
-      traffic.version !== 1 ||
+      traffic.version !== CIRCUIT_TRAFFIC_VERSION ||
       !Number.isFinite(traffic.epoch) ||
       !Number.isInteger(traffic.seed)
     )

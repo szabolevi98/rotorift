@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { createConstructionParts } from "./construction-parts.js";
+import {prepareCircuitSurfaces} from './circuit-surfaces.js';
+import {CIRCUIT_PIT_APRON} from '../../shared/world/circuit-apron.js';
 import {
   CIRCUIT_LENGTH,
   CIRCUIT_SAMPLES,
@@ -183,13 +185,14 @@ export function buildCircuit(scene, world, RAPIER, map) {
       box([0.12, 1.15, 0.12], [a.x, 0.575, a.z], "steel", false);
     }
   // Pit lane and merging mouths, alongside the +X main straight.
-  box([385, 0.012, 14], [-10, 0.007, 180], "asphalt", false);
-  for (const x of [-185, 175])
-    box([50, 0.012, 15], [x, 0.008, 167], "asphalt", false, [
-      0,
-      x < 0 ? -0.4 : 0.4,
-      0,
-    ]);
+  for (const [outer, ...holes] of CIRCUIT_PIT_APRON) {
+    const points = ring => ring.map(([x,z])=>new THREE.Vector2(x,-z));
+    const shape = new THREE.Shape(points(outer));
+    shape.holes = holes.map(ring=>new THREE.Path(points(ring)));
+    const geometry = new THREE.ShapeGeometry(shape);
+    geometry.rotateX(-Math.PI/2); geometry.translate(0,.014,0);
+    p.ground(geometry,'asphalt',false).name = 'Apex_pit_apron';
+  }
   for (let x = -177; x < 165; x += 8) {
     box([4, 0.014, 0.14], [x, 0.016, 174], "white", false);
     box([4, 0.014, 0.14], [x, 0.016, 186], "white", false);
@@ -535,11 +538,7 @@ export function buildCircuit(scene, world, RAPIER, map) {
     );
   }
   const result = p.finish();
-  result.root.traverse((mesh) => {
-    // Ground aprons receive building/car shadows; their near-coplanar bottom
-    // faces must not cast a second shadow onto the road or their own top.
-    if (mesh.isMesh && mesh.material === p.palette.asphalt) mesh.castShadow = false;
-  });
+  prepareCircuitSurfaces(result.root, p.palette);
   result.heightAt = circuitSurfaceHeight;
   return result;
 }

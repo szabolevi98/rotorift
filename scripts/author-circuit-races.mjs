@@ -4,6 +4,7 @@ import {
   CIRCUIT_LENGTH,
 } from "../shared/world/circuit-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
+import './build-circuit-apron.mjs';
 const map = JSON.parse(
   await readFile(new URL("../data/maps/apex.json", import.meta.url)),
 );
