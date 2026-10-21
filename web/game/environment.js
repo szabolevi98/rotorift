@@ -10,7 +10,6 @@ import { buildCity } from "./city.js";
 import { createLaunchPad } from "./launch-pad.js";
 import { createNeonGate, createRaceGuide, gateFrameParts } from "./race-course.js";
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
-  const backdrop=createWorldBackdrop(scene,map);
   const root = new THREE.Group();
   scene.add(root);
   let park, construction, playground, city, circuit;
@@ -21,6 +20,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
   else if(map.kind==="circuit")circuit=buildCircuit(scene,staticWorld,RAPIER,map);
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
   const environment=park??construction??playground??city??circuit;
+  const backdrop=createWorldBackdrop(scene,map,environment.root);
   const traffic=map.kind==="circuit"?new CircuitTraffic(scene,world,RAPIER):null;
   const gateGroups = [], gateColliders = [];
   const guide=createRaceGuide(map.gates.length ? map.guide : undefined);root.add(guide);

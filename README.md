@@ -134,7 +134,7 @@ Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 Each map has an inexpensive, world-space background beyond the playable boundary:
 wooded foothills and layered mountains, suburban rooftops around Playground,
 a low-rise city fringe for Skyline, and an industrial estate beyond Concrete Yard.
-The shared backdrop uses at most six batches and 36,000 triangles, without textures,
+The shared backdrop uses at most six batches and 36,000 triangles, without new textures,
 shadow rendering, physics bodies or per-frame generation. It also appears in the
 showcase. See [background scenery](docs/world-backdrops.md).
 

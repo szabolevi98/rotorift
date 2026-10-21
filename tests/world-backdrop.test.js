@@ -41,3 +41,25 @@ for(const [kind,size] of [['park',800],['circuit',800],['construction',600],['ci
 test('each map has its own background silhouette and palette',()=>{
   assert.equal(new Set(Object.values(BACKDROP_PROFILES).map(p=>p.seed)).size,5);
 });
+
+test('backdrop terrain reuses the ground shading and borrows its texture without disposing it',()=>{
+  const scene=new THREE.Scene(),worldRoot=new THREE.Group(),texture=new THREE.Texture();
+  const source=new THREE.MeshStandardMaterial({color:0x9a886b,roughness:.95,map:texture,vertexColors:true});
+  let parentHookCalls=0;source.onBeforeCompile=()=>{parentHookCalls++;};
+  const geometry=new THREE.BoxGeometry(1,1,1),ground=new THREE.Mesh(geometry,source);
+  ground.name='bare-landscape-600';worldRoot.add(ground);
+  const backdrop=createWorldBackdrop(scene,{id:'betonudvar',kind:'construction',size:600},worldRoot);
+  try {
+    const terrain=backdrop.root.children[0],material=terrain.material;
+    assert.ok(material.isMeshStandardMaterial);assert.notEqual(material,source);
+    assert.equal(material.map,texture);assert.equal(material.roughness,source.roughness);
+    assert.ok(material.color.equals(source.color));assert.equal(terrain.receiveShadow,false);
+    const shader={vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <fog_fragment>'};
+    material.onBeforeCompile(shader);assert.equal(parentHookCalls,1,'preserve the ground texture hook');
+    assert.ok(shader.fragmentShader.includes('mix(1.0,0.55,smoothstep('),'only the distant ranges soften the fog');
+    let textureDisposals=0,sourceDisposals=0;
+    texture.addEventListener('dispose',()=>textureDisposals++);source.addEventListener('dispose',()=>sourceDisposals++);
+    backdrop.dispose();assert.equal(textureDisposals,0);assert.equal(sourceDisposals,0);
+    assert.equal(worldRoot.children.length,1,'the original world remains owned by its environment');
+  } finally {source.dispose();texture.dispose();geometry.dispose();}
+});

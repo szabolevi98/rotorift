@@ -18,11 +18,14 @@ square, including the small Playground.
 - Skyline: low-rise background blocks and subdued mountain ranges.
 - Playground: surrounding trees, gabled houses and distant hills.
 
-The background has no collision bodies, shadow casters/receivers, textures or
+The background has no collision bodies, shadow casters/receivers, new textures or
 per-frame updates. At most six batches and 36,000 triangles are added per map;
-instancing keeps repeated trees/buildings together. Directional shading is baked
-into vertex colors. A lightweight basic material uses the map's existing fog color
-with a softer depth falloff so distant mountains remain visible. Existing sky,
+instancing keeps repeated trees/buildings together. Objects use baked vertex shading.
+The terrain clones the actual ground material, borrowing its texture and preserving
+its lighting and shader hook. Soil/grass vertex colors also match the ground; fine
+color variation fades out on the coarse distant mesh. Fog matches the ground at
+the join and gradually softens only over the distant ranges, avoiding a bright
+circular seam. Borrowed textures remain owned by the original world. Existing sky,
 lighting, race gates, boundaries and return countdowns remain unchanged.
 
 Backdrop resources are owned and disposed with the environment. Tests check

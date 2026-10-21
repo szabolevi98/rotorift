@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import {parkHeight} from '../../shared/world/park-layout.js';
 import {constructionLandscapeHeight} from '../../shared/world/construction-layout.js';
+import {constructionSoilColor} from './construction-terrain.js';
 
 // Scenery only: fixed in world space, outside the playable square, no colliders,
-// shadow maps, textures, per-frame work or camera-following horizon tricks.
+// shadow maps, new textures, per-frame work or camera-following horizon tricks.
 export const BACKDROP_PROFILES = {
   park: {seed:71,near:0x78935f,far:0x78939a,height:410,trees:240},
   circuit: {seed:194,near:0x7d945c,far:0x7d9499,height:270,trees:210},
@@ -29,15 +30,37 @@ function material(name) {
   m.customProgramCacheKey=()=> 'rotorift-background-haze-v1';
   return m;
 }
-export function createWorldBackdrop(scene,map) {
+// Keep the ground's real lighting, texture and fog at the join. MeshBasicMaterial
+// cannot match a lit soil/grass surface simply by choosing a similar hex color.
+export function backdropTerrainMaterial(source,inner) {
+  const m=source.clone(),hook=source.onBeforeCompile;
+  m.name='Ground_matched_distant_terrain';m.vertexColors=true;
+  m.onBeforeCompile=shader=>{
+    hook.call(m,shader);
+    shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vBackdropPosition;')
+      .replace('#include <begin_vertex>','#include <begin_vertex>\nvBackdropPosition=(modelMatrix*vec4(transformed,1.0)).xyz;');
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vBackdropPosition;')
+      .replace('#include <fog_fragment>',THREE.ShaderChunk.fog_fragment.replaceAll('vFogDepth',
+        `(vFogDepth*mix(1.0,0.55,smoothstep(${(inner+450).toFixed(1)},${(inner+1900).toFixed(1)},length(vBackdropPosition.xz))))`));
+  };
+  m.customProgramCacheKey=()=>source.customProgramCacheKey()+':ground-matched-backdrop-v2:'+inner;
+  return m;
+}
+export function createWorldBackdrop(scene,map,worldRoot) {
   const profile=BACKDROP_PROFILES[map.kind]??BACKDROP_PROFILES.construction;
   const rng=random(profile.seed),half=map.size/2,root=new THREE.Group();
   root.name='Distant_world_'+map.id;root.userData.sceneryOnly=true;
   const geometries=new Set(),materials=new Set(),color=new THREE.Color(),matrix=new THREE.Matrix4();
   const basic=material('Distant_landscape');materials.add(basic);
+  const groundName={park:'park-distant-terrain',construction:'bare-landscape-600',
+    city:'Skyline_outside_grass',playground:'Playground_outside_ground',circuit:'Apex_disjoint_ground'}[map.kind];
+  const groundMaterial=worldRoot?.getObjectByName(groundName)?.material;
+  const inner=Math.max(half*Math.SQRT2+100,440);
+  const terrainMaterial=groundMaterial?backdropTerrainMaterial(groundMaterial,inner):basic;
+  if(terrainMaterial!==basic)materials.add(terrainMaterial);
   const terrainHeight=map.kind==='park'?parkHeight:map.kind==='construction'?constructionLandscapeHeight:()=>0;
   function mesh(geometry,name) {
-    const m=new THREE.Mesh(geometry,basic);m.name=name;m.castShadow=false;m.receiveShadow=false;
+    const m=new THREE.Mesh(geometry,terrainMaterial);m.name=name;m.castShadow=false;m.receiveShadow=false;
     geometries.add(geometry);root.add(m);return m;
   }
   function instances(geometry,items,name) {
@@ -58,9 +81,9 @@ export function createWorldBackdrop(scene,map) {
     geometry.setAttribute('color',new THREE.BufferAttribute(shades,3));
     m.computeBoundingSphere();m.castShadow=false;m.receiveShadow=false;geometries.add(geometry);root.add(m);
   }
-  const inner=Math.max(half*Math.SQRT2+100,440),angles=192;
+  const angles=192;
   const radii=[inner,inner+90,inner+220,inner+400,inner+650,inner+940,inner+1300,inner+1710,inner+2150,inner+2660,inner+3250,inner+3950];
-  const positions=[],colors=[],indices=[],shade=new THREE.Color();
+  const positions=[],colors=[],uv=[],indices=[],shade=new THREE.Color();
   const phase=profile.seed*.13;
   function height(r,a) {
     const d=r-inner;
@@ -74,12 +97,26 @@ export function createWorldBackdrop(scene,map) {
   for(let j=0;j<radii.length;j++)for(let i=0;i<=angles;i++) {
     const a=(i%angles)*Math.PI*2/angles,r=radii[j],y=height(r,a);
     positions.push(Math.cos(a)*r,y,Math.sin(a)*r);
-    const t=smooth((r-inner-550)/2300),lighting=.88+.10*Math.cos(a-.6)+.035*Math.sin(a*13+j*1.7);
-    shade.setHex(profile.near).lerp(color.setHex(profile.far),t).multiplyScalar(lighting);
-    colors.push(shade.r,shade.g,shade.b);
+    const x=Math.cos(a)*r,z=Math.sin(a)*r;
+    if(groundMaterial) {
+      if(map.kind==='construction') {
+        shade.copy(constructionSoilColor(x,z));
+        const mean=color.setHex(0x82705c).lerp(new THREE.Color(0xd1b28a),.32);
+        shade.lerp(mean,smooth((r-inner-150)/450));
+      }
+      else if(map.kind==='park') {
+        const tone=.92+(Math.sin(x*.07+z*.03)*.05+Math.cos(z*.05)*.035)*(1-smooth((r-inner-150)/450));
+        shade.setRGB(tone*.28,tone*.4,tone*.18);
+      } else shade.setHex(map.kind==='circuit'?0x647e43:0xffffff);
+    } else {
+      const t=smooth((r-inner-550)/2300),lighting=.88+.10*Math.cos(a-.6)+.035*Math.sin(a*13+j*1.7);
+      shade.setHex(profile.near).lerp(color.setHex(profile.far),t).multiplyScalar(lighting);
+    }
+    colors.push(shade.r,shade.g,shade.b);uv.push(x/4,z/4);
     if(j&&i){const at=j*(angles+1)+i;indices.push(at-1,at-angles-2,at,at,at-angles-2,at-angles-1);}
   }
   const ridges=new THREE.BufferGeometry();ridges.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  ridges.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
   ridges.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));ridges.setIndex(indices);ridges.computeVertexNormals();
   mesh(ridges,'Layered_foothills_and_mountain_ranges');
 
@@ -136,4 +173,3 @@ export function createWorldBackdrop(scene,map) {
   scene.add(root);
   return {root,dispose(){root.removeFromParent();root.traverse(o=>{if(o.isInstancedMesh)o.dispose();});for(const g of geometries)g.dispose();for(const m of materials)m.dispose();}};
 }
-
