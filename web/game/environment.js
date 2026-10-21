@@ -1,3 +1,4 @@
+import {createWorldBackdrop} from './world-backdrop.js';
 import { buildCircuit } from "./circuit.js";
 import { CircuitTraffic } from "./circuit-traffic.js";
 import * as THREE from "three";
@@ -9,6 +10,7 @@ import { buildCity } from "./city.js";
 import { createLaunchPad } from "./launch-pad.js";
 import { createNeonGate, createRaceGuide, gateFrameParts } from "./race-course.js";
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
+  const backdrop=createWorldBackdrop(scene,map);
   const root = new THREE.Group();
   scene.add(root);
   let park, construction, playground, city, circuit;
@@ -53,7 +55,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       if(highlighted!==next){highlighted=next;gateGroups.forEach((group,i)=>group.userData.setState(i===next));guide.userData.highlight(next);}
     },
     dispose: () => {
-      traffic?.dispose();circuit?.dispose();park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
+      backdrop.dispose();traffic?.dispose();circuit?.dispose();park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
       for(const collider of gateColliders)if(world.getCollider(collider.handle))world.removeCollider(collider,true);
       const geometries=new Set(),materials=new Set();
       root.traverse(o=>{if(o.geometry&&!o.isSprite)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)materials.add(m);});

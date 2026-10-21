@@ -131,10 +131,16 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
 
-Bare terrain continues outside the fences without scenery objects. Leaving the
-map starts a **one-minute return countdown**; returning cancels it, while expiry
-resets the aircraft to launch. Distant terrain fills the horizon independently of
-nearby scenery and collision loading, with a 12 km view distance.
+Each map has an inexpensive, world-space background beyond the playable boundary:
+wooded foothills and layered mountains, suburban rooftops around Playground,
+a low-rise city fringe for Skyline, and an industrial estate beyond Concrete Yard.
+The shared backdrop uses at most six batches and 36,000 triangles, without textures,
+shadow rendering, physics bodies or per-frame generation. It also appears in the
+showcase. See [background scenery](docs/world-backdrops.md).
+
+Leaving the map starts a **one-minute return countdown**; returning cancels it,
+while expiry resets the aircraft to launch. Background scenery does not extend the
+playable area. Terrain continues underneath it, with a 12 km view distance.
 
 Explore maps and race routes in the [showcase](https://szabolevi98.github.io/rotorift/).
 The old `/map-preview.html` address redirects to its map tab.
