@@ -420,6 +420,7 @@
   "airplane.expo": "Expo des manches",
   "airplane.airspeed": "Vitesse air {speed} km/h",
   "airplane.stall": "DÉCROCHAGE · baissez le nez",
+  "hud.waterReset": "Contact avec l’eau · appareil replacé au départ.",
   "airplane.crashed": "CRASH · réinitialisez l’avion",
   "hud.prop.single": "Hélice",
   "airplane.launch": "Départ",

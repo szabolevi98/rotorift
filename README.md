@@ -147,6 +147,11 @@ The old `/map-preview.html` address redirects to its map tab.
 
 ## Flying and controls
 
+Contact with lake water or a fountain jet stops the motors and automatically resets
+the aircraft to launch. This applies to drones and airplanes, independently of
+optional propeller damage, in solo and multiplayer. Bridges, dry banks and gaps
+between jets remain flyable. See [water hazards](docs/water-hazards.md).
+
 - **Acro, Angle and Horizon**, switchable during flight.
 - **Chase, FPV with the aircraft visible, and clean FPV** views.
 - Airplanes also offer **Ground pilot** view in the **V** / HUD camera cycle.

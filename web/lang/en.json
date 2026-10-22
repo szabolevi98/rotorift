@@ -420,6 +420,7 @@
   "airplane.expo": "Stick expo",
   "airplane.airspeed": "Airspeed {speed} km/h",
   "airplane.stall": "STALL · lower the nose",
+  "hud.waterReset": "Water contact · aircraft reset to launch.",
   "airplane.crashed": "CRASHED · reset the aircraft",
   "hud.prop.single": "Propeller",
   "airplane.launch": "Launch",

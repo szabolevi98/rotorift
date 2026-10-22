@@ -1,3 +1,4 @@
+import {findWaterImpact} from '../../shared/world/water-hazards.js';
 import { CIRCUIT_TRAFFIC_VERSION } from "../../shared/world/circuit-layout.js";
 import {findAircraft} from '../../shared/catalog/aircraft.js';
 import {isFixedWing,aircraftModes,aircraftSimulation,supportsMap,routeSupportsAircraft} from '../../shared/aircraft/capabilities.js';
@@ -485,6 +486,10 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           send(p, "reset", { pose: p.pose, reason: "boundary" });
           broadcast(r);
           return;
+        }
+        const waterImpact=findWaterImpact(r.map,aircraft,p.pose,{p:m.p,q:m.q});
+        if(waterImpact) {
+          reset(p,r,true);send(p,"reset",{pose:p.pose,reason:waterImpact});broadcast(r);return;
         }
         let events = [];
         if (validTravel && r.kind !== "free")

@@ -420,6 +420,7 @@
   "airplane.expo": "Bot expo",
   "airplane.airspeed": "Légsebesség {speed} km/h",
   "airplane.stall": "ÁTESÉS · engedd le az orrát",
+  "hud.waterReset": "Vízérintés · a gép visszaállítva a kezdőhelyre.",
   "airplane.crashed": "ÜTKÖZÉS · indítsd újra a repülőt",
   "hud.prop.single": "Légcsavar",
   "airplane.launch": "Indulás",

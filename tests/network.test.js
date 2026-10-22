@@ -708,3 +708,17 @@ test('Apex traffic shares one immutable epoch and seed across eight pilots, late
  host.send('restart');const restarted=(await host.next(m=>m.type==='room'&&m.room.phase==='lobby'&&m.room.runId!==flying.runId)).room;
  assert.deepEqual(restarted.traffic,traffic,'restarting a flight never teleports the traffic');
 });
+
+test('multiplayer water contact resets the pilot, stops the rotors and clears the current lap',async t=>{
+ const map={id:'test-route',kind:'park',size:800,spawn:[-180,2,-130],baseSpawn:[-180,2,-130],routes:[]};
+ const {client}=await fixture(t,map,{countdownMs:5}),host=await client('Water pilot');
+ host.send('create',{mapId:map.id,droneId:'rift-x5',mode:'angle',kind:'free'});
+ await host.next(m=>m.type==='room');host.send('ready',{ready:true});await host.next(m=>m.type==='room'&&m.room.players[0].ready);host.send('start');
+ const room=(await host.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+ await host.state([-180,.2,-130],{runId:room.runId,rotorSpeeds:[1,1,1,1],turtleMode:true});
+ const reset=await host.next(m=>m.type==='reset'&&m.reason==='water');
+ assert.deepEqual(reset.pose.p,map.spawn);
+ const updated=(await host.next(m=>m.type==='room'&&m.room.players[0].resetId>room.players[0].resetId)).room.players[0];
+ assert.deepEqual(updated.rotorSpeeds,[0,0,0,0]);assert.equal(updated.turtleMode,false);
+ assert.equal(updated.lap.startedAt,null);assert.equal(updated.lap.next,0);
+});

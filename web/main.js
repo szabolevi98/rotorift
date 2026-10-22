@@ -1045,6 +1045,7 @@ function receive(m) {
     autoArm.reset();
     controller.clear();
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
+    if (["water","fountain"].includes(m.reason)) notice(t("hud.waterReset"));
   }
   if (m.type === "lap" && (!m.runId || m.runId === room?.runId)) {
     if(m.valid&&m.replay)keepPersonalGhost(m.ms,m.replay);
@@ -1499,13 +1500,17 @@ function frame(now) {
           }
       }
     }, diagnosticSample);
+    if(flight.waterImpact&&!flight.waterResetPending) {
+      flight.waterResetPending=true;
+      resetAircraft();notice(t('hud.waterReset'));
+    }
     if(diagnosticSample)diagnosticSample.droppedMs=Math.max(0,elapsed-.1)*1000;
     if (!room && flight.boundary.update(flight.physics.pose.p, elapsed)) {
       action("reset");
       notice(t("hud.boundaryReset"));
     }
   }
-  if (playing && flight.physics && room?.phase === "flying" && now - sendAt >= 50) {
+  if (playing && flight.physics && room?.phase === "flying" && !flight.waterResetPending && now - sendAt >= 50) {
     network.state(
       flight.physics.pose,
       flight.config,

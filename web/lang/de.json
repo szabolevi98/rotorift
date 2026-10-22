@@ -420,6 +420,7 @@
   "airplane.expo": "Knüppel-Expo",
   "airplane.airspeed": "Fluggeschwindigkeit {speed} km/h",
   "airplane.stall": "STRÖMUNGSABRISS · Nase senken",
+  "hud.waterReset": "Wasserkontakt · Fluggerät zum Start zurückgesetzt.",
   "airplane.crashed": "ABSTURZ · Flugzeug zurücksetzen",
   "hud.prop.single": "Propeller",
   "airplane.launch": "Start",

@@ -58,6 +58,7 @@ export class FixedWingPhysics {
   reset(position, pose = this.launchPose) {
     this.armed = false;
     this.crashed = false;
+    this.crashReason=null;
     this.motorThrust[0] = 0;
     this.effects.reset();
     this.propellerContact.previousVelocity = [...pose.v];

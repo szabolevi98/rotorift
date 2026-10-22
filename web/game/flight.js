@@ -1,3 +1,4 @@
+import {findWaterImpact,stopWaterDamagedAircraft} from '../../shared/world/water-hazards.js';
 import { isFixedWing } from "/shared/aircraft/capabilities.js";
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
@@ -75,6 +76,7 @@ export class Flight {
     this.mute();
     const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
+    this.waterImpact=null;this.waterResetPending=false;
     this.preparingViews = false;
     this.analogPrepared = false;
     this.parkShadows?.dispose();
@@ -154,6 +156,7 @@ export class Flight {
   }
   reset(position = this.launchPosition ?? this.map.spawn, pose = this.launchPose) {
     if (!this.physics || !this.environment) return;
+    this.waterImpact=null;this.waterResetPending=false;
     this.physics.reset(position,pose);
     this.lapGhost?.update(null);
     this.aircraftVisual.reset(this.physics);
@@ -196,11 +199,14 @@ export class Flight {
     if(metrics)metrics.maxPhysicsStepMs=0;
     const steps = advanceFixedSteps(this, dt, () => {
       const stepStart=metrics?performance.now():0;
+      if(this.waterImpact)return;
       this.previous = this.physics.pose;
       this.environment.stepTraffic?.((this.trafficTime ?? this.physics.effects.time + dt) - this.accumulator + PHYSICS_DT, this.trafficSeed ?? 0);
       this.remoteCollisions.step(PHYSICS_DT);
       this.physics.step(input);
       this.current = this.physics.pose;
+      this.waterImpact=findWaterImpact(this.map,this.config,this.previous,this.current);
+      if(this.waterImpact){stopWaterDamagedAircraft(this.physics,this.waterImpact);return;}
       update(this.previous, this.current, PHYSICS_DT);
       if(metrics)metrics.maxPhysicsStepMs=Math.max(metrics.maxPhysicsStepMs,performance.now()-stepStart);
     });

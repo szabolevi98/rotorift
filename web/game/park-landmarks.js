@@ -1,3 +1,4 @@
+import {PARK_FOUNTAIN_JETS} from '../../shared/world/water-hazards.js';
 import * as THREE from "three";
 import { PARK_BUILDINGS, PARK_LAKES, PARK_BRIDGE, parkSurfaceHeight } from "../../shared/world/park-layout.js";
 
@@ -159,24 +160,17 @@ export function buildParkLandmarks({ root, world, RAPIER, part, palette, geometr
     if (top > ground) part([3.5, top - ground, 0.67], [gx, (top + ground) / 2, z], palette.wood);
   }
 
-  // Fountain jets and moving droplets. Water has no solid jet colliders.
+  // Visible water centerlines are shared with the non-solid water hazard checks.
   const large = PARK_LAKES.find((lake) => lake.fountain);
   const fountain = new THREE.Group(); fountain.name = "lake-fountain"; root.add(fountain);
-  const center = new THREE.Vector3(large.x, large.waterY + 0.2, large.z);
   part([1.8, 0.3, 1.8], [large.x, large.waterY - 0.1, large.z], palette.concrete, true, 0, "cylinder");
   part([0.18, 0.8, 0.18], [large.x, large.waterY + 0.4, large.z], palette.metal, true, 0, "cylinder");
   const jetMaterial = material(0xd2edeb, { roughness: 0.22, transparent: true, opacity: 0.62, depthWrite: false });
   const trajectories = [];
-  for (let i = 0; i < 13; i++) {
-    const a = i / 12 * Math.PI * 2, radius = i === 12 ? 0.3 : 6;
-    const height = i === 12 ? 10 : 6.5;
-    const points = Array.from({ length: 33 }, (_, j) => {
-      const u = j / 32;
-      return center.clone().add(new THREE.Vector3(Math.cos(a) * radius * u, 4 * height * u * (1 - u), Math.sin(a) * radius * u));
-    });
-    const curve = new THREE.CatmullRomCurve3(points);
+  for (const {points,radius} of PARK_FOUNTAIN_JETS) {
+    const curve = new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
     trajectories.push(curve);
-    const jet = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, 32, i === 12 ? 0.075 : 0.045, 5, false)), jetMaterial);
+    const jet = new THREE.Mesh(geometry(new THREE.TubeGeometry(curve, 32, radius, 5, false)), jetMaterial);
     fountain.add(jet);
   }
   const dropletsGeometry = geometry(new THREE.BufferGeometry());

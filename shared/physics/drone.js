@@ -99,6 +99,7 @@ export class DronePhysics {
     this.reset(spawn);
   }
   reset(position) {
+    this.crashed=false;this.crashReason=null;
     this.armed = false;
     this.turtleMode = false;
     this.motorThrust.fill(0);
@@ -114,7 +115,7 @@ export class DronePhysics {
     this.body.resetTorques(true);
   }
   setTurtleMode(enabled){
-    if(this.armed)return false;
+    if(this.armed||this.crashed)return false;
     this.turtleMode=enabled===true;this.motorThrust.fill(0);this.previousBodyRates.fill(0);this.angularAcceleration.fill(0);return true;
   }
   step(input, dt = PHYSICS_DT) {
