@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DroneSound, DRONE_SOUND_PROFILES } from '../web/game/drone-sound.js';
 import { loadCatalog } from '../server/catalog.js';
+import RAPIER from '@dimforge/rapier3d-compat';
+import * as THREE from 'three';
+import { DronePhysics } from '../shared/physics/drone.js';
+import { createAircraftVisual } from '../web/game/aircraft-visual.js';
 
 function context() {
   const nodes = [], events = new Map();
@@ -35,7 +39,7 @@ test('each current drone has a different acoustic profile; whoops have higher ro
   assert.ok(frequencies.slice(0,5).every((f,i)=>i===0||f<frequencies[i-1]));
 });
 
-test('motor-specific demands, zero throttle, disarm, sound off and camera view control the actual audio gains',()=>{
+test('motor-specific demands, stopped motors, disarm, sound off and camera view control the actual audio gains',()=>{
   const ctx=context(),sound=new DroneSound(ctx,{id:'rift-x5'},{win:ctx.win});
   sound.update([.2,.4,.6,.8],{armed:true});
   assert.ok(last(sound.rotors[0].osc.frequency)<last(sound.rotors[3].osc.frequency));
@@ -52,6 +56,45 @@ test('motor-specific demands, zero throttle, disarm, sound off and camera view c
   sound.update([0,0,0,0],{armed:true});assert.equal(last(sound.master.gain),0);
   sound.update([NaN,Infinity,-1,undefined],{armed:true});assert.equal(last(sound.master.gain),0);
   sound.dispose();
+});
+
+test('zero-throttle armed idle and airmode drive local propellers, sound and multiplayer motor speeds',async()=>{
+  await RAPIER.init();
+  const {drones}=await loadCatalog();
+  for(const config of drones){
+    const world=new RAPIER.World({x:0,y:-9.81,z:0});
+    const physics=new DronePhysics(RAPIER,world,config,[0,100,0]);
+    const model=new THREE.Group();
+    for(let i=0;i<4;i++){
+      const prop=new THREE.Group();
+      prop.userData={propeller:true,motorIndex:i,phaseOffset:0};model.add(prop);
+    }
+    const visual=createAircraftVisual(model,config),remote=createAircraftVisual(model.clone(),config,{remote:true});
+    const ctx=context(),sound=new DroneSound(ctx,config,{win:ctx.win});
+    const input={throttle:0,roll:0,pitch:0,yaw:0};
+    try {
+      visual.bindPhysics(physics);physics.armed=true;
+      for(let i=0;i<60;i++)physics.step(input);
+      visual.update(1/60,physics,input);
+      assert.ok(visual.motorSpeeds.every(v=>v>0),config.id+': idle must rotate');
+      sound.update(visual.motorSpeeds,{armed:true});
+      assert.ok(last(sound.master.gain)>0);
+      const idleLevels=sound.rotors.map(r=>last(r.gain.gain));
+      const before=[...visual.motion.phase];
+      physics.step({...input,roll:1});visual.update(1/60,physics,input);
+      assert.ok(visual.motion.phase.every((phase,i)=>phase!==before[i]));
+      assert.ok(Math.max(...visual.motorSpeeds)-Math.min(...visual.motorSpeeds)>.01);
+      sound.update(visual.motorSpeeds,{armed:true});
+      assert.ok(sound.rotors.some((r,i)=>last(r.gain.gain)>idleLevels[i]));
+      const state=visual.networkState(physics,false);
+      remote.updateRemote(1/60,{...state,resetId:1});
+      assert.deepEqual(remote.motorSpeeds,visual.motorSpeeds);
+      assert.deepEqual(visual.networkState(physics,true).rotorSpeeds,[0,0,0,0]);
+      physics.armed=false;visual.update(1/60,physics,input);
+      sound.update(visual.motorSpeeds,{armed:false});
+      assert.deepEqual(visual.motorSpeeds,[0,0,0,0]);assert.equal(last(sound.master.gain),0);
+    } finally {visual.dispose();remote.dispose();sound.dispose();world.free();}
+  }
 });
 
 test('damage and enabled descent propwash change texture without allocating new audio nodes per frame',()=>{

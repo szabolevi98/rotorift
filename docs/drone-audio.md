@@ -16,7 +16,8 @@ catalog; see the [current fleet summary](prototype.md).
   independent detuning replace the former single sawtooth.
 - Speed adds some airflow; descending propwash adds texture only with that
   simulation enabled. Damaged blades alter the relevant rotor's timbre and level.
-- Normal zero-throttle, disarm, pause and sound-off mute the output. Chase view
+- Drone idle and airmode corrections remain audible at zero stick throttle,
+  following the actual individual motor demands. Disarm, pause and sound-off mute the output. Chase view
   is softer. Model changes reuse one audio context and configure the new profile.
 - Real gestures can resume a browser-suspended context after asynchronous loading.
 

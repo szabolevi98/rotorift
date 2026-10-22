@@ -29,14 +29,15 @@ class QuadVisual {
       physics.effects.propellers.phase[prop.userData.motorIndex] =
         prop.userData.phaseOffset;
   }
-  update(dt, physics, input) {
+  update(dt, physics) {
     this.damage.update(physics.effects.propellers.blades);
     this.motion.update(
       dt,
       physics.motorThrust,
       this.config.motor.maxThrustN,
       this.config.motors,
-      physics.armed && (physics.turtleMode || input.throttle > 0),
+      // Armed idle and airmode mixing can drive motors at zero stick throttle.
+      physics.armed,
       physics.turtleMode,
     );
     for (const prop of this.motion.props)

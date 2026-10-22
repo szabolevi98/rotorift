@@ -14,7 +14,7 @@ test('turtle rotors reverse their normal directions, with only the powered pair 
   remote.updatePlayer(1/60,{connected:true,resetId:1,turtleMode:true,rotorSpeeds:[.5,0,1,0]});
   assert.deepEqual(remote.speed,motion.speed);
 });
-for(const config of drones)test(`${config.id}: visible rotor speed rises at 25/50/75/100%, stops at zero, and keeps counter-rotation`,()=>{
+for(const config of drones)test(`${config.id}: visible rotor speed rises at 25/50/75/100%, stops when disabled, and keeps counter-rotation`,()=>{
   const motion=new RotorMotion(),speeds=[];
   for(const throttle of [.25,.5,.75,1]) {
     motion.update(1/60,Array(4).fill(throttleToThrust(throttle,config)),motorThrustLimit(config),config.motors,true);
