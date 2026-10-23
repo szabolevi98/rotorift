@@ -462,7 +462,7 @@
   "settings.importLeave": "Vor dem Import Flug beenden und Raum verlassen.",
   "settings.importFailed": "Speichern fehlgeschlagen. Browserspeicher prüfen.",
   "simulation.airmode": "Air Mode",
-  "simulation.airmodeHint": "Erhält die Steuerung bei Nullgas. Aus: Motoren stoppen, Steuerwirkung sinkt mit dem Gas.",
+  "simulation.airmodeHint": "Steuerung bei Nullgas.",
   "replay.title": "Wiedergabe",
   "replay.hint": "Die letzten fünf Flugminuten bleiben in diesem Tab. Zum Behalten oder Teilen exportieren.",
   "replay.empty": "Noch keine Aufnahme. Erst fliegen oder importieren.",

@@ -462,7 +462,7 @@
   "settings.importLeave": "Terminez le vol et quittez la salle avant d’appliquer.",
   "settings.importFailed": "Échec de l’enregistrement. Vérifiez le stockage du navigateur.",
   "simulation.airmode": "Air Mode",
-  "simulation.airmodeHint": "Garde le contrôle à gaz nul. Désactivé : moteurs arrêtés, autorité réduite avec les gaz.",
+  "simulation.airmodeHint": "Contrôle à gaz nul.",
   "replay.title": "Replay",
   "replay.hint": "Les cinq dernières minutes de votre vol restent dans cet onglet. Exportez pour conserver ou partager.",
   "replay.empty": "Aucun enregistrement. Volez ou importez un fichier.",
