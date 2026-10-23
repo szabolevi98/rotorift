@@ -11,8 +11,11 @@ import { Controller } from "./input/controller.js";
 import { TouchSticks } from "./input/touch-sticks.js";
 import { AutoArm } from "./input/auto-arm.js";
 import { Network } from "./net/client.js";
+import { roomInvite, parseRoomInvite } from './room-invite.js';
+import { exportSettings, parseSettings, importSettings, downloadJson } from './settings-transfer.js';
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
+import {FlightRecorder,ReplayPlayer,parseFlightRecording} from './game/flight-recording.js';
 import { WaterRecovery } from './game/water-recovery.js';
 import { stopWaterDamagedAircraft } from '/shared/world/water-hazards.js';
 import { LoadingScreen, paintLoading } from "./loading.js";
@@ -61,6 +64,10 @@ const loading = new LoadingScreen(t);
 const routeDetails = new RouteDetails($('#route-summary'), t);
 const autoArm = new AutoArm(read("auto-arm", true) !== false);
 const waterRecovery = new WaterRecovery($('#water-recovery'),t);
+let pendingInvite=parseRoomInvite(location.href), importPreferences=null;
+let flightRecorder=null,lastRecording=null,replayActive=false;
+const replayPlayer=new ReplayPlayer();
+function isWatching(){return !!room?.spectators?.some(p=>p.id===network?.id);}
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
 const splitDelta = new SplitDeltaHud($('#split-delta'),t);
@@ -187,7 +194,7 @@ let simulation = normalizeSimulation(read("simulation", DEFAULT_SIMULATION));
 function createSimulationControls() {
   for (const id of ["flight-simulation", "lobby-simulation"]) {
     const root = $("#" + id);
-    for (const key of ["battery", "propDamage", "propwash", "ghost", "wind"]) {
+    for (const key of ["battery", "propDamage", "propwash", "airmode", "ghost", "wind"]) {
       const label = node("label", "simulation-row"), caption = node("span");
       caption.dataset.simLabel = key;
       const input = node(key === "wind" ? "select" : "input");
@@ -207,7 +214,7 @@ function createSimulationControls() {
         }
         refreshSimulationControls();refreshGhostChoices();
       };
-      if (["battery", "propDamage", "propwash"].includes(key)) {
+      if (["battery", "propDamage", "propwash", "airmode"].includes(key)) {
         const copy = node("span", "simulation-copy"), description = node("small", "simulation-description");
         description.id = input.id + "-description";
         description.dataset.simDescription = key;
@@ -230,6 +237,7 @@ function refreshSimulationControls() {
     for (const input of root.querySelectorAll("[data-sim-option]")) {
       const key = input.dataset.simOption;
       input.disabled = view.locked;
+      if(key==='airmode'&&!mixed&&isFixedWing(aircraft)){input.parentElement.classList.add('hidden');continue;}
       if(!mixed&&['propDamage','propwash'].includes(key)&&!aircraftCapabilities(aircraft)[key]){input.disabled=true;input.parentElement.classList.add('hidden');continue;}
       input.parentElement.classList.toggle("hidden", key === "ghost" && !view.ghost);
       input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
@@ -362,6 +370,14 @@ function action(kind, currentInput = input) {
     return;
   }
   if (!playing || paused) return;
+  if(replayActive){
+    if(kind==='view'){const views=['chase','fpv','fpv-clean'];$('#replay-view').value=views[(views.indexOf($('#replay-view').value)+1)%views.length];updateReplay();}
+    return;
+  }
+  if(isWatching()){
+    if(kind==='view'){$('#observer-view').value=$('#observer-view').value==='chase'?'fpv-clean':'chase';renderObserver();}
+    return;
+  }
   if(['turtle','turtleOn','turtleOff'].includes(kind)){
     if(!aircraftCapabilities(flight.config).turtle)return;
     if(flight.physics.armed){notice(t('hud.turtleDisarm'));return;}
@@ -396,6 +412,7 @@ function action(kind, currentInput = input) {
   }
 }
 function resetAircraft() {
+  if(isWatching()||replayActive)return;
   waterRecovery.clear();
   localGhostRecorder.clear();
   controller.clear(); lap = newLap(lap); splitDelta.hide();
@@ -802,13 +819,16 @@ function renderRooms() {
     const row = node("div", "room-row"),
       button = node("button", "secondary", t("online.join"));
     button.onclick = () => requestRoom("join", { code: r.code, ...aircraftChoice() });
-    button.disabled = !network?.ready || !!roomRequest || r.players >= 8;
+    button.disabled = !network?.ready || !!roomRequest || r.players >= 8 || r.phase&&r.phase!=='lobby'&&!r.mixedAircraft;
+    const watch=node('button','secondary',t('online.watch'));
+    watch.onclick=()=>requestRoom('spectate',{code:r.code});watch.disabled=!network?.ready||!!roomRequest;
     const summary = node("div", "room-summary");
     summary.append(node("strong", "", r.code), node("span", "", mapName(r.mapId) + " · " + t(r.kind === "race" ? "online.raceKind" : "session.free") + " · " + r.players + "/8"));
     summary.append(node("span", "", r.mixedAircraft ? t('online.mixedAircraft') : (catalog.aircraft.find(drone => drone.id === r.droneId)?.name ?? r.droneId) + " · " + flightModeLabel(r.mode).toUpperCase() + (r.kind === "race" && r.routeName ? " · " + r.routeName : "")));
     row.append(
       summary,
       button,
+      watch,
     );
     root.append(row);
   }
@@ -843,7 +863,9 @@ function createRoom() {
     mode: $("#flight-mode").value, kind, public: $("#public-room").checked, simulation:kind==='free'?simulation:aircraftSimulation(config,simulation),launchMethod:$("#aircraft-launch").value });
 }
 function endFlight() {
+  finishFlightRecording();
   if (room) { network.send("leave"); return; }
+  const wasReplay=replayActive;replayActive=false;flight.replayFrame=null;
   pauseMenu?.setOpen(false);
   void fullscreen?.enterMenu();
   playing = false; paused = true; flight.active = false;
@@ -851,6 +873,55 @@ function endFlight() {
   flight.mute(); controller.clear(); lap.invalid = true;
   localGhostRecorder.clear();lapGhostLoad++;void flight.setLapGhost(null);
   visible("#hud", false); visible("#menu", true); panel("fly");
+  if(wasReplay){panel('replays');renderRecordings();}
+}
+function startFlightRecording(){
+  if(isWatching()||replayActive)return;
+  finishFlightRecording();
+  flightRecorder=new FlightRecorder({aircraftId:flight.config.id,aircraftKind:flight.config.kind??'quadrotor',configHash:flight.config.configHash,mapId:flight.map.id,routeId:flight.map.routeId??'',mode:flight.physics.mode,simulation:flight.physics.effects.options,color:flight.color,trafficSeed:room?.traffic?.seed??flight.trafficSeed??0});
+}
+function finishFlightRecording(){
+  const recording=flightRecorder?.snapshot();if(recording)lastRecording=recording;
+  flightRecorder=null;
+}
+function renderRecordings(){
+  const available=!!lastRecording;
+  $('#replay-summary').textContent=available?(catalog.aircraft.find(c=>c.id===lastRecording.aircraftId)?.name??lastRecording.aircraftId)+' · '+mapName(lastRecording.mapId)+' · '+time(lastRecording.frames.at(-1).t):t('replay.empty');
+  $('#replay-start').disabled=!available||!!room;
+  $('#replay-export').disabled=!available;
+}
+function openRecordings(){
+  if(playing&&!room)endFlight();
+  else if(flightRecorder?.snapshot())lastRecording=flightRecorder.snapshot();
+  panel('replays');renderRecordings();
+}
+function updateReplay(){
+  if(!replayActive)return;
+  flight.replayFrame=replayPlayer.frame();flight.replayView=$('#replay-view').value;
+  flight.replayPlaying=replayPlayer.playing&&!paused;
+  $('#replay-timeline').max=replayPlayer.duration;$('#replay-timeline').value=replayPlayer.time;
+  $('#replay-position').textContent=time(replayPlayer.time)+' / '+time(replayPlayer.duration);
+  $('#replay-toggle').textContent=t(replayPlayer.playing?'replay.pause':'replay.play');
+  pauseRenderNeeded=true;
+}
+async function startReplay(){
+  if(!lastRecording||room)return;
+  network.cancelRecovery();
+  const c=catalog.aircraft.find(c=>c.id===lastRecording.aircraftId),base=catalog.maps.find(m=>m.id===lastRecording.mapId);
+  if(!c||!base||c.configHash!==lastRecording.configHash){notice(t('replay.incompatible'));return;}
+  finishFlightRecording();replayActive=false;playing=false;paused=true;
+  const task=loading.begin('loading.flight',{name:mapName(base)});
+  try{
+    await paintLoading();
+    const replayMap=lastRecording.routeId?resolveRoute(base,lastRecording.routeId):withoutRaceRoute(base);
+    if(await flight.load(replayMap,c,rates(c.id),lastRecording.mode,lastRecording.color,lastRecording.simulation,task.progress)===false)return;
+    flight.soundEnabled=cameraSettings.sound;flight.soundVolume=cameraSettings.volume;
+    flight.trafficSeed=lastRecording.trafficSeed??0;
+    replayPlayer.load(lastRecording);$('#replay-speed').value='1';replayActive=true;playing=true;paused=false;autoArm.cancel();controller.clear();
+    visible('#menu',false);visible('#hud',true);pauseMenu?.setOpen(false);
+    flight.startSound();updateReplay();hud();lastFrame=performance.now();
+  }catch(error){console.error(error);replayActive=false;playing=false;notice(t('replay.invalid'));}
+  finally{task.end();}
 }
 let lobbyAircraftSignature = '';
 function renderLobbyAircraft(own) {
@@ -897,6 +968,7 @@ function renderLobby() {
     $("#lobby-players").append(row);
   }
   const own = room.players.find((p) => p.id === network.id);
+  $('#lobby-spectators').textContent=(room.spectators??[]).length?t('online.viewers',{names:room.spectators.map(p=>p.name).join(', ')}):'';
   renderLobbyAircraft(own);
   $("#lobby-status").textContent = t(room.phase === "lobby" ? "online.readyHint" : room.phase === "finished" ? "online.finished" : "online.inProgress");
   $("#ready").textContent = t(own?.ready ? "online.notReady" : "online.ready");
@@ -904,7 +976,8 @@ function renderLobby() {
   $("#ready").classList.toggle("needs-ready", room.phase === "lobby" && !own?.ready);
   $("#start-room").disabled =
     room.phase !== "lobby" || room.host !== network.id || !room.players.every(player => player.ready && player.connected !== false);
-  visible("#ready", room.phase === "lobby");
+  visible("#ready", !isWatching() && room.phase === "lobby");
+  if(isWatching()){$('#lobby-status').textContent=t('online.waitingToWatch');visible('#lobby-aircraft-setup',false);}
   visible("#start-room", room.phase === "lobby" && room.host === network.id);
   visible("#finish-room", room.phase === "flying" && room.kind !== "free" && room.host === network.id);
   visible("#restart-room", room.host === network.id && (room.phase === "finished" || (room.kind === "free" && room.phase === "flying")));
@@ -912,6 +985,7 @@ function renderLobby() {
 }
 function renderResults() {
   if (!room) return;
+  visible('#results-watch',!isWatching()&&room.phase==='flying'&&room.players.some(p=>p.id!==network.id&&p.connected!==false&&!p.finished));
   const signature = [roomKey(room), room.phase, room.host, network.id, document.documentElement.lang, JSON.stringify(room.results)].join("|");
   if (signature === resultsSignature) return;
   resultsSignature = signature;
@@ -938,8 +1012,33 @@ function renderResults() {
   $("#results-restart").disabled = room.phase !== "finished" || room.host !== network.id;
   visible("#results-restart", room.host === network.id);
 }
+function renderObserver(){
+  if(!isWatching())return;
+  const select=$('#observer-pilot'),players=room.players.filter(p=>p.connected!==false);
+  const signature=players.map(p=>p.id+':'+p.name).join('|');
+  if(select.dataset.players!==signature){
+    const selected=select.value;select.replaceChildren(...players.map(p=>new Option(p.name,p.id)));
+    if(!players.length)select.append(new Option(t('online.pilotReconnecting'),''));
+    if(players.some(p=>p.id===selected))select.value=selected;
+    select.dataset.players=signature;
+  }
+  flight.observer={id:select.value,view:$('#observer-view').value,paused};
+  $('#hud-session').textContent=mapName(room.mapId)+' · '+t('online.spectating');
+  visible('#arm-prompt',false);visible('#pilot-camera-tools',false);
+}
+async function copyInvite(spectator=false){
+  if(!room)return;
+  const link=roomInvite(location.href,room.code,spectator);
+  try{await navigator.clipboard.writeText(link);notice(t('online.inviteCopied'));}
+  catch{
+    // Read-only selectable field works even without Clipboard API permission.
+    const field=isWatching()?$('#observer-link'):$('#invite-link');
+    field.value=link;field.classList.remove('hidden');field.focus();field.select();
+  }
+}
 function showResults() {
   if (!room) return;
+  finishFlightRecording();
   pauseMenu?.setOpen(false);
   flightHelp?.setOpen(false); void fullscreen?.enterMenu();
   paused = true; flight.active = false;
@@ -950,6 +1049,7 @@ function showResults() {
 async function loadRoom(r) {
   const key = roomKey(r);
   if (loadingRoom === key) return;
+  finishFlightRecording();replayActive=false;
   loadingRoom = key;
   pauseMenu?.setOpen(false);
   playing = false;
@@ -967,7 +1067,7 @@ async function loadRoom(r) {
   flightHelp?.setOpen(false);
   $("#flight-mode").value = own?.mode ?? r.mode;
   try {
-    if(config.id!==roomConfig.id)await selectDrone(roomConfig.id);
+    if(!isWatching()&&config.id!==roomConfig.id)await selectDrone(roomConfig.id);
     await paintLoading();
     diagnostics?.reset();
     const loaded = await flight.load(roomMap, roomConfig, rates(roomConfig.id), own?.mode ?? r.mode, own?.color ?? droneColor, aircraftSimulation(roomConfig,r.simulation), task.progress,{launchMethod:own?.launchMethod ?? r.launchMethod});
@@ -1004,6 +1104,7 @@ async function loadRoom(r) {
     visible("#hud", true);
     refreshSessionBanner();
     flight.startSound();
+    startFlightRecording();
   } catch {
     loadingRoom = null;
     if (!room || room.code === r.code) void fullscreen?.enterMenu();
@@ -1018,6 +1119,13 @@ function receive(m) {
     else if (m.resumeRejected) notice(t("online.recoveryExpired"));
     updateStatus();
     refreshRooms();
+    const invite=pendingInvite;pendingInvite=null;
+    if(invite&&!m.resumed){
+      const clean=new URL(location.href);clean.searchParams.delete('room');clean.searchParams.delete('watch');
+      history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+      panel('multiplayer');$('#room-code').value=invite.code;
+      requestRoom(invite.spectator?'spectate':'join',{...invite,...aircraftChoice()});
+    }
   }
   if (m.type === "error") {
     clearRoomRequest(); updateStatus();
@@ -1029,6 +1137,7 @@ function receive(m) {
     renderRooms();
   }
   if (m.type === "left") {
+    finishFlightRecording();
     pauseMenu?.setOpen(false);
     const destination = nextLaunch || room?.kind === "hotlap" ? "fly" : "multiplayer";
     clearRoomRequest();
@@ -1067,6 +1176,7 @@ function receive(m) {
     );
   }
   if (m.type === "disconnected") {
+    finishFlightRecording();
     clearRoomRequest();
     flight.updateRemotes([], network.id);
     if (room) {
@@ -1085,10 +1195,12 @@ function receive(m) {
     updateStatus();
   }
   if (m.type === "room") {
+    const wasWatching=isWatching();
     const previousPhase = room?.phase;
     const previousCode = room?.code;
     clearRoomRequest();
     room = m.room;
+    if(wasWatching!==isWatching())loadingRoom=loadedRoom=null;
     const assignedColor=room.players.find(p=>p.id===network.id)?.color;
     if(assignedColor && assignedColor!==droneColor){droneColor=assignedColor;write('drone-color',droneColor);preview.setColor(droneColor);flight.setColor(droneColor);network.color=droneColor;}
     refreshColors();
@@ -1103,7 +1215,7 @@ function receive(m) {
     const own = room.players.find(p=>p.id===network.id);
     const resultKey = roomKey(room) + ":" + room.phase;
     if (room.phase === "lobby") {
-      if (previousPhase !== "lobby" || previousCode !== room.code) {
+    if (previousPhase !== "lobby" || previousCode !== room.code) {
         pauseMenu?.setOpen(false);
         void fullscreen?.enterMenu();
         playing = false; paused = true; flight.active = false;
@@ -1150,6 +1262,7 @@ function updateStatus() {
   $("#server-status").classList.toggle("offline", !network?.ready);
   $("#rooms-status").textContent = !network?.ready ? t("online.offlineHint") : roomRequest ? t("online.requesting") : "";
   $("#join-room").disabled = !network?.ready || !!roomRequest || $("#room-code").value.trim().length !== 6;
+  $('#watch-room').disabled=$('#join-room').disabled;
   $("#create-room").disabled = !network?.ready || !!roomRequest;
   $("#refresh-rooms").disabled = !network?.ready || !!roomRequest;
   $("#launch").disabled = launching || (!!roomRequest && $("#session").value === "online-hotlap");
@@ -1202,6 +1315,7 @@ async function launch() {
     simTime = 0;
     playing = true;
     controller.clear();
+    startFlightRecording();
     resume();
   } catch (e) {
     console.error(e);
@@ -1272,6 +1386,16 @@ async function showRecords() {
 }
 function hud() {
   if (!playing || !flight.physics) { splitDelta.update(); return; }
+  $('#pause-replay').disabled=!!room||replayActive||!flightRecorder?.frames.length;
+  visible('#pause-watch',!!room&&!isWatching());
+  $('#pause-watch').disabled=!room?.players.some(p=>p.id!==network?.id&&p.connected!==false);
+  $('#hud').classList.toggle('observer-mode',isWatching());
+  visible('#observer-tools',isWatching());
+  $('#hud').classList.toggle('replay-mode',replayActive);
+  visible('#replay-tools',replayActive);
+  if(replayActive){$('#hud-session').textContent=t('replay.title')+' · '+flight.config.name;updateReplay();return;}
+  if(isWatching()){renderObserver();return;}
+  flight.observer=null;
   const p = flight.physics.pose,
     own = room?.players.find((p) => p.id === network.id),
     currentLap = own?.lap ?? lap;
@@ -1461,11 +1585,11 @@ function frame(now) {
   const elapsed = Math.max(0, (now - lastFrame) / 1000);
   const dt = Math.min(elapsed, 0.25);
   lastFrame = now;
-  input = controller.poll(dt, { touchEnabled: touchInput.matches && playing && !paused && !document.hidden &&
+  input = controller.poll(dt, { touchEnabled: touchInput.matches && playing && !paused && !document.hidden && !isWatching() && !replayActive &&
     flight.active && !loading.tasks.size && (!room || room.phase === 'flying' && !room.players.find(p=>p.id===network.id)?.finished) });
   if (playing && flight.physics && autoArm.update({
     throttle: input.throttle, armed: flight.physics.armed, turtle: flight.physics.turtleMode,
-    allowed: !flight.physics.crashed && !paused && !loading.tasks.size && flight.active &&
+    allowed: !isWatching() && !replayActive && !flight.physics.crashed && !paused && !loading.tasks.size && flight.active &&
       (!room || room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
     ready: !controller.range && !controller.setup && !controller.bindings.capture &&
       (!controller.usingRadio || controller.radioReady),
@@ -1483,6 +1607,8 @@ function frame(now) {
   if (playing && !paused) updateSticks(input);
   if (
     playing &&
+    !isWatching() &&
+    !replayActive &&
     (!paused || onlineLive) &&
     flight.active &&
     (!room ||
@@ -1511,6 +1637,7 @@ function frame(now) {
           }
       }
     }, diagnosticSample);
+    flightRecorder?.sample(dt,flight.physics.pose,flight.aircraftVisual.networkState(flight.physics,false),{angle:flight.cameraRig.angle,fov:flight.cameraRig.fpvFov},flight.trafficTime??flight.physics.effects.time,flight.physics.armed,flight.resetSerial??0);
     if(flight.waterImpact&&!flight.waterResetPending) {
       beginWaterRecovery(flight.waterImpact);
     }
@@ -1526,14 +1653,15 @@ function frame(now) {
     if(waterReset.pose)applyServerReset(waterReset.pose);
     else resetAircraft();
   }
-  if (playing && flight.physics && room?.phase === "flying" && !flight.waterResetPending && now - sendAt >= 50) {
+  if(replayActive){if(!paused)replayPlayer.tick(dt);updateReplay();}
+  if (playing && !isWatching() && flight.physics && room?.phase === "flying" && !flight.waterResetPending && now - sendAt >= 50) {
     network.state(
       flight.physics.pose,
       flight.config,
       flight.physics.mode,
       paused,
       flight.physics.effects.options,
-      flight.aircraftVisual.networkState(flight.physics,paused),
+      {...flight.aircraftVisual.networkState(flight.physics,paused),camera:{angle:flight.cameraRig.angle,fov:flight.cameraRig.fpvFov}},
     );
     sendAt = now;
   }
@@ -1557,7 +1685,7 @@ function frame(now) {
     const renderStart=diagnosticSample?performance.now():0;
     const programsBefore=diagnosticSample?flight.renderer.info.programs.length:0;
     if(diagnosticSample&&diagnostics.open)diagnostics.timer.begin(diagnosticSample);
-    try { flight.render(dt, cameraSettings.analog === true && !paused && flight.fpv); } finally { if(diagnosticSample&&diagnostics.open)diagnostics.timer.end(); }
+    try { flight.render(dt, cameraSettings.analog === true && !paused && !isWatching() && !replayActive && flight.fpv); } finally { if(diagnosticSample&&diagnostics.open)diagnostics.timer.end(); }
     if(diagnosticSample){
       diagnosticSample.renderMs=performance.now()-renderStart;
       diagnosticSample.newPrograms=Math.max(0,flight.renderer.info.programs.length-programsBefore);
@@ -1565,7 +1693,7 @@ function frame(now) {
     pauseRenderNeeded = false;
   }
   pauseMenu?.update();
-  fpvOsd.update(playing && !paused && flight.fpv, flight?.cameraRig.quaternion);
+  fpvOsd.update(playing && !paused && !isWatching() && !replayActive && flight.fpv, flight?.cameraRig.quaternion);
   updateFps(now, playing && (!paused || onlineLive));
   if(diagnosticSample){
     const pose=flight.physics.pose;
@@ -1577,6 +1705,50 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 function bindUI() {
+  $('#replay-start').onclick=startReplay;
+  $('#replay-export').onclick=()=>{if(lastRecording)downloadJson(lastRecording,'rotorift-flight.json');};
+  $('#replay-import').onclick=()=>$('#replay-file').click();
+  $('#replay-file').onchange=async event=>{
+    const file=event.target.files[0];if(!file)return;
+    try{if(file.size>12000000)throw Error('Too large');lastRecording=parseFlightRecording(await file.text());renderRecordings();}
+    catch{notice(t('replay.invalid'));}event.target.value='';
+  };
+  $('#replay-toggle').onclick=()=>{if(replayPlayer.time===replayPlayer.duration)replayPlayer.seek(0);replayPlayer.playing=!replayPlayer.playing;updateReplay();};
+  $('#replay-timeline').oninput=event=>{replayPlayer.seek(event.target.value);updateReplay();};
+  $('#replay-speed').onchange=event=>{replayPlayer.speed=Number(event.target.value);};
+  $('#replay-view').onchange=updateReplay;
+  $('#replay-exit').onclick=endFlight;
+  $('#pause-replay').onclick=openRecordings;
+  $('#pause-watch').onclick=()=>{
+    if(!room)return;
+    pauseMenu?.setOpen(false);requestRoom('spectate',{code:room.code});
+  };
+  $('#invite-copy').onclick=()=>copyInvite();
+  $('#watch-invite-copy').onclick=()=>copyInvite(true);
+  $('#observer-invite').onclick=()=>copyInvite(true);
+  $('#observer-pilot').onchange=renderObserver;$('#observer-view').onchange=renderObserver;
+  $('#results-watch').onclick=()=>requestRoom('spectate',{code:room.code});
+  $('#settings-export').onclick=()=>downloadJson(exportSettings(localStorage),'rotorift-settings.json');
+  $('#settings-import').onclick=()=>$('#settings-file').click();
+  $('#settings-file').onchange=async event=>{
+    importPreferences=null;visible('#settings-import-review',false);
+    const file=event.target.files[0];if(!file)return;
+    try{
+      if(file.size>512000)throw Error('File too large');
+      importPreferences=parseSettings(await file.text());
+      $('#settings-import-summary').textContent=t('settings.importSummary',{count:Object.keys(importPreferences).length});
+      visible('#settings-import-review',true);$('#settings-transfer-status').textContent='';
+    }catch{$('#settings-transfer-status').textContent=t('settings.importInvalid');}
+    event.target.value='';
+  };
+  $('#settings-import-cancel').onclick=()=>{importPreferences=null;visible('#settings-import-review',false);};
+  $('#settings-import-apply').onclick=()=>{
+    if(!importPreferences)return;
+    // Applying reloads the controller and all cached profile objects together.
+    if(playing||room){$('#settings-transfer-status').textContent=t('settings.importLeave');return;}
+    try{importSettings(localStorage,importPreferences);location.reload();}
+    catch{$('#settings-transfer-status').textContent=t('settings.importFailed');}
+  };
   settingsTabs = new SettingsTabs($("#settings-panel"), {
     selected: read("settings-tab", "controls"),
     onChange: name => {
@@ -1594,6 +1766,7 @@ function bindUI() {
   fullscreen = bindFullscreen(t, notice);
   for (const b of document.querySelectorAll("[data-tab]"))
     b.onclick = () => {
+      if(b.dataset.tab==='replays'){openRecordings();return;}
       if (b.dataset.tab === "multiplayer") {
         if (room) { panel(room.phase === "finished" || room.players.find(p=>p.id===network.id)?.finished ? "results" : "lobby"); return; }
         panel("multiplayer");
@@ -1622,8 +1795,9 @@ function bindUI() {
     leave: endFlight,
   }, () => ({
     online: !!room,
-    description: `${mapName(flight.map.id)} · ${flight.config.name} · ${flightModeLabel(flight.physics.mode).toUpperCase()}` + (room ? ` · ${room.code}` : ""),
-    canReset: !room || (room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished),
+    description: isWatching()?`${mapName(flight.map.id)} · ${t('online.spectating')} · ${room.players.find(p=>p.id===$('#observer-pilot').value)?.name??''}`:
+      `${mapName(flight.map.id)} · ${flight.config.name} · ${replayActive?t('replay.title'):flightModeLabel(flight.physics.mode).toUpperCase()}` + (room ? ` · ${room.code}` : ""),
+    canReset: !isWatching()&&!replayActive&&(!room || (room.phase === "flying" && !room.players.find(p=>p.id===network.id)?.finished)),
   }));
   flightHelp = new FlightHelp(t, flightHelpContent);
   $("#hud-mode").onclick = () => { action("mode"); hud(); document.activeElement?.blur(); };
@@ -1686,6 +1860,7 @@ function bindUI() {
     $("#room-code").value = $("#room-code").value.toUpperCase().replace(/[^A-Z0-9]/g, ""); updateStatus();
   };
   $("#join-room").onclick = () => requestRoom("join", { code: $("#room-code").value.trim().toUpperCase(), ...aircraftChoice() });
+  $('#watch-room').onclick=()=>requestRoom('spectate',{code:$('#room-code').value.trim().toUpperCase()});
   for(const id of ['#lobby-aircraft','#lobby-mode','#lobby-launch'])$(id).onchange=changeLobbyAircraft;
   $("#room-code").onkeydown = (event) => {
     if (event.key === "Enter" && !$("#join-room").disabled) { event.preventDefault(); $("#join-room").click(); }
@@ -1845,6 +2020,7 @@ try {
   controller = new Controller(action);
   controller.touch = new TouchSticks($('#stick-hud'), $('#hud'));
   network = new Network(receive);
+  if(pendingInvite)network.cancelRecovery();
   preview.setColor(droneColor); flight.setColor(droneColor);
   await flight.init();
   createCatalogUI();

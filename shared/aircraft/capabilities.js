@@ -37,6 +37,7 @@ export function aircraftSimulation(config, value) {
     capabilities = aircraftCapabilities(config);
   return {
     ...options,
+    airmode: isFixedWing(config) ? true : options.airmode,
     propDamage: options.propDamage && capabilities.propDamage,
     propwash: options.propwash && capabilities.propwash,
   };

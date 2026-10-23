@@ -56,8 +56,8 @@ export async function createServer({database}={}) {
         if (!map || !drone || !routeSupportsAircraft(map,drone) || !(url.pathname==='/api/leaderboard'?["all",...aircraftModes(drone)]:aircraftModes(drone)).includes(mode))
           return json(res, { error: "Invalid category" }, 400);
         const key = url.searchParams.get("simulation") ?? "00010";
-        if (!/^[01]{4}[0-3]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
-        const simulation = { ...DEFAULT_SIMULATION, wind: WIND_LEVELS[Number(key[4])] };
+        if (!/^[01]{4}[0-7]$/.test(key)) return json(res, {error: "Invalid simulation category"}, 400);
+        const simulation = { ...DEFAULT_SIMULATION, wind: WIND_LEVELS[Number(key[4])%4], airmode:Number(key[4])<4 };
         ["battery", "propDamage", "propwash", "ghost"].forEach((name, i) => simulation[name] = key[i] === "1");
         if (simulationKey(aircraftSimulation(drone,simulation)) !== key)
           return json(res, {error:"Unsupported aircraft effects"}, 400);

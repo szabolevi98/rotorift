@@ -60,6 +60,7 @@
             <button data-tab="multiplayer"><span class="nav-icon" aria-hidden="true">⌁</span><span data-i18n="nav.multiplayer"></span></button>
             <button data-tab="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span data-i18n="nav.settings"></span></button>
             <button data-tab="records"><span class="nav-icon" aria-hidden="true">≡</span><span data-i18n="nav.records"></span></button>
+            <button data-tab="replays"><span class="nav-icon" aria-hidden="true">▷</span><span data-i18n="replay.title"></span></button>
           </nav>
           <div class="sidebar-caption"><strong data-i18n="fly.title"></strong><p data-i18n="hangar.tagline"></p></div>
         </aside>
@@ -135,6 +136,7 @@
             <div class="join-row">
               <input id="room-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-placeholder="online.code" />
               <button id="join-room" class="secondary" data-i18n="online.join"></button>
+              <button id="watch-room" class="secondary" data-i18n="online.watch"></button>
             </div>
             <div class="section-title">
               <h2 data-i18n="online.rooms"></h2>
@@ -158,6 +160,12 @@
             <button id="settings-tab-rates" type="button" role="tab" data-settings-tab="rates" aria-controls="settings-rates" aria-selected="false" tabindex="-1" data-i18n="settings.tabs.rates"></button>
             <button id="settings-tab-video" type="button" role="tab" data-settings-tab="video" aria-controls="settings-video" aria-selected="false" tabindex="-1" data-i18n="settings.tabs.video"></button>
           </div>
+          <section class="settings-transfer card">
+            <h2 data-i18n="settings.transfer"></h2><p class="muted" data-i18n="settings.transferHint"></p>
+            <div class="button-row"><button id="settings-export" type="button" class="secondary" data-i18n="settings.export"></button><button id="settings-import" type="button" class="secondary" data-i18n="settings.import"></button><input id="settings-file" type="file" accept="application/json,.json" hidden /></div>
+            <div id="settings-import-review" class="hidden"><p id="settings-import-summary"></p><p class="muted" data-i18n="settings.importReload"></p><div class="button-row"><button id="settings-import-apply" type="button" class="primary small" data-i18n="settings.importApply"></button><button id="settings-import-cancel" type="button" class="secondary" data-i18n="action.cancel"></button></div></div>
+            <p id="settings-transfer-status" role="status"></p>
+          </section>
           <div id="settings-controls" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-controls">
             <div class="settings-input-bar card">
               <label class="simulation-row"><span data-i18n="settings.autoArm"></span><input id="auto-arm" type="checkbox" aria-describedby="auto-arm-hint" /></label>
@@ -297,10 +305,15 @@
           </div>
           <div id="records-body" class="card"></div>
         </section>
+        <section id="replays-panel" class="panel hidden">
+          <div class="intro"><span class="eyebrow">ROTORIFT / REPLAY</span><h1 data-i18n="replay.title"></h1><p data-i18n="replay.hint"></p></div>
+          <section class="card"><p id="replay-summary"></p><div class="button-row"><button id="replay-start" class="primary small" data-i18n="replay.play"></button><button id="replay-export" class="secondary" data-i18n="replay.export"></button><button id="replay-import" class="secondary" data-i18n="replay.import"></button><input id="replay-file" type="file" accept="application/json,.json" hidden /></div><p class="muted" data-i18n="replay.roomHint"></p></section>
+        </section>
         <section id="lobby-panel" class="panel hidden">
           <div class="intro">
             <span class="eyebrow" data-i18n="online.lobby"></span>
             <h1 id="lobby-code"></h1>
+            <div class="button-row"><button id="invite-copy" type="button" class="secondary" data-i18n="online.copyInvite"></button><button id="watch-invite-copy" type="button" class="secondary" data-i18n="online.copyWatchInvite"></button><input id="invite-link" aria-label="Invite link" readonly class="hidden" /></div>
             <p id="lobby-description"></p>
             <p id="lobby-status" role="status"></p>
           </div>
@@ -313,6 +326,7 @@
             <p class="prototype-note" data-i18n="online.mixedHint"></p>
           </section>
           <div id="lobby-players" class="card"></div>
+          <p id="lobby-spectators" class="muted"></p>
           <section class="simulation-controls simulation-dock">
             <h2 class="dock-label" data-i18n="simulation.title"></h2>
             <div id="lobby-simulation"></div>
@@ -327,7 +341,7 @@
           <div class="intro"><span id="results-code" class="eyebrow"></span><h1 id="results-title" data-i18n="results.title"></h1><p id="results-description"></p><p id="results-status" role="status"></p></div>
           <div id="own-result" class="own-result card"></div>
           <div class="results-scroll card"><table class="results-table"><thead id="results-head"></thead><tbody id="results-body"></tbody></table></div>
-          <div class="button-row"><button id="results-restart" class="primary small" data-i18n="online.nextRun"></button><button id="results-leave" class="secondary" data-i18n="action.leave"></button></div>
+          <div class="button-row"><button id="results-restart" class="primary small" data-i18n="online.nextRun"></button><button id="results-watch" class="secondary" data-i18n="online.watch"></button><button id="results-leave" class="secondary" data-i18n="action.leave"></button></div>
         </section>
       </main>
       </div>
@@ -345,6 +359,7 @@
       <div id="pilot-camera-tools" class="pilot-camera-tools hidden">
         <span id="pilot-camera-hint"></span><button id="pilot-zoom-out" type="button">−</button><output id="pilot-camera-fov">35°</output><button id="pilot-zoom-in" type="button">+</button>
       </div>
+      <div id="observer-tools" class="observer-tools hidden"><strong data-i18n="online.spectating"></strong><label><span data-i18n="online.pilot"></span><select id="observer-pilot"></select></label><label><span data-i18n="key.view"></span><select id="observer-view"><option value="chase" data-i18n="hud.view.chase"></option><option value="fpv-clean" data-i18n="hud.view.fpv-clean"></option></select></label><button id="observer-invite" type="button" data-i18n="online.copyWatchInvite"></button><input id="observer-link" aria-label="Invite link" readonly class="hidden" /></div>
       <aside id="flight-help" class="flight-help hidden" aria-labelledby="flight-help-title">
         <div class="flight-help-heading"><h2 id="flight-help-title" data-i18n="hud.controls"></h2><button id="flight-help-close" type="button">×</button></div>
         <p id="flight-help-source" class="flight-help-source"></p>
@@ -352,6 +367,7 @@
         <dl id="flight-help-keys"></dl>
         <p class="flight-help-footer" data-i18n="hud.helpLive"></p>
       </aside>
+      <div id="replay-tools" class="observer-tools replay-tools hidden"><strong data-i18n="replay.title"></strong><button id="replay-toggle" type="button"></button><input id="replay-timeline" type="range" min="0" max="1" value="0" step="1" data-i18n-aria-label="replay.timeline" aria-label="Replay timeline" /><output id="replay-position"></output><select id="replay-speed" data-i18n-aria-label="replay.speed" aria-label="Replay speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select><select id="replay-view" data-i18n-aria-label="replay.camera" aria-label="Replay camera"><option value="chase" data-i18n="hud.view.chase"></option><option value="fpv" data-i18n="hud.view.fpv"></option><option value="fpv-clean" data-i18n="hud.view.fpv-clean"></option></select><button id="replay-exit" type="button" data-i18n="replay.exit"></button></div>
       <aside id="performance-panel" class="performance-panel hidden" aria-labelledby="performance-title">
         <div class="performance-heading"><h2 id="performance-title" data-i18n="perf.title"></h2><button type="button" data-performance-close>×</button></div>
         <p data-i18n="perf.hint"></p>
@@ -439,6 +455,8 @@
           <button id="pause-resume" class="primary" type="button"><span><span class="pause-icon" aria-hidden="true">▶</span><span data-i18n="action.resume"></span></span><kbd>ESC</kbd></button>
           <button id="pause-reset" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">↺</span><span data-i18n="key.reset"></span></button>
           <button id="pause-settings" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">⚙</span><span data-i18n="nav.settings"></span></button>
+          <button id="pause-replay" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">▷</span><span data-i18n="replay.title"></span></button>
+          <button id="pause-watch" class="secondary hidden" type="button"><span class="pause-icon" aria-hidden="true">◉</span><span data-i18n="online.watch"></span></button>
           <button id="pause-exit" class="secondary" type="button"><span class="pause-icon" aria-hidden="true">⌂</span><span data-i18n="pause.exit"></span></button>
         </div></div>
         <div id="pause-settings-slot"></div>

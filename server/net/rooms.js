@@ -29,7 +29,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   };
   const aircraftOf = (p, r) => p.aircraft ?? r.drone;
   const optionsOf = (p, r) => aircraftSimulation(aircraftOf(p, r), r.simulation);
-  const compatibleClient = (r, protocol) => (!r.map || r.map.kind !== "circuit" || protocol >= 6) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
+  const compatibleClient = (r, protocol) => (r.simulation?.airmode!==false||protocol>=7) && (!r.map || r.map.kind !== "circuit" || protocol >= 6) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
   // Free-flight rules belong to the room; each aircraft applies only the
   // effects it supports. A plane host must not disable drone effects for guests.
   const roomOptions = (r, options) => r.mixedAircraft ? normalizeSimulation(options) : aircraftSimulation(r.drone, options);
@@ -53,6 +53,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     startsAt: r.startsAt,
     laps: r.laps,
     host: r.host,
+    spectators: [...(r.watchers?.values()??[])].map(p=>({id:p.id,name:p.name,connected:p.connected})),
     players: [...r.players.values()].map((p) => ({
       id: p.id,
       name: p.name,
@@ -68,6 +69,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
       p: p.pose?.p,
       q: p.pose?.q,
       v:p.pose?.v,
+      camera:p.camera,
       ...(isFixedWing(aircraftOf(p,r))?{animation:airplaneAnimation(aircraftOf(p,r),p.animation,r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600,r.simulation.propDamage)}:{
         propellers:p.propellers??freshPropellers(),
         rotorSpeeds:r.phase==='flying'&&p.connected&&!p.finished&&Date.now()-p.rotorsAt<600?p.rotorSpeeds:STOPPED_ROTORS,
@@ -81,7 +83,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   });
   const broadcast = (r) => {
     const data = snapshot(r);
-    for (const p of r.players.values())
+    for (const p of [...r.players.values(),...(r.watchers?.values()??[])])
       send(p, "room", { room: data, now: Date.now() });
   };
   const finish = (r) => {
@@ -109,11 +111,13 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
     if (!r) return;
     p.room = null;
     p.reconnectUntil = null;
+    if(p.spectating){p.spectating=false;r.watchers.delete(p.id);broadcast(r);return;}
     if (!p.finished) { p.abandoned = true; p.lap.invalid = true; }
     if (r.participants.has(p.id)) r.participants.set(p.id, { ...p, lap: { ...p.lap }, room: null, ws: null });
     r.players.delete(p.id);
     if (!r.players.size) {
       maybeFinish(r);
+      for(const watcher of r.watchers?.values()??[]){watcher.room=null;watcher.spectating=false;send(watcher,'left');}
       rooms.delete(r.code);
       return;
     }
@@ -142,7 +146,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   };
   const list = () =>
     [...rooms.values()]
-      .filter((r) => r.public && (r.phase === "lobby" || r.mixedAircraft && r.phase === "flying"))
+      .filter((r) => r.public && ['lobby','countdown','flying'].includes(r.phase))
       .map((r) => ({
         code: r.code,
         mapId: r.map.id,
@@ -152,6 +156,8 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         droneId: r.drone.id,
         mixedAircraft: r.mixedAircraft,
         kind: r.kind,
+        phase:r.phase,
+        spectators:r.watchers?.size??0,
         players: r.players.size,
         mode: r.mode,
       }));
@@ -197,7 +203,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               clients.delete(p);
               const oldSocket = previous.ws;
               p = previous; p.ws = ws; p.connected = true; p.alive = true; p.reconnectUntil = null;
-              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5,6].includes(m.protocol) ? m.protocol : 1;
+              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5,6,7].includes(m.protocol) ? m.protocol : 1;
               // A duplicated tab must not keep taking over the recovered socket.
               // Retain the presented key only while disconnected, in case the
               // new welcome packet itself is lost during an unstable connection.
@@ -206,7 +212,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               clients.add(p);
               if (oldSocket !== ws) oldSocket.terminate();
               const r = p.room;
-              if (!p.finished && r.phase !== "finished") {
+              if (!p.spectating && !p.finished && r.phase !== "finished") {
                 const progress = { completed: p.lap.completed, bestMs: p.lap.bestMs, lastMs: p.lap.lastMs, bestSplits: p.lap.bestSplits };
                 reset(p, r);
                 Object.assign(p.lap, progress);
@@ -223,7 +229,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
             if (ws.readyState !== 1) return;
-            p.protocol = [2,3,4,5,6].includes(m.protocol) ? m.protocol : 1;
+            p.protocol = [2,3,4,5,6,7].includes(m.protocol) ? m.protocol : 1;
             p.resume = randomBytes(24).toString("hex");
             resumable.set(p.resume, p);
             send(p, "welcome", {
@@ -258,13 +264,13 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         }
         if (m.type === "appearance") {
           if (!validDroneColor(m.color)) { send(p, "error", { code: "invalidColor" }); return; }
-          if(p.room && [...p.room.players.values()].some(other=>other!==p&&other.color===m.color)) {send(p,"error",{code:"colorTaken"});return;}
+          if(p.room && !p.spectating && [...p.room.players.values()].some(other=>other!==p&&other.color===m.color)) {send(p,"error",{code:"colorTaken"});return;}
           p.color = m.color;
           if (p.room) broadcast(p.room);
           return;
         }
         if (m.type === "list") {
-          send(p, "rooms", { rooms: list().filter(room => compatibleClient({mixedAircraft:room.mixedAircraft,map:catalog.maps.find(map=>map.id===room.mapId),drone:findAircraft(catalog,room.droneId)},p.protocol)) });
+          send(p, "rooms", { rooms: list().filter(room => compatibleClient(rooms.get(room.code),p.protocol)) });
           return;
         }
         if (m.type === "leave") {
@@ -274,6 +280,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         }
         if (m.type === "create") {
           if (m.simulation !== undefined && !validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
+          if(m.simulation?.airmode===false&&p.protocol<7){send(p,'error',{code:'clientTooOld'});return;}
           if (rooms.size >= 100) {
             send(p, "error", { code: "roomFull" });
             return;
@@ -314,6 +321,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             phase: "lobby",
             host: p.id,
             players: new Map(),
+            watchers: new Map(),
             participants: new Map(),
             ...(map.kind === "circuit" ? {traffic: {version: CIRCUIT_TRAFFIC_VERSION, epoch: Date.now(), seed: randomBytes(4).readUInt32LE()}} : {}),
             raceId: randomUUID(),
@@ -329,6 +337,16 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           broadcast(r);
           return;
         }
+        if(m.type==='spectate'){
+          const r=rooms.get(String(m.code??'').toUpperCase());
+          if(!r){send(p,'error',{code:'roomMissing'});return;}
+          if(p.protocol<7||!compatibleClient(r,p.protocol)){send(p,'error',{code:'clientTooOld'});return;}
+          if(r.watchers.size>=16){send(p,'error',{code:'roomFull'});return;}
+          if([...r.players.values(),...r.watchers.values()].some(v=>v!==p&&v.token===p.token)){send(p,'error',{code:'alreadyJoined'});return;}
+          if(r.players.has(p.id)&&r.players.size===1){send(p,'error',{code:'noPilotToWatch'});return;}
+          leave(p);p.room=r;p.spectating=true;p.ready=false;
+          r.watchers.set(p.id,p);broadcast(r);return;
+        }
         if (m.type === "join") {
           const r = rooms.get(String(m.code || "").toUpperCase());
           if (!r) {
@@ -342,7 +360,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             send(p, "error", { code: "roomFull" });
             return;
           }
-          if ([...r.players.values()].some((v) => v.token === p.token)) {
+          if ([...r.players.values(),...r.watchers.values()].some((v) => v.token === p.token)) {
             send(p, "error", { code: "alreadyJoined" });
             return;
           }
@@ -366,6 +384,9 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
         }
         const r = p.room;
         if (!r) return;
+        // Observers never occupy launch slots, affect readiness, submit poses,
+        // collide, change room rules or enter the race/leaderboard roster.
+        if(p.spectating)return;
         if(m.type === 'aircraft') {
           if(!r.mixedAircraft || r.phase !== 'lobby'){send(p,'error',{code:'aircraftLocked'});return;}
           const aircraft = findAircraft(catalog,m.droneId);
@@ -379,6 +400,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           if (r.host !== p.id) { send(p, "error", { code: "hostOnly" }); return; }
           if (r.phase !== "lobby") { send(p, "error", { code: "rulesLocked" }); return; }
           if (!validSimulation(m.simulation)) { send(p, "error", { code: "invalidSimulation" }); return; }
+          if(m.simulation.airmode===false&&[...r.players.values()].some(v=>v.protocol<7)){send(p,'error',{code:'clientTooOld'});return;}
           r.simulation = roomOptions(r,m.simulation);
           for (const player of r.players.values()) player.ready = false;
           broadcast(r); return;
@@ -427,6 +449,9 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           return;
         }
         if (m.type !== "state" || r.phase !== "flying" || p.finished) return;
+        if(m.camera!==undefined){
+          if(!m.camera||!Number.isFinite(m.camera.angle)||m.camera.angle<0||m.camera.angle>60||!Number.isFinite(m.camera.fov)||m.camera.fov<70||m.camera.fov>140)return;
+        }
         if ((p.protocol >= 2 || m.runId !== undefined) && m.runId !== r.raceId) return;
         if (
           !Number.isSafeInteger(m.seq) ||
@@ -487,6 +512,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
           broadcast(r);
           return;
         }
+        if(m.camera)p.camera={angle:m.camera.angle,fov:m.camera.fov};
         const waterImpact=findWaterImpact(r.map,aircraft,p.pose,{p:m.p,q:m.q});
         if(waterImpact) {
           reset(p,r,true);send(p,"reset",{pose:p.pose,reason:waterImpact});broadcast(r);return;

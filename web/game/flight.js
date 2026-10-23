@@ -27,6 +27,7 @@ import { LapGhostPilot } from './lap-ghost.js';
 import { AnalogVideo } from './analog-video.js';
 import { prepareFlightViews } from './prepare-views.js';
 import { DroneSound } from './drone-sound.js';
+import { FollowCamera } from './follow-camera.js';
 export class Flight {
   constructor(canvas, aircraftCatalog = []) {
     this.aircraftCatalog = new Map(aircraftCatalog.map(config => [config.id,config]));
@@ -56,6 +57,7 @@ export class Flight {
     this.camera.position.set(0, 10, 30);
     this.camera.lookAt(0, 0, 0);
     this.cameraRig = new DroneCameraRig(this.camera);
+    this.followCamera = new FollowCamera(this.camera);
     canvas.addEventListener('wheel', event => {
       if (!this.active || this.view !== 'pilot' || this.preparingViews) return;
       event.preventDefault();
@@ -73,6 +75,8 @@ export class Flight {
     await RAPIER.init();
   }
   async load(map, config, rates, mode, color = this.color ?? "coral", simulation, onProgress, {launchMethod="air"} = {}) {
+    this.observer=null;
+    this.replayFrame=null;
     this.mute();
     const version = this.loadVersion = (this.loadVersion ?? 0) + 1;
     this.active = false;
@@ -105,6 +109,7 @@ export class Flight {
     this.environment.highlight(0, false);
     this.config = config;
     this.sound?.configure(config);
+    this.soundAircraftId=config.id;
     this.map = map;
     this.boundary = new MapBoundary(map);
     this.camera.far = map.kind === "playground" ? PLAYGROUND_VIEW_DISTANCE : map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
@@ -156,6 +161,7 @@ export class Flight {
   }
   reset(position = this.launchPosition ?? this.map.spawn, pose = this.launchPose) {
     if (!this.physics || !this.environment) return;
+    this.resetSerial=(this.resetSerial??0)+1;
     this.waterImpact=null;this.waterResetPending=false;
     this.physics.reset(position,pose);
     this.lapGhost?.update(null);
@@ -313,6 +319,7 @@ export class Flight {
     }
     for (const r of this.remotes.values()) {
       if (!r.model) continue;
+      r.model.visible=true;
       r.animation.updateRemote(dt,r.target);
       const q = new THREE.Quaternion(
           r.target.q.x,
@@ -333,8 +340,31 @@ export class Flight {
       const tail = new THREE.Vector3(0, 0.015, (r.config.lengthM??r.config.motorDiagonalM) * 0.3).applyQuaternion(r.model.quaternion).add(r.model.position);
       r.trail.update(tail.toArray(), performance.now() / 1000, r.target.resetId, w, h);
     }
-    this.environment.renderTraffic?.(this.trafficTime ?? this.physics.effects.time, this.trafficSeed ?? 0);
-    this.parkShadows?.update({ dynamic: this.environment.dynamicTraffic || this.view !== "fpv-clean" || this.remotes.size > 0 });
+    if(this.observer){
+      this.visual.visible=false;
+      const remote=this.remotes.get(this.observer.id);
+      if(remote?.model){
+        this.followCamera.update(remote.config,remote.model,remote.target,this.observer.view,dt,remote.target.camera);
+        this.environment.update(remote.target.p,remote.target.v);
+        if(this.sound){
+          if(this.soundAircraftId!==remote.config.id){this.sound.configure(remote.config);this.soundAircraftId=remote.config.id;}
+          const speeds=isFixedWing(remote.config)?[remote.target.animation?.engine??0]:remote.target.rotorSpeeds;
+          this.sound.update(speeds,{enabled:this.soundEnabled,volume:this.soundVolume,armed:!this.observer.paused,chase:this.observer.view==='chase',speed:Math.hypot(...(remote.target.v??[0,0,0])),blades:remote.target.propellers??[remote.target.animation?.propeller]});
+        }
+      }else this.sound?.mute();
+    }
+    if(this.replayFrame){
+      const frame=this.replayFrame,q=new THREE.Quaternion(frame.q.x,frame.q.y,frame.q.z,frame.q.w);
+      this.visual.position.set(...frame.p).add(new THREE.Vector3(...this.config.visualOffsetM).applyQuaternion(q));
+      this.visual.quaternion.copy(q);this.visual.visible=true;
+      this.aircraftVisual.updateRemote(this.replayPlaying?dt:0,{...frame.visual,connected:true,resetId:frame.segment});
+      this.aircraftVisual.prepareView(this.replayView,{armed:frame.armed});
+      this.followCamera.update(this.config,this.visual,frame,this.replayView,dt,frame.camera);
+      this.environment.update(frame.p,frame.v);
+      this.sound?.update(this.aircraftVisual.motorSpeeds,{enabled:this.soundEnabled,volume:this.soundVolume,armed:frame.armed&&this.replayPlaying,chase:this.replayView==='chase',speed:Math.hypot(...frame.v),blades:frame.visual.propellers??[frame.visual.animation?.propeller]});
+    }
+    this.environment.renderTraffic?.(this.replayFrame?.trafficTime ?? this.trafficTime ?? this.physics.effects.time, this.trafficSeed ?? 0);
+    this.parkShadows?.update({ dynamic: !!this.replayFrame || this.environment.dynamicTraffic || this.view !== "fpv-clean" || this.remotes.size > 0 });
     if (analog) {
       this.getAnalogVideo().render(this.scene, this.camera, dt);
     } else {

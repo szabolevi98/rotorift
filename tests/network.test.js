@@ -101,6 +101,56 @@ async function fixture(t, mapOverrides = {}, roomOptions = {}) {
   return { client, catalog, db };
 }
 
+test('spectators join a full eight-pilot race without a slot, readiness, collisions or result entries; reconnect and leave work',async t=>{
+ const {client,db}=await fixture(t,{}, {countdownMs:5}),host=await client('Host','coral',{protocol:7});
+ host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'angle',kind:'race'});
+ const created=(await host.next(m=>m.type==='room')).room,pilots=[host];
+ for(let i=1;i<8;i++){const p=await client('Pilot '+i,undefined,{protocol:7});p.send('join',{code:created.code});await p.next(m=>m.type==='room'&&m.room.players.length===i+1);pilots.push(p);}
+ const watcher=await client('Observer',undefined,{protocol:7});watcher.send('spectate',{code:created.code});
+ let watched=(await watcher.next(m=>m.type==='room'&&m.room.spectators.length===1)).room;
+ assert.equal(watched.players.length,8);assert.equal(watched.spectators[0].id,watcher.id);assert.ok(watched.players.every(p=>p.id!==watcher.id));
+ for(const p of pilots)p.send('ready',{ready:true});
+ await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.ready));host.send('start');
+ watched=(await watcher.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+ watcher.send('reset');watcher.send('finish');watcher.send('rules',{simulation:{airmode:false}});
+ await watcher.state([0,1,0],{runId:watched.runId,rotorSpeeds:[1,1,1,1]});
+ const unchanged=(await watcher.next(m=>m.type==='room'&&m.room.phase==='flying')).room;
+ assert.equal(unchanged.simulation.airmode,true);assert.equal(unchanged.players.length,8);assert.equal(db.laps.length,0);
+ const resume=watcher.welcome.resume;watcher.ws.terminate();
+ await host.next(m=>m.type==='room'&&m.room.spectators.some(p=>!p.connected));
+ const restored=await client('Observer',undefined,{protocol:7,resume});assert.equal(restored.welcome.resumed,true);
+ watched=(await restored.next(m=>m.type==='room')).room;assert.equal(watched.spectators[0].id,watcher.id);
+ host.send('finish');const finished=(await restored.next(m=>m.type==='room'&&m.room.phase==='finished')).room;
+ assert.equal(finished.results.length,8);assert.ok(finished.results.every(p=>p.id!==watcher.id));
+ restored.send('leave');await restored.next(m=>m.type==='left');
+});
+
+test('a flying host can switch to spectator, relinquishes control and receives the other pilot camera',async t=>{
+ const {client}=await fixture(t,{}, {countdownMs:5}),host=await client('Host',undefined,{protocol:7}),guest=await client('Pilot',undefined,{protocol:7});
+ host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'free'});
+ const created=(await host.next(m=>m.type==='room')).room;guest.send('join',{code:created.code});await guest.next(m=>m.type==='room');
+ host.send('ready',{ready:true});guest.send('ready',{ready:true});await host.next(m=>m.type==='room'&&m.room.players.every(p=>p.ready));host.send('start');
+ await host.next(m=>m.type==='room'&&m.room.phase==='flying');host.send('spectate',{code:created.code});
+ const watched=(await host.next(m=>m.type==='room'&&m.room.spectators.length===1)).room;
+ assert.equal(watched.players.length,1);assert.equal(watched.host,guest.id);assert.equal(watched.spectators[0].id,host.id);
+ await guest.state([0,1,-.5],{mode:'acro',runId:watched.runId,camera:{angle:34,fov:110}});
+ const camera=(await host.next(m=>m.type==='room'&&m.room.players[0].camera?.angle===34)).room.players[0].camera;
+ assert.deepEqual(camera,{angle:34,fov:110});
+ await guest.state([.1,1,-.5],{mode:'acro',runId:watched.runId,camera:{angle:NaN,fov:300}});
+ guest.send('list');const after=(await host.next(m=>m.type==='room'&&m.room.players[0].camera?.angle===34)).room;
+ assert.deepEqual(after.players[0].camera,camera);
+});
+
+test('spectators are released when the last pilot leaves, and legacy clients cannot join Air Mode-off rooms',async t=>{
+ const {client}=await fixture(t),host=await client('New host',undefined,{protocol:7}),watcher=await client('Viewer',undefined,{protocol:7}),old=await client('Old client',undefined,{protocol:6});
+ host.send('create',{mapId:'test-route',droneId:'rift-x5',mode:'acro',kind:'free',simulation:{airmode:false}});
+ const created=(await host.next(m=>m.type==='room')).room;assert.equal(created.simulationKey,'00014');
+ old.send('join',{code:created.code});assert.equal((await old.next(m=>m.type==='error')).code,'clientTooOld');
+ watcher.send('spectate',{code:created.code});await watcher.next(m=>m.type==='room'&&m.room.spectators.length===1);
+ host.send('leave');await host.next(m=>m.type==='left');await watcher.next(m=>m.type==='left');
+ watcher.send('spectate',{code:created.code});assert.equal((await watcher.next(m=>m.type==='error')).code,'roomMissing');
+});
+
 test('Skyline supports shared freestyle rooms with its own district spawn and stable map ID',async t=>{
   const skyline=(await loadCatalog()).maps.find(m=>m.id==='skyline');
   const {client}=await fixture(t,skyline),host=await client('City host'),guest=await client('City guest');
@@ -227,7 +277,7 @@ test("only the host changes common simulation rules, clears readiness and transf
   assert.equal((await b.next(m=>m.type==="error")).code,"hostOnly");
   a.send("rules",{simulation:{wind:"tornado"}});
   assert.equal((await a.next(m=>m.type==="error")).code,"invalidSimulation");
-  const options={battery:true,propDamage:true,propwash:true,ghost:false,wind:"medium"};
+  const options={...DEFAULT_SIMULATION,battery:true,propDamage:true,propwash:true,ghost:false,wind:"medium"};
   a.send("rules",{simulation:options});
   const changed=await b.next(m=>m.type==="room"&&m.room.simulation.wind==="medium");
   assert.deepEqual(changed.room.simulation,options);assert.ok(changed.room.players.every(p=>!p.ready));

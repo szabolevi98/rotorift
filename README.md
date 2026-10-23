@@ -147,6 +147,10 @@ The old `/map-preview.html` address redirects to its map tab.
 
 ## Flying and controls
 
+Room invitations, a separate spectator role, the last five minutes of personal
+flight replay, settings export/import and optional drone Air Mode are available.
+See [shared flying, recordings and transferable settings](docs/session-features.md).
+
 Contact with lake water or a fountain jet stops the motors and automatically resets
 the aircraft to launch. This applies to drones and airplanes, independently of
 optional propeller damage, in solo and multiplayer. Bridges, dry banks and gaps

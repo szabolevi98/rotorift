@@ -18,6 +18,8 @@ export function applyLanguage() {
   document
     .querySelectorAll("[data-i18n-placeholder]")
     .forEach((el) => (el.placeholder = t(el.dataset.i18nPlaceholder)));
+  document.querySelectorAll('[data-i18n-aria-label]')
+    .forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAriaLabel)));
   document.querySelector('meta[name="description"]').content =
     t("meta.description");
   document.querySelector('meta[property="og:description"]').content =

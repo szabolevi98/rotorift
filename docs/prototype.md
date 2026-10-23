@@ -85,6 +85,11 @@ helyettesítik nyolc külön fizikai eszköz és valódi internetkapcsolat egyid
 
 ## Nyitott munka és későbbi bővítések
 
+2026-10-23: elkészült a meghívólink, a külön multiplayer-nézőmód,
+az ötperces személyes repülésfelvétel és visszajátszó, a beállítások
+exportja/importja és a drónok kapcsolható Air Mode-ja.
+Részletek és korlátok: [session-features.md](session-features.md).
+
 2026-10-19-én nincs vállalt, befejezetlen alapfejlesztés. A korábban felvetett
 szerveroldali megerősítés opcionális későbbi bővítés:
 

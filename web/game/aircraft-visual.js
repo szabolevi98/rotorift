@@ -34,7 +34,7 @@ class QuadVisual {
     this.damage.update(physics.effects.propellers.blades);
     // Hide idle at zero throttle and centred sticks. When steering, expose
     // the individual motor corrections above idle instead of a constant crawl.
-    const idle = physics.turtleMode ? 0 : motorThrustLimit(this.config) * (physics.effects.powerFactor ?? 1) * .012;
+    const idle = physics.turtleMode || physics.effects.options?.airmode===false ? 0 : motorThrustLimit(this.config) * (physics.effects.powerFactor ?? 1) * .012;
     const thrust = physics.motorThrust.map(value => Math.abs(value) > idle + 1e-6 ? Math.abs(value) - idle : 0);
     this.motion.update(
       dt,

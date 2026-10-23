@@ -184,3 +184,27 @@
 #hud.touch-controls .arm-prompt { top: 72px; transform: translateX(-50%); padding: 8px 12px; }
 #hud.touch-controls .arm-prompt strong { font-size: 14px; }
 #hud.touch-controls .arm-prompt span { margin-top: 4px; font-size: 10px; }
+#hud.observer-mode .hud-bottom,
+#hud.observer-mode .hud-flight-info,
+#hud.observer-mode #hud-reset,
+#hud.observer-mode #hud-view,
+#hud.observer-mode #arm-prompt,
+#hud.observer-mode #split-delta,
+#hud.observer-mode .crosshair,
+#hud.observer-mode #fpv-horizon { display:none !important; }
+.observer-tools { position:absolute; left:20px; top:95px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; max-width:calc(100% - 40px); padding:14px 18px; background:#141a22eb; border:1px solid #ffffff24; border-radius:10px; color:#fff; pointer-events:auto; }
+.observer-tools label { display:grid; gap:4px; font-size:11px; }
+.observer-tools select { color:#fff; background:#222a33; max-width:210px; padding:8px; }
+.observer-tools strong { color:#9de4d5; font-size:12px; }
+.observer-tools button { color:#fff; background:#29333e; border:1px solid #ffffff30; border-radius:6px; padding:9px 13px; font-size:12px; cursor:pointer; }
+.observer-tools button:hover { background:#3a4857; }
+.observer-tools input[readonly] { width:220px; color:#fff; background:#222a33; }
+#hud.replay-mode .hud-bottom,
+#hud.replay-mode .hud-flight-info,
+#hud.replay-mode #hud-reset,
+#hud.replay-mode #hud-view,
+#hud.replay-mode #arm-prompt,
+#hud.replay-mode #split-delta,
+#hud.replay-mode .crosshair { display:none !important; }
+.replay-tools { top:auto; bottom:24px; right:20px; }
+.replay-tools input[type="range"] { width:clamp(140px,25vw,480px); }

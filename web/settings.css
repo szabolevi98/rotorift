@@ -73,3 +73,6 @@
   #settings-panel #keyboard-bindings { grid-template-columns: 1fr; }
   #settings-panel .radio-action-row { grid-template-columns: minmax(75px, 1fr) minmax(90px, 1fr) auto; }
 }
+.settings-transfer { margin-bottom:20px; }
+.settings-transfer h2 { margin-top:0; }
+#settings-import-review { padding-top:12px; border-top:1px solid var(--line); margin-top:14px; }

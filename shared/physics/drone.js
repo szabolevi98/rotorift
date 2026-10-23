@@ -8,8 +8,9 @@ import { turtleThrust } from './turtle.js';
 import { PHYSICS_DT } from './time-step.js';
 import { stepPhysicsWorld } from './world-step.js';
 export { PHYSICS_DT } from './time-step.js';
-function mixThrust(mixer, demand, max) {
-  const idle = max * 0.012;
+function mixThrust(mixer, demand, max, airmode = true) {
+  const idle = airmode ? max * 0.012 : 0;
+  if(!airmode)return mixer.map(row=>clamp(row.reduce((sum,value,i)=>sum+value*demand[i],0),0,max));
   const limits = (authority) => {
     const values = mixer.map(
       (row) =>
@@ -162,10 +163,12 @@ export class DronePhysics {
     });
     const max = motorThrustLimit(c) * this.effects.powerFactor,
       base = throttleToThrust(Math.min(input.throttle, this.effects.throttleLimit), c) * this.effects.powerFactor;
-    const demand = [4 * base, torques[0], torques[2], torques[1]],
-      idle = max * 0.012;
+    const airmode=this.effects.options.airmode;
+    const authority=airmode?1:clamp(input.throttle/.1,0,1);
+    const demand = [4 * base, torques[0]*authority, torques[2]*authority, torques[1]*authority],
+      idle = airmode ? max * 0.012 : 0;
     // Preserve attitude authority when collective throttle reaches a motor limit.
-    const targets = this.turtleMode?turtleThrust(c,input,q,max,w):mixThrust(this.mixer, demand, max);
+    const targets = this.turtleMode?turtleThrust(c,input,q,max,w):mixThrust(this.mixer, demand, max,airmode);
     let totalThrust = 0;
     const motorTorque = [0, 0, 0];
     for (let i = 0; i < 4; i++) {
