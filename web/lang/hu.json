@@ -463,7 +463,7 @@
   "settings.importLeave": "Alkalmazás előtt fejezd be a repülést és lépj ki a szobából.",
   "settings.importFailed": "A beállítások mentése nem sikerült. Ellenőrizd a böngésző tárhelyét.",
   "simulation.airmode": "Air Mode",
-  "simulation.airmodeHint": "Kormányozhatóság nulla gáznál.",
+  "simulation.airmodeHint": "Gáz nélkül is ad motorerőt a kormányzáshoz.",
   "replay.title": "Visszajátszás",
   "replay.hint": "Saját repülésed utolsó öt perce ebben a böngészőfülben marad meg. Exportáld a felvételt, ha megőriznéd vagy elküldenéd.",
   "replay.empty": "Még nincs felvétel. Repülj egyet, vagy importálj felvételt.",

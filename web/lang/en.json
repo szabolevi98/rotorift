@@ -463,7 +463,7 @@
   "settings.importLeave": "End your flight and leave the room before applying settings.",
   "settings.importFailed": "Settings could not be saved. Check browser storage space.",
   "simulation.airmode": "Air Mode",
-  "simulation.airmodeHint": "Attitude control at zero throttle.",
+  "simulation.airmodeHint": "Adds motor power for control at zero throttle.",
   "replay.title": "Replay",
   "replay.hint": "The last five minutes of your own flight are kept in this tab. Export a recording to keep it or share it.",
   "replay.empty": "No recording yet. Fly first or import a recording.",

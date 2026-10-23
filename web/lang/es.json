@@ -463,7 +463,7 @@
   "settings.importLeave": "Termina el vuelo y sal de la sala antes de aplicar.",
   "settings.importFailed": "No se guardaron los ajustes. Comprueba el almacenamiento.",
   "simulation.airmode": "Air Mode",
-  "simulation.airmodeHint": "Control sin gas.",
+  "simulation.airmodeHint": "Da potencia para controlar incluso sin gas.",
   "replay.title": "Repetición",
   "replay.hint": "Los últimos cinco minutos de tu vuelo quedan en esta pestaña. Exporta para guardar o compartir.",
   "replay.empty": "Aún no hay grabación. Vuela o importa un archivo.",
