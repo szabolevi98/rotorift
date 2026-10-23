@@ -8,7 +8,9 @@ existing persistent IDs to English presentation codes:
 | `liget` | `grove` / `map.grove` | `standard` |
 | `betonudvar` | `construction-yard` / `map.construction-yard` | `standard` |
 | `jatszoter` | `playground` / `map.playground` | `micro` |
+| `gym` | `gymnasium` / `map.gymnasium` | `micro` |
 | `skyline` | `skyline` / `map.skyline` | `standard` |
+| `apex` | `apex-circuit` / `map.apex-circuit` | `standard` |
 
 The catalog sorts maps in this order and includes `code`, `nameKey` and
 `audienceKey`. Each of the five dictionaries translates the name and size

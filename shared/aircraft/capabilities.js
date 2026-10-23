@@ -24,7 +24,7 @@ const AIRPLANE = Object.freeze({
   hover: false,
   rateProfiles: false,
   launchModes: ["air", "ground"],
-  excludedMapKinds: ["playground"],
+  excludedMapKinds: ["playground", "gym"],
 });
 export const isFixedWing = (config) => config?.kind === "fixedWing";
 export const aircraftCapabilities = (config) =>

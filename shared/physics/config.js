@@ -107,7 +107,7 @@ export function validateMap(m) {
   if (
     !m ||
     !/^[-a-z0-9]+$/.test(m.id) ||
-    !["park", "construction", "playground", "city", "circuit"].includes(m.kind) ||
+    !["park", "construction", "playground", "city", "circuit", "gym"].includes(m.kind) ||
     !Number.isInteger(m.version) ||
     m.version < 1 ||
     !Number.isFinite(m.size) ||

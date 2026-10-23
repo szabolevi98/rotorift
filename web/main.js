@@ -457,7 +457,7 @@ async function selectDrone(id) {
   if(modes.includes(priorMode))$('#flight-mode').value=priorMode;
   visible('#airplane-note',isFixedWing(config));visible('#airplane-controls',isFixedWing(config));
   if(isFixedWing(config)){const saved=read('airplane-controls',{});for(const [key,fallback]of [['travel',70],['expo',30]]){const value=Number.isFinite(saved[key])?Math.round(saved[key]*100):fallback;$('#airplane-'+key).value=value;$('#airplane-'+key+'-output').textContent=value+'%';}}
-  if(isFixedWing(config)&&map?.kind==='playground'&&!mixedAircraftSetup())selectMap('liget');
+  if(isFixedWing(config)&&['playground','gym'].includes(map?.kind)&&!mixedAircraftSetup())selectMap('liget');
   selectMap(map?.id??catalog.maps[0].id);
   const selected = config, task = loading.begin("loading.model", { name: selected.name }, { overlay: !!preview.model });
   try {
@@ -476,7 +476,7 @@ async function selectDrone(id) {
   } finally { task.end(); }
 }
 function selectMap(id) {
-  if(!mixedAircraftSetup()&&isFixedWing(config)&&catalog.maps.find(m=>m.id===id)?.kind==='playground')id='liget';
+  if(!mixedAircraftSetup()&&isFixedWing(config)&&['playground','gym'].includes(catalog.maps.find(m=>m.id===id)?.kind))id='liget';
   const base = catalog.maps.find((m) => m.id === id) ?? catalog.maps[0];
   map = selectAircraftRoute(base,config,read(routePreferenceKey(base,config),base.routeId));
   fillRoutes($("#race-route"), base, map.routeId);

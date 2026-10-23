@@ -4,12 +4,12 @@ import { readFile, stat } from "node:fs/promises";
 import { loadCatalog } from "../server/catalog.js";
 import { validateDrone, validateMap } from "../shared/physics/config.js";
 import { canRace } from "../shared/race/map-modes.js";
-test("catalog contains six valid drone models and five maps with explicit race availability", async () => {
+test("catalog contains six valid drone models and six maps with explicit race availability", async () => {
   const { drones, maps } = await loadCatalog();
   assert.equal(drones.length, 6);
-  assert.equal(maps.length, 5);
-  assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter','skyline','apex']);
-  assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground','skyline','apex-circuit']);
+  assert.equal(maps.length, 6);
+  assert.deepEqual(maps.map(m=>m.id), ['liget','betonudvar','jatszoter','gym','skyline','apex']);
+  assert.deepEqual(maps.map(m=>m.code), ['grove','construction-yard','playground','gymnasium','skyline','apex-circuit']);
   assert.equal(new Set(drones.map((d) => d.configHash)).size, 6);
   assert.deepEqual(drones.map(d=>d.id),["rift-65","rift-75","rift-c3","rift-x35","rift-x5","rift-r5"]);
   for (const c of drones) {

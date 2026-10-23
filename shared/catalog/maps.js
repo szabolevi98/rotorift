@@ -4,6 +4,7 @@ const legacy = {
   liget: { code: 'grove', order: 0, droneClass: 'standard' },
   betonudvar: { code: 'construction-yard', order: 1, droneClass: 'standard' },
   jatszoter: { code: 'playground', order: 2, droneClass: 'micro' },
+  gym: { code: 'gymnasium', order: 2.5, droneClass: 'micro' },
   skyline: { code: 'skyline', order: 3, droneClass: 'standard' },
   apex: { code: 'apex-circuit', order: 4, droneClass: 'standard' },
 };

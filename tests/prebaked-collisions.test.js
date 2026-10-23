@@ -19,7 +19,7 @@ const load = async id => {
 };
 test("collision assets match the procedural sources and map versions", async()=>{
   const hash=await collisionSourceHash();
-  for(const id of ["liget","betonudvar","jatszoter","skyline","apex"]){
+  for(const id of ["liget","betonudvar","jatszoter","skyline","apex","gym"]){
     const {map,records}=await load(id), asset=COLLISION_ASSETS[id];
     assert.equal(asset.sourceHash,hash,"Regenerate using npm run collisions:build");
     assert.equal(asset.mapVersion,map.version);assert.equal(records.length,asset.records);

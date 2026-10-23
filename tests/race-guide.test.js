@@ -82,10 +82,10 @@ test('saved demo neon guides clear baked scenery along every segment, including 
     const collision=new PrebakedCollisions(RAPIER,world,map,decodeCollisionData(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),map.id));
     try{
       world.colliders.forEach(c=>c.setEnabled(true));world.step();
-      const clear=makeGuideClearance(world,RAPIER,map.kind==='playground'?.18:.45);
+      const clear=makeGuideClearance(world,RAPIER,['playground','gym'].includes(map.kind)?.18:.45);
       for(const route of map.routes){
         assert.equal(route.guide.length,route.gates.length);
-        if(!route.aircraftKinds?.includes("fixedWing"))assert.ok(Math.max(...route.gates.map(g=>g.p[1]))-Math.min(...route.gates.map(g=>g.p[1]))>1);
+        if(!route.aircraftKinds?.includes("fixedWing"))assert.ok(Math.max(...route.gates.map(g=>g.p[1]))-Math.min(...route.gates.map(g=>g.p[1]))>(map.kind==='gym'?.4:1));
         let length=0;
         const lap=newLap();let clock=0;
         const start=route.gates[0],before=start.p.map((v,i)=>v-start.n[i]*2);
@@ -96,7 +96,7 @@ test('saved demo neon guides clear baked scenery along every segment, including 
           advanceLap(lap,points[i-1],points[i],clock,clock+=100,route.gates);
         }
         assert.equal(lap.completed,1,`${map.id}/${route.id}: following the saved line must complete a lap`);
-        if(map.kind!=='playground'){
+        if(!['playground','gym'].includes(map.kind)){
           assert.ok(length>1250,`${map.id}/${route.id}: full-length course`);
           assert.ok(route.gates.length>=(route.aircraftKinds?.includes("fixedWing")?12:20));
           for(const [i,g]of route.gates.entries()){

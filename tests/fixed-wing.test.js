@@ -87,7 +87,7 @@ test('route selection preserves old drone preferences and isolates airplane cour
   assert.equal(selectAircraftRoute(park,quad,'wing_1').routeId,'race_1');assert.equal(selectAircraftRoute(park,config,'race_1').routeId,'wing_1');
   assert.equal(routePreferenceKey(park,quad),'selected-race-liget');assert.equal(routePreferenceKey(park,config),'selected-race-liget-fixedWing');
   assert.equal(selectAircraftRoute(catalog.maps.find(m=>m.id==='jatszoter'),config).gates.length,0);
-  for(const map of catalog.maps.filter(m=>m.kind!=='playground')){
+  for(const map of catalog.maps.filter(m=>!['playground','gym'].includes(m.kind))){
     assert.equal(aircraftRoutes(map,config).length,2);
     assert.equal(aircraftRoutes(map,quad).length,map.kind==='circuit'?2:3);
     assert.equal(selectAircraftRoute(map,config,'race_1').routeId,'wing_1');

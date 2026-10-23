@@ -47,6 +47,7 @@ export function backdropTerrainMaterial(source,inner) {
   return m;
 }
 export function createWorldBackdrop(scene,map,worldRoot) {
+  if(map.kind==='gym')return {dispose(){}};
   const profile=BACKDROP_PROFILES[map.kind]??BACKDROP_PROFILES.construction;
   const rng=random(profile.seed),half=map.size/2,root=new THREE.Group();
   root.name='Distant_world_'+map.id;root.userData.sceneryOnly=true;

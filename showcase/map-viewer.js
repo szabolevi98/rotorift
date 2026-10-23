@@ -9,6 +9,7 @@ import { PARK_VIEW_DISTANCE } from "../web/game/park-terrain.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
 import { PARK_GARDEN, PARK_POCKET, parkSurfaceHeight } from "../shared/world/park-layout.js";
 import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
+import { GYM_VIEW_DISTANCE } from "../shared/world/gym-layout.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
 import { validateRoute } from "../shared/race/routes.js";
@@ -90,7 +91,15 @@ const CIRCUIT_VIEWS={
   esses:['Technical S bends and hairpin',[215,90,-92],[115,1,-130]],
   village:['Fan village and visitor parking',[270,60,357],[100,3,280]],
 };
-const viewsFor=map=>map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
+const GYM_VIEWS={
+  overview:['Inside the gymnasium',[10,6.2,17],[-2,1.5,-3]],
+  equipment:['Vault and parallel bars',[-9,3.5,2],[1,1,-4]],
+  rings:['Training rings',[9,3.8,13],[6,2.5,8]],
+  arch:['Foam arch and benches',[-8,1.6,12],[-5,1,5]],
+  wallbars:['Wall bars and landing mats',[-3,4,-14],[-10,1.8,-4]],
+  court:['Court and roof trusses',[0,5,17],[0,3,-12]],
+};
+const viewsFor=map=>map.kind==='gym'?GYM_VIEWS:map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");
@@ -183,9 +192,9 @@ export async function startMapViewer(embeddedCatalog) {
       map=maps.find(m=>m.id===id)??maps[0];scene=new THREE.Scene();world=new RAPIER.World({x:0,y:-9.81,z:0});
       atmosphere=createMapAtmosphere(renderer,scene,map.kind);
       environment=buildEnvironment(scene,world,RAPIER,withoutRaceRoute(map));
-      camera.far=map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
-      shadows=new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
-      $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=`${map.size} × ${map.size} m`;
+      camera.far=map.kind==='gym'?GYM_VIEW_DISTANCE:map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
+      shadows=map.kind==='gym'?null:new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
+      $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=map.kind==='gym'?'24 × 40 × 9 m':`${map.size} × ${map.size} m`;
       const views=viewsFor(map);
       $("#view-select").replaceChildren(...Object.entries(views).map(([id,view])=>new Option(view[0],id)));
       $("#route-select").replaceChildren(...map.routes.map(route=>new Option(route.name,route.id)));
@@ -291,5 +300,5 @@ export async function startMapViewer(embeddedCatalog) {
   }).observe(viewport);
   await RAPIER.init();
   const params=new URLSearchParams(location.search);await selectMap(params.get("map")??"liget",params.get("route"));
-  renderer.setAnimationLoop(()=>{if(!active||document.hidden||busy||!scene)return;controls.update();environment.update(controls.target.toArray());environment.renderTraffic?.(performance.now()/1000,0);shadows.update({dynamic:environment.dynamicTraffic});renderer.render(scene,camera);});
+  renderer.setAnimationLoop(()=>{if(!active||document.hidden||busy||!scene)return;controls.update();environment.update(controls.target.toArray());environment.renderTraffic?.(performance.now()/1000,0);shadows?.update({dynamic:environment.dynamicTraffic});renderer.render(scene,camera);});
 }

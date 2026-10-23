@@ -9,7 +9,7 @@ export function makeGuideClearance(world,RAPIER,radius=.4){
 export function generateRaceGuide(world,RAPIER,map,gates){
   const enabled=new Map();world.colliders.forEach(c=>{enabled.set(c.handle,c.isEnabled());c.setEnabled(true);});
   world.step();
-  try{return planRaceGuide(gates,makeGuideClearance(world,RAPIER,map.kind==='playground'?.18:.45),
-    {step:map.kind==='playground'?.8:2,boundary:map.size/2});}
+  try{return planRaceGuide(gates,makeGuideClearance(world,RAPIER,['playground','gym'].includes(map.kind)?.18:.45),
+    {step:['playground','gym'].includes(map.kind)?.8:2,boundary:map.size/2});}
   finally{world.colliders.forEach(c=>c.setEnabled(enabled.get(c.handle)));world.step();}
 }

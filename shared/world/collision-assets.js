@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-d4d67e5a7ef8d68a.rrc",
     "mapVersion": 3,
-    "sourceHash": "ef8a0595213553de9610a2ffe63353f637d87b99e23fc400713f6293c4a080e9",
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
     "records": 3927,
     "rawBytes": 7088036,
     "bytes": 2988034
@@ -11,7 +11,7 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-369218137557891a.rrc",
     "mapVersion": 3,
-    "sourceHash": "ef8a0595213553de9610a2ffe63353f637d87b99e23fc400713f6293c4a080e9",
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
     "records": 8301,
     "rawBytes": 7557396,
     "bytes": 1891952
@@ -19,7 +19,7 @@ export const COLLISION_ASSETS = {
   "jatszoter": {
     "url": "/assets/collisions/jatszoter-acb789a99b3c2c5e.rrc",
     "mapVersion": 2,
-    "sourceHash": "ef8a0595213553de9610a2ffe63353f637d87b99e23fc400713f6293c4a080e9",
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
     "records": 880,
     "rawBytes": 170156,
     "bytes": 18910
@@ -27,7 +27,7 @@ export const COLLISION_ASSETS = {
   "skyline": {
     "url": "/assets/collisions/skyline-4af51e55c63c8015.rrc",
     "mapVersion": 2,
-    "sourceHash": "ef8a0595213553de9610a2ffe63353f637d87b99e23fc400713f6293c4a080e9",
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
     "records": 3110,
     "rawBytes": 622528,
     "bytes": 55638
@@ -35,9 +35,17 @@ export const COLLISION_ASSETS = {
   "apex": {
     "url": "/assets/collisions/apex-a2b80a2964cd8419.rrc",
     "mapVersion": 3,
-    "sourceHash": "ef8a0595213553de9610a2ffe63353f637d87b99e23fc400713f6293c4a080e9",
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
     "records": 1144,
     "rawBytes": 262960,
     "bytes": 66668
+  },
+  "gym": {
+    "url": "/assets/collisions/gym-8f28fb02d8ce7450.rrc",
+    "mapVersion": 1,
+    "sourceHash": "3db04b1a851508ff8db8bf27989de03d8b48ba766ff72c9909512bf64e7eaebc",
+    "records": 453,
+    "rawBytes": 117676,
+    "bytes": 12463
   }
 };

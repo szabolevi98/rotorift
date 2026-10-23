@@ -16,6 +16,7 @@ import { MapBoundary } from "/shared/world/boundary.js";
 import { PARK_VIEW_DISTANCE } from "./park-terrain.js";
 import { ParkShadows } from "./park-shadows.js";
 import { configureDroneRenderer } from "/shared/visual/drone-rendering.js";
+import { GYM_VIEW_DISTANCE } from "../../shared/world/gym-layout.js";
 import { createMapAtmosphere } from "./map-atmosphere.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "./construction.js";
 import { RemoteCollisions } from "./remote-collisions.js";
@@ -112,7 +113,7 @@ export class Flight {
     this.soundAircraftId=config.id;
     this.map = map;
     this.boundary = new MapBoundary(map);
-    this.camera.far = map.kind === "playground" ? PLAYGROUND_VIEW_DISTANCE : map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
+    this.camera.far = map.kind === "gym" ? GYM_VIEW_DISTANCE : map.kind === "playground" ? PLAYGROUND_VIEW_DISTANCE : map.kind === "park" ? PARK_VIEW_DISTANCE : CONSTRUCTION_VIEW_DISTANCE;
     this.camera.updateProjectionMatrix();
     this.atmosphere = createMapAtmosphere(this.renderer, this.scene, map.kind);
     this.sun.visible = false;
@@ -137,7 +138,7 @@ export class Flight {
     this.previous = this.physics.pose;
     this.current = this.physics.pose;
     this.place(this.current, 1);
-    this.parkShadows = new ParkShadows(this.scene, this.camera, this.atmosphere.profile);
+    this.parkShadows = map.kind === "gym" ? null : new ParkShadows(this.scene, this.camera, this.atmosphere.profile);
     this.active = true;
     return true;
   }

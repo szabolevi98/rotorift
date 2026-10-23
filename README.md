@@ -57,7 +57,7 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 ## Aircraft and maps
 
-Fleet snapshot: **2026-10-20 — six drones, three airplanes and five maps**.
+Fleet snapshot: **2026-10-23 — six drones, three airplanes and six maps**.
 The Apex Circuit expansion is included in the 2026-10-20 release.
 Counts describe that date and may grow; the runtime catalog comes from
 `data/drones/`, `data/airplanes/` and `data/maps/`. See the
@@ -116,6 +116,10 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
   frames, cranes, earthworks, construction vehicles, materials and a hangar.
 - **Playground:** an 84 × 84 m practice area for the 65/75 whoops, with a climbing
   fort, swings, a cube climber, timber tunnel and playhouse.
+- **Gymnasium:** a closed 24 × 40 × 9 m indoor hall for 65/75 whoops, with
+  parquet court markings, wall bars, vaults, parallel bars, training hoops,
+  foam obstacles, benches, bleachers and basketball/handball goals. Includes
+  an easy 9-gate loop and a 16-gate apparatus run. See [Gymnasium](docs/gymnasium.md).
 - **Skyline:** a 600 × 600 m city district with brick buildings, stepped skyscrapers
   and a central tower reaching 244 m. Fly through its covered podium passage, elevated skywalk,
   five-level parking garage and alleys. Rooftop water tanks, equipment, fire escapes,
@@ -131,7 +135,7 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
 
-Each map has an inexpensive, world-space background beyond the playable boundary:
+Each outdoor map has an inexpensive, world-space background beyond the playable boundary:
 wooded foothills and layered mountains, suburban rooftops around Playground,
 a low-rise city fringe for Skyline, and an industrial estate beyond Concrete Yard.
 The shared backdrop uses at most six batches and 36,000 triangles, without new textures,
@@ -404,6 +408,8 @@ the start/finish gate:
 | Skyline | Boulevard Low Run · airplanes | 1.35 km | 26 | Low street canyons at 16–22 m, with 55 m radius street-corner turns |
 | Playground | Pocket Circuit | 0.15 km | 7 | Short micro-drone circuit |
 | Playground | Pocket Gauntlet | 0.18 km | 29 | Technical micro course through the tunnel, swings, fort, cage cells, roof dive and playhouse |
+| Gymnasium | Warm-up Circuit | 0.07 km | 9 | Roomy indoor court loop |
+| Gymnasium | Apparatus Run | 0.08 km | 16 | Foam arch, vault, parallel bars and suspended training hoop |
 | Apex Circuit | GT Chase | 2.21 km | 30 | Follow the GT cars through double S bends and an infield return |
 | Apex Circuit | Pit Lane Run | 2.62 km | 34 | Clubhouse breezeway, media tower, low pit lane detour and fly-under bridge |
 | Apex Circuit | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
