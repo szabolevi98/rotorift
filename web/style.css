@@ -233,6 +233,7 @@ h2 {
 .simulation-row > span { margin: 0; }
 .simulation-copy { flex: 1; min-width: 0; }
 .simulation-description { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.simulation-description[data-sim-description="airmode"] { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .simulation-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--orange); }
 .simulation-row select { width: 150px; padding: 6px 8px; }
 .simulation-row:has(:disabled) { opacity: 0.65; }
