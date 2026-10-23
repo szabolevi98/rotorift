@@ -232,6 +232,20 @@ h2 {
 .simulation-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin: 12px 0 0; font-size: 12px; }
 .simulation-row > span { margin: 0; }
 .simulation-copy { flex: 1; min-width: 0; }
+.simulation-copy > .simulation-caption { display: inline; margin: 0; font: inherit; cursor: pointer; }
+.simulation-row > .simulation-info { display: none; }
+.simulation-popover { position: fixed; inset: auto 16px 20px; width: min(360px, calc(100vw - 32px)); box-sizing: border-box; margin: 0 auto; padding: 20px 48px 20px 20px; border: 1px solid #ffffff30; border-radius: 10px; background: #1b1e24; color: #f1f3f5; box-shadow: 0 12px 45px #0008; }
+.simulation-popover strong { font-size: 13px; }
+.simulation-popover p { margin: 10px 0 0; font-size: 12px; line-height: 1.6; color: #bec6ce; }
+.simulation-popover > .simulation-info-close { position: absolute; top: 4px; right: 4px; width: 40px; height: 40px; padding: 0; border: 0; background: transparent; color: #f1f3f5; font-size: 24px; }
+@media (max-width: 700px), (hover: none) and (pointer: coarse) {
+  #menu #flight-simulation, #menu #lobby-simulation { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
+  #menu .simulation-dock .simulation-row:has(.simulation-info) { flex-wrap: nowrap; min-height: 48px; padding: 6px 10px; }
+  #flight-simulation .simulation-copy .simulation-caption { overflow-wrap: normal; }
+  .simulation-row .simulation-copy .simulation-description { display: none; }
+  .simulation-row > .simulation-info { display: grid; place-items: center; flex: none; width: 32px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 18px; }
+  .simulation-row > .simulation-info:hover, .simulation-row > .simulation-info[aria-expanded="true"] { color: var(--orange); background: #ff664812; }
+}
 .simulation-description { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.4; }
 .simulation-description[data-sim-description="airmode"] { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .simulation-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--orange); }

@@ -195,7 +195,8 @@ function createSimulationControls() {
   for (const id of ["flight-simulation", "lobby-simulation"]) {
     const root = $("#" + id);
     for (const key of ["battery", "propDamage", "propwash", "airmode", "ghost", "wind"]) {
-      const label = node("label", "simulation-row"), caption = node("span");
+      const hasDescription = ["battery", "propDamage", "propwash", "airmode"].includes(key);
+      const label = node(hasDescription ? "div" : "label", "simulation-row"), caption = node(hasDescription ? "label" : "span", "simulation-caption");
       caption.dataset.simLabel = key;
       const input = node(key === "wind" ? "select" : "input");
       input.dataset.simOption = key;
@@ -214,12 +215,23 @@ function createSimulationControls() {
         }
         refreshSimulationControls();refreshGhostChoices();
       };
-      if (["battery", "propDamage", "propwash", "airmode"].includes(key)) {
+      if (hasDescription) {
         const copy = node("span", "simulation-copy"), description = node("small", "simulation-description");
+        caption.htmlFor = input.id;
         description.id = input.id + "-description";
         description.dataset.simDescription = key;
         input.setAttribute("aria-describedby", description.id);
-        copy.append(caption, description); label.append(copy, input);
+        const help = node("button", "simulation-info", "ⓘ"), popup = node("div", "simulation-popover");
+        const title = node("strong"), text = node("p"), close = node("button", "simulation-info-close", "×");
+        help.type = close.type = "button";
+        popup.id = input.id + "-help"; title.id = popup.id + "-title";
+        popup.setAttribute("popover", "auto"); popup.setAttribute("role", "dialog");
+        popup.setAttribute("aria-labelledby", title.id);
+        help.setAttribute("popovertarget", popup.id); help.setAttribute("aria-expanded", "false");
+        close.setAttribute("popovertarget", popup.id); close.setAttribute("popovertargetaction", "hide");
+        popup.addEventListener("toggle", event => help.setAttribute("aria-expanded", String(event.newState === "open")));
+        popup.append(title, text, close);
+        copy.append(caption, description); label.append(copy, help, input, popup);
       } else label.append(caption, input);
       root.append(label);
     }
@@ -243,10 +255,16 @@ function refreshSimulationControls() {
       input.parentElement.querySelector("[data-sim-label]").textContent = t("simulation." + key);
       const description = input.parentElement.querySelector("[data-sim-description]");
       if (description) {
+        const name = t("simulation." + key), help = input.parentElement.querySelector(".simulation-info"), popup = input.parentElement.querySelector(".simulation-popover");
+        if (popup.matches(":popover-open")) popup.hidePopover();
         input.setAttribute("aria-label", t("simulation." + key));
         description.textContent = t(key === "propwash"
           ? "simulation.propwash." + (mixed ? "mixedHint" : isFixedWing(aircraft) ? "airplaneHint" : "droneHint")
           : "simulation." + key + "Hint");
+        help.setAttribute("aria-label", name + " · " + t("route.details"));
+        popup.querySelector("strong").textContent = name;
+        popup.querySelector("p").textContent = description.textContent;
+        popup.querySelector("button").setAttribute("aria-label", t("route.close"));
       }
       if (key === "wind") {
         input.value = view.options.wind;
