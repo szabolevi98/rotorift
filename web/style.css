@@ -870,6 +870,25 @@ footer {
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
+#water-recovery {
+  position: fixed;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100% - 40px);
+  padding: 22px 30px;
+  border: 1px solid #ff715b99;
+  border-radius: 12px;
+  background: #111820ed;
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  z-index: 12;
+  box-shadow: 0 12px 50px #0006;
+}
+#water-recovery strong { display: block; color: #ffab99; font-size: 24px; margin-bottom: 10px; }
+#water-recovery span { display: block; font-size: 13px; line-height: 1.5; }
 #notice {
   position: fixed;
   bottom: 25px;

@@ -6,13 +6,13 @@ export const validRotorSpeeds = value => Array.isArray(value) && value.length===
   value.every(v=>Number.isFinite(v)&&v>=0&&v<=1);
 
 export class RotorMotion {
-  constructor(count=4, maxAngularSpeed=22) { this.count=count;this.maxAngularSpeed=maxAngularSpeed;this.reset(); }
+  constructor(count=4, maxAngularSpeed=22, speedExponent=1) { this.count=count;this.maxAngularSpeed=maxAngularSpeed;this.speedExponent=speedExponent;this.reset(); }
   reset() { this.phase = Array(this.count).fill(0); this.speed = Array(this.count).fill(0); this.fraction = Array(this.count).fill(0); }
   update(dt, thrust, maximum, motors, running, reverse=false) {
     for (let i=0;i<this.count;i++) {
       const fraction = running && maximum>0 ? Math.sqrt(Math.max(0,Math.min(1,Math.abs(thrust[i])/maximum))) : 0;
       this.fraction[i] = fraction;
-      this.speed[i] = fraction * this.maxAngularSpeed * motors[i].direction * (reverse?-1:1);
+      this.speed[i] = fraction ** this.speedExponent * this.maxAngularSpeed * motors[i].direction * (reverse?-1:1);
       this.phase[i] = (this.phase[i] + Math.min(dt,.1) * this.speed[i]) % (Math.PI*2);
     }
   }
@@ -20,7 +20,9 @@ export class RotorMotion {
 
 export class RemoteRotorMotion extends RotorMotion {
   constructor(model, config) {
-    super(); this.config=config; this.props=[];
+    // Make small attitude corrections readable without increasing full-speed
+    // motion into display-rate aliasing. Audio/network retain the motor fraction.
+    super(4,22,.5); this.config=config; this.props=[];
     model.traverse(object=>{if(object.userData.propeller)this.props.push(object);});
   }
   updatePlayer(dt, player) {

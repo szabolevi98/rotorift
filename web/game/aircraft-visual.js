@@ -1,4 +1,5 @@
 import { isFixedWing } from "../../shared/aircraft/capabilities.js";
+import { motorThrustLimit } from "../../shared/physics/propulsion.js";
 import {
   validAirplaneAnimation,
   stoppedAirplaneAnimation,
@@ -29,15 +30,19 @@ class QuadVisual {
       physics.effects.propellers.phase[prop.userData.motorIndex] =
         prop.userData.phaseOffset;
   }
-  update(dt, physics) {
+  update(dt, physics, input = {}) {
     this.damage.update(physics.effects.propellers.blades);
+    // Hide idle at zero throttle and centred sticks. When steering, expose
+    // the individual motor corrections above idle instead of a constant crawl.
+    const idle = physics.turtleMode ? 0 : motorThrustLimit(this.config) * (physics.effects.powerFactor ?? 1) * .012;
+    const thrust = physics.motorThrust.map(value => Math.abs(value) > idle + 1e-6 ? Math.abs(value) - idle : 0);
     this.motion.update(
       dt,
-      physics.motorThrust,
-      this.config.motor.maxThrustN,
+      thrust,
+      this.config.motor.maxThrustN - idle,
       this.config.motors,
-      // Armed idle and airmode mixing can drive motors at zero stick throttle.
-      physics.armed,
+      physics.armed && (physics.turtleMode || input.throttle > 0 ||
+        ['roll','pitch','yaw'].some(axis => Math.abs(input[axis]) > .015)),
       physics.turtleMode,
     );
     for (const prop of this.motion.props)

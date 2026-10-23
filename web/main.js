@@ -13,6 +13,8 @@ import { AutoArm } from "./input/auto-arm.js";
 import { Network } from "./net/client.js";
 import { Preview } from "./game/preview.js";
 import { Flight } from "./game/flight.js";
+import { WaterRecovery } from './game/water-recovery.js';
+import { stopWaterDamagedAircraft } from '/shared/world/water-hazards.js';
 import { LoadingScreen, paintLoading } from "./loading.js";
 import { FlightHelp } from "./game/flight-help.js";
 import { PauseMenu } from "./game/pause-menu.js";
@@ -58,6 +60,7 @@ function mapName(value) {
 const loading = new LoadingScreen(t);
 const routeDetails = new RouteDetails($('#route-summary'), t);
 const autoArm = new AutoArm(read("auto-arm", true) !== false);
+const waterRecovery = new WaterRecovery($('#water-recovery'),t);
 const fpvOsd = new FpvOsd($("#fpv-horizon"));
 const propellerHud = new PropellerHud($("#damage-hud"),t);
 const splitDelta = new SplitDeltaHud($('#split-delta'),t);
@@ -393,10 +396,20 @@ function action(kind, currentInput = input) {
   }
 }
 function resetAircraft() {
+  waterRecovery.clear();
   localGhostRecorder.clear();
   controller.clear(); lap = newLap(lap); splitDelta.hide();
   if (room) { autoArm.cancel(); network.send("reset"); }
   else { flight.reset(); autoArm.reset(); }
+}
+function beginWaterRecovery(reason, pose = null) {
+  flight.waterImpact=reason;flight.waterResetPending=true;
+  stopWaterDamagedAircraft(flight.physics,reason);
+  autoArm.cancel();controller.clear();flight.mute();
+  waterRecovery.start(reason,performance.now(),pose);
+}
+function applyServerReset(pose) {
+  waterRecovery.clear();flight.reset(pose.p,pose);autoArm.reset();controller.clear();
 }
 function recordKey(
   m = flight.map,
@@ -1041,11 +1054,9 @@ function receive(m) {
     }
   }
   if (m.type === "reset") {
-    flight.reset(m.pose.p,m.pose);
-    autoArm.reset();
-    controller.clear();
+    if (["water","fountain"].includes(m.reason)) beginWaterRecovery(m.reason,m.pose);
+    else applyServerReset(m.pose);
     if (m.reason === "boundary") notice(t("hud.boundaryReset"));
-    if (["water","fountain"].includes(m.reason)) notice(t("hud.waterReset"));
   }
   if (m.type === "lap" && (!m.runId || m.runId === room?.runId)) {
     if(m.valid&&m.replay)keepPersonalGhost(m.ms,m.replay);
@@ -1501,14 +1512,19 @@ function frame(now) {
       }
     }, diagnosticSample);
     if(flight.waterImpact&&!flight.waterResetPending) {
-      flight.waterResetPending=true;
-      resetAircraft();notice(t('hud.waterReset'));
+      beginWaterRecovery(flight.waterImpact);
     }
     if(diagnosticSample)diagnosticSample.droppedMs=Math.max(0,elapsed-.1)*1000;
-    if (!room && flight.boundary.update(flight.physics.pose.p, elapsed)) {
+    if (!room && !flight.waterImpact && flight.boundary.update(flight.physics.pose.p, elapsed)) {
       action("reset");
       notice(t("hud.boundaryReset"));
     }
+  }
+  if(!playing||!flight.active||!flight.waterImpact)waterRecovery.clear();
+  const waterReset=waterRecovery.update(now);
+  if(waterReset) {
+    if(waterReset.pose)applyServerReset(waterReset.pose);
+    else resetAircraft();
   }
   if (playing && flight.physics && room?.phase === "flying" && !flight.waterResetPending && now - sendAt >= 50) {
     network.state(

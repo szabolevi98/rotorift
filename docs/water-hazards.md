@@ -12,8 +12,11 @@ area an invisible obstacle. Dry banks, bridges, high overflight and gaps between
 streams remain usable. Broad bounds reject distant water before detailed checks.
 
 In Flight, contact disarms the aircraft, clears all motor thrust and disables
-turtle mode before any lap crossing is processed. The main loop immediately
-uses the normal reset action and displays a translated water-contact notice.
+turtle mode before any lap crossing is processed. A central translated notice
+identifies water or fountain contact and the stopped motor for 1.8 seconds before
+the normal reset returns the aircraft to launch. Physics and lap timing remain
+stopped during this interval. Server-detected impacts use the same notice before
+applying the received reset pose. A manual reset or leaving flight clears it.
 Online state sending pauses until the reset acknowledgement, avoiding stale
 water poses after a reset request. Normal reset clears the crash state and uses
 the existing low-throttle auto-arm interlock.

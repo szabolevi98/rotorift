@@ -6,7 +6,7 @@ import {throttleToThrust,motorThrustLimit} from '../shared/physics/propulsion.js
 import {loadCatalog} from '../server/catalog.js';
 const {drones}=await loadCatalog();
 test('turtle rotors reverse their normal directions, with only the powered pair moving locally and remotely',()=>{
-  const config=drones.at(-1),motion=new RotorMotion();
+  const config=drones.at(-1),motion=new RemoteRotorMotion(new THREE.Group(),config);
   motion.update(1/60,[-.25,0,-1,0],1,config.motors,true,true);
   assert.deepEqual(motion.fraction,[.5,0,1,0]);
   for(const i of [0,2])assert.equal(Math.sign(motion.speed[i]),-config.motors[i].direction);

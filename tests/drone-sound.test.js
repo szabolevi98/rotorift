@@ -58,7 +58,7 @@ test('motor-specific demands, stopped motors, disarm, sound off and camera view 
   sound.dispose();
 });
 
-test('zero-throttle armed idle and airmode drive local propellers, sound and multiplayer motor speeds',async()=>{
+test('zero-throttle balanced idle is hidden but airmode corrections drive propellers, sound and multiplayer',async()=>{
   await RAPIER.init();
   const {drones}=await loadCatalog();
   for(const config of drones){
@@ -76,20 +76,24 @@ test('zero-throttle armed idle and airmode drive local propellers, sound and mul
       visual.bindPhysics(physics);physics.armed=true;
       for(let i=0;i<60;i++)physics.step(input);
       visual.update(1/60,physics,input);
-      assert.ok(visual.motorSpeeds.every(v=>v>0),config.id+': idle must rotate');
+      assert.deepEqual(visual.motorSpeeds,[0,0,0,0],config.id+': balanced idle stays visually stopped');
       sound.update(visual.motorSpeeds,{armed:true});
-      assert.ok(last(sound.master.gain)>0);
+      assert.equal(last(sound.master.gain),0);
       const idleLevels=sound.rotors.map(r=>last(r.gain.gain));
       const before=[...visual.motion.phase];
-      physics.step({...input,roll:1});visual.update(1/60,physics,input);
-      assert.ok(visual.motion.phase.every((phase,i)=>phase!==before[i]));
+      const steering={...input,roll:1};
+      physics.step(steering);visual.update(1/60,physics,steering);
+      assert.ok(visual.motion.phase.some((phase,i)=>phase!==before[i]));
       assert.ok(Math.max(...visual.motorSpeeds)-Math.min(...visual.motorSpeeds)>.01);
+      assert.ok(Math.max(...visual.motion.speed.map(Math.abs))>4,'correction must be clearly visible');
       sound.update(visual.motorSpeeds,{armed:true});
       assert.ok(sound.rotors.some((r,i)=>last(r.gain.gain)>idleLevels[i]));
       const state=visual.networkState(physics,false);
       remote.updateRemote(1/60,{...state,resetId:1});
       assert.deepEqual(remote.motorSpeeds,visual.motorSpeeds);
       assert.deepEqual(visual.networkState(physics,true).rotorSpeeds,[0,0,0,0]);
+      visual.update(1/60,physics,input);
+      assert.deepEqual(visual.motorSpeeds,[0,0,0,0],'centred sticks at zero throttle hide idle again');
       physics.armed=false;visual.update(1/60,physics,input);
       sound.update(visual.motorSpeeds,{armed:false});
       assert.deepEqual(visual.motorSpeeds,[0,0,0,0]);assert.equal(last(sound.master.gain),0);
