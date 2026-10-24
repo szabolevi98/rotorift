@@ -16,6 +16,7 @@ import { PilotPositionPicker } from '../web/game/pilot-position.js';
 import { DronePhysics } from '../shared/physics/drone.js';
 import { hoverThrottle } from '../shared/physics/propulsion.js';
 import { makeGuideClearance } from '../web/game/route-guide-planner.js';
+import { gateBasis } from '../shared/race/gates.js';
 await RAPIER.init();
 const catalog=await loadCatalog(),map=catalog.maps.find(m=>m.id==='harbor');
 const drone=catalog.drones.find(c=>c.id==='rift-x5'),plane=catalog.airplanes.find(c=>c.id==='rift-t15');
@@ -44,7 +45,7 @@ for(const prepared of [false,true])test(`${prepared?'prepared':'source'} harbor:
   }else{
     environment=buildHarbor(scene,world,RAPIER,map);
     assert.ok(environment.root.userData.batches<55,'shared instance batches, not a draw call per container');
-    assert.ok(environment.root.userData.colliders<2000);
+    assert.ok(environment.root.userData.colliders<3200,'cargo uses simple local contact shapes');
     assert.ok(environment.root.getObjectByName('Container_ship_closed_hull'));
     const outline=environment.root.getObjectByName('Landward_coastal_hills');
     assert.ok(outline.geometry.attributes.normal.getY(500)>.1,'hills have a visible upward-facing terrain surface');
@@ -69,6 +70,19 @@ for(const prepared of [false,true])test(`${prepared?'prepared':'source'} harbor:
     }
     for(const config of catalog.airplanes){
       const p=aircraftLaunch(config,{...map,gates:[]}).p;assert.ok(clear(p,p),'free-flight airplane starts in clear air');
+    }
+    for(const route of map.routes){
+      const routeClear=makeGuideClearance(world,RAPIER,route.aircraftKinds.includes('fixedWing')?1.25:.45);
+      if(route.aircraftKinds.includes('fixedWing'))assert.ok(routeClear(route.spawn,route.gates[0].p),route.name+': launch approach stays open');
+      for(const [leg,points]of route.guide.entries())for(let i=1;i<points.length;i++)
+        assert.ok(routeClear(points[i-1],points[i]),`${route.name}: cargo must clear guide ${leg+1}/${i}`);
+      for(const [i,g]of route.gates.entries()){
+        const {right,up}=gateBasis(g.n),q=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+          new THREE.Vector3(...right),new THREE.Vector3(...up),new THREE.Vector3(...g.n)));
+        const p=new THREE.Vector3(...g.p).addScaledVector(new THREE.Vector3(...g.n),-2);
+        assert.equal(world.castShape(p,q,new THREE.Vector3(...g.n).multiplyScalar(4),
+          new RAPIER.Cuboid(g.width/2+.07,g.height/2+.07,.07),0,1,true),null,`${route.name}: gate ${i+1} and approach stay open`);
+      }
     }
     const picker=new PilotPositionPicker(RAPIER,world,map,harborSurfaceHeight);
     assert.equal(picker.surfaceAt(300,0,50),null,'pilot cannot stand on the ocean');

@@ -13,6 +13,15 @@ Vessels, cranes and vehicles are stationary in this release. Harbor rooms requir
 protocol 8 so cached older clients refresh instead of rendering a different
 environment. The other maps retain their existing compatibility rules.
 
+Scenery revision 2 (2026-10-24) fills the piers with a covered cargo shed,
+steel stock, export containers, palletized freight and forklifts. A six-tank
+storage compound, warehouse racks and loading docks, freight trailers, a
+fenced entrance, gatehouse, staff parking, equipment depot and timber export
+yard give the landward yard distinct working areas. A small moored workboat sits
+beside the quay. Container banks
+are wider, while all four published routes, their guide lines and launch slots
+remain unchanged. Showcase viewpoints include the new freight and tank areas.
+
 | Route | Length | Gates | Aircraft | Difficulty |
 | --- | --- | --- | --- | --- |
 | Waterfront Flow | 1.98 km | 24 | Quads | Easy |
@@ -37,8 +46,8 @@ collider. Touching the sea uses the existing water shutdown notice and delayed
 reset for both drones and airplanes, regardless of optional propeller damage.
 Pilots cannot stand on the water; the ship's bow deck is valid footing.
 
-`web/game/harbor.js` and `harbor-parts.js` build batched static visuals and the
-collision source. Corrugated container ribs use a shared procedural texture;
+`web/game/harbor.js`, `harbor-details.js` and `harbor-parts.js` build batched static
+visuals and the collision source. Corrugated container ribs use a shared procedural texture;
 door bars, hinges, crane braces, rails and ropes use geometry. Most contact
 shapes remain analytic; the ship's closed hull and solid deck use small triangle
 meshes. Ocean shading animates only surface normals and fades fine ripples in
@@ -56,5 +65,7 @@ generated study pages during a full showcase build.
 
 `tests/harbor.test.js` checks source and prepared contact geometry, water/shore
 agreement, launch slots, observer footing and an actual Rift X5 fly-through of
-the open container with prop damage enabled. Existing route, collision, catalogue,
+the open container with prop damage enabled. Both source and prepared geometry
+are checked against all saved gate frames, approaches and guide segments,
+including the 1.25 m airplane clearance envelope. Existing route, collision, catalogue,
 language and fixed-wing tests include Harbor as well.

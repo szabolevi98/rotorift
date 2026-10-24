@@ -106,6 +106,9 @@ const HARBOR_VIEWS={
   cranes:['Ship-to-shore gantry cranes',[145,95,250],[35,39,0]],
   containers:['Container lanes and open tunnels',[-25,30,290],[-125,7,205]],
   warehouse:['Inside the transit warehouse',[-300,10,115],[-300,9,10]],
+  freight:['Pier cargo shed and steel stock',[285,65,-260],[150,7,-190]],
+  tanks:['Tank farm and warehouse loading docks',[-430,65,-35],[-337,8,-92]],
+  workboat:['Moored harbor workboat',[135,16,-100],[108,3,-70]],
   lighthouse:['Breakwater and lighthouse',[375,48,390],[290,16,325]],
   launch:['Pilot bay and service court',[-230,22,362],[-285,6,280]],
 };

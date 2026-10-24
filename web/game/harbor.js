@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { harborParts } from './harbor-parts.js';
+import { buildHarborDetails } from './harbor-details.js';
 import { HARBOR, HARBOR_SHIP_OUTLINE, harborSurfaceHeight } from '../../shared/world/harbor-layout.js';
 
 function corrugation() {
@@ -87,7 +88,7 @@ export function buildHarbor(scene,world,RAPIER,map) {
   }
   // Yard markings and loading pads sit on distinct heights, not coplanar decals.
   for(const x of [-245,-215,-172,-112,-52,5])for(let z=-300;z<290;z+=12)box([.16,.012,6],[x,Y+.007,z],'paint',false);
-  for(const x of [-190,-130,-70])box([23,.06,405],[x,Y+.03,-5],'concrete');
+  for(const x of [-190,-130,-70])box([31,.06,405],[x,Y+.03,-5],'concrete');
   for(const z of [-305,285])box([440,.015,.16],[-180,Y+.009,z],'paint',false);
 
   const containerColors=['red','blue','teal','ochre','grey','green'];
@@ -111,11 +112,11 @@ export function buildHarbor(scene,world,RAPIER,map) {
       for(const x of [-1.15,1.15])for(const z of [-6.02,6.02])for(const y of [.12,2.48])box([.18,.18,.18],[x,y,z],'steelDark',false);
     });
   }
-  for(const [row,x]of [-190,-130,-70].entries())for(let group=0;group<6;group++){
-    const z=-180+group*70;
-    for(let column=0;column<5;column++)for(let deep=0;deep<2;deep++){
+  for(const [row,x]of [-190,-130,-70].entries())for(let group=0;group<10;group++){
+    const z=-190+group*39;
+    for(let column=0;column<9;column++)for(let deep=0;deep<2;deep++){
       const levels=1+(row+group+column+deep)%4;
-      for(let level=0;level<levels;level++)container([x+(column-2)*2.8,Y+.06+level*2.64,z+deep*13],containerColors[(row*3+group+column+level)%6]);
+      for(let level=0;level<levels;level++)container([x+(column-4)*2.8,Y+.06+level*2.64,z+deep*13],containerColors[(row*3+group+column+level)%6]);
     }
   }
   container([-120,Y,235],'teal',{open:true});container([-85,Y,235],'ochre',{open:true});
@@ -211,10 +212,10 @@ export function buildHarbor(scene,world,RAPIER,map) {
     }
     for(const z of [-d/2,d/2]){
       if(open){
-        const wing=(w-26)/2;
+        const wing=(w-26)/2,openingH=Math.min(10,wallH-1);
         for(const x of [-1,1])box([wing,wallH,.4],[x*(13+wing/2),wallH/2,z],color);
-        box([26,wallH-10,.4],[0,10+(wallH-10)/2,z],color);
-        for(const x of [-13,13])box([.5,10,.55],[x,5,z],'steel');
+        box([26,wallH-openingH,.4],[0,openingH+(wallH-openingH)/2,z],color);
+        for(const x of [-13,13])box([.5,openingH,.55],[x,openingH/2,z],'steel');
       }else{
         box([w,wallH,.4],[0,wallH/2,z],color);
         if(z>0)for(const x of [-w*.32,0,w*.32]){box([18,8,.12],[x,4,z+.26],'steelDark');box([16,1.4,.14],[x,6,z+.34],'glass',false);}
@@ -306,6 +307,7 @@ export function buildHarbor(scene,world,RAPIER,map) {
     box([14,.3,8],[0,4.1,0],'steelDark');box([9,.12,.7],[0,.65,1],'wood');
     for(const x of [-3,3])box([.14,.65,.5],[x,.325,1],'steel');
   });
+  buildHarborDetails(parts,{container,tractor,warehouse});
   parts.finish();parts.update(map.spawn);
   return {root,heightAt:harborSurfaceHeight,update:(p,v)=>parts.update(p,v),dispose:()=>parts.dispose()};
 }
