@@ -33,7 +33,10 @@ Scenery revision 4 joins the rear fence to both side boundaries, ending at the
 quay while retaining the entrance. A single flat, vertex-colored land surface
 replaces the adjoining oversized ground boxes, removing the long internal-face
 seams beyond the yard. The asphalt outline, ground height and race routes stay
-the same.
+the same. Water and land use a shared 128 m grid near the port, coarsening only
+in the distant scenery. This avoids giant triangles crossing the camera and
+clipping through logarithmic depth. The sea starts at the shoreline instead of
+overlapping the land underneath the yard.
 
 | Route | Length | Gates | Aircraft | Difficulty |
 | --- | --- | --- | --- | --- |

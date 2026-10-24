@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { harborParts } from './harbor-parts.js';
 import { buildHarborDetails } from './harbor-details.js';
 import { addHarborWoodland } from './harbor-background.js';
+import { makeHarborSurface } from './harbor-surfaces.js';
 import { HARBOR, HARBOR_SHIP_OUTLINE, harborSurfaceHeight } from '../../shared/world/harbor-layout.js';
 
 function corrugation() {
@@ -56,21 +57,12 @@ export function buildHarbor(scene,world,RAPIER,map) {
   part('box',[262144,15,262144],[-131012,Y-7.5,0],'asphalt',true,[0,0,0],false);
   // One top surface: adjacent giant boxes exposed their internal side faces as
   // long lines beyond the yard. All land triangles now share the same plane.
-  const landPositions=[],landColors=[],xs=[-262084,-410,60],zs=[-131072,-410,410,131072];
-  for(let xi=0;xi<2;xi++)for(let zi=0;zi<3;zi++){
-    const color=(xi===1&&zi===1?materials.asphalt:materials.grass).color;
-    for(const [x,z]of [[xs[xi],zs[zi]],[xs[xi],zs[zi+1]],[xs[xi+1],zs[zi]],
-      [xs[xi+1],zs[zi]],[xs[xi],zs[zi+1]],[xs[xi+1],zs[zi+1]]]){
-      landPositions.push(x,Y,z);landColors.push(color.r,color.g,color.b);
-    }
-  }
-  const landGeometry=new THREE.BufferGeometry();
-  landGeometry.setAttribute('position',new THREE.Float32BufferAttribute(landPositions,3));
-  landGeometry.setAttribute('color',new THREE.Float32BufferAttribute(landColors,3));landGeometry.computeVertexNormals();
+  const landGeometry=makeHarborSurface(-262084,HARBOR.shoreX,Y,(x,z)=>
+    (x>-410&&Math.abs(z)<410?materials.asphalt:materials.grass).color);
   const land=mesh(landGeometry,'land','Harbor_continuous_ground',false);land.castShadow=false;
   part('box',[262144,1,262144],[0,-12.5,0],'rock',true,[0,0,0],false);
   for(const r of [...HARBOR.piers,...HARBOR.breakwaters])box([r.width,15,r.depth],[r.x,Y-7.5,r.z],'concrete');
-  const seaGeometry=new THREE.PlaneGeometry(262144,262144);seaGeometry.rotateX(-Math.PI/2);
+  const seaGeometry=makeHarborSurface(HARBOR.shoreX,131072,HARBOR.waterY);
   const sea=new THREE.Mesh(seaGeometry,materials.water);sea.name='Harbor_open_sea';sea.receiveShadow=true;root.add(sea);
   const waveTime={value:0};
   materials.water.onBeforeCompile=shader=>{

@@ -49,6 +49,21 @@ for(const prepared of [false,true])test(`${prepared?'prepared':'source'} harbor:
     assert.ok(environment.root.getObjectByName('Container_ship_closed_hull'));
     const outline=environment.root.getObjectByName('Landward_coastal_hills');
     assert.ok(outline.geometry.attributes.normal.getY(500)>.1,'hills have a visible upward-facing terrain surface');
+    for(const name of ['Harbor_open_sea','Harbor_continuous_ground']){
+      const surface=environment.root.getObjectByName(name),p=surface.geometry.attributes.position;
+      const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+      for(let i=0;i<p.count;i+=3){
+        a.fromBufferAttribute(p,i);b.fromBufferAttribute(p,i+1);c.fromBufferAttribute(p,i+2);
+        const minX=Math.min(a.x,b.x,c.x),maxX=Math.max(a.x,b.x,c.x),minZ=Math.min(a.z,b.z,c.z),maxZ=Math.max(a.z,b.z,c.z);
+        if(name==='Harbor_open_sea')assert.ok(minX>=HARBOR.shoreX,'water never overlaps the land surface');
+        if(maxX>=-1024&&minX<=1024&&maxZ>=-1024&&minZ<=1024)
+          assert.ok(Math.max(a.distanceTo(b),b.distanceTo(c),c.distanceTo(a))<182,'no giant clipping-prone triangle near the port');
+      }
+      for(const [x,z]of name==='Harbor_open_sea'?[[60.01,-410],[128,0],[256,410],[700,-700]]:[[-410,-410],[-256,128],[59.99,410],[-900,-700]]){
+        const ray=new THREE.Raycaster(new THREE.Vector3(x,100,z),new THREE.Vector3(0,-1,0));
+        assert.ok(ray.intersectObject(surface,false).length,'surface remains closed across grid and yard seams');
+      }
+    }
   }
   try{
     world.colliders.forEach(c=>c.setEnabled(true));world.step();

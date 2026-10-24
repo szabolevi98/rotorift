@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-d4d67e5a7ef8d68a.rrc",
     "mapVersion": 3,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 3927,
     "rawBytes": 7088036,
     "bytes": 2988034
@@ -11,7 +11,7 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-369218137557891a.rrc",
     "mapVersion": 3,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 8301,
     "rawBytes": 7557396,
     "bytes": 1891952
@@ -19,7 +19,7 @@ export const COLLISION_ASSETS = {
   "jatszoter": {
     "url": "/assets/collisions/jatszoter-acb789a99b3c2c5e.rrc",
     "mapVersion": 2,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 880,
     "rawBytes": 170156,
     "bytes": 18910
@@ -27,7 +27,7 @@ export const COLLISION_ASSETS = {
   "skyline": {
     "url": "/assets/collisions/skyline-4af51e55c63c8015.rrc",
     "mapVersion": 2,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 3110,
     "rawBytes": 622528,
     "bytes": 55638
@@ -35,7 +35,7 @@ export const COLLISION_ASSETS = {
   "apex": {
     "url": "/assets/collisions/apex-a2b80a2964cd8419.rrc",
     "mapVersion": 3,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 1144,
     "rawBytes": 262960,
     "bytes": 66668
@@ -43,7 +43,7 @@ export const COLLISION_ASSETS = {
   "gym": {
     "url": "/assets/collisions/gym-8f28fb02d8ce7450.rrc",
     "mapVersion": 1,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 453,
     "rawBytes": 117676,
     "bytes": 12463
@@ -51,7 +51,7 @@ export const COLLISION_ASSETS = {
   "harbor": {
     "url": "/assets/collisions/harbor-2b17487eaaab2c75.rrc",
     "mapVersion": 4,
-    "sourceHash": "46e7b75a416c2d477f3d1a4f4f9d16c21db8bd20f4d74bc9a72f850f6cd878f8",
+    "sourceHash": "944d90f0b973ae8b5f0620a0b649749e504ec1766c612e1ffc4cbe9b7f92a466",
     "records": 2949,
     "rawBytes": 541316,
     "bytes": 51923
