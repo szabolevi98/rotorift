@@ -759,6 +759,30 @@ test('Apex traffic shares one immutable epoch and seed across eight pilots, late
  assert.deepEqual(restarted.traffic,traffic,'restarting a flight never teleports the traffic');
 });
 
+test('Harbor mixed flights require the shared map-capable protocol for pilots and spectators',async t=>{
+ const {client}=await fixture(t,{id:'harbor',kind:'harbor',size:800,spawn:[-280,3.15,305],gates:[],routes:[],racingEnabled:false},{countdownMs:5});
+ const legacy=await client('Cached harbor client','blue',{protocol:7});
+ legacy.send('create',{mapId:'harbor',droneId:'rift-x5',mode:'acro',kind:'free'});
+ assert.equal((await legacy.next(m=>m.type==='error')).code,'clientTooOld');
+ const host=await client('Harbor quad','coral',{protocol:8}),wing=await client('Harbor airplane','yellow',{protocol:8});
+ host.send('create',{mapId:'harbor',droneId:'rift-x5',mode:'acro',kind:'free'});
+ const created=(await host.next(m=>m.type==='room')).room;
+ assert.equal(created.mapId,'harbor');assert.equal(created.mixedAircraft,true);
+ legacy.send('join',{code:created.code});assert.equal((await legacy.next(m=>m.type==='error')).code,'clientTooOld');
+ legacy.send('spectate',{code:created.code});assert.equal((await legacy.next(m=>m.type==='error')).code,'clientTooOld');
+ legacy.send('list');assert.ok(!(await legacy.next(m=>m.type==='rooms')).rooms.some(r=>r.code===created.code));
+ wing.send('join',{code:created.code,droneId:'rift-a40',mode:'manual'});
+ const joined=(await wing.next(m=>m.type==='room'&&m.room.players.length===2)).room;
+ assert.equal(joined.players.find(p=>p.id===wing.id).droneId,'rift-a40');
+ assert.equal(joined.players.find(p=>p.id===host.id).droneId,'rift-x5');
+ host.send('ready',{ready:true});wing.send('ready',{ready:true});
+ await host.next(m=>m.type==='room'&&m.room.players.length===2&&m.room.players.every(p=>p.ready));host.send('start');
+ await wing.next(m=>m.type==='room'&&m.room.phase==='flying');
+ const viewer=await client('Harbor spectator','green',{protocol:8});viewer.send('spectate',{code:created.code});
+ const observed=(await viewer.next(m=>m.type==='room'&&m.room.spectators.length===1)).room;
+ assert.equal(observed.mapId,'harbor');assert.equal(observed.players.length,2);assert.equal(observed.phase,'flying');
+});
+
 test('multiplayer water contact resets the pilot, stops the rotors and clears the current lap',async t=>{
  const map={id:'test-route',kind:'park',size:800,spawn:[-180,2,-130],baseSpawn:[-180,2,-130],routes:[]};
  const {client}=await fixture(t,map,{countdownMs:5}),host=await client('Water pilot');

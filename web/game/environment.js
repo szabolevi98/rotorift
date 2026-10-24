@@ -6,6 +6,7 @@ import { buildPark } from "./park.js";
 import { parkSurfaceHeight } from "../../shared/world/park-layout.js";
 import { buildConstruction } from "./construction.js";
 import { buildPlayground } from "./playground.js";
+import { buildHarbor } from "./harbor.js";
 import { buildGym } from "./gym.js";
 import { buildCity } from "./city.js";
 import { createLaunchPad } from "./launch-pad.js";
@@ -13,15 +14,16 @@ import { createNeonGate, createRaceGuide, gateFrameParts } from "./race-course.j
 export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } = {}) {
   const root = new THREE.Group();
   scene.add(root);
-  let park, construction, playground, city, circuit, gym;
+  let park, construction, playground, city, circuit, gym, harbor;
   const staticWorld = bakedCollisions ? null : world;
   if (map.kind === "park") park = buildPark(scene, staticWorld, RAPIER, { ...map, gates: [], spawn: map.baseSpawn ?? map.spawn });
   else if(map.kind==="playground")playground=buildPlayground(scene,staticWorld,RAPIER,map);
+  else if(map.kind==="harbor")harbor=buildHarbor(scene,staticWorld,RAPIER,map);
   else if(map.kind==="gym")gym=buildGym(scene,staticWorld,RAPIER,map);
   else if(map.kind==="city")city=buildCity(scene,staticWorld,RAPIER,map);
   else if(map.kind==="circuit")circuit=buildCircuit(scene,staticWorld,RAPIER,map);
   else construction = buildConstruction(scene, staticWorld, RAPIER, map);
-  const environment=park??construction??playground??city??circuit??gym;
+  const environment=park??construction??playground??city??circuit??gym??harbor;
   const backdrop=createWorldBackdrop(scene,map,environment.root);
   const traffic=map.kind==="circuit"?new CircuitTraffic(scene,world,RAPIER):null;
   const gateGroups = [], gateColliders = [];
@@ -57,7 +59,7 @@ export function buildEnvironment(scene, world, RAPIER, map, { bakedCollisions } 
       if(highlighted!==next){highlighted=next;gateGroups.forEach((group,i)=>group.userData.setState(i===next));guide.userData.highlight(next);}
     },
     dispose: () => {
-      backdrop.dispose();gym?.dispose();traffic?.dispose();circuit?.dispose();park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
+      backdrop.dispose();harbor?.dispose();gym?.dispose();traffic?.dispose();circuit?.dispose();park?.dispose();construction?.dispose();playground?.dispose();city?.dispose();bakedCollisions?.dispose();
       for(const collider of gateColliders)if(world.getCollider(collider.handle))world.removeCollider(collider,true);
       const geometries=new Set(),materials=new Set();
       root.traverse(o=>{if(o.geometry&&!o.isSprite)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)materials.add(m);});

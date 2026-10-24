@@ -29,7 +29,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
   };
   const aircraftOf = (p, r) => p.aircraft ?? r.drone;
   const optionsOf = (p, r) => aircraftSimulation(aircraftOf(p, r), r.simulation);
-  const compatibleClient = (r, protocol) => (r.simulation?.airmode!==false||protocol>=7) && (!r.map || r.map.kind !== "circuit" || protocol >= 6) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
+  const compatibleClient = (r, protocol) => (!r.map || r.map.kind !== "harbor" || protocol >= 8) && (r.simulation?.airmode!==false||protocol>=7) && (!r.map || r.map.kind !== "circuit" || protocol >= 6) && (r.mixedAircraft ? protocol >= 4 : !isFixedWing(r.drone) || protocol >= 3);
   // Free-flight rules belong to the room; each aircraft applies only the
   // effects it supports. A plane host must not disable drone effects for guests.
   const roomOptions = (r, options) => r.mixedAircraft ? normalizeSimulation(options) : aircraftSimulation(r.drone, options);
@@ -203,7 +203,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
               clients.delete(p);
               const oldSocket = previous.ws;
               p = previous; p.ws = ws; p.connected = true; p.alive = true; p.reconnectUntil = null;
-              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5,6,7].includes(m.protocol) ? m.protocol : 1;
+              p.messages = 0; p.windowAt = Date.now(); p.protocol = [2,3,4,5,6,7,8].includes(m.protocol) ? m.protocol : 1;
               // A duplicated tab must not keep taking over the recovered socket.
               // Retain the presented key only while disconnected, in case the
               // new welcome packet itself is lost during an unstable connection.
@@ -229,7 +229,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             p.color = normalizeDroneColor(m.color);
             p.token = await db.profile(m.token, name);
             if (ws.readyState !== 1) return;
-            p.protocol = [2,3,4,5,6,7].includes(m.protocol) ? m.protocol : 1;
+            p.protocol = [2,3,4,5,6,7,8].includes(m.protocol) ? m.protocol : 1;
             p.resume = randomBytes(24).toString("hex");
             resumable.set(p.resume, p);
             send(p, "welcome", {
@@ -304,6 +304,7 @@ export function attachRooms(server, catalog, db, { reconnectMs = 60000, countdow
             send(p, "error", { code: "raceUnavailable" });
             return;
           }
+          if(map.kind==="harbor"&&p.protocol<8){send(p,"error",{code:"clientTooOld"});return;}
           if(map.kind==="circuit"&&p.protocol<6){send(p,"error",{code:"clientTooOld"});return;}
           leave(p);
           const code = randomBytes(3).toString("hex").toUpperCase();

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PARK_LAKES, lakeDistance } from '../../shared/world/park-layout.js';
+import { harborWaterAt, HARBOR } from '../../shared/world/harbor-layout.js';
 import { CITY_PLAZA } from '../../shared/world/city-layout.js';
 
 const IDENTITY = { x: 0, y: 0, z: 0, w: 1 };
@@ -46,6 +47,7 @@ export class PilotPositionPicker {
     }
     if (this.map.kind === 'park' && PARK_LAKES.some(lake => lakeDistance(lake,x,z) <= 1.08 && y <= lake.waterY+.15)) return null;
     if (this.map.kind === 'city' && Math.abs(x-CITY_PLAZA.x) < 15.4 && Math.abs(z-CITY_PLAZA.z) < 9.4 && y < .8) return null;
+    if (this.map.kind === 'harbor' && harborWaterAt(x,z) && y <= HARBOR.waterY+.15) return null;
     return y;
   }
 

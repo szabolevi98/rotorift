@@ -11,6 +11,7 @@ existing persistent IDs to English presentation codes:
 | `gym` | `gymnasium` / `map.gymnasium` | `micro` |
 | `skyline` | `skyline` / `map.skyline` | `standard` |
 | `apex` | `apex-circuit` / `map.apex-circuit` | `standard` |
+| `harbor` | `harbor` / `map.harbor` | `standard` |
 
 The catalog sorts maps in this order and includes `code`, `nameKey` and
 `audienceKey`. Each of the five dictionaries translates the name and size

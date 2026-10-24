@@ -39,5 +39,5 @@ test('all built-in diagrams fit the viewport and retain every saved guide bend',
     }
     assert.ok(result.arrow);
   }
-  assert.equal(count,23);
+  assert.equal(count,27);
 });

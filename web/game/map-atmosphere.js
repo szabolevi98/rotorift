@@ -1,6 +1,8 @@
 import * as THREE from "three";
 
 export const MAP_WEATHER = {
+  harbor: { horizon: 0xc4d6de, zenith: 0x4a8fbe, fogDensity: 0.00025, sunIntensity: 2.5, sunColor: 0xffefd8,
+    skyLight: 0xddeff8, groundLight: 0x6c8188, hemisphereIntensity: 2.1, environmentIntensity: 0.7, shadowRadius: 1.5 },
   gym: { horizon: 0xc6d0d0, zenith: 0xa7c2d6, fogDensity: 0, sunIntensity: 0, sunColor: 0xffffff,
     skyLight: 0xf3ede1, groundLight: 0x827f71, hemisphereIntensity: 2.5, environmentIntensity: 0.35, shadowRadius: 1 },
   park: { horizon: 0xd4e4eb, zenith: 0x3485ca, fogDensity: 0.00065, sunIntensity: 3, sunColor: 0xfff0d5,

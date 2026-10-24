@@ -1,4 +1,5 @@
 import {PARK_LAKES,lakeDistance} from './park-layout.js';
+import {HARBOR,harborWaterAt} from './harbor-layout.js';
 import {CITY_PLAZA} from './city-layout.js';
 import {aircraftAirframe} from '../aircraft/airframe.js';
 import {rotate,inverse} from '../physics/math.js';
@@ -18,6 +19,7 @@ export const CITY_FOUNTAIN_JETS=[-8,0,8].flatMap(x=>[
   {radius:.4,points:[[CITY_PLAZA.x+x,4.08,CITY_PLAZA.z],[CITY_PLAZA.x+x,4.08,CITY_PLAZA.z]]},
 ]);
 const waterVolumes={
+  harbor:[{y:HARBOR.waterY,x:0,z:0,rx:262144,rz:262144,inside:harborWaterAt}],
   park:PARK_LAKES.map(l=>({y:l.waterY,x:l.x,z:l.z,rx:l.rx*1.12,rz:l.rz*1.12,inside:(x,z)=>lakeDistance(l,x,z)<=1.08})),
   city:[{y:.61,x:CITY_PLAZA.x,z:CITY_PLAZA.z,rx:15,rz:9,inside:(x,z)=>Math.abs(x-CITY_PLAZA.x)<=15&&Math.abs(z-CITY_PLAZA.z)<=9}],
 };
@@ -69,7 +71,7 @@ function segmentBox(a,b,half) {
   return true;
 }
 export function findWaterImpact(map,config,previous,current) {
-  if(!['park','city'].includes(map.kind))return null;
+  if(!['park','city','harbor'].includes(map.kind))return null;
   const {parts,probes,radius}=boxes(config),a=previous??current,b=current;
   const waters=waterVolumes[map.kind].filter(w=>Math.min(a.p[1],b.p[1])-radius<=w.y&&
     overlaps(a.p,b.p,radius,[w.x-w.rx,-Infinity,w.z-w.rz],[w.x+w.rx,w.y,w.z+w.rz]));
@@ -77,6 +79,7 @@ export function findWaterImpact(map,config,previous,current) {
     const p=worldPoint(probe,a),q=worldPoint(probe,b);
     for(const water of waters)if(wetSegment(p,q,water.y,water.inside))return 'water';
   }
+  if(map.kind==='harbor')return null;
   const center=map.kind==='park'?PARK_LAKES.find(l=>l.fountain):CITY_PLAZA;
   const reach=map.kind==='park'?7:10;
   if(Math.min(a.p[1],b.p[1])-radius>11||Math.max(a.p[1],b.p[1])+radius<0)return null;

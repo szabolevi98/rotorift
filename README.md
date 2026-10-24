@@ -57,7 +57,7 @@ changing game records. That test is skipped when MariaDB/MySQL is unavailable.
 
 ## Aircraft and maps
 
-Fleet snapshot: **2026-10-23 — six drones, three airplanes and six maps**.
+Fleet snapshot: **2026-10-24 — six drones, three airplanes and seven maps**.
 The Apex Circuit expansion is included in the 2026-10-20 release.
 Counts describe that date and may grow; the runtime catalog comes from
 `data/drones/`, `data/airplanes/` and `data/maps/`. See the
@@ -131,6 +131,11 @@ The [Rift Aero 40](docs/rift-a40.md) is a 400 mm / 1S, 62 g micro warbird inspir
   open pit garages, three grandstands, control tower, rear service court and fly-under bridge.
   Eight GT cars share deterministic, server-timed traffic in multiplayer. Two
   drone and two airplane routes are included. See [Apex Circuit](docs/apex-circuit.md).
+
+- **Harbor:** an 800 × 800 m coastal cargo port with stacked containers, open
+  container tunnels, two ship-to-shore gantries, a smaller pier crane, a moored
+  feeder ship, warehouses, breakwaters and a lighthouse. Two quad and two airplane
+  routes support shared harbor flights. See [Harbor](docs/harbor.md).
 
 Map names are localized. Stable internal IDs such as `liget`, `betonudvar` and
 `jatszoter` remain unchanged for saved routes, rooms and records.
@@ -414,6 +419,10 @@ the start/finish gate:
 | Apex Circuit | Pit Lane Run | 2.62 km | 34 | Clubhouse breezeway, media tower, low pit lane detour and fly-under bridge |
 | Apex Circuit | Apex Air Circuit · airplanes | 1.90 km | 18 | Broad, level sightseeing loop at 45 m |
 | Apex Circuit | Infield Figure Eight · airplanes | 1.96 km | 24 | Crossing turns between the circuit straights at 26–34 m |
+| Harbor | Waterfront Flow | 1.98 km | 24 | Open waterfront loop around the terminal and piers |
+| Harbor | Terminal Run | 2.29 km | 23 | Open container, warehouse, crane portal and ship cargo |
+| Harbor | Harbor Air Circuit · airplanes | 2.32 km | 20 | Gentle panoramic circuit above the cranes at 110 m |
+| Harbor | Quayside Low Run · airplanes | 1.93 km | 24 | Service corridor and harbor basin at 19–31 m |
 
 Floating gates can face horizontally as well as vertically. Dive gates require
 downward passage through their full opening; passing upward does not count.

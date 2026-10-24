@@ -1,0 +1,49 @@
+{
+  "id": "harbor",
+  "code": "harbor",
+  "version": 1,
+  "name": "Harbor",
+  "kind": "harbor",
+  "size": 800,
+  "boundary": {
+    "returnAfterSeconds": 60
+  },
+  "racingEnabled": true,
+  "spawn": [
+    -280,
+    3.15,
+    305
+  ],
+  "routeId": "race_1",
+  "routeVersion": 1,
+  "gates": [
+    {
+      "p": [
+        -230,
+        8,
+        250
+      ],
+      "n": [
+        0,
+        0,
+        -1
+      ],
+      "width": 8,
+      "height": 6
+    },
+    {
+      "p": [
+        -230,
+        10,
+        180
+      ],
+      "n": [
+        0,
+        0,
+        -1
+      ],
+      "width": 8,
+      "height": 6
+    }
+  ]
+}

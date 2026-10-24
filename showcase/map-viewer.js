@@ -9,6 +9,7 @@ import { PARK_VIEW_DISTANCE } from "../web/game/park-terrain.js";
 import { CONSTRUCTION_VIEW_DISTANCE } from "../web/game/construction.js";
 import { PARK_GARDEN, PARK_POCKET, parkSurfaceHeight } from "../shared/world/park-layout.js";
 import { configureDroneRenderer } from "../shared/visual/drone-rendering.js";
+import { HARBOR_VIEW_DISTANCE } from "../shared/world/harbor-layout.js";
 import { GYM_VIEW_DISTANCE } from "../shared/world/gym-layout.js";
 import { PLAYGROUND_VIEW_DISTANCE } from "../web/game/playground.js";
 import { constructionSurfaceHeight } from "../shared/world/construction-layout.js";
@@ -99,7 +100,16 @@ const GYM_VIEWS={
   wallbars:['Wall bars and landing mats',[-3,4,-14],[-10,1.8,-4]],
   court:['Court and roof trusses',[0,5,17],[0,3,-12]],
 };
-const viewsFor=map=>map.kind==='gym'?GYM_VIEWS:map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
+const HARBOR_VIEWS={
+  overview:['Harbor and container terminal',[500,300,430],[-40,15,-25]],
+  ship:['Moored container ship',[305,62,55],[165,14,-55]],
+  cranes:['Ship-to-shore gantry cranes',[145,95,250],[35,39,0]],
+  containers:['Container lanes and open tunnels',[-25,30,290],[-125,7,205]],
+  warehouse:['Inside the transit warehouse',[-300,10,115],[-300,9,10]],
+  lighthouse:['Breakwater and lighthouse',[375,48,390],[290,16,325]],
+  launch:['Pilot bay and service court',[-230,22,362],[-285,6,280]],
+};
+const viewsFor=map=>map.kind==='harbor'?HARBOR_VIEWS:map.kind==='gym'?GYM_VIEWS:map.kind==='circuit'?CIRCUIT_VIEWS:map.kind==='city'?CITY_VIEWS:map.kind==='playground'?PLAYGROUND_VIEWS:map.kind==='park'?PARK_VIEWS:SITE_VIEWS;
 
 export async function startMapViewer(embeddedCatalog) {
   const $ = selector => document.querySelector(selector), canvas = $("#map-scene"), viewport = $(".map-viewport");
@@ -192,7 +202,7 @@ export async function startMapViewer(embeddedCatalog) {
       map=maps.find(m=>m.id===id)??maps[0];scene=new THREE.Scene();world=new RAPIER.World({x:0,y:-9.81,z:0});
       atmosphere=createMapAtmosphere(renderer,scene,map.kind);
       environment=buildEnvironment(scene,world,RAPIER,withoutRaceRoute(map));
-      camera.far=map.kind==='gym'?GYM_VIEW_DISTANCE:map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
+      camera.far=map.kind==='harbor'?HARBOR_VIEW_DISTANCE:map.kind==='gym'?GYM_VIEW_DISTANCE:map.kind==='playground'?PLAYGROUND_VIEW_DISTANCE:map.kind==="park"?PARK_VIEW_DISTANCE:CONSTRUCTION_VIEW_DISTANCE;camera.updateProjectionMatrix();
       shadows=map.kind==='gym'?null:new ParkShadows(scene,camera,atmosphere.profile);scene.add(transform.getHelper());
       $("#map-select").value=map.id;$("#map-title").textContent=`ROTORIFT. / ${mapName(map).toUpperCase()}`;$("#map-size").textContent=map.kind==='gym'?'24 × 40 × 9 m':`${map.size} × ${map.size} m`;
       const views=viewsFor(map);
