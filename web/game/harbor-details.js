@@ -122,12 +122,24 @@ export function buildHarborDetails(parts,{container,tractor,warehouse}) {
   forklift([-170,Y,-345],Math.PI/2);
 
   // A fenced entrance and small parking court frame the otherwise bare yard.
-  for(let z=-385;z<=385;z+=14){
-    if(z>260&&z<315)continue;
-    pipe([-398,Y,z],[-398,Y+2.7,z],.1,'steel');
-    for(const h of [.9,2.5])pipe([-398,Y+h,z],[-398,Y+h,z+14],.06,'steel',false);
-    for(const dz of [3,7,11])pipe([-398,Y+.25,z+dz],[-398,Y+2.65,z+dz],.025,'steel',false);
+  const fencePosts=new Set();
+  function fence(a,b){
+    const count=Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/14);
+    const point=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+    for(let i=0;i<=count;i++){
+      const [x,z]=point(i/count),key=x+':'+z;
+      if(!fencePosts.has(key)){pipe([x,Y,z],[x,Y+2.7,z],.1,'steel');fencePosts.add(key);}
+      if(i===count)break;
+      const [nx,nz]=point((i+1)/count);
+      for(const h of [.9,2.5])pipe([x,Y+h,z],[nx,Y+h,nz],.06,'steel',false);
+      for(const f of [.25,.5,.75]){
+        const [px,pz]=point((i+f)/count);pipe([px,Y+.25,pz],[px,Y+2.65,pz],.025,'steel',false);
+      }
+    }
   }
+  // Three connected landward sides, ending at the quay; keep the entrance open.
+  fence([-398,-398],[-398,259]);fence([-398,315],[-398,398]);
+  fence([-398,-398],[56,-398]);fence([-398,398],[56,398]);
   model('Harbor_gatehouse',[-378,Y,285],0,()=>{
     box([10,4.2,8],[0,2.1,0],'grey');box([11,.3,9],[0,4.35,0],'steelDark');
     for(const side of [-1,1])box([.07,1.5,5],[side*5.05,2.6,0],'glass',false);

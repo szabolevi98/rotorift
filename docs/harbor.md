@@ -29,6 +29,12 @@ with irregular spacing, varied density and clearings. Trees follow the actual hi
 avoid the background warehouses; they add four static instanced draws and no
 physics shapes.
 
+Scenery revision 4 joins the rear fence to both side boundaries, ending at the
+quay while retaining the entrance. A single flat, vertex-colored land surface
+replaces the adjoining oversized ground boxes, removing the long internal-face
+seams beyond the yard. The asphalt outline, ground height and race routes stay
+the same.
+
 | Route | Length | Gates | Aircraft | Difficulty |
 | --- | --- | --- | --- | --- |
 | Waterfront Flow | 1.98 km | 24 | Quads | Easy |
