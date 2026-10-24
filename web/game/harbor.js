@@ -19,7 +19,7 @@ function makeMaterials() {
     crane:0xd99443,craneLight:0xd8b17a,red:0xb54e3e,blue:0x41677f,teal:0x477f7b,ochre:0xad8146,
     grey:0x8f9a99,green:0x677f64,white:0xd8ddd7,glass:0x345f71,rubber:0x273337,
     hull:0x203e50,hullRed:0x7e3e39,deck:0x748986,rope:0x7d8276,paint:0xe6c979,wood:0x9e8869,
-    water:0x386e7c,grass:0x4b782f,foliage:0x5b7a3f,rock:0x7a8583};
+    water:0x386e7c,grass:0x55743c,foliage:0x5b7a3f,rock:0x7a8583};
   const materials=Object.fromEntries(Object.entries(colors).map(([name,color])=>[name,new THREE.MeshStandardMaterial({
     color,roughness:['water','glass'].includes(name)?.32:.85,metalness:['steel','steelDark','glass','water'].includes(name)?.3:0})]));
   const texture=corrugation();
