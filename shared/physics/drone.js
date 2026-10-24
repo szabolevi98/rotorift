@@ -10,7 +10,6 @@ import { stepPhysicsWorld } from './world-step.js';
 export { PHYSICS_DT } from './time-step.js';
 function mixThrust(mixer, demand, max, airmode = true) {
   const idle = airmode ? max * 0.012 : 0;
-  if(!airmode)return mixer.map(row=>clamp(row.reduce((sum,value,i)=>sum+value*demand[i],0),0,max));
   const limits = (authority) => {
     const values = mixer.map(
       (row) =>
@@ -22,7 +21,10 @@ function mixThrust(mixer, demand, max, airmode = true) {
     return {
       values,
       low: Math.max(...values.map((v, i) => (idle - v) / mixer[i][0])),
-      high: Math.min(...values.map((v, i) => (max - v) / mixer[i][0])),
+      // Air Mode off may reduce collective at saturation, but never add it.
+      // Clipping motors independently loses centre-of-mass compensation and
+      // pitches an otherwise neutral drone backwards at full throttle.
+      high: Math.min(airmode ? Infinity : 0, ...values.map((v, i) => (max - v) / mixer[i][0])),
     };
   };
   let result = limits(1);

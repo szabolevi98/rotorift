@@ -61,6 +61,10 @@ the existing attitude-preserving mixer and armed idle. Disabled removes idle,
 scales control authority down with throttle below 10%, and prevents the mixer
 from adding collective thrust to preserve attitude at zero throttle. Motor lag
 still applies when cutting throttle. Airplane aerodynamics are unaffected.
+At high throttle the disabled mixer can reduce collective to fit the motor
+limits, retaining the configured centre-of-mass balance instead of clipping
+each motor independently. It still never boosts collective; low-throttle
+corrections are reduced when the available thrust cannot accommodate them.
 
 The switch appears with the simulation options; multiplayer shares/locks it like
 other room rules. Existing record categories remain unchanged with Air Mode on.

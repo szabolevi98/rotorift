@@ -14,6 +14,22 @@ function fixture(config) {
   return { world, drone: new DronePhysics(RAPIER, world, config, [0, 10, 0]) };
 }
 for (const config of drones) {
+  test(config.id + ": Air Mode off holds a full-power climb without spontaneous pitch or roll", () => {
+    const {world,drone}=fixture(config);
+    try{
+      drone.effects.setOptions({airmode:false});drone.armed=true;
+      let highest=0;
+      for(let i=0;i<240*8;i++){
+        const throttle=i<240?hoverThrottle(config):1;
+        drone.step({...neutral,throttle});highest=Math.max(highest,drone.pose.p[1]);
+        assert.ok(Math.hypot(...drone.pose.w)<.02,'centred sticks must not start a backflip');
+        assert.ok(Math.hypot(drone.pose.q.x,drone.pose.q.y,drone.pose.q.z)<.01,'full collective must retain a level attitude');
+      }
+      assert.ok(highest>70,'climb passes the reported 50 m altitude');
+      for(let i=0;i<240;i++)drone.step(neutral);
+      assert.ok(drone.motorThrust.every(v=>v<1e-9),'Air Mode off still stops the motors at zero throttle');
+    }finally{world.free();}
+  });
   test(config.id + ": 27–30% hover curve preserves full motor power and 30% lifts from the ground", () => {
     const hover = hoverThrottle(config);
     assert.ok(hover >= 0.27 && hover <= 0.30, `${config.id}: ${hover}`);
