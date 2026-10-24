@@ -8,10 +8,12 @@ export function addHarborWoodland(root,materials,hills) {
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   const groups={oak:[],pine:[]},ray=new THREE.Raycaster(new THREE.Vector3(),new THREE.Vector3(0,-1,0));
   root.updateMatrixWorld(true);
-  const clusters=[[-445,-350],[-450,365],[-620,-440],[-650,510],[-800,-620],[-790,250],
-    [-960,900],[-1000,-1100],[-250,-520],[-220,530]];
-  for(const [cx,cz]of clusters)for(let i=0;i<18;i++){
-    const angle=random()*Math.PI*2,r=12+random()*55,x=cx+Math.cos(angle)*r,z=cz+Math.sin(angle)*r;
+  // Jittered coverage extends along the whole landward edge and both flanks.
+  // Broad density changes leave clearings without isolated circular tree blobs.
+  for(let row=-1200;row<=1200;row+=45)for(let column=-1350;column<=30;column+=45){
+    const x=column+(random()-.5)*30,z=row+(random()-.5)*30;
+    const density=.64+.14*Math.sin(x*.007+Math.sin(z*.004))+.1*Math.cos(z*.009-x*.003);
+    if(random()>density)continue;
     if(x>-420&&Math.abs(z)<435)continue;
     // Keep the existing industrial buildings and their immediate yards clear.
     let occupied=false;
@@ -27,7 +29,7 @@ export function addHarborWoodland(root,materials,hills) {
       if(!hit)continue;
       y=hit.point.y;
     }
-    groups[i%3?'oak':'pine'].push({p:[x,y-.12,z],height:9+random()*10,yaw:random()*Math.PI*2});
+    groups[random()<.7?'oak':'pine'].push({p:[x,y-.12,z],height:11+random()*13,yaw:random()*Math.PI*2});
   }
   const matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),up=new THREE.Vector3(0,1,0);
   for(const [kind,trees]of Object.entries(groups))for(const crown of [false,true]){
@@ -37,7 +39,7 @@ export function addHarborWoodland(root,materials,hills) {
     trees.forEach(({p,height,yaw},i)=>{
       matrix.compose(new THREE.Vector3(...p),q.setFromAxisAngle(up,yaw),new THREE.Vector3(height,height,height));
       mesh.setMatrixAt(i,matrix);
-      if(crown)mesh.setColorAt(i,new THREE.Color(i%3===0?0x83917d:0xa9b3a0));
+      if(crown)mesh.setColorAt(i,new THREE.Color([0x9cbe75,0x85b356,0xb0c788][i%3]));
     });
     mesh.castShadow=false;mesh.receiveShadow=false;mesh.computeBoundingSphere();root.add(mesh);
   }

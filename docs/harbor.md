@@ -23,8 +23,9 @@ are wider, while all four published routes, their guide lines and launch slots
 remain unchanged. Showcase viewpoints include the new freight and tank areas.
 
 Scenery revision 3 moves the cold store 20 m west to clear the marked service
-lane. The coastal ground has a more muted grey-olive tone, with sparse oak and
-pine clusters beyond the terminal. Trees follow the actual hill surface and
+lane. The coastal ground uses a natural, saturated grass green. Oaks and pines
+are distributed across the landward hills and both flanks of the terminal,
+with irregular spacing, varied density and clearings. Trees follow the actual hill surface and
 avoid the background warehouses; they add four static instanced draws and no
 physics shapes.
 
