@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { harborParts } from './harbor-parts.js';
 import { buildHarborDetails } from './harbor-details.js';
+import { addHarborWoodland } from './harbor-background.js';
 import { HARBOR, HARBOR_SHIP_OUTLINE, harborSurfaceHeight } from '../../shared/world/harbor-layout.js';
 
 function corrugation() {
@@ -18,7 +19,7 @@ function makeMaterials() {
     crane:0xd99443,craneLight:0xd8b17a,red:0xb54e3e,blue:0x41677f,teal:0x477f7b,ochre:0xad8146,
     grey:0x8f9a99,green:0x677f64,white:0xd8ddd7,glass:0x345f71,rubber:0x273337,
     hull:0x203e50,hullRed:0x7e3e39,deck:0x748986,rope:0x7d8276,paint:0xe6c979,wood:0x9e8869,
-    water:0x386e7c,grass:0x6f8168,rock:0x7a8583};
+    water:0x386e7c,grass:0x656d60,foliage:0x53644c,rock:0x7a8583};
   const materials=Object.fromEntries(Object.entries(colors).map(([name,color])=>[name,new THREE.MeshStandardMaterial({
     color,roughness:['water','glass'].includes(name)?.32:.85,metalness:['steel','steelDark','glass','water'].includes(name)?.3:0})]));
   const texture=corrugation();
@@ -41,6 +42,7 @@ function makeMaterials() {
     material.customProgramCacheKey=()=> 'harbor-corrugated-steel-v1';
   }
   materials.light=new THREE.MeshBasicMaterial({color:0xffe6ad,toneMapped:false});
+  materials.foliage.vertexColors=true;
   return materials;
 }
 
@@ -234,7 +236,7 @@ export function buildHarbor(scene,world,RAPIER,map) {
     for(const x of [-w*.3,w*.3])for(const z of [-d*.25,d*.25])box([4,1.2,5],[x,h-1.3,z],'grey');
   });}
   warehouse([-300,Y,40],70,110,22,'grey',{open:true,name:'Open_transit_warehouse'});
-  warehouse([-285,Y,-230],100,50,17,'teal',{name:'Cold_storage_warehouse'});
+  warehouse([-305,Y,-230],100,50,17,'teal',{name:'Cold_storage_warehouse'});
   model('Harbor_office',[-295,Y,220],0,()=>{
     box([50,14,24],[0,7,0],'white');box([52,.6,26],[0,14.3,0],'steelDark');
     for(const z of [-12.1,12.1])for(const y of [4,8,12])for(let x=-21;x<=21;x+=7)box([4.6,1.8,.1],[x,y,z],'glass',false);
@@ -301,6 +303,7 @@ export function buildHarbor(scene,world,RAPIER,map) {
   }
   const hills=new THREE.BufferGeometry();hills.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));hills.setIndex(indices);hills.computeVertexNormals();
   const hill=mesh(hills,'grass','Landward_coastal_hills',false);hill.castShadow=false;
+  addHarborWoodland(root,materials,hill);
   // A compact pilot shelter stands behind the launch mark, away from race lines.
   model('Pilots_shelter',[-300,Y,327],0,()=>{
     for(const x of [-6,6])for(const z of [-3,3])box([.18,4,.18],[x,2,z],'steel');

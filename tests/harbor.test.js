@@ -57,6 +57,8 @@ for(const prepared of [false,true])test(`${prepared?'prepared':'source'} harbor:
     assert.ok(ray([-118.82,4.4,245],[0,0,-1],20),'container side is solid');
     assert.equal(ray([-300,8,103],[0,0,-1],126),null,'warehouse entrance and opposite exit are open');
     assert.ok(ray([-265,8,103],[0,0,-1],126),'warehouse wall is solid');
+    assert.ok(makeGuideClearance(world,RAPIER,2)([-245,5.2,-275],[-245,5.2,-185]),
+      'cold store leaves the marked service lane beside it clear');
     assert.equal(ray([30,18,-112],[0,0,1],45),null,'crane portal is open');
     assert.ok(ray([44,10,-112],[0,0,1],45),'crane foot/leg collides');
     assert.ok(ray([200,3,-55],[-1,0,0],40),'ship hull has outward-facing solid sides');

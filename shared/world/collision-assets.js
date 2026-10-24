@@ -3,7 +3,7 @@ export const COLLISION_ASSETS = {
   "liget": {
     "url": "/assets/collisions/liget-d4d67e5a7ef8d68a.rrc",
     "mapVersion": 3,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 3927,
     "rawBytes": 7088036,
     "bytes": 2988034
@@ -11,7 +11,7 @@ export const COLLISION_ASSETS = {
   "betonudvar": {
     "url": "/assets/collisions/betonudvar-369218137557891a.rrc",
     "mapVersion": 3,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 8301,
     "rawBytes": 7557396,
     "bytes": 1891952
@@ -19,7 +19,7 @@ export const COLLISION_ASSETS = {
   "jatszoter": {
     "url": "/assets/collisions/jatszoter-acb789a99b3c2c5e.rrc",
     "mapVersion": 2,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 880,
     "rawBytes": 170156,
     "bytes": 18910
@@ -27,7 +27,7 @@ export const COLLISION_ASSETS = {
   "skyline": {
     "url": "/assets/collisions/skyline-4af51e55c63c8015.rrc",
     "mapVersion": 2,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 3110,
     "rawBytes": 622528,
     "bytes": 55638
@@ -35,7 +35,7 @@ export const COLLISION_ASSETS = {
   "apex": {
     "url": "/assets/collisions/apex-a2b80a2964cd8419.rrc",
     "mapVersion": 3,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 1144,
     "rawBytes": 262960,
     "bytes": 66668
@@ -43,17 +43,17 @@ export const COLLISION_ASSETS = {
   "gym": {
     "url": "/assets/collisions/gym-8f28fb02d8ce7450.rrc",
     "mapVersion": 1,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 453,
     "rawBytes": 117676,
     "bytes": 12463
   },
   "harbor": {
-    "url": "/assets/collisions/harbor-036f150bcbf16939.rrc",
-    "mapVersion": 2,
-    "sourceHash": "ed4a7cfa8dcedcbd2acf7a6f4acfae63b019125ffe76514219c3a1c385dfe078",
+    "url": "/assets/collisions/harbor-73faecb2a16c1829.rrc",
+    "mapVersion": 3,
+    "sourceHash": "37eec45ff869449f1ab79b6daa7425cce98db5bca6db85f707e8dcb209be3ac7",
     "records": 2881,
     "rawBytes": 524436,
-    "bytes": 50202
+    "bytes": 50212
   }
 };
