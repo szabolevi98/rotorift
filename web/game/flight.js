@@ -342,6 +342,7 @@ export class Flight {
       this.visual.visible=false;
       const remote=this.remotes.get(this.observer.id);
       if(remote?.model){
+        remote.animation.prepareView(this.observer.view,{armed:true});
         this.followCamera.update(remote.config,remote.model,remote.target,this.observer.view,dt,remote.target.camera);
         this.environment.update(remote.target.p,remote.target.v);
         if(this.sound){

@@ -15,19 +15,19 @@ function fixture(){
   const exposure=new FpvPropellers(model,{propDiameterM:.127,motor:{maxThrustN:10}},{entries});
   return {exposure,entries,model};
 }
-test('fast FPV rotors use a transparent exposure disc while stopped and external rotors retain real blades',()=>{
+test('FPV and external rotors use a transparent exposure disc while stopped rotors retain real blades',()=>{
   const {exposure,entries}=fixture();
   exposure.update('fpv',[10,10,10,10]);assert.ok(exposure.rotors.every(r=>r.disc.visible));
   assert.ok(entries.every(e=>!e.mesh.visible&&!e.mesh.castShadow));
   assert.ok(exposure.rotors.every(r=>r.disc.material.opacity<=.16&&!r.disc.material.depthWrite));
-  exposure.update('chase',[1,1,1,1]);assert.ok(entries.every(e=>e.mesh.visible&&e.mesh.castShadow));
-  assert.ok(exposure.rotors.every(r=>!r.disc.visible));
+  exposure.update('chase',[2.5,2.5,2.5,2.5]);assert.ok(entries.every(e=>!e.mesh.visible&&!e.mesh.castShadow));
+  assert.ok(exposure.rotors.every(r=>r.disc.visible));
   exposure.update('fpv',[0,1,1,1]);assert.equal(exposure.rotors[0].disc.visible,false);
   assert.ok(entries.filter(e=>e.motor===0).every(e=>e.mesh.visible));
   exposure.dispose();
 });
 
-test('FPV exposure changes continuously with rotor speed and restores external materials',()=>{
+test('FPV exposure changes continuously with rotor speed and restores stopped materials',()=>{
   const {exposure,entries}=fixture(),blade=entries[0].mesh,opacities=[];
   for(const fraction of [0,.15,.25,.5,.75,1]){
     exposure.update('fpv',[10*fraction*fraction,0,0,0]);
@@ -35,7 +35,26 @@ test('FPV exposure changes continuously with rotor speed and restores external m
     if(fraction===.25)assert.ok(blade.visible&&blade.material.opacity>0&&blade.material.opacity<1);
   }
   assert.ok(opacities.every((v,i)=>i===0||v>opacities[i-1]));
-  exposure.update('chase',[10,0,0,0]);assert.equal(blade.material.opacity,1);assert.equal(blade.material.depthWrite,true);
+  exposure.update('chase',[0,0,0,0]);assert.equal(blade.material.opacity,1);assert.equal(blade.material.depthWrite,true);
+  exposure.dispose();
+});
+
+test('external exposure is progressive, remains subtle at hover and preserves shortened or missing blades',()=>{
+  const {exposure,entries}=fixture(),opacities=[];
+  for(const speed of [0,.1,.2,.35,.5,1]){
+    exposure.update('chase',[],[speed,0,0,0]);opacities.push(exposure.rotors[0].disc.material.opacity);
+  }
+  assert.ok(opacities.every((v,i)=>!i||v>opacities[i-1]));
+  assert.ok(opacities.at(-1)<=.16);
+  for(const e of entries.filter(e=>e.motor===0))e.state=2;
+  exposure.update('chase',[],[.5,.5,.5,.5]);
+  assert.equal(exposure.rotors[0].disc.scale.x,.6);
+  assert.ok(exposure.rotors[0].disc.material.opacity<exposure.rotors[1].disc.material.opacity);
+  for(const e of entries.filter(e=>e.motor===0))e.state=3;
+  exposure.update('chase',[],[.5,.5,.5,.5]);assert.equal(exposure.rotors[0].disc.visible,false);
+  exposure.update('chase',[],[0,0,0,0]);
+  assert.ok(entries.filter(e=>e.motor===0).every(e=>!e.mesh.visible));
+  assert.ok(entries.filter(e=>e.motor===1).every(e=>e.mesh.visible&&e.mesh.material.depthWrite));
   exposure.dispose();
 });
 test('exposure preserves individual broken blades, rotor losses and restores geometry when disposed',()=>{

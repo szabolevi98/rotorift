@@ -18,11 +18,11 @@ import {
 } from "../../shared/visual/airplane-propeller.js";
 
 class QuadVisual {
-  constructor(model, config, { remote = false } = {}) {
+  constructor(model, config) {
     this.model = model;
     this.config = config;
     this.damage = new PropellerVisual(model, config);
-    if (!remote) this.exposure = new FpvPropellers(model, config, this.damage);
+    this.exposure = new FpvPropellers(model, config, this.damage);
     this.motion = new RemoteRotorMotion(model, config);
   }
   bindPhysics(physics) {
@@ -47,10 +47,12 @@ class QuadVisual {
     );
     for (const prop of this.motion.props)
       prop.rotation.y = this.motion.phase[prop.userData.motorIndex];
+    this.exposure.update('chase', [], this.motion.fraction);
   }
   updateRemote(dt, player) {
     this.damage.update(player.propellers);
     this.motion.updatePlayer(dt, player);
+    this.exposure.update('chase', [], this.motion.fraction);
   }
   prepareView(view, physics) {
     this.exposure?.update(
@@ -70,6 +72,7 @@ class QuadVisual {
   reset(physics) {
     this.motion.reset();
     if (physics) this.damage.update(physics.effects.propellers.blades);
+    this.exposure.update('chase', [], this.motion.fraction);
   }
   dispose() {
     this.exposure?.dispose();

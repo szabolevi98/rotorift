@@ -48,6 +48,22 @@ lapátjainak alakváltozása és az ép modellgyorsítótár megőrzése.
 
 Az érintkezési API: [Rapier ContactManifold](https://rapier.rs/javascript3d/classes/TempContactManifold.html).
 
+## Drónok forgási elmosása — 2026-10-25
+
+A saját drón külső nézetében, a távoli játékosoknál, a nézőmódban és a
+visszajátszásban is motoronkénti áttetsző elmosás jelenik meg. A külső nézet
+0,06–0,35 normalizált motorfordulat között folyamatosan keveri át a lapátokat;
+normál lebegésnél már a forgási tárcsa látszik. Az FPV korábbi görbéje megmarad.
+Leállításkor az ép, hajlott és csorbult lapátok tényleges geometriája visszatér,
+a letört lapátok rejtve maradnak. Teljes lapátvesztésnél nincs forgási tárcsa;
+csorbult rotor esetén a tárcsa mérete és fedettsége is csökken.
+
+A motoragy, a védőkeret és a géptest anyagai változatlanok. Drónonként egy
+közös, statikus gyűrűgeometria és legfeljebb négy tárcsa kell, külön célképes
+renderelés, textúragenerálás vagy időbeli többszörös mintavétel nélkül. A
+mozgás és a sérülés fizikai számítása, a motorhang és a hálózati adatformátum
+változatlan; ez a valós idejű megjelenítő expozíciós közelítése.
+
 ## Repülők — 2026-10-19
 
 Mindhárom Aero ugyanazt a külön bekapcsolható propellersérülés kapcsolót használja.

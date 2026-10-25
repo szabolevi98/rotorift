@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 
 // A fast rotor cannot be drawn as three almost opaque, frozen blades in each
-// FPV frame: it strobes across the terrain. Approximate camera exposure with a
-// faint swept disc. Stopped rotors and external views keep the actual blades.
+// frame: it strobes across the terrain. Approximate camera exposure with a
+// faint swept disc in FPV and external views. Only the blades change; hubs,
+// guards and the airframe keep their opaque geometry. Geometry is shared by
+// four rotors and needs no offscreen render or per-frame texture generation.
 export class FpvPropellers {
   constructor(model, config, propVisual) {
     this.maxThrust = config.motor.maxThrustN;
@@ -35,10 +37,13 @@ export class FpvPropellers {
   update(view, thrust, fractions) {
     for(const rotor of this.rotors) {
       const speed=fractions?.[rotor.motor]??Math.sqrt(Math.max(0,Math.min(1,thrust[rotor.motor]/this.maxThrust)));
-      const raw=Math.max(0,Math.min(1,(speed-.12)/.53));
-      const blur=view==='fpv'?raw*raw*(3-2*raw):0;
+      // External hover should already look like fast rotation. The FPV curve
+      // retains its existing exposure; clean FPV hides the entire local model.
+      const raw=Math.max(0,Math.min(1,view==='chase'?(speed-.06)/.29:(speed-.12)/.53));
+      const blur=view==='fpv'||view==='chase'?raw*raw*(3-2*raw):0;
       const states=new Map(rotor.entries.map(({entry})=>[entry.blade,entry.state]));
-      const remaining=[...states.values()].filter(state=>state!==3).length/3;
+      const remaining=[...states.values()].reduce((sum,state)=>sum+[1,.95,.55,0][state],0)/3;
+      rotor.disc.scale.setScalar(Math.min(...states.values())>=2?.6:1);
       rotor.disc.visible=blur>0&&remaining>0;
       rotor.disc.material.opacity=(.04+.12*speed)*remaining*blur;
       for(const {entry,castShadow,materials}of rotor.entries) {
