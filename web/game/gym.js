@@ -140,10 +140,11 @@ export function buildGym(scene,world,RAPIER,map) {
     box([2.8,.1,2.4],[0,.05,-2.8],'mat');
   });
   model('Parallel_bars',GYM_POIS.bars,0,()=>{
+    const railHeight=1.65;
     for(const x of [-.65,.65]){
-      pipe([x,1.65,-2],[x,1.65,2],.065,'wood');
+      pipe([x,railHeight,-2],[x,railHeight,2],.065,'wood');
       for(const z of [-1.45,1.45]){
-        cylinder(.065,1.55,[x,.775,z],'steel');box([.68,.08,.35],[x,.04,z],'blue');
+        cylinder(.065,railHeight,[x,railHeight/2,z],'steel');box([.68,.08,.35],[x,.04,z],'blue');
         cylinder(.095,.18,[x,1.24,z],'blue',false);
       }
     }
