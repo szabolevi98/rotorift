@@ -51,9 +51,10 @@ Az érintkezési API: [Rapier ContactManifold](https://rapier.rs/javascript3d/cl
 ## Drónok forgási elmosása — 2026-10-25
 
 A saját drón külső nézetében, a távoli játékosoknál, a nézőmódban és a
-visszajátszásban is motoronkénti áttetsző elmosás jelenik meg. A külső nézet
-0,06–0,35 normalizált motorfordulat között folyamatosan keveri át a lapátokat;
-normál lebegésnél már a forgási tárcsa látszik. Az FPV korábbi görbéje megmarad.
+visszajátszásban is motoronkénti áttetsző elmosás jelenik meg. Az FPV és a külső
+nézet ugyanazzal a görbével, 0,06–0,35 normalizált motorfordulat között keveri
+át a lapátokat; kameraváltáskor a fedettség nem ugrik, normál lebegésnél már
+a forgási tárcsa látszik.
 Leállításkor az ép, hajlott és csorbult lapátok tényleges geometriája visszatér,
 a letört lapátok rejtve maradnak. Teljes lapátvesztésnél nincs forgási tárcsa;
 csorbult rotor esetén a tárcsa mérete és fedettsége is csökken.

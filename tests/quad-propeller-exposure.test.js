@@ -23,7 +23,7 @@ test('local hover blends only the blades in chase, retains FPV exposure, then re
     const blades=new Set(f.visual.damage.entries.map(e=>e.mesh));
     for(const [object,material]of original)if(!blades.has(object))assert.equal(object.material,material,'motor hubs, guards and body retain their own materials');
     f.visual.prepareView('fpv',f.physics);
-    assert.ok(f.visual.damage.entries.every(e=>e.mesh.visible&&e.mesh.material.opacity>0&&e.mesh.material.opacity<1));
+    assert.ok(f.visual.damage.entries.every(e=>!e.mesh.visible));
     f.physics.armed=false;f.visual.update(1/60,f.physics,{throttle:0});f.visual.prepareView('chase',f.physics);
     assert.ok(f.visual.exposure.rotors.every(r=>!r.disc.visible));
     assert.ok(f.visual.damage.entries.every(e=>e.mesh.visible&&e.mesh.material.opacity===1&&e.mesh.material.depthWrite));

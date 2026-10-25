@@ -57,6 +57,17 @@ test('external exposure is progressive, remains subtle at hover and preserves sh
   assert.ok(entries.filter(e=>e.motor===1).every(e=>e.mesh.visible&&e.mesh.material.depthWrite));
   exposure.dispose();
 });
+
+test('FPV and chase have exactly the same onset, exposure, shadows and damaged-blade visibility',()=>{
+  const {exposure,entries}=fixture();entries[0].state=3;entries[1].state=2;
+  const snapshot=()=>({rotors:exposure.rotors.map(r=>[r.disc.visible,r.disc.material.opacity,r.disc.scale.x]),
+    blades:entries.map(e=>[e.mesh.visible,e.mesh.castShadow,e.mesh.material.opacity,e.mesh.material.depthWrite])});
+  for(const speed of [0,.03,.06,.061,.1,.15,.25,.349,.35,.5,.75,1]){
+    exposure.update('chase',[],[speed,speed,.1,0]);const chase=snapshot();
+    exposure.update('fpv',[],[speed,speed,.1,0]);assert.deepEqual(snapshot(),chase,`camera-independent at ${speed}`);
+  }
+  exposure.dispose();
+});
 test('exposure preserves individual broken blades, rotor losses and restores geometry when disposed',()=>{
   const {exposure,entries,model}=fixture();
   entries[0].state=3;for(const e of entries.filter(e=>e.motor===1))e.state=3;

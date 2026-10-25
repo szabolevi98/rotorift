@@ -37,9 +37,9 @@ export class FpvPropellers {
   update(view, thrust, fractions) {
     for(const rotor of this.rotors) {
       const speed=fractions?.[rotor.motor]??Math.sqrt(Math.max(0,Math.min(1,thrust[rotor.motor]/this.maxThrust)));
-      // External hover should already look like fast rotation. The FPV curve
-      // retains its existing exposure; clean FPV hides the entire local model.
-      const raw=Math.max(0,Math.min(1,view==='chase'?(speed-.06)/.29:(speed-.12)/.53));
+      // Camera changes must not change the same rotor's exposure. Clean FPV
+      // hides the entire local model, so it does not need a swept disc.
+      const raw=Math.max(0,Math.min(1,(speed-.06)/.29));
       const blur=view==='fpv'||view==='chase'?raw*raw*(3-2*raw):0;
       const states=new Map(rotor.entries.map(({entry})=>[entry.blade,entry.state]));
       const remaining=[...states.values()].reduce((sum,state)=>sum+[1,.95,.55,0][state],0)/3;
