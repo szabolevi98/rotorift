@@ -22,6 +22,40 @@ const catalog=await loadCatalog(),map=catalog.maps.find(m=>m.id==='harbor');
 const drone=catalog.drones.find(c=>c.id==='rift-x5'),plane=catalog.airplanes.find(c=>c.id==='rift-t15');
 const pose=p=>({p,q:{x:0,y:0,z:0,w:1}});
 
+test('both gantry cranes have connected side braces and supported mast feet',()=>{
+  const environment=buildHarbor(new THREE.Scene(),null,null,map);
+  try{
+    const steel=environment.root.getObjectByName('Harbor_box_crane');
+    const braces=environment.root.getObjectByName('Harbor_box_craneLight');
+    const members=[];
+    for(let i=0;i<steel.count;i++){
+      const matrix=new THREE.Matrix4();steel.getMatrixAt(i,matrix);
+      members.push({matrix,inverse:matrix.clone().invert(),size:new THREE.Vector3().setFromMatrixScale(matrix)});
+    }
+    const touches=(point,exclude)=>members.some(member=>{
+      if(member===exclude)return false;
+      const local=point.clone().applyMatrix4(member.inverse);
+      return Math.max(Math.abs(local.x),Math.abs(local.y),Math.abs(local.z))<=.501;
+    });
+    let sideBraces=0,mastFeet=0;
+    for(let i=0;i<braces.count;i++){
+      const matrix=new THREE.Matrix4();braces.getMatrixAt(i,matrix);
+      const center=new THREE.Vector3().setFromMatrixPosition(matrix);
+      if(center.y<28||center.y>34)continue;
+      for(const end of [-.5,.5])assert.ok(touches(new THREE.Vector3(0,end,0).applyMatrix4(matrix)),
+        'side brace endpoints must intersect the leg or portal frame');
+      sideBraces++;
+    }
+    for(const member of members){
+      if(Math.abs(member.size.x-1.1)>.001)continue;
+      const foot=new THREE.Vector3(0,-.5,0).applyMatrix4(member.matrix);
+      assert.ok(touches(foot,member),'every mast foot needs a connected crossmember');
+      mastFeet++;
+    }
+    assert.equal(sideBraces,8);assert.equal(mastFeet,8);
+  }finally{environment.dispose();}
+});
+
 test('harbor water matches the quay, piers and breakwaters for drones and airplanes',()=>{
   for(const config of [drone,plane]){
     assert.equal(findWaterImpact(map,config,pose([300,5,0]),pose([300,0,0])),'water');

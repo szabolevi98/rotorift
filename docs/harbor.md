@@ -38,6 +38,11 @@ in the distant scenery. This avoids giant triangles crossing the camera and
 clipping through logarithmic depth. The sea starts at the shoreline instead of
 overlapping the land underneath the yard.
 
+Scenery revision 5 connects the gantry X braces to the actual sloping legs.
+The portal top frame now includes crossmembers beneath all four mast feet,
+so the upper crane structure no longer ends in midair. Visible steel and
+prepared contact shapes share these joints; race routes remain unchanged.
+
 | Route | Length | Gates | Aircraft | Difficulty |
 | --- | --- | --- | --- | --- |
 | Waterfront Flow | 1.98 km | 24 | Quads | Easy |

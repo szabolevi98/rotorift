@@ -130,20 +130,25 @@ export function buildHarbor(scene,world,RAPIER,map) {
 
   function gantry(x,z,index) {model('Ship_to_shore_gantry_'+index,[x,Y,z],0,()=>{
     // Four legs around a clear portal; braces stay on the side planes.
+    const footY=1,topY=39,footX=14,topX=footX*.72;
+    const legX=y=>footX+(topX-footX)*(y-footY)/(topY-footY);
     for(const sx of [-14,14])for(const sz of [-18,18]){
       box([3,1.2,8],[sx,.6,sz],'steelDark');
       for(const dz of [-2.8,2.8])cylinder(1.2,1.1,[sx,.6,sz+dz],'rubber',true,[0,0,Math.PI/2]);
-      beam([sx,1,sz],[sx*.72,39,sz],1.7,'crane');
+      beam([sx,footY,sz],[Math.sign(sx)*topX,topY,sz],1.7,'crane');
     }
-    for(const sx of [-10,10]){
-      beam([sx,38,-19],[sx,38,19],1.8,'crane');
-      beam([sx,18,-18],[sx,37,18],.6,'craneLight');beam([sx,18,18],[sx,37,-18],.6,'craneLight');
+    for(const side of [-1,1]){
+      beam([side*topX,topY,-18],[side*topX,topY,18],1.8,'crane');
+      // Both ends meet the sloping legs, rather than a vertical side plane.
+      beam([side*legX(18),18,-18],[side*topX,topY,18],.6,'craneLight');
+      beam([side*legX(18),18,18],[side*topX,topY,-18],.6,'craneLight');
     }
-    for(const sz of [-18,18])beam([-11,39,sz],[11,39,sz],1.8,'crane');
+    // Internal crossmembers carry the mast feet on the same connected frame.
+    for(const sz of [-18,-5,5,18])beam([-topX,topY,sz],[topX,topY,sz],1.8,'crane');
     for(const sz of [-5,5]){
       beam([-70,50,sz],[178,50,sz],1.2,'crane');beam([-70,58,sz],[178,58,sz],.8,'crane');
       for(let p=-70;p<178;p+=15.5){beam([p,50,sz],[p+7.75,58,sz],.28,'craneLight');beam([p+7.75,58,sz],[p+15.5,50,sz],.28,'craneLight');}
-      beam([-8,40,sz],[0,76,sz],1.1,'crane');beam([8,40,sz],[0,76,sz],1.1,'crane');
+      beam([-8,topY,sz],[0,76,sz],1.1,'crane');beam([8,topY,sz],[0,76,sz],1.1,'crane');
       for(const p of [-65,90,168])pipe([0,75,sz],[p,58,sz],.11,'steelDark');
     }
     for(let p=-65;p<175;p+=20)beam([p,50,-5],[p,50,5],.45,'crane');
