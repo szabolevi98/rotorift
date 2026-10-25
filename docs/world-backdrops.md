@@ -32,3 +32,9 @@ Backdrop resources are owned and disposed with the environment. Tests check
 finite geometry, deterministic generation, boundary clearance, upward-facing
 terrain, geometry budgets and disposal for all five map kinds. Browser checks
 cover ground and elevated views with the game's atmosphere and shadow renderer.
+
+Camera far planes come from `shared/world/view-distance.js` in flight, the map
+viewer and cinematic exports: 12 km outdoors, 18 km at Harbor and 180 m indoors.
+The scenery reaches roughly 4–5 km from map centre. A 2.2 km export far plane
+cuts across mountain triangles and produces moving notches in the silhouette;
+raising pixel resolution alone does not restore that missing geometry.

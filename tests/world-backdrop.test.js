@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {createWorldBackdrop,BACKDROP_PROFILES} from '../web/game/world-backdrop.js';
+import {mapViewDistance} from '../shared/world/view-distance.js';
 
 for(const [kind,size] of [['park',800],['circuit',800],['construction',600],['city',600],['playground',84]]) {
   test(`${kind}: distant scenery stays outside flight bounds, is deterministic, cheap and releases its resources`,()=>{
@@ -25,9 +26,13 @@ for(const [kind,size] of [['park',800],['circuit',800],['construction',600],['ci
         }
       });
       const terrain=a.root.children[0];
+      // A near-only far plane clips different mountain triangles each frame.
+      // Include the opposite corner and an elevated camera, not just map centre.
+      const cameraMargin=Math.hypot(size/2,size/2,128);
       for(let i=0;i<terrain.geometry.attributes.position.count;i++) {
-        const x=terrain.geometry.attributes.position.getX(i),z=terrain.geometry.attributes.position.getZ(i);
+        const x=terrain.geometry.attributes.position.getX(i),y=terrain.geometry.attributes.position.getY(i),z=terrain.geometry.attributes.position.getZ(i);
         assert.ok(Math.hypot(x,z)>=a.root.userData.innerRadius-.01);
+        assert.ok(Math.hypot(x,y,z)+cameraMargin<mapViewDistance(map),'the far plane must include the complete mountain silhouette');
       }
       assert.ok(terrain.geometry.attributes.normal.getY(200)>0,'terrain faces upward');
       assert.ok(triangles<36000,`background triangle budget: ${triangles}`);
