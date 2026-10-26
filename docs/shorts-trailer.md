@@ -1,5 +1,9 @@
 # Rotorift Shorts – megőrzött videó és renderforrás
 
+> Frissítés, 2026-10-26: a javított dróndőlésű **Trailer V3 és Shorts V2**
+> az [új kiadás leírásában](video-attitude-update.md) található.
+> Az alábbi dokumentum a korábbi archív változatot írja le.
+
 [Archív ZIP](../media/rotorift-shorts-28s-2026-10-25.zip) ·
 [Közvetlen GitHub-letöltés](https://github.com/szabolevi98/rotorift/raw/refs/heads/main/media/rotorift-shorts-28s-2026-10-25.zip)
 

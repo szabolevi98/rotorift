@@ -1,5 +1,9 @@
 # Rotorift trailer és YouTube-borító – megőrzött V2
 
+> Frissítés, 2026-10-26: a javított dróndőlésű **Trailer V3 és Shorts V2**
+> az [új kiadás leírásában](video-attitude-update.md) található.
+> Az alábbi dokumentum a korábbi archív változatot írja le.
+
 A 2026-10-25-i végleges videó és a hozzá tartozó képek ebben az archívumban
 vannak: [rotorift-trailer-v2-2026-10-25.zip](../media/rotorift-trailer-v2-2026-10-25.zip).
 
