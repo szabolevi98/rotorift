@@ -18,7 +18,21 @@ export function configureDronePolymer(material, brightness = 0.7) {
   material.needsUpdate = true;
 }
 
+// Logarithmic depth writes gl_FragDepth from an interpolated varying. With MSAA
+// the fragment shader runs at the pixel centre even when a triangle only covers
+// some samples, so the varying is extrapolated outside the triangle. Kilometre-
+// long ground triangles turn into one-pixel slivers at the horizon, and their
+// extrapolated depth came out near the camera: a thin line of distant ground
+// drawn over buildings on every map. Centroid sampling keeps it inside.
+function useCentroidLogDepth(THREE) {
+  const chunks = THREE.ShaderChunk;
+  for (const name of ["logdepthbuf_pars_vertex", "logdepthbuf_pars_fragment"]) {
+    chunks[name] = chunks[name].replace(/(?<!centroid )varying float (vFragDepth|vIsPerspective);/g, "centroid varying float $1;");
+  }
+}
+
 export function configureDroneRenderer(THREE, renderer) {
+  useCentroidLogDepth(THREE);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.2;
